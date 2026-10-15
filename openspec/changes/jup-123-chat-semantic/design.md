@@ -8,7 +8,7 @@ El scorer previo conserva 253 juicios históricos y nueve incertidumbres.
 
 ## Decisions
 
-Base de ingeniería actual: A/8ea5a0c4 sobre develop0543c5ee/JUP-038, reconciliada
+Base de ingeniería incorporada: A/8ea5a0c4 sobre develop0543c5ee/JUP-038, reconciliada
 localmente en B/7be57c05. Los39 archivos de aplicación afectados coinciden con
 los bloques de A; la semántica B se conserva. Pruebas propias frontend/backend
 conformes; la regresión Linux/SQL de7be quedó verificada y la del corte corregido72
@@ -69,11 +69,11 @@ esa gramática conservan la ruta general; no se afirma un extractor universal.
 
 Los rechazos de prosa aritmética registran sólo campo/índice cerrado, sin guardar
 la prosa privada. No se inventa el campo o texto exacto del fallo histórico013:r3.
-La nueva N3 del corte72a2f767 mide estas correcciones contra el banco, corpus y
-rúbrica previos, con los84 recibos de7be intactos.1793 pruebas técnicas y recursos
-firmados conformes no acreditan por sí solos calidad semántica ni aceptación.
+Las N3 completas72 y a545 miden estas correcciones contra el banco, corpus y
+rúbrica previos:003/013/015 pasan3/3 en ambas, sin reetiquetar recibos antiguos.
+1793 pruebas técnicas consolidadas no acreditan por sí solas calidad semántica.
 
-### Capacidad de ejecución: corrección local posterior025
+### Capacidad de ejecución: corrección025 medida
 
 La N3 del corte72 conserva un fallo semántico025:r1: amplía a cualquier cambio
 de producción una lista de comprobaciones que la fuente sólo exige a rightsizing.
@@ -87,9 +87,21 @@ status refused y auxiliares privados vacíos. Explica sólo su capacidad real de
 análisis, sin hacer pasar una política documental particular por una restricción
 general. No ejecuta acciones ni depende de que el modelo respete esa prosa.
 Const e ID ligado a la entrada se comprueban tanto en stream como en final y
-en el contrato independiente del backend.238 pruebas locales y carga en frío de
-ambos bundles conformes; sigue sin construir/activar/medir con proveedor. La N3
-de72 permanece congelada y no se reetiquetan sus fallos.
+en el contrato independiente del backend.238 pruebas locales e incrementales Linux
+conformes,0FAIL/SKIP. Imágenes/fuentes activadas sólo en B y nueva N3 completa de
+a545:025PASS3/3. SQL/producer idénticos heredan evidencia nativa72; no se reclama
+como una ejecución nueva. La N3 de72 conserva sus fallos originales.
+
+### Métrica y expresión: defecto medido027
+
+027:r2 de a545 calcula bien cada expresión aislada y concluye40% de reducción
+unitaria, pero etiqueta200EUR y20% del gasto total como cambios por pedido.
+La comparación lo registra como un único fallo de coherencia por respuesta, sin
+inferir causalidad con025 ni cambiar la rúbrica. La reparación pendiente debe
+vincular la métrica a la expresión y sus operandos, con variantes de cantidades,
+unidades y periodos. No está implementada ni validada. La N3 completa conserva
+además dos incertidumbres020 y un fallo técnico429; ninguna media acepta B.
+Paquete de adjudicación y hashes en continuidad; criterios y N5 pendientes.
 
 ### Calificadores documentales y tres valores — 2026-10-15
 

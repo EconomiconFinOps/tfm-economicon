@@ -1,11 +1,96 @@
 # Evaluación local de JUP-035
 
+Origen: [JUP-123 / JUP-035B](https://trello.com/c/TqtcumIN), chat
+`01a1270c-e332-7462-9c90-706d49ade92c`.
+
 ## Estado actual y autorización — 15/10/2026
 
 El usuario amplió explícitamente el máximo acumulado a **10 USD** el15/10:
 continuar desde009 usando la corrección contable, sin repetir las ocho muestras
 anteriores ni liberar reservas pendientes. Sustituye los máximos anteriores;
 no reinicia gasto, ledger, intentos ni caducidad. B sigue sin publicar.
+
+### Resultado congelado — 15/10/2026, 15:55 UTC
+
+**003, 013, 015 y 025 pasan 3/3** en el candidato actual. La N3 original de28casos
+terminó84/84 muestras:83respuestas completadas y1fallida. Revisión local provisional:
+**80 conformes,1fallo de coherencia027:r2,2inciertas020:r1/r3 y1fallo técnico022:r1**.
+Requisitos:486conformes/1fallido/2inciertos/6no evaluables por fallo técnico.
+No es adjudicación independiente ni aceptación de B; N5 y criterios de revisores
+siguen pendientes. Sin publicar en GitHub o Discord.
+
+Producto medido `3059694203f5706ec9dd142565726211fb3b1619`, corte de evidencia
+`a54582fb99272730b108d68ccd387a96ceb7c1bd`. Hereda las correcciones015/003/013
+de producto d2f8a440 / corte72a2f767.025 usa una negativa determinista por capacidad
+real del asistente ante órdenes directas acotadas; no generaliza requisitos de
+rightsizing ni reconoce identificadores del banco. Fuera de esa gramática se
+conserva la ruta general. Archivo versionado SHA
+`c07ca5c09a9c3c883dc42cc6224e5c2db4fe969d595888ede239fefa284b99a3`, plan84 SHA
+`abd605f60ef99e524e71815899f72fe0d9ce479ce71fc11a4078e9b17f2d64fb`.
+
+**Pendientes confirmados o por adjudicar:**
+- 027:r2 concluye correctamente10→6EUR/pedido y40% de reducción, pero etiqueta
+ 200EUR y20% del gasto total como diferencias del coste unitario. Un solo grupo
+ `unit-cost-labels-bound-to-total-spend-expressions`. Comparación contra72:
+ 476PASS→PASS,3FAIL→PASS,2inciertos→PASS,1PASS→FAIL y2PASS→inciertos; técnicos
+ separados. No demuestra causalidad con025. Reparación pendiente: vincular tipo y
+ etiqueta de métrica a la expresión/semántica de operandos, con variantes de
+ unidades, importes y periodos; no otra regla libre de prompt ni relajar scorer.
+- 020:r1/r3 exigen validar y advierten del riesgo genéricamente; adjudicar si eso
+ cumple «explicitar riesgo».020:r2 sí concreta deterioro de rendimiento/SLA.
+- 022:r1 falló tras cuatroHTTP429, no por contenido. La respuesta posterior022:r2
+ no lo borra.023:r1 respondió tras un429 con uso incompleto: su calidad es conforme,
+ pero su coste sigue desconocido. Ambas conservan0.319952USD íntegros, sin repetición.
+
+**Contabilidad y preservación:** cota final a15:53UTC
+`max(3.514609539,0.957927619+2.5928883455)+4.161376=7.7121919645/10USD`.
+El máximo compara contador global con histórico más costes conocidos para cubrir
+el retraso del contador. No es gasto exacto atribuido. Todas las reservas previas
+se conservan;4.161376USD retenidos, ninguna operación activa/reserva nueva pendiente.
+Mismas claves y límites, caducidad autorizada18:00París, sin renovación posterior.
+547filas idénticas al snapshot trasUI,463históricas intactas y252recibos derivados
+de a545/72/7be verificados. No reiniciar la campaña por ver el estado COLLECTED.
+
+**Pruebas y alcance:**238pruebas incrementales Linux PASS,0FAIL/ERROR/SKIP;
+evidencia base1793con herencia explícita, no nueva ejecución monolítica ni repetición
+de sus58nativas SQL/pgvector. SQL/producer no cambiaron; la nueva N3 sí verifica
+el recorrido real API/worker/almacenamiento. Imágenes/fuentes y descriptorHMAC
+verificados, protocolo server-documentation-v4, prompt45aa5103. Activación limitada
+al entorno propioB, con bases/frontend/estados conservados. El primer build falló
+antes de pytest por permisos del montaje; v2 pasó sin borrar ese fallo. La
+reanudaciónv3 se corrigió antes de crear operaciones por referencia de snapshot
+inexistente; inspección original conservada. Controladores terminales, no reenvíos.
+
+UI003/013/015/025:r3:1280/390px, historial y recarga PASS, texto igual al recibo,
+0errores/0escrituras del asistente y sin inferencias de navegador. Inspeccionadas
+capturas013escritorio/025móvil. Túnel propio PID10776 cerrado tras verificar sus
+argumentos; no se detuvieron servicios ni otros túneles. No es una nueva prueba
+de inferencia o streaming en navegador.
+
+Evidencia en `../materiales/07-evidencias/PR121-local-evaluation/` desde raíz del repo:
+- `candidate-a54582fb-n3-complete-cap10-freeze-proof-v1.json`:361ficheros remotos,
+ manifest SHA `c349db86edd1c73232f2a60f428f6c331c3b6aa3a529c14c3fe5df0d634f505f`.
+- `candidate-a54582fb-complete84-review-frozen-v1/`:173ficheros, manifest SHA
+ `d9f13bd004ea9457ce32ca9c842ecbbb8af5f7adfc4ad7dfb82e3ddb75165148`.
+- `candidate-a54582fb-adjudication-packet-v1.json`:020:r1/r3,022:r1,027:r2,
+ SHA `dcbc55c949dca20f209eb87ee4a48817fc3addba277a8e7ccbd5bab70796ae01`.
+- `candidate-a54582fb-technical-export-v1.json`, `a54582fb-ui-result.json`,
+ `a54582fb-ui-tunnel-closed.json`, `candidate-a54582fb-post-ui-history-proof-v1.json`
+ y `accounting-covered-readonly-1792079598.json`.
+
+Baseline72 preservada:84/84,79PASS/2FAIL025/2inciertas012y025/1técnica009,
+003/013/015PASS3/3. Snapshot360ficheros SHA
+`0842ab8d49666a4a8dbab3aade1433a845dcef9f08a66cf9af3bbd0fa08561d9` y revisión173
+SHA `7d458b67212ff5091e486d175848c12705edafba24f97bd67a05b830ec54cc2c`.
+Sus fallos no se reetiquetan por la corrección posterior.
+
+TrelloJUP-123 sigue en curso, descripción actualizada y leída exactamente de vuelta,
+SHA `c847ed6b14908696ad6cb88a0c40d1a8ccbb07bf8b87d59beb4a49b6296e0032`.
+Siguiente: reparar027 mediante asociación tipada, adjudicar020 y acordar criterios/
+N5 antes de aceptar. El objetivoB no está completo. No ampliar vigencia ni gasto
+sin autorización aplicable; no liberar reservas para admitir otra campaña.
+
+Los cortes siguientes son **históricos** y están superados por este resultado.
 
 ### Candidato corregido d2f8a440 / pruebas72a2f767 — 15/10/2026
 

@@ -4,15 +4,15 @@ Actualizado: 2026-10-15. Origen: chat 01a1270c-e332-7462-9c90-706d49ade92c.
 El usuario confirma aprobación del equipo y autoriza actualizar Trello, publicar
 A y cerrar #120/#121 sin integrar. No autoriza despliegue ni mensajes Discord.
 
-Actualización vigente15/10: N3 completa84/84, con fallos/incertidumbres conservados.
-La extensión sólo temporal de las mismas claves fue autorizada y aplicada sin
-reset. Recogida no implica aceptación; estado detallado y snapshots en
-[evaluación local](chat-evaluacion-local.md). Los cortes8/70 inferiores son históricos.
-
-Correcciones posteriores015/003/013: producto d2f8a440, pruebas/build72a2f767,
-1793 identidades chat conformes con SQL nativo e imágenes verificadas el15/10.
-Activadas sólo en B, con fuentes y descriptor firmado conformes. Sin medición
-nueva con el proveedor: claves caducadas y ampliación de vigencia pendiente. No sustituye la N3 anterior ni valida A/B por sí solo.
+Actualización de B verificada15/10: correcciones003/013/015 y025 pasan3/3 en
+producto30596942/cortea54582fb. N3 completa84/84:80conformes,1fallo de coherencia027,
+2inciertas020 y1fallo técnico429.238tests incrementales Linux y UI de historial
+conformes no acreditan aceptación. Cota final7.7121919645/10USD, reservas4.161376
+íntegras y547filas congeladas; mismas claves hasta18:00París, sinreset. Falta
+reparar027, adjudicar020 y acordar criterios/N5. B sigue sin publicar ni aceptar.
+Detalle, manifiestos y paquete de adjudicación en [evaluación local](chat-evaluacion-local.md).
+Los cortes técnicos y consultas de A inferiores son históricos; no se reafirma su
+estado actual ni su CI con la validación de B.
 
 ## Base incorporada: A8ea5a0c4 y develop0543c5ee
 
