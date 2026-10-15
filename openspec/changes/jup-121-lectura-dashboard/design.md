@@ -1,0 +1,24 @@
+JUP: JUP-121 · ADR: [ADR-0022](../../../docs/adr/ADR-0022-assistant-evaluation-results-in-grafana.md)
+
+## Context
+
+Corrige y mejora la lectura del dashboard de `jup-121-assistant-evaluation-dashboard` tras las revisiones de la PR #132. Los datos y el contrato no cambian: todo se resuelve en el JSON del dashboard (consultas SQL, transformaciones y textos), salvo la documentación.
+
+## Decisiones
+
+- **D1. Tasa de error con numerador a 0.** La expresión pasa a `100 * (sum(rate(backend_http_requests_total{status_code=~"5.."}[5m])) or vector(0)) / sum(rate(backend_http_requests_total[5m]))`. Con tráfico y sin 5xx vale 0 (un cero medido); sin tráfico el denominador no tiene series y sigue diciendo «Sin datos: no hubo peticiones». Deja de ser idéntica a la del dashboard técnico de JUP-043, que no se toca (queda como hallazgo).
+- **D2. Latencia p95: rótulo, no filtro.** La métrica `backend_http_request_duration_seconds` agrega todas las rutas y la sección C describe síntomas del backend; se rotula «Latencia p95 del backend (todas las rutas)» y la descripción dice que no es la latencia del asistente. La latencia del asistente en una campaña está en la sección A.
+- **D3. Tabla por métrica y ejecución, sin tocar el modelo de datos.** Consulta nueva con una fila por (métrica, variante, ejecución) que devuelve un nombre legible, el texto del valor y, si existe, el intervalo de confianza; la transformación `groupingToMatrix` de Grafana pone una columna por ejecución. Los nombres de métrica salen de un `CASE` en la consulta, con una prueba que exige que cubra todas las métricas del catálogo `JUP-067-metrics-catalogue.json`. Las tablas por fila actuales se conservan como «detalle» (la conciliación con los informes originales las usa y no se rehacen).
+  - Alternativa descartada: una tabla `evaluation.metrics` cargada desde el catálogo. Cambiaría el esquema y la herramienta de carga por un asunto de presentación.
+  - Si `groupingToMatrix` no admite celdas de texto en Grafana 11.3.0, se usa la alternativa SQL con una columna por ejecución ordenada por fecha (hasta un máximo fijo de ejecuciones recientes); se decide con una prueba contra un Grafana real.
+- **D4. Resumen de la última campaña.** Un panel de una sola fila de texto con la ejecución de JUP-070 más reciente: fecha, tipo de ejecución, casos aprobados sobre el total y «todavía no hay evaluación con modelo real» cuando ninguna ejecución de JUP-070 es real.
+- **D5. Etiquetas.** `estado` pasa a «Tipo de ejecución»; la columna de resultado se oculta en las tablas donde solo hay medidas (en la tabla por ejecución la ausencia se ve como «No medido»); `behavior` pasa a «Variante» con un `CASE` de traducciones.
+- **D6. Numeradores y denominadores con unidad (sección B).** Se formatean con la misma unidad que el valor y se quitan los números en bruto de la vista.
+- **D7. «Qué no demuestra» a la vista.** El texto de cada sección ya dice qué no demuestra de forma común; se deja a la vista y se acorta «Cómo leer la sección A» a tres viñetas. El detalle por panel sigue en la descripción (ⓘ), que Grafana no puede mostrar en línea.
+- **D8. Latencia de campaña en la evolución.** Panel de evolución nuevo para LAT-1 y LAT-2 de la etapa `total` (ms), con las mismas reglas que las otras evoluciones: al menos dos puntos medidos, serie por clave de comparabilidad, línea discontinua si no es real y «Sin datos: no hay con qué comparar». LAT-3 (máximo), GRD-2 y REL-4 quedan fuera de la evolución, documentado.
+- **D9. Pruebas.** Pruebas nuevas en ficheros nuevos para el comportamiento nuevo; las pruebas congeladas que fijan columnas, títulos o textos que cambian se actualizan con un parche que aplica el usuario (el hook de congelación impide editarlas).
+
+## Riesgos
+
+- `groupingToMatrix` con texto: se verifica contra Grafana 11.3.0 real antes de fijar el diseño (tarea 1.2).
+- Más paneles hacen más largo el dashboard; el detalle va al final de cada bloque para no empujar el contenido principal.
