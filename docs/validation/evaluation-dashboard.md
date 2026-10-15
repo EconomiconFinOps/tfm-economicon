@@ -2,7 +2,7 @@
 
 Contrato de datos y guía de uso del dashboard de Grafana que reúne los resultados de evaluación del asistente. Tarjeta: [JUP-121](https://trello.com/c/aIdxwsXR). Decisión: [ADR-0022](../adr/ADR-0022-assistant-evaluation-results-in-grafana.md). Requisitos: [spec](../../openspec/changes/jup-121-assistant-evaluation-dashboard/specs/assistant-evaluation-dashboard/spec.md).
 
-> **Estado:** este documento fija el contrato. La herramienta `tools/evaluation-dashboard.py` y el dashboard se implementan en las tareas 2 a 4 de JUP-121; hasta entonces los comandos de abajo todavía no existen.
+> **Estado:** este documento fija el contrato de datos y describe el dashboard (`apps/monitoring/grafana/dashboards/assistant-evaluation.json`, uid `economicon-assistant-evaluation`). La herramienta `tools/evaluation-dashboard.py` ya existe y los comandos de abajo funcionan.
 
 ## Qué muestra y qué no demuestra
 
@@ -17,6 +17,20 @@ El dashboard junta tres tipos de medida que responden a preguntas distintas. Cad
 La latencia y la disponibilidad existen en A (sobre las peticiones de una campaña) y en C (sobre tráfico real) con significados distintos. Nunca comparten panel.
 
 Las definiciones y fórmulas de las métricas de A están en el [catálogo de JUP-067](JUP-067-metrics-catalogue.json) y no se repiten aquí.
+
+## Dashboard
+
+Cada sección empieza con un panel de texto («Cómo leer la sección…») y sus paneles llevan en la descripción lo que miden y lo que no demuestran.
+
+- **A. Calidad con rúbrica.** Las ejecuciones cargadas y el estado de sus casos; las tablas de exactitud, relevancia y fundamento y de latencia, formato y disponibilidad de la campaña; dos gráficas de evolución (métricas automáticas y juicio humano, solo hitos); la calibración de la recuperación, el benchmark de modelos y la robustez. Cada tabla de resultados muestra, con cada fila, la fecha, la versión de la batería, el commit (abreviado a 8 caracteres; entero en la tabla de ejecuciones) y el modelo de su ejecución.
+- **B. Métricas de negocio.** Una tabla con las 23 filas de JUP-068: tiempo, asignación de gasto y ahorro, con los mismos metadatos.
+- **C. Señales en vivo.** Cinco gráficas de Prometheus (consultas por minuto, latencia p95, tasa de error y las dos proporciones de búsquedas sin contexto y de fallos de recuperación) que miran siempre la última hora.
+
+Cómo leerlo:
+
+- **Lo no medido** se muestra como «No medido» y nunca como 0 %: un 0 % que se ve es un cero medido. Un metadato que el informe no registra se muestra como «no registrado» (la fecha, «No registrada»); nada se rellena con el de otra ejecución.
+- **Las ejecuciones «no real»** (plantilla, dobles de prueba, sintéticas o sin modelo verificado) llevan «no real» y su motivo en la columna Estado, en morado, y sus series de evolución se dibujan discontinuas. Son pruebas del flujo, no calidad del asistente.
+- **La evolución** solo dibuja una serie (métrica, conducta y clave de comparabilidad; la leyenda la nombra con la métrica, la fuente y «serie» seguido de los 8 primeros caracteres de la clave) con al menos dos puntos medidos; una con un solo punto no se dibuja. El selector de tiempo solo acota estas gráficas; las tablas muestran siempre todo lo cargado.
 
 ## Regenerar los datos
 

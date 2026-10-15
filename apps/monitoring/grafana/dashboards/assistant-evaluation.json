@@ -79,7 +79,7 @@
     {
       "description": "Tipo: A\nMide: texto introductorio de la sección A: qué mide, de dónde salen los datos y cómo se leen las ejecuciones no reales\nNo demuestra: el comportamiento con usuarios reales ni con preguntas fuera de la batería",
       "gridPos": {
-        "h": 8,
+        "h": 11,
         "w": 24,
         "x": 0,
         "y": 1
@@ -91,7 +91,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "| Qué mide | De dónde salen los datos | Qué no demuestra |\n| --- | --- | --- |\n| La calidad de las respuestas del asistente a una **batería fija de casos**, con rúbrica | Campañas de **JUP-070** sobre la batería de **JUP-069** y las métricas de **JUP-067**; calibración de la recuperación de **JUP-022**; benchmark de modelos de **JUP-078**; robustez de **JUP-071** (todavía sin informe) | El comportamiento con usuarios reales ni con preguntas fuera de la batería |\n\n- **Ejecuciones «no real».** Una ejecución hecha con plantilla, con dobles de prueba, sintética o sin modelo verificado se rotula `no real` con su motivo (`plantilla`, `doble`, `sintetica`, `sin_modelo_verificado`) y sus series se dibujan discontinuas. Es una prueba del flujo, no calidad del asistente.\n- **«No medido» no es 0 %.** Una métrica que no se pudo medir llega vacía y se muestra como «No medido». Un 0 % que se ve es un cero medido.\n- **Sin semáforos.** Los umbrales de JUP-067 son provisionales y no se aplican: ningún valor se colorea como bueno o malo.\n- **Campaña no es tráfico real.** La latencia y la disponibilidad de esta sección son las de las peticiones de una campaña; las del tráfico real están en la sección C.\n- **Evolución.** Solo se dibuja una serie si tiene al menos dos ejecuciones comparables (misma batería, corpus, modelo y parámetros); si no, el panel dice «Sin datos: no hay con qué comparar». Las marcas verticales indican un cambio de batería, modelo, prompt o corpus entre ejecuciones consecutivas de la misma fuente.",
+        "content": "| Qué mide | De dónde salen los datos | Qué no demuestra |\n| --- | --- | --- |\n| La calidad de las respuestas del asistente a una **batería fija de casos**, con rúbrica | Campañas de **JUP-070** sobre la batería de **JUP-069** y las métricas de **JUP-067**; calibración de la recuperación de **JUP-022**; benchmark de modelos de **JUP-078**; robustez de **JUP-071** (todavía sin informe) | El comportamiento con usuarios reales ni con preguntas fuera de la batería |\n\n- **Ejecuciones «no real».** Una ejecución hecha con plantilla, con dobles de prueba, sintética o sin modelo verificado se rotula `no real` con su motivo (`plantilla`, `doble`, `sintetica`, `sin_modelo_verificado`) y sus series se dibujan discontinuas. Es una prueba del flujo, no calidad del asistente.\n- **«No medido» no es 0 %.** Una métrica que no se pudo medir llega vacía y se muestra como «No medido». Un 0 % que se ve es un cero medido.\n- **Sin semáforos.** Los umbrales de JUP-067 son provisionales y no se aplican: ningún valor se colorea como bueno o malo.\n- **Campaña no es tráfico real.** La latencia y la disponibilidad de esta sección son las de las peticiones de una campaña; las del tráfico real están en la sección C.\n- **Evolución.** Solo se dibuja una serie si tiene al menos dos puntos medidos de ejecuciones comparables (misma batería, corpus, modelo y parámetros); una serie con un solo punto no se dibuja y, si ninguna llega a dos, el panel dice «Sin datos: no hay con qué comparar». Las marcas verticales indican un cambio de batería, modelo, prompt o corpus entre ejecuciones consecutivas de la misma fuente.\n- **Rango de tiempo.** El selector de tiempo del dashboard (por defecto, el último año) solo acota las dos gráficas de evolución, que consideran todas las ejecuciones cargadas con fecha dentro de ese rango: para ver ejecuciones más antiguas, amplíalo. Las tablas no se filtran por él y muestran siempre todas las ejecuciones cargadas.",
         "mode": "markdown"
       },
       "title": "Cómo leer la sección A",
@@ -168,7 +168,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 90
+                "value": 80
               }
             ]
           },
@@ -184,7 +184,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 190
+                "value": 160
               },
               {
                 "id": "mappings",
@@ -194,12 +194,16 @@
                     "options": {
                       "match": "null",
                       "result": {
-                        "text": "Fecha no registrada",
+                        "text": "No registrada",
                         "index": 0
                       }
                     }
                   }
                 ]
+              },
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
               }
             ]
           },
@@ -215,7 +219,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 230
+                "value": 215
               },
               {
                 "id": "mappings",
@@ -268,7 +272,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 190
+                "value": 175
               }
             ]
           },
@@ -284,7 +288,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 330
+                "value": 335
               }
             ]
           },
@@ -300,7 +304,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 70
+                "value": 60
               },
               {
                 "id": "mappings",
@@ -328,7 +332,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 9
+        "y": 12
       },
       "id": 3,
       "options": {
@@ -431,7 +435,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 190
+                "value": 160
               },
               {
                 "id": "mappings",
@@ -441,12 +445,16 @@
                     "options": {
                       "match": "null",
                       "result": {
-                        "text": "Fecha no registrada",
+                        "text": "No registrada",
                         "index": 0
                       }
                     }
                   }
                 ]
+              },
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
               }
             ]
           },
@@ -462,7 +470,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 230
+                "value": 185
               },
               {
                 "id": "mappings",
@@ -499,7 +507,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 190
+                "value": 175
               }
             ]
           },
@@ -563,7 +571,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 100
+                "value": 90
               }
             ]
           },
@@ -579,7 +587,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 100
+                "value": 85
               }
             ]
           },
@@ -611,7 +619,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 120
+                "value": 115
               }
             ]
           },
@@ -627,7 +635,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 120
+                "value": 115
               }
             ]
           }
@@ -637,7 +645,7 @@
         "h": 5,
         "w": 24,
         "x": 0,
-        "y": 17
+        "y": 20
       },
       "id": 4,
       "options": {
@@ -719,12 +727,8 @@
             },
             "properties": [
               {
-                "id": "displayName",
-                "value": "Ejecución"
-              },
-              {
-                "id": "custom.width",
-                "value": 290
+                "id": "custom.hidden",
+                "value": true
               }
             ]
           },
@@ -743,6 +747,101 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "run_at"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Fecha"
+              },
+              {
+                "id": "custom.width",
+                "value": 160
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "null",
+                      "result": {
+                        "text": "No registrada",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "suite_version"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Versión de la batería"
+              },
+              {
+                "id": "custom.width",
+                "value": 160
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "commit_corto"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Commit"
+              },
+              {
+                "id": "custom.width",
+                "value": 105
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "commit_sha"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "generation_model"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Modelo de generación"
+              },
+              {
+                "id": "custom.width",
+                "value": 175
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "estado"
             },
             "properties": [
@@ -752,7 +851,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 230
+                "value": 215
               },
               {
                 "id": "mappings",
@@ -789,7 +888,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 90
+                "value": 85
               }
             ]
           },
@@ -805,7 +904,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 110
+                "value": 105
               }
             ]
           },
@@ -821,7 +920,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 110
+                "value": 100
               },
               {
                 "id": "mappings",
@@ -883,7 +982,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 100
+                "value": 90
               }
             ]
           },
@@ -930,7 +1029,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 110
+                "value": 115
               },
               {
                 "id": "mappings",
@@ -967,7 +1066,7 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 22
+        "y": 25
       },
       "id": 5,
       "options": {
@@ -991,7 +1090,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\n  r.run_id,\n  r.source,\n  CASE WHEN r.is_real THEN 'real'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n  END AS estado,\n  x.metric_id,\n  x.behavior,\n  x.status,\n  x.value,\n  CASE\n    WHEN x.unit = 'tasa' THEN to_char(x.value * 100, 'FM990.0') || ' %'\n    WHEN x.unit = 'porcentaje' THEN to_char(x.value, 'FM990.0') || ' %'\n    WHEN x.unit = 'ms' THEN to_char(x.value, 'FM9999999990.0') || ' ms'\n    WHEN x.unit = 'similitud' THEN to_char(x.value, 'FM0.000')\n    WHEN x.unit = 'recuento' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'parejas' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'eur_minor_2' THEN to_char(x.value / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(round(x.value::numeric, 4))::text || ' ' || x.unit\n  END AS valor_texto,\n  x.numerator,\n  x.denominator,\n  x.unit\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE x.grp IN ('accuracy', 'relevance', 'grounding')\nORDER BY r.run_at, x.metric_id, x.behavior, x.status",
+          "rawSql": "SELECT\n  r.run_id,\n  r.source,\n  r.run_at,\n  COALESCE(r.suite_version, 'no registrado') AS suite_version,\n  COALESCE(r.commit_sha, 'no registrado') AS commit_sha,\n  COALESCE(left(r.commit_sha, 8), 'no registrado') AS commit_corto,\n  COALESCE(r.generation_model, 'no registrado') AS generation_model,\n  CASE WHEN r.is_real THEN 'real'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n  END AS estado,\n  x.metric_id,\n  x.behavior,\n  x.status,\n  x.value,\n  CASE\n    WHEN x.unit = 'tasa' THEN to_char(x.value * 100, 'FM990.0') || ' %'\n    WHEN x.unit = 'porcentaje' THEN to_char(x.value, 'FM990.0') || ' %'\n    WHEN x.unit = 'ms' THEN to_char(x.value, 'FM9999999990.0') || ' ms'\n    WHEN x.unit = 'similitud' THEN to_char(x.value, 'FM0.000')\n    WHEN x.unit = 'recuento' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'parejas' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'eur_minor_2' THEN to_char(x.value / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(round(x.value::numeric, 4))::text || ' ' || x.unit\n  END AS valor_texto,\n  x.numerator,\n  x.denominator,\n  x.unit\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE x.grp IN ('accuracy', 'relevance', 'grounding')\nORDER BY r.run_at, x.metric_id, x.behavior, x.status",
           "refId": "A"
         }
       ],
@@ -1049,12 +1148,8 @@
             },
             "properties": [
               {
-                "id": "displayName",
-                "value": "Ejecución"
-              },
-              {
-                "id": "custom.width",
-                "value": 290
+                "id": "custom.hidden",
+                "value": true
               }
             ]
           },
@@ -1073,6 +1168,101 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "run_at"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Fecha"
+              },
+              {
+                "id": "custom.width",
+                "value": 160
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "null",
+                      "result": {
+                        "text": "No registrada",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "suite_version"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Versión de la batería"
+              },
+              {
+                "id": "custom.width",
+                "value": 160
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "commit_corto"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Commit"
+              },
+              {
+                "id": "custom.width",
+                "value": 105
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "commit_sha"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "generation_model"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Modelo de generación"
+              },
+              {
+                "id": "custom.width",
+                "value": 175
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "estado"
             },
             "properties": [
@@ -1082,7 +1272,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 230
+                "value": 215
               },
               {
                 "id": "mappings",
@@ -1119,7 +1309,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 90
+                "value": 85
               }
             ]
           },
@@ -1135,7 +1325,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 160
+                "value": 165
               }
             ]
           },
@@ -1151,7 +1341,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 110
+                "value": 100
               },
               {
                 "id": "mappings",
@@ -1213,7 +1403,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 110
+                "value": 100
               }
             ]
           },
@@ -1224,12 +1414,8 @@
             },
             "properties": [
               {
-                "id": "displayName",
-                "value": "Unidad"
-              },
-              {
-                "id": "custom.width",
-                "value": 90
+                "id": "custom.hidden",
+                "value": true
               }
             ]
           },
@@ -1276,7 +1462,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 110
+                "value": 115
               },
               {
                 "id": "mappings",
@@ -1301,7 +1487,7 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 36
+        "y": 39
       },
       "id": 6,
       "options": {
@@ -1325,7 +1511,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\n  r.run_id,\n  r.source,\n  CASE WHEN r.is_real THEN 'real'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n  END AS estado,\n  x.metric_id,\n  x.behavior,\n  x.status,\n  x.value,\n  CASE\n    WHEN x.unit = 'tasa' THEN to_char(x.value * 100, 'FM990.0') || ' %'\n    WHEN x.unit = 'porcentaje' THEN to_char(x.value, 'FM990.0') || ' %'\n    WHEN x.unit = 'ms' THEN to_char(x.value, 'FM9999999990.0') || ' ms'\n    WHEN x.unit = 'similitud' THEN to_char(x.value, 'FM0.000')\n    WHEN x.unit = 'recuento' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'parejas' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'eur_minor_2' THEN to_char(x.value / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(round(x.value::numeric, 4))::text || ' ' || x.unit\n  END AS valor_texto,\n  x.unit,\n  x.numerator,\n  x.denominator\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE x.grp IN ('latency', 'robustness', 'availability')\nORDER BY r.run_at, x.metric_id, x.behavior, x.status",
+          "rawSql": "SELECT\n  r.run_id,\n  r.source,\n  r.run_at,\n  COALESCE(r.suite_version, 'no registrado') AS suite_version,\n  COALESCE(r.commit_sha, 'no registrado') AS commit_sha,\n  COALESCE(left(r.commit_sha, 8), 'no registrado') AS commit_corto,\n  COALESCE(r.generation_model, 'no registrado') AS generation_model,\n  CASE WHEN r.is_real THEN 'real'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n  END AS estado,\n  x.metric_id,\n  x.behavior,\n  x.status,\n  x.value,\n  CASE\n    WHEN x.unit = 'tasa' THEN to_char(x.value * 100, 'FM990.0') || ' %'\n    WHEN x.unit = 'porcentaje' THEN to_char(x.value, 'FM990.0') || ' %'\n    WHEN x.unit = 'ms' THEN to_char(x.value, 'FM9999999990.0') || ' ms'\n    WHEN x.unit = 'similitud' THEN to_char(x.value, 'FM0.000')\n    WHEN x.unit = 'recuento' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'parejas' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'eur_minor_2' THEN to_char(x.value / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(round(x.value::numeric, 4))::text || ' ' || x.unit\n  END AS valor_texto,\n  x.unit,\n  x.numerator,\n  x.denominator\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE x.grp IN ('latency', 'robustness', 'availability')\nORDER BY r.run_at, x.metric_id, x.behavior, x.status",
           "refId": "A"
         }
       ],
@@ -1408,7 +1594,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 50
+        "y": 53
       },
       "id": 7,
       "options": {
@@ -1432,11 +1618,50 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT\n  c.run_at AS time,\n  x.metric_id\n    || CASE WHEN x.behavior = 'all' THEN '' ELSE ' · ' || x.behavior END\n    || ' · ' || c.source\n    || ' · clave ' || left(c.comparability_key, 8)\n    || CASE WHEN c.is_real THEN ''\n            ELSE ' · no real: ' || array_to_string(r.non_real_reasons, ', ')\n       END AS metric,\n  x.value AS value\nFROM evaluation.comparable_runs c\nJOIN evaluation.results x ON x.run_id = c.run_id\nJOIN evaluation.runs r ON r.run_id = c.run_id\nWHERE x.judgment = 'automatic'\n  AND x.status = 'measured'\n  AND x.unit = 'tasa'\n  AND c.run_at IS NOT NULL\nORDER BY c.run_at, metric",
+          "rawSql": "WITH puntos AS (\n  SELECT\n    c.run_at AS time,\n    x.metric_id\n      || CASE WHEN x.behavior = 'all' THEN '' ELSE ' · ' || x.behavior END\n      || ' · ' || c.source\n      || ' · serie ' || left(c.comparability_key, 8)\n      || CASE WHEN c.is_real THEN ''\n              ELSE ' · no real: ' || array_to_string(r.non_real_reasons, ', ')\n         END AS metric,\n    x.value AS value,\n    count(*) OVER (PARTITION BY c.comparability_key, x.metric_id, x.behavior) AS medidos\n  FROM evaluation.comparable_runs c\n  JOIN evaluation.results x ON x.run_id = c.run_id\n  JOIN evaluation.runs r ON r.run_id = c.run_id\n  WHERE x.judgment = 'automatic'\n    AND x.status = 'measured'\n    AND x.unit = 'tasa'\n    AND c.run_at IS NOT NULL\n)\nSELECT time, metric, value\nFROM puntos\nWHERE medidos >= 2\nORDER BY time, metric",
           "refId": "A"
         }
       ],
       "title": "Evolución de las métricas automáticas",
+      "transformations": [
+        {
+          "id": "prepareTimeSeries",
+          "options": {
+            "format": "multi"
+          }
+        },
+        {
+          "id": "seriesToRows",
+          "options": {}
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "type": "include",
+            "match": "any",
+            "filters": [
+              {
+                "fieldName": "Value",
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                }
+              }
+            ]
+          }
+        },
+        {
+          "id": "partitionByValues",
+          "options": {
+            "fields": [
+              "Metric"
+            ],
+            "naming": {
+              "asLabels": false
+            }
+          }
+        }
+      ],
       "type": "timeseries"
     },
     {
@@ -1515,7 +1740,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 50
+        "y": 53
       },
       "id": 8,
       "options": {
@@ -1539,11 +1764,50 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT\n  c.run_at AS time,\n  x.metric_id\n    || CASE WHEN x.behavior = 'all' THEN '' ELSE ' · ' || x.behavior END\n    || ' · ' || c.source\n    || ' · clave ' || left(c.comparability_key, 8)\n    || CASE WHEN c.is_real THEN ''\n            ELSE ' · no real: ' || array_to_string(r.non_real_reasons, ', ')\n       END AS metric,\n  x.value AS value\nFROM evaluation.comparable_runs c\nJOIN evaluation.results x ON x.run_id = c.run_id\nJOIN evaluation.runs r ON r.run_id = c.run_id\nWHERE x.judgment = 'human'\n  AND x.status = 'measured'\n  AND x.unit = 'tasa'\n  AND c.run_at IS NOT NULL\n  AND c.milestone\nORDER BY c.run_at, metric",
+          "rawSql": "WITH puntos AS (\n  SELECT\n    c.run_at AS time,\n    x.metric_id\n      || CASE WHEN x.behavior = 'all' THEN '' ELSE ' · ' || x.behavior END\n      || ' · ' || c.source\n      || ' · serie ' || left(c.comparability_key, 8)\n      || CASE WHEN c.is_real THEN ''\n              ELSE ' · no real: ' || array_to_string(r.non_real_reasons, ', ')\n         END AS metric,\n    x.value AS value,\n    count(*) OVER (PARTITION BY c.comparability_key, x.metric_id, x.behavior) AS medidos\n  FROM evaluation.comparable_runs c\n  JOIN evaluation.results x ON x.run_id = c.run_id\n  JOIN evaluation.runs r ON r.run_id = c.run_id\n  WHERE x.judgment = 'human'\n    AND x.status = 'measured'\n    AND x.unit = 'tasa'\n    AND c.run_at IS NOT NULL\n    AND c.milestone\n)\nSELECT time, metric, value\nFROM puntos\nWHERE medidos >= 2\nORDER BY time, metric",
           "refId": "A"
         }
       ],
       "title": "Evolución con juicio humano (solo hitos)",
+      "transformations": [
+        {
+          "id": "prepareTimeSeries",
+          "options": {
+            "format": "multi"
+          }
+        },
+        {
+          "id": "seriesToRows",
+          "options": {}
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "type": "include",
+            "match": "any",
+            "filters": [
+              {
+                "fieldName": "Value",
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                }
+              }
+            ]
+          }
+        },
+        {
+          "id": "partitionByValues",
+          "options": {
+            "fields": [
+              "Metric"
+            ],
+            "naming": {
+              "asLabels": false
+            }
+          }
+        }
+      ],
       "type": "timeseries"
     },
     {
@@ -1598,12 +1862,103 @@
             },
             "properties": [
               {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "run_at"
+            },
+            "properties": [
+              {
                 "id": "displayName",
-                "value": "Ejecución"
+                "value": "Fecha"
               },
               {
                 "id": "custom.width",
-                "value": 290
+                "value": 160
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "null",
+                      "result": {
+                        "text": "No registrada",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "suite_version"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Versión de la batería"
+              },
+              {
+                "id": "custom.width",
+                "value": 160
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "commit_corto"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Commit"
+              },
+              {
+                "id": "custom.width",
+                "value": 105
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "commit_sha"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "generation_model"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Modelo de generación"
+              },
+              {
+                "id": "custom.width",
+                "value": 175
               }
             ]
           },
@@ -1619,7 +1974,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 230
+                "value": 110
               },
               {
                 "id": "mappings",
@@ -1656,7 +2011,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 200
+                "value": 160
               }
             ]
           },
@@ -1672,7 +2027,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 240
+                "value": 215
               }
             ]
           },
@@ -1688,7 +2043,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 90
+                "value": 70
               }
             ]
           },
@@ -1704,7 +2059,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 140
+                "value": 135
               },
               {
                 "id": "unit",
@@ -1728,7 +2083,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 90
+                "value": 70
               },
               {
                 "id": "unit",
@@ -1748,11 +2103,11 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Candidato elegido"
+                "value": "Elegido"
               },
               {
                 "id": "custom.width",
-                "value": 150
+                "value": 90
               },
               {
                 "id": "mappings",
@@ -1780,7 +2135,7 @@
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 59
+        "y": 62
       },
       "id": 9,
       "options": {
@@ -1804,7 +2159,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\n  r.run_id,\n  CASE WHEN r.is_real THEN 'real'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n  END AS estado,\n  x.metric_id,\n  x.behavior,\n  x.value,\n  x.numerator,\n  x.denominator,\n  x.selected\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE x.grp = 'calibration'\nORDER BY x.metric_id, x.behavior",
+          "rawSql": "SELECT\n  r.run_id,\n  r.run_at,\n  COALESCE(r.suite_version, 'no registrado') AS suite_version,\n  COALESCE(r.commit_sha, 'no registrado') AS commit_sha,\n  COALESCE(left(r.commit_sha, 8), 'no registrado') AS commit_corto,\n  COALESCE(r.generation_model, 'no registrado') AS generation_model,\n  CASE WHEN r.is_real THEN 'real'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n  END AS estado,\n  x.metric_id,\n  x.behavior,\n  x.value,\n  x.numerator,\n  x.denominator,\n  x.selected\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE x.grp = 'calibration'\nORDER BY x.metric_id, x.behavior",
           "refId": "A"
         }
       ],
@@ -1861,12 +2216,103 @@
             },
             "properties": [
               {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "run_at"
+            },
+            "properties": [
+              {
                 "id": "displayName",
-                "value": "Ejecución"
+                "value": "Fecha"
               },
               {
                 "id": "custom.width",
-                "value": 290
+                "value": 160
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "null",
+                      "result": {
+                        "text": "No registrada",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "suite_version"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Versión de la batería"
+              },
+              {
+                "id": "custom.width",
+                "value": 160
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "commit_corto"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Commit"
+              },
+              {
+                "id": "custom.width",
+                "value": 105
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "commit_sha"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "generation_model"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Modelo de generación"
+              },
+              {
+                "id": "custom.width",
+                "value": 175
               }
             ]
           },
@@ -1882,7 +2328,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 230
+                "value": 110
               },
               {
                 "id": "mappings",
@@ -1919,7 +2365,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 220
+                "value": 205
               }
             ]
           },
@@ -1931,11 +2377,11 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Llamadas correctas"
+                "value": "Correctas"
               },
               {
                 "id": "custom.width",
-                "value": 150
+                "value": 95
               },
               {
                 "id": "decimals",
@@ -1955,7 +2401,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 90
+                "value": 65
               },
               {
                 "id": "decimals",
@@ -1971,11 +2417,11 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Puntuación por palabras clave"
+                "value": "Palabras clave"
               },
               {
                 "id": "custom.width",
-                "value": 210
+                "value": 125
               },
               {
                 "id": "decimals",
@@ -1995,7 +2441,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 130
+                "value": 105
               },
               {
                 "id": "unit",
@@ -2019,7 +2465,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 130
+                "value": 105
               },
               {
                 "id": "unit",
@@ -2037,7 +2483,7 @@
         "h": 5,
         "w": 24,
         "x": 0,
-        "y": 71
+        "y": 74
       },
       "id": 10,
       "options": {
@@ -2061,7 +2507,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\n  r.run_id,\n  CASE WHEN r.is_real THEN 'real'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n  END AS estado,\n  x.behavior,\n  max(x.case_count) FILTER (WHERE x.metric_id = 'cases' AND x.status = 'pass') AS successful,\n  max(x.denominator) FILTER (WHERE x.metric_id = 'cases' AND x.status = 'pass') AS cases,\n  max(x.value) FILTER (WHERE x.metric_id = 'keyword_score' AND x.status = 'measured') AS keyword_score,\n  max(x.value) FILTER (WHERE x.metric_id = 'latency_p95' AND x.status = 'measured') AS latency_p95,\n  max(x.value) FILTER (WHERE x.metric_id = 'cost' AND x.status = 'measured') AS cost\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE x.grp = 'benchmark'\nGROUP BY r.run_id, x.behavior\nORDER BY x.behavior",
+          "rawSql": "SELECT\n  r.run_id,\n  r.run_at,\n  COALESCE(r.suite_version, 'no registrado') AS suite_version,\n  COALESCE(r.commit_sha, 'no registrado') AS commit_sha,\n  COALESCE(left(r.commit_sha, 8), 'no registrado') AS commit_corto,\n  COALESCE(r.generation_model, 'no registrado') AS generation_model,\n  CASE WHEN r.is_real THEN 'real'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n  END AS estado,\n  x.behavior,\n  max(x.case_count) FILTER (WHERE x.metric_id = 'cases' AND x.status = 'pass') AS successful,\n  max(x.denominator) FILTER (WHERE x.metric_id = 'cases' AND x.status = 'pass') AS cases,\n  max(x.value) FILTER (WHERE x.metric_id = 'keyword_score' AND x.status = 'measured') AS keyword_score,\n  max(x.value) FILTER (WHERE x.metric_id = 'latency_p95' AND x.status = 'measured') AS latency_p95,\n  max(x.value) FILTER (WHERE x.metric_id = 'cost' AND x.status = 'measured') AS cost\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE x.grp = 'benchmark'\nGROUP BY r.run_id, x.behavior\nORDER BY x.behavior",
           "refId": "A"
         }
       ],
@@ -2119,12 +2565,8 @@
             },
             "properties": [
               {
-                "id": "displayName",
-                "value": "Ejecución"
-              },
-              {
-                "id": "custom.width",
-                "value": 290
+                "id": "custom.hidden",
+                "value": true
               }
             ]
           },
@@ -2135,12 +2577,103 @@
             },
             "properties": [
               {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "run_at"
+            },
+            "properties": [
+              {
                 "id": "displayName",
-                "value": "Fuente"
+                "value": "Fecha"
               },
               {
                 "id": "custom.width",
-                "value": 90
+                "value": 160
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "null",
+                      "result": {
+                        "text": "No registrada",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "suite_version"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Versión de la batería"
+              },
+              {
+                "id": "custom.width",
+                "value": 160
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "commit_corto"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Commit"
+              },
+              {
+                "id": "custom.width",
+                "value": 105
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "commit_sha"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "generation_model"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Modelo de generación"
+              },
+              {
+                "id": "custom.width",
+                "value": 175
               }
             ]
           },
@@ -2156,7 +2689,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 230
+                "value": 215
               },
               {
                 "id": "mappings",
@@ -2193,7 +2726,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 110
+                "value": 85
               }
             ]
           },
@@ -2209,7 +2742,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 300
+                "value": 200
               }
             ]
           },
@@ -2225,7 +2758,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 110
+                "value": 95
               },
               {
                 "id": "mappings",
@@ -2287,7 +2820,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 100
+                "value": 80
               }
             ]
           },
@@ -2303,7 +2836,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 100
+                "value": 95
               },
               {
                 "id": "mappings",
@@ -2359,7 +2892,7 @@
         "h": 5,
         "w": 24,
         "x": 0,
-        "y": 76
+        "y": 79
       },
       "id": 11,
       "options": {
@@ -2383,7 +2916,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\n  r.run_id,\n  r.source,\n  CASE WHEN r.is_real THEN 'real'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n  END AS estado,\n  x.metric_id,\n  x.behavior,\n  x.status,\n  x.value,\n  CASE\n    WHEN x.unit = 'tasa' THEN to_char(x.value * 100, 'FM990.0') || ' %'\n    WHEN x.unit = 'porcentaje' THEN to_char(x.value, 'FM990.0') || ' %'\n    WHEN x.unit = 'ms' THEN to_char(x.value, 'FM9999999990.0') || ' ms'\n    WHEN x.unit = 'similitud' THEN to_char(x.value, 'FM0.000')\n    WHEN x.unit = 'recuento' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'parejas' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'eur_minor_2' THEN to_char(x.value / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(round(x.value::numeric, 4))::text || ' ' || x.unit\n  END AS valor_texto,\n  x.numerator,\n  x.denominator\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE r.source = 'JUP-071'\nORDER BY x.metric_id, x.behavior, x.status",
+          "rawSql": "SELECT\n  r.run_id,\n  r.source,\n  r.run_at,\n  COALESCE(r.suite_version, 'no registrado') AS suite_version,\n  COALESCE(r.commit_sha, 'no registrado') AS commit_sha,\n  COALESCE(left(r.commit_sha, 8), 'no registrado') AS commit_corto,\n  COALESCE(r.generation_model, 'no registrado') AS generation_model,\n  CASE WHEN r.is_real THEN 'real'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n  END AS estado,\n  x.metric_id,\n  x.behavior,\n  x.status,\n  x.value,\n  CASE\n    WHEN x.unit = 'tasa' THEN to_char(x.value * 100, 'FM990.0') || ' %'\n    WHEN x.unit = 'porcentaje' THEN to_char(x.value, 'FM990.0') || ' %'\n    WHEN x.unit = 'ms' THEN to_char(x.value, 'FM9999999990.0') || ' ms'\n    WHEN x.unit = 'similitud' THEN to_char(x.value, 'FM0.000')\n    WHEN x.unit = 'recuento' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'parejas' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'eur_minor_2' THEN to_char(x.value / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(round(x.value::numeric, 4))::text || ' ' || x.unit\n  END AS valor_texto,\n  x.numerator,\n  x.denominator\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE r.source = 'JUP-071'\nORDER BY x.metric_id, x.behavior, x.status",
           "refId": "A"
         }
       ],
@@ -2396,7 +2929,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 81
+        "y": 84
       },
       "id": 12,
       "panels": [],
@@ -2409,7 +2942,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 82
+        "y": 85
       },
       "id": 13,
       "options": {
@@ -2475,12 +3008,103 @@
             },
             "properties": [
               {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "run_at"
+            },
+            "properties": [
+              {
                 "id": "displayName",
-                "value": "Ejecución"
+                "value": "Fecha"
               },
               {
                 "id": "custom.width",
-                "value": 290
+                "value": 160
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "null",
+                      "result": {
+                        "text": "No registrada",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "suite_version"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Versión de la batería"
+              },
+              {
+                "id": "custom.width",
+                "value": 160
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "commit_corto"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Commit"
+              },
+              {
+                "id": "custom.width",
+                "value": 105
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "commit_sha"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "generation_model"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Modelo de generación"
+              },
+              {
+                "id": "custom.width",
+                "value": 175
               }
             ]
           },
@@ -2496,7 +3120,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 230
+                "value": 140
               },
               {
                 "id": "mappings",
@@ -2532,8 +3156,8 @@
                 "value": "Bloque"
               },
               {
-                "id": "custom.width",
-                "value": 150
+                "id": "custom.hidden",
+                "value": true
               },
               {
                 "id": "mappings",
@@ -2571,7 +3195,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 220
+                "value": 205
               },
               {
                 "id": "mappings",
@@ -2669,7 +3293,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 80
+                "value": 105
               }
             ]
           },
@@ -2685,7 +3309,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 110
+                "value": 100
               },
               {
                 "id": "mappings",
@@ -2747,7 +3371,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 130
+                "value": 85
               }
             ]
           },
@@ -2758,12 +3382,8 @@
             },
             "properties": [
               {
-                "id": "displayName",
-                "value": "Unidad original"
-              },
-              {
-                "id": "custom.width",
-                "value": 120
+                "id": "custom.hidden",
+                "value": true
               }
             ]
           },
@@ -2779,7 +3399,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 110
+                "value": 100
               },
               {
                 "id": "mappings",
@@ -2810,7 +3430,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 120
+                "value": 115
               },
               {
                 "id": "mappings",
@@ -2832,10 +3452,10 @@
         ]
       },
       "gridPos": {
-        "h": 14,
+        "h": 26,
         "w": 24,
         "x": 0,
-        "y": 88
+        "y": 91
       },
       "id": 14,
       "options": {
@@ -2859,7 +3479,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\n  r.run_id,\n  CASE WHEN r.is_real THEN 'real'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n  END AS estado,\n  x.grp,\n  x.metric_id,\n  x.behavior,\n  x.status,\n  x.value,\n  CASE\n    WHEN x.case_count IS NOT NULL THEN to_char(x.case_count, 'FM9999999990')\n    WHEN x.unit = 'tasa' THEN to_char(x.value * 100, 'FM990.0') || ' %'\n    WHEN x.unit = 'porcentaje' THEN to_char(x.value, 'FM990.0') || ' %'\n    WHEN x.unit = 'ms' THEN to_char(x.value / 60000, 'FM9999990.0') || ' min'\n    WHEN x.unit = 'similitud' THEN to_char(x.value, 'FM0.000')\n    WHEN x.unit = 'recuento' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'parejas' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'eur_minor_2' THEN to_char(x.value / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(round(x.value::numeric, 4))::text || ' ' || x.unit\n  END AS valor_texto,\n  x.unit,\n  x.numerator,\n  x.denominator\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE x.measure_type = 'B'\nORDER BY CASE x.grp WHEN 'time' THEN 1 WHEN 'allocation' THEN 2 ELSE 3 END, x.metric_id, x.behavior, x.status",
+          "rawSql": "SELECT\n  r.run_id,\n  r.run_at,\n  COALESCE(r.suite_version, 'no registrado') AS suite_version,\n  COALESCE(r.commit_sha, 'no registrado') AS commit_sha,\n  COALESCE(left(r.commit_sha, 8), 'no registrado') AS commit_corto,\n  COALESCE(r.generation_model, 'no registrado') AS generation_model,\n  CASE WHEN r.is_real THEN 'real'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n  END AS estado,\n  x.grp,\n  x.metric_id,\n  x.behavior,\n  x.status,\n  x.value,\n  CASE\n    WHEN x.case_count IS NOT NULL THEN to_char(x.case_count, 'FM9999999990')\n    WHEN x.unit = 'tasa' THEN to_char(x.value * 100, 'FM990.0') || ' %'\n    WHEN x.unit = 'porcentaje' THEN to_char(x.value, 'FM990.0') || ' %'\n    WHEN x.unit = 'ms' THEN to_char(x.value / 60000, 'FM9999990.0') || ' min'\n    WHEN x.unit = 'similitud' THEN to_char(x.value, 'FM0.000')\n    WHEN x.unit = 'recuento' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'parejas' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'eur_minor_2' THEN to_char(x.value / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(round(x.value::numeric, 4))::text || ' ' || x.unit\n  END AS valor_texto,\n  x.unit,\n  x.numerator,\n  x.denominator\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE x.measure_type = 'B'\nORDER BY CASE x.grp WHEN 'time' THEN 1 WHEN 'allocation' THEN 2 ELSE 3 END, x.metric_id, x.behavior, x.status",
           "refId": "A"
         }
       ],
@@ -2872,7 +3492,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 102
+        "y": 117
       },
       "id": 15,
       "panels": [],
@@ -2885,7 +3505,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 103
+        "y": 118
       },
       "id": 16,
       "options": {
@@ -2956,7 +3576,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 111
+        "y": 126
       },
       "hideTimeOverride": false,
       "id": 17,
@@ -3046,7 +3666,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 111
+        "y": 126
       },
       "hideTimeOverride": false,
       "id": 18,
@@ -3136,7 +3756,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 111
+        "y": 126
       },
       "hideTimeOverride": false,
       "id": 19,
@@ -3227,7 +3847,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 119
+        "y": 134
       },
       "hideTimeOverride": false,
       "id": 20,
@@ -3318,7 +3938,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 119
+        "y": 134
       },
       "hideTimeOverride": false,
       "id": 21,
