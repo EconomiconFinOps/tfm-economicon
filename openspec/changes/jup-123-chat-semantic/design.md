@@ -11,7 +11,8 @@ El scorer previo conserva 253 juicios históricos y nueve incertidumbres.
 Base de ingeniería actual: A/8ea5a0c4 sobre develop0543c5ee/JUP-038, reconciliada
 localmente en B/7be57c05. Los39 archivos de aplicación afectados coinciden con
 los bloques de A; la semántica B se conserva. Pruebas propias frontend/backend
-conformes; regresión Linux/SQL del conjunto en curso. No importa el estado de sus
+conformes; la regresión Linux/SQL de7be quedó verificada y la del corte corregido72
+consolida1793 identidades chat conformes, sin omisiones nativas pendientes. No importa el estado de sus
 reviews ni sustituye su CI. La reconciliación A11f/Bab66f90c queda como antecedente.
 Compatibilidad de disponibilidad/slots comprobada en API, frontend y CD; los rangos
 libres siguen siendo prerrequisito de despliegue y el navegador final de B queda
@@ -24,8 +25,10 @@ para el candidato completo. Ver [continuidad A/B](../../../docs/continuidad/chat
 3. Identidad por campaña, caso y repetición; banco y corpus inmutables. Conservar
    commit, hashes, entradas, fragmentos realmente usados, parámetros y costes.
 4. Contabilidad viva y reserva conservadora antes de inferencias. Tope acumulado
-   de 5 USD (ampliación explícita del usuario el 2026-10-14 desde 2 USD),
-   incluyendo intentos fallidos y servicios auxiliares facturables.
+   de10USD (ampliación explícita del usuario el15/10, posterior a2/5USD),
+   incluyendo intentos fallidos, servicios auxiliares y todas las reservas anteriores.
+   La vigencia de claves se autoriza por separado: mismas claves hasta15/10 a18:00París,
+   sin reiniciar contadores ni liberar reservas pendientes.
 5. Las coincidencias de palabras/números son diagnósticos, no veredictos semánticos.
    Citas requieren soporte de la afirmación, no sólo solapamiento léxico.
 6. Las correcciones se evalúan contra la misma rúbrica congelada. Ninguna media
@@ -47,6 +50,46 @@ la prueba del coste indeterminado se conservan. La campaña mantiene el fallo
 como tal y no repite suPOST. Los artefactos distinguen gasto conocido y reservas.
 
 ## Risks and open questions
+
+### Correcciones medidas015/003/013 — producto d2f8a440
+
+El compilador documental exige la definición completa de budget en Conceptos
+FinOps Basicos además de Budgets Y Forecast. Recuperación complementaria exacta
+en el mismo snapshot/tenant/proveedor, sin otro embedding; cobertura incompleta
+conserva la ruta general. Seguimiento, alertas y ausencia de apagado por defecto
+proceden del corpus autorizado, no de una lista de hechos escrita en el prompt.
+
+La investigación conceptual sin cantidades ni evidencia financiera usa el método
+completo y consecutivo de Cost Management Y Cost Analysis, con cláusulas literales
+autorizadas. Solicita ámbito/periodo y parámetros ausentes sin convertir campos
+del esquema Anomaly en prerrequisitos. La desviación hipotética de presupuesto
+usa roles explícitos de coste final/presupuesto, moneda y mes compatibles, Decimal
+con precisión80, operandos exactos y denominador cero explícito. Entradas fuera de
+esa gramática conservan la ruta general; no se afirma un extractor universal.
+
+Los rechazos de prosa aritmética registran sólo campo/índice cerrado, sin guardar
+la prosa privada. No se inventa el campo o texto exacto del fallo histórico013:r3.
+La nueva N3 del corte72a2f767 mide estas correcciones contra el banco, corpus y
+rúbrica previos, con los84 recibos de7be intactos.1793 pruebas técnicas y recursos
+firmados conformes no acreditan por sí solos calidad semántica ni aceptación.
+
+### Capacidad de ejecución: corrección local posterior025
+
+La N3 del corte72 conserva un fallo semántico025:r1: amplía a cualquier cambio
+de producción una lista de comprobaciones que la fuente sólo exige a rightsizing.
+`chat_resource_actions.py` reconoce órdenes directas mediante una gramática acotada
+de verbos/recursos; no busca IDs del banco, no interpreta contexto recuperado como
+instrucción y no es un clasificador universal. Preguntas conceptuales, negaciones
+e instrucciones citadas conservan su ruta general.
+
+El servidor liga la negativa y los próximos pasos a la petición completa, con
+status refused y auxiliares privados vacíos. Explica sólo su capacidad real de
+análisis, sin hacer pasar una política documental particular por una restricción
+general. No ejecuta acciones ni depende de que el modelo respete esa prosa.
+Const e ID ligado a la entrada se comprueban tanto en stream como en final y
+en el contrato independiente del backend.238 pruebas locales y carga en frío de
+ambos bundles conformes; sigue sin construir/activar/medir con proveedor. La N3
+de72 permanece congelada y no se reetiquetan sus fallos.
 
 ### Calificadores documentales y tres valores — 2026-10-15
 

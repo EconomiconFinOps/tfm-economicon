@@ -26,7 +26,9 @@ Dependencia: JUP-122, PR https://github.com/EconomiconFinOps/tfm-economicon/pull
 
 Backend, processor y herramientas de evaluación. B se conserva sin publicar en
 GitHub; el usuario autorizó un entorno aislado en DockerServer y amplió el máximo
-acumulado a5USD. La baseline y las campañas N3 de e23 y c7 están recogidas;
-el candidato posterior7be57c05 aún no se ha medido con el proveedor. N5 y criterios
+acumulado a10USD el15/10, conservando todas las reservas pendientes. La baseline
+y las campañas N3 de e23, c7 y7be57c05 están recogidas. Las correcciones015/003/013
+del producto d2f8a440 se miden en el corte72a2f767, sin sustituir recibos previos;
+las mismas claves tienen vigencia autorizada hasta15/10 a18:00París. N5 y criterios
 de aceptación del equipo siguen pendientes: no se inventa
 un porcentaje aprobado ni se reemplazan reviews.

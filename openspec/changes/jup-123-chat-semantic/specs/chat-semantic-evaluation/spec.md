@@ -56,6 +56,22 @@ otro embedding ni convierte una política parcial en completa por truncamiento.
 - **THEN** no se da prioridad a una selección parcial ni se elige arbitrariamente un documento
 - **AND** todas las consultas adicionales quedan sujetas al plazo y cancelación existentes
 
+### Requirement: Negativa de ejecución ligada a capacidad del asistente
+Ante órdenes directas de cambio de recursos reconocidas por su gramática acotada,
+el servidor MUST conservar la ausencia de capacidad de ejecución del asistente.
+La respuesta tipada no deriva prerrequisitos para cualquier cambio a partir de
+una política documental de rightsizing ni concede autoridad financiera.
+
+#### Scenario: Orden directa de apagado o modificación
+- **WHEN** la petición actual ordena una acción reconocida sobre máquinas, VMs u otros recursos
+- **THEN** el esquema privado sólo admite la negativa ligada a esa entrada y el servidor ofrece análisis o propuesta revisable, sin ejecutar cambios
+- **AND** status es refused, sin métricas, ahorro, citas o recomendaciones inventados, con paridad stream/final
+
+#### Scenario: Pregunta conceptual, negación o instrucción citada
+- **WHEN** la entrada pregunta por budgets, explica una operación, niega la orden o sólo la describe en el contexto o una cita
+- **THEN** no se activa esa negativa determinista y se conserva la ruta general
+- **AND** ni texto recuperado ni un ID de otra entrada pueden imponer o modificar la respuesta de capacidad
+
 ### Requirement: Campaña repetida identificable
 El evaluador MUST conservar cada caso y repetición del banco original con una
 identidad única y hacer visibles las muestras ausentes y los fallos técnicos.

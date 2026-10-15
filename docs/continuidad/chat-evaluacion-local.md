@@ -9,7 +9,73 @@ no reinicia gasto, ledger, intentos ni caducidad. B sigue sin publicar.
 
 ### Candidato corregido d2f8a440 / pruebas72a2f767 — 15/10/2026
 
-Bloqueo revalidado15/10 a12:32UTC: ambas claves siguen caducadas10:02UTC;
+**Trabajo reanudado por autorización15/10 a13:38UTC (15:38París).** El usuario
+autoriza extender sólo la caducidad hasta18:00París. Aplicado a las mismas claves,
+resto de política y contadores idénticos, ledger sin cambios y ninguna reserva
+liberada: `existing-key-expiry-extension-20261015-1800.json`. Nueva N3 iniciada,
+PID2017796/inicio67045446, controlador SHA
+`99163a68ae88071f453accbc08e1007f2cfab91876053c7f8e0b02918d961a6c`;
+`candidate-72a2f767-n3-launch-v1.json`. Verificar ese mismo PID/inicio/argv antes
+de reanudar; un timeout de observación no autoriza reiniciar ni reenviar muestras.
+El guard de lanzamiento verificó379 filas idénticas al snapshot7be y84 recibos
+anteriores intactos. Cota inicial6.134754199/10USD; reservas históricas3.201520
+retenidas. La reserva de la operación nueva en curso se suma aparte.
+Primer corte:8 operaciones completadas,7 recibos reconstruidos/verificados y1
+pendiente de reconstrucción/conciliación;7 respuestas/43 requisitos provisionales
+conformes, sin aceptación.003:r1 conserva los siete pasos documentales y no exige
+campos Anomaly. La comparación completa de las84 muestras sigue pendiente.
+
+Corte posterior:52 recibos revisados,49PASS/1FAIL025:r1/1incertidumbre012:r2/
+1fallo técnico009:r2.300 requisitos PASS/2FAIL/1incierto/5no evaluables por fallo
+técnico; no aceptación.003/013/015 conformes en sus dos primeras repeticiones.
+009:r2 terminó failed tras cuatroHTTP429, con uso incompleto de fases y una sola
+fase observada; no es rechazo de aritmética. EntradaSQL y recibo verificados,
+máximo0.319952 íntegro retenido, histórico415 filas y todos los importes intactos.
+Reservas históricas más ese fallo:3.521472USD; la operación actual añade su propia
+cota por separado. Lectura14:08UTC: contador3.085661269+cotas3.521472=
+6.607133269/10USD; es un corte anterior, no saldo actual ni gasto exacto del trabajo.
+Evidencias: `candidate-72a2f767-failed-009r2-inspection-v1.json` y
+`candidate-72a2f767-retention009r2-v1.json`.
+
+Controlador vigentev3 PID2249076/inicio67234545, SHA
+`5712568d278c50d9151bcd1c766c2454d2cc5414ce48e636964e92a3a082c885`;
+continúa010:r2 sin repetir009. `candidate-72a2f767-n3-launch-v3.json`;
+observador `observe-corrected-72-n3-v1.py` selecciona el último handle por versión.
+v2 falló antes de despachar por cerrojo padre/hijo, sin inferencias ni nuevas
+filas, inspección conservada; v3 espera al cerrojo del padre antes de continuar.
+No atribuir ese fallo del operador al producto ni reiniciar por un timeout de lectura.
+
+UI sólo lectura de003/013/015r1 en1280/390px y recarga PASS, mismo texto de los
+recibos y sin errores ni escrituras del asistente: `72a2f767-ui-result.json`.
+Capturas inspeccionadas; túnel SSH propio cerrado con PID/argumentos verificados,
+sin detener servicios/otros túneles: `corrected-72-ui-tunnel-closed.json`.
+
+### Corrección local posterior025 — producto30596942, aún sin medir
+
+Commit `3059694203f5706ec9dd142565726211fb3b1619`: la muestra025:r1 de72 amplía
+indebidamente a cualquier cambio de producción los requisitos documentales de
+rightsizing. `chat_resource_actions.py` reconoce órdenes directas por gramática
+acotada y liga la negativa a la capacidad real de este asistente, sin inferir
+prerrequisitos desde el corpus. No es un clasificador universal; preguntas,
+negaciones/instrucciones citadas y formas fuera de la gramática conservan su ruta.
+El servidor renderiza negativa y siguiente paso revisable, status refused y sin
+citas/métricas/ahorros inventados. Sólo025 se selecciona entre los28casos originales.
+
+Pruebas locales:108processor (49nuevas+42correcciones+17recursos),93regresión de
+segmentos/decisiones y37backend (31nuevas+6anteriores), total238 ejecuciones PASS.
+Recibos `resource-actions-{local,regression,backend}-v1.xml`. Cold-load de ambos
+bundles y módulos compartidos idénticos, `resource-actions-cold-load-v2.json`;
+el formato previopretty se conserva en prueba v1, mismo contrato/semántica.
+Prompt de esa futura versión: jup-035.chat.v3:45aa510331c2b6fac42497b25e61728d6ba745259cd115136119e276e7623932.
+OpenSpec estricto conforme. Sin transferir/construir/activar/medir305 todavía;
+fuente/plan/runtime72 intactos mientras concluye su N3. Congelar la campaña actual
+antes de activar otra versión. No cambiar banco, rúbrica ni etiquetas previas.
+
+La sección siguiente conserva el bloqueo histórico, ya superado; el estado vigente
+es la campaña72 en curso y305 sólo local.
+
+Antecedente de bloqueo superado por esa autorización: revalidado15/10 a12:32UTC,
+ambas claves seguían caducadas10:02UTC;
 no hay extensión aplicada, controlador N3 nuevo ni recibos nuevos. Backend y
 processor72 siguen healthy. Mismo bloqueo de vigencia durante tres turnos
 consecutivos del objetivo; las pruebas, build, activación y preparación de la
@@ -18,9 +84,8 @@ completado, hasta una autorización o cambio externo aplicable. No repetir
 comprobaciones/campañas sin esa novedad. Evidencias externas
 `candidate-72a2f767-validation-gate-1792067546.json` y
 `candidate-7be57c05-expired-accounting-diagnostic-1792067528.json`.
-Misma cota6.134754199/10USD,379 filas y3.201520 retenidos. Si llega la autorización,
-comprobar que su plazo sigue vigente antes de ejecutar el script preparado;
-si ya terminó, no sustituirlo por otro plazo sin autorización.
+Se conservan las evidencias históricas de ese bloqueo; ya no describe el estado
+vigente. No sustituir la caducidad autorizada18:00 por otro plazo sin autorización.
 
 Encargo vigente: corregir015/003/013 y volver a validar con máximo10USD,
 sin liberar las reservas. Producto congelado
