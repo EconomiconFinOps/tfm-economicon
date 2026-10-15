@@ -7,47 +7,65 @@ continuar desde009 usando la corrección contable, sin repetir las ocho muestras
 anteriores ni liberar reservas pendientes. Sustituye los máximos anteriores;
 no reinicia gasto, ledger, intentos ni caducidad. B sigue sin publicar.
 
-### Candidato corregido d2f8a440 / pruebas ccf27d7c — 15/10/2026
+### Candidato corregido d2f8a440 / pruebas72a2f767 — 15/10/2026
 
-Producto `d2f8a4405a6e782b8753d48f69fbbe58f19cae89`: añade a6a el vínculo
-entre mes solicitado y mes aportado; otro mes o un mes no especificado no se
-usan para responder una petición de agosto.59 pruebas locales de correcciones
-y recursos PASS (`corrections-period-v1.xml`).
+Encargo vigente: corregir015/003/013 y volver a validar con máximo10USD,
+sin liberar las reservas. Producto congelado
+`d2f8a4405a6e782b8753d48f69fbbe58f19cae89`; corte de pruebas/build
+`72a2f7672b6858448e93cfb41c047a47c9be402f`, mismos bytes de aplicación
+verificados. Sustituye los cortes intermedios6a/ccf, sin borrar sus resultados.
 
-Corte de pruebas `ccf27d7ce5c15d426d26b8bb615674c777b2e58d`: sólo cambia
-el fixture SQL para usar `.strip()` igual que `TextChunker`, sin cambios de
-aplicación respecto ad2. Archivo versionado SHA
-`d1f56ece6bb996d5b36ef687f3cf6b35d36a9b317009cc91e7fd116bd10e74b9`;
-plan84 SHA `391d82e74eae33ca14c3ac0825efb0d6e1e96ab5e26b74f488560c7a1c198309`.
-El build final verificará la igualdad de todos los bytes de aplicación con d2.
+015: recupera la definición completa de budget como sección complementaria,
+incluidos seguimiento/alertas y ausencia de apagado por defecto; compila sólo
+con cobertura completa del corpus autorizado.003: conserva el método literal
+de investigación y pide parámetros de alcance/periodo, sin promover campos
+del esquema a prerrequisitos.013: ruta tipada de desviación actual/presupuesto,
+operandos exactos, precisión Decimal80, cero explícito y mes compatible.
+Diagnóstico seguro de rechazo por campo/índice, sin guardar prosa privada.
+No se conoce la frase exacta causante del fallo histórico013:r3.
 
-Controladores6a/d2 se retiraron mientras esperaban, sin hijos ni inferencias;
-evidencia `corrections-{6a80a16a,d2f8a440}-superseded-v1.json`. ccf-v1 también
-terminó antes de pruebas/build al encontrar el proceso base interrumpido.
-No se activó ninguno de esos candidatos ni se generó una respuesta nueva.
+**Técnica consolidada:1793 identidades únicas PASS,0FAIL/ERROR,0SKIP**:
+1082processor/711backend. Se contrasta la colección actual con cada JUnit por
+hash; herencia sólo de módulos de prueba idénticos y repetición de los ficheros
+modificados. Los58SKIP offline están cubiertos por6pgvector y52CockroachDB
+nativos del candidato. No es una ejecución monolítica. Se conservan el fallo
+del antiguo fixture de policy, OOM/salidas137 sin JUnit y la colisión125 del
+contenedor propio; la aserción de policy ahora exige la nueva cobertura completa,
+no se elimina. Bases temporales propias retiradas y runtime B anterior intacto.
 
-La base Linux bdb-v2 verificó197 lotes (978 casos,6 omisiones), además del lote
-inicial152 sin doble suma; luego backend-capacity salió137 sin JUnit, conservado
-en `missing-junit.json`. No contar el lote incompleto ni atribuirlo al producto.
-bdb-v3 retoma sólo el backend pendiente, separa cargas de tokenizador y conserva
-los197 lotes. Ante otro exit137 sin JUnit conserva el intento y repite los casos
-individualmente; un fallo funcional con JUnit detiene, sin buscar un PASS.
+Prueba externa `candidate-72a2f767-technical-proof-v1.json`; colector
+`audit-corrected-72-technical-v1.py`. Orígenes: `corrections-bdb6f574-v1..v4`,
+`corrections-72a2f767-v2` y `native-72a2f767-v1` en DockerServer bajo
+`/home/danteadmin/economicon-jup123-20261014`. Evidencias locales en
+`../materiales/07-evidencias/PR121-local-evaluation` desde esta raíz de proyecto.
 
-Controladores vigentes: `corrections-bdb6f574-launch-v3.json` y
-`corrections-ccf27d7c-launch-v2.json`. El último espera offline completo,
-contrasta todos los archivos, repite los ficheros modificados y pgvector con
-fixture normalizado y después construye dos imágenes; B sigue sin activar.
-Los antecedentes6a/bdb inferiores conservan su alcance histórico.
+Dos imágenes construidas y365 hashes de fuente más tokenizer verificados antes
+de activar: `candidate-72a2f767-built-source-verification-v1.json`. Frontend
+reutilizado con fuente idéntica. Archivo versionado SHA
+`3f71fc55290299fbaa85ee764f6042bcc79c23c9bcbefed26515db641ecbcd60`;
+plan84 SHA `897f7d53616958ddca97e218757ba76c2bbd916d6d5c5da4e92695f7f7131ad8`.
 
-Preparados, sin ejecutar: `activate-corrections-ccf27d7c.py` y
-`launch-corrected-ccf-n3-v1.py`. Guardas de imágenes/tests/SQL comprobadas por
-AST contra cinco pruebas negativas/positiva, evidencia
-`candidate-ccf27d7c-harness-safety-v1.json`. La nueva N3 sólo se admite tras
-vigencia aplicable de las mismas claves, activación verificada y comprobación
-de379 filas/84 recibos históricos intactos; conserva3.201520 de reservas.
+**Sin activar ni nueva N3**. Preparados `activate-corrections-72a2f767.py`
+(incluye guarda de cobertura técnica), `launch-corrected-72-n3-v1.py` y
+adaptador `candidate-72a2f767-step-v2.py`. Conservan379 filas,84 recibos
+anteriores y todas las reservas. La revisión sólo se reutiliza si coinciden
+respuesta, citas y hash del contexto autorizado realmente recibido; si cambia
+ese contexto, requiere contraste nuevo. No hay aceptación semántica nueva.
 
-La consulta de ampliar sólo caducidad hasta18:00París sigue pendiente. No se
-admite ninguna inferencia con las claves caducadas; máximo acumulado10USD.
+Lectura12:23UTC: contador conservador2.933234199 +reservas/seed3.201520 =
+6.134754199/10USD; mismas379 filas y contadores. No es gasto exacto atribuible
+al trabajo. Sin nuevas inferencias B. Las mismas claves caducaron10:02UTC
+(12:02París). Consulta pendiente para ampliar sólo su vigencia hasta18:00París;
+no aplicada ni autorizada implícitamente por el nuevo máximo. No crear claves,
+resetear contadores ni liberar reservas. Próximo: autorización de vigencia,
+activar sólo B ociosa con rollback y fuentes verificadas, nueva N3 y comparación
+emparejada contra7be. Criterios/adjudicación independientes siguen pendientes.
+Sin publicación B, cambios de otros despliegues ni mensajes Discord.
+
+Trello JUP-123 actualizado por la integración obligatoria de DockerServer y
+leído de vuelta exactamente, sin mover lista: prueba
+`jup123-trello-corrected72-technical-update.json`, descripción SHA
+`cd250723e1062f5a48e451c395f53dd8f383c5fdcc08699505ca0952afb8dbe5`.
 
 ### Antecedente6a y preparación inicial — 15/10/2026
 
