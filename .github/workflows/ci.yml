@@ -88,6 +88,7 @@ jobs:
           corepack pnpm docker:validate
           corepack pnpm local:test
           corepack pnpm cd:test
+          corepack pnpm tokenizer:test
           corepack pnpm collaboration:test
           corepack pnpm contributions:test
           corepack pnpm openspec:validate
@@ -121,6 +122,9 @@ jobs:
       - name: Check Python syntax (lint/build)
         working-directory: ${{ matrix.service.path }}
         run: python -m compileall -q app
+      - name: Prepare pinned offline tokenizer
+        if: matrix.service.name != 'azure-cost-api'
+        run: python apps/processor/build_tokenizer.py
       - name: Run tests
         working-directory: ${{ matrix.service.path }}
         run: python -m pytest tests -q

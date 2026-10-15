@@ -5,7 +5,7 @@ import { AnswerEvidence } from "./AnswerEvidence";
 
 // JUP-038 tarea 5.2: rama nueva de AnswerEvidence para metadata.anomaly_evidence.
 // Orden de prioridad esperado: citas documentales válidas, luego cost_evidence, luego anomaly_evidence y,
-// al final, el texto «Sin fuentes documentales utilizadas.».
+// al final, aviso solo si hay referencias documentales sin respaldo (presentacion de JUP-035).
 
 const NO_DISPONIBLE = "La evidencia de esta explicación no está disponible.";
 const SIN_FUENTES = "Sin fuentes documentales utilizadas.";
@@ -142,10 +142,10 @@ describe("JUP-038 AnswerEvidence: rama de evidencia de anomalía", () => {
     expect(screen.queryByText(NO_DISPONIBLE)).not.toBeInTheDocument();
   });
 
-  it("sin anomaly_evidence ni citas se mantiene el aviso de 'sin fuentes documentales'", () => {
-    // La rama nueva solo actúa cuando la clave existe; el texto final no cambia para el resto de respuestas.
+  it("sin anomaly_evidence ni citas conserva la ausencia de un aviso redundante", () => {
     render(<AnswerEvidence content="Texto." metadata={{ citations: [] }} />);
-    expect(screen.getByText(SIN_FUENTES)).toBeInTheDocument();
+    expect(screen.getByText("Texto.")).toBeInTheDocument();
+    expect(screen.queryByText(SIN_FUENTES)).not.toBeInTheDocument();
     expect(screen.queryByText(NO_DISPONIBLE)).not.toBeInTheDocument();
   });
 });

@@ -21,7 +21,7 @@ import pytest
 # Los fixtures `tenant_database`, `populated_database`, `main_module`, `resource_mocks`, `restore_logging` y `api`
 # se importan por nombre (como en `test_anomaly_explanation_integrity_api.py`) para que pytest los resuelva aquí.
 from tenant_isolation_support import populated_database, rows, tenant_database, tenant_cockroach_database  # noqa: F401
-from test_anomaly_explanation_api import PATH, UNAVAILABLE, anomaly_body, queries, stub_store
+from test_anomaly_explanation_api import PATH, UNAVAILABLE, anomaly_body, queries, stored_messages, stub_store
 from test_anomaly_explanations import make_snapshot
 from test_secret_boundaries import main_module, resource_mocks, restore_logging  # noqa: F401
 from test_tenant_isolation_api import api, call, headers  # noqa: F401
@@ -62,8 +62,8 @@ def test_operando_con_mas_de_12_decimales_da_409_sin_guardar_ningun_mensaje(api,
     control = call(api, "POST", PATH, headers=headers(), json=anomaly_body())
     assert control.status_code == 201, control.text
     double = stub_store(api, monkeypatch, build())
-    before, counter = rows(api.db, "messages"), queries()
-    appended = api.spies["append_message"].call_count
+    before, counter = stored_messages(api.db), queries()
+    appended = api.spies["append_pair"].call_count
 
     response = call(api, "POST", PATH, headers=headers(), json=anomaly_body())
 
@@ -73,8 +73,8 @@ def test_operando_con_mas_de_12_decimales_da_409_sin_guardar_ningun_mensaje(api,
     # La fotografía SÍ llegó al explicador (se leyó una vez) y no se guardó nada: ni el mensaje del usuario ni el
     # del asistente (el segundo es el que cuenta la métrica).
     assert double.call_count == 1
-    assert api.spies["append_message"].call_count == appended
-    assert rows(api.db, "messages") == before
+    assert api.spies["append_pair"].call_count == appended
+    assert stored_messages(api.db) == before
     assert queries() == counter
     api.vector.search_chunks.assert_not_called()
 
@@ -91,9 +91,9 @@ def test_control_operandos_con_exactamente_12_decimales_siguen_dando_201(api, mo
     # validación de escala con un error de uno que devolviera 409 a datos reales. Se comprueba además que se
     # guardan los dos mensajes y que la métrica sube, como en un flujo correcto.
     stub_store(api, monkeypatch, build())
-    before, counter = rows(api.db, "messages"), queries()
+    before, counter = stored_messages(api.db), queries()
     response = call(api, "POST", PATH, headers=headers(), json=anomaly_body())
     assert response.status_code == 201, response.text
     assert response.json()["assistant_message"]["metadata"]["anomaly_evidence"]["status"] == "ok"
-    assert len(rows(api.db, "messages")) == len(before) + 2
+    assert len(stored_messages(api.db)) == len(before) + 2
     assert queries() == counter + 1

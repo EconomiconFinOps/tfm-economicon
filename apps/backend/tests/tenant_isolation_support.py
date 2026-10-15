@@ -6,11 +6,14 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 import pytest
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.pool import StaticPool
 
+from pathlib import Path
 from app.db.database import Database
+from app.db.migration_runner import MigrationRunner
+from app.db import chat_history
 
 
 def rows(database, table):
@@ -23,6 +26,17 @@ def required_scope(method, **scope):
     missing = set(scope) - set(inspect.signature(method).parameters)
     assert not missing, f"Required scope missing from {method.__name__}: {sorted(missing)}"
     return scope
+
+
+def _prepare_current_schema(database):
+    if database.engine.dialect.name == "sqlite":
+        # Fixture-only grammar adapter; all production schema steps stay unchanged.
+        event.listen(database.engine, "before_cursor_execute",
+            lambda c, cursor, sql, args, context, many:
+                (sql.replace("DEFAULT now()", "DEFAULT CURRENT_TIMESTAMP")
+                    .replace("version STRING PRIMARY KEY", "version TEXT PRIMARY KEY"), args), retval=True)
+    migrations = Path(importlib.import_module("app.db.migrations").__file__).parent
+    MigrationRunner(database.engine, "app.db.migrations", migrations).run()
 
 
 @pytest.fixture(scope="module")
@@ -57,8 +71,7 @@ def tenant_cockroach_database():
         database = Database.__new__(Database)
         database.engine = engine
         database.test_owned_name = name
-        with engine.begin() as connection:
-            importlib.import_module("app.db.migrations.001_initial").upgrade(connection)
+        _prepare_current_schema(database)
         yield database
     finally:
         if engine is not None:
@@ -92,8 +105,7 @@ def tenant_database(request):
     database = Database.__new__(Database)
     database.engine = create_engine("sqlite://", poolclass=StaticPool, connect_args={"check_same_thread": False})
     try:
-        with database.engine.begin() as connection:
-            importlib.import_module("app.db.migrations.001_initial").upgrade(connection)
+        _prepare_current_schema(database)
         yield database
     finally:
         database.dispose()
@@ -115,5 +127,8 @@ def populated_database(tenant_database):
         for user, tenant in (("alice", "tenant-a"), ("bob", "tenant-b"), ("other-a", "tenant-a"), ("multi", "tenant-a"), ("multi", "tenant-b")):
             connection.execute(text("INSERT INTO user_tenants VALUES (:user, :tenant, 'member', :now)"), {"user": user, "tenant": tenant, "now": now})
         for identifier, tenant, owner in (("own", "tenant-a", "alice"), ("foreign-marker", "tenant-b", "bob"), ("other-owner", "tenant-a", "other-a"), ("multi-b", "tenant-b", "multi")):
-            connection.execute(text("INSERT INTO conversations VALUES (:id, :tenant, :owner, :id, :now, :now)"), {"id": identifier, "tenant": tenant, "owner": owner, "now": now})
+            scope = {"conversation_id": identifier, "tenant_id": tenant, "user_id": owner}
+            connection.execute(text("INSERT INTO conversations (id,tenant_id,user_id,title,created_at,updated_at,dialogue_history) "
+                "VALUES (:id,:tenant,:owner,:id,:now,:now,:history)"), {"id": identifier, "tenant": tenant,
+                "owner": owner, "now": now, "history": chat_history.dumps(chat_history.empty(scope))})
     return tenant_database

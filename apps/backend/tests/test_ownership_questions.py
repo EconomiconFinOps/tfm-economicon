@@ -242,7 +242,7 @@ def request_body(**query):
 
 def assert_no_cost_or_retrieval_effects(api):
     api.spies["fetch_billing_summary"].assert_not_called()
-    api.spies["append_message"].assert_not_called()
+    api.spies["append_pair"].assert_not_called()
     api.vector.search_chunks.assert_not_called()
     api.embedding.embed.assert_not_called()
 
@@ -296,7 +296,7 @@ def test_api_rejected_cost_answer_never_persists_a_partial_turn_or_calls_retriev
                     headers=headers(), json=request_body())
     assert response.status_code == expected, response.text
     assert response.json() == {"detail": {"code": code}}
-    api.spies["append_message"].assert_not_called()
+    api.spies["append_pair"].assert_not_called()
     api.vector.search_chunks.assert_not_called()
     api.embedding.embed.assert_not_called()
     assert rows(api.db, "messages") == before

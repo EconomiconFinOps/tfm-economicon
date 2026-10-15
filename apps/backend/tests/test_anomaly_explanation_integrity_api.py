@@ -22,7 +22,7 @@ import pytest
 # Los fixtures `tenant_database`, `populated_database`, `main_module`, `resource_mocks`, `restore_logging` y `api`
 # se importan por nombre (como en `test_anomaly_explanation_api.py`) para que pytest los resuelva en este módulo.
 from tenant_isolation_support import populated_database, rows, tenant_database, tenant_cockroach_database  # noqa: F401
-from test_anomaly_explanation_api import PATH, UNAVAILABLE, anomaly_body, queries, stub_store
+from test_anomaly_explanation_api import PATH, UNAVAILABLE, anomaly_body, queries, stored_messages, stub_store
 from test_anomaly_explanations import OPENED, make_snapshot
 from test_secret_boundaries import main_module, resource_mocks, restore_logging  # noqa: F401
 from test_tenant_isolation_api import api, call, headers  # noqa: F401
@@ -98,8 +98,8 @@ def test_episodio_con_datos_incoherentes_da_409_sin_guardar_ningun_mensaje(api, 
     control = call(api, "POST", PATH, headers=headers(), json=anomaly_body())
     assert control.status_code == 201, control.text
     double = stub_store(api, monkeypatch, build())
-    before, counter = rows(api.db, "messages"), queries()
-    appended = api.spies["append_message"].call_count
+    before, counter = stored_messages(api.db), queries()
+    appended = api.spies["append_pair"].call_count
 
     response = call(api, "POST", PATH, headers=headers(), json=anomaly_body())
 
@@ -108,8 +108,8 @@ def test_episodio_con_datos_incoherentes_da_409_sin_guardar_ningun_mensaje(api, 
     assert response.json() == UNAVAILABLE
     assert double.call_count == 1
     # Ningún mensaje nuevo: ni el del usuario ni el del asistente (el segundo ya cuenta la métrica).
-    assert api.spies["append_message"].call_count == appended
-    assert rows(api.db, "messages") == before
+    assert api.spies["append_pair"].call_count == appended
+    assert stored_messages(api.db) == before
     assert queries() == counter
     api.vector.search_chunks.assert_not_called()
 
@@ -119,11 +119,11 @@ def test_control_la_fotografia_valida_sigue_dando_201(api, monkeypatch):
     # Control de las pruebas de este archivo: con una fotografía válida el flujo completo funciona y guarda los
     # dos mensajes; así el 409 de las demás no es un efecto de un montaje roto.
     stub_store(api, monkeypatch)
-    before, counter = rows(api.db, "messages"), queries()
+    before, counter = stored_messages(api.db), queries()
     response = call(api, "POST", PATH, headers=headers(), json=anomaly_body())
     assert response.status_code == 201, response.text
     assert response.json()["assistant_message"]["metadata"]["anomaly_evidence"]["status"] == "ok"
-    assert len(rows(api.db, "messages")) == len(before) + 2
+    assert len(stored_messages(api.db)) == len(before) + 2
     assert queries() == counter + 1
 
 

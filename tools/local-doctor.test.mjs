@@ -24,6 +24,7 @@ const SECRETS = {
 const enc = encodeURIComponent;
 const VALID = {
   ...SECRETS,
+  CHAT_HMAC_FILE: './secrets/chat-hmac.txt',
   RABBITMQ_URL: `amqp://${enc(SECRETS.RABBITMQ_DEFAULT_USER)}:${enc(SECRETS.RABBITMQ_DEFAULT_PASS)}@rabbitmq:5672/`,
   VECTOR_DATABASE_URL: `postgresql+psycopg://postgres:${enc(SECRETS.POSTGRES_PASSWORD)}@postgres-pgvector:5432/embeddings`,
   DATABASE_URL: "cockroachdb+psycopg://root@cockroachdb:26257/defaultdb?sslmode=disable",
@@ -97,7 +98,7 @@ test("parses dotenv lines the way Compose does", () => {
 test("reads required variables and published ports from the Compose file", () => {
   const contract = readComposeContract(composeText);
   assert.deepEqual(contract.required, [
-    "AUTH_SECRET_KEY", "DATABASE_URL", "GRAFANA_ADMIN_PASSWORD", "POSTGRES_PASSWORD",
+    "AUTH_SECRET_KEY", "CHAT_HMAC_FILE", "DATABASE_URL", "GRAFANA_ADMIN_PASSWORD", "POSTGRES_PASSWORD",
     "RABBITMQ_DEFAULT_PASS", "RABBITMQ_DEFAULT_USER", "RABBITMQ_ERLANG_COOKIE",
     "RABBITMQ_URL", "VECTOR_DATABASE_URL",
   ]);

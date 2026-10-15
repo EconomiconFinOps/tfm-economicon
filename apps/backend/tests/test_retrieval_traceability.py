@@ -3,6 +3,7 @@ import json
 import logging
 
 import pytest
+from app.db.chat_history import loads
 import structlog
 from fastapi import HTTPException
 
@@ -113,8 +114,10 @@ def test_the_event_carries_the_configured_parameters(capsys, monkeypatch):
 def test_the_stored_user_message_identifier_is_enough_to_find_the_question(capsys):
     events = watch(capsys)
     reply = ask(Embedding(), Store([chunk("c-1", "d-1", 0.2)]))
+    assert reply.status_code == 201
+    reply = loads(reply.body)
     event = retrieval_events(events()[1])[0]
-    assert event["user_message_id"] == reply.user_message.id
+    assert event["user_message_id"] == reply["user_message"]["id"]
 
 
 def test_an_empty_result_is_logged_and_counted_once(capsys):

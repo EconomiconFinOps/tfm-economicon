@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Any
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 
 from pydantic import model_validator
 
@@ -16,6 +16,20 @@ class ConversationCreateRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     title: NonEmptyText
+
+
+class ConversationRenameRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    title: str
+
+    @field_validator("title")
+    @classmethod
+    def normalize_title(cls, value: str) -> str:
+        value = " ".join(value.split())
+        if not 1 <= len(value) <= 60:
+            raise ValueError("Title must contain between 1 and 60 characters.")
+        return value
 
 
 class MessageCreateRequest(BaseModel):
@@ -60,7 +74,7 @@ class MessageRecord(BaseModel):
     id: str
     role: str
     content: str
-    metadata: dict
+    metadata: Any
     created_at: datetime
 
 

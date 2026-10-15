@@ -20,7 +20,7 @@ from billing_support import billing_schema, summary
 def api(main_module, populated_database, monkeypatch):
     db = populated_database
     spies = {}
-    for name in ("user_has_tenant", "fetch_conversations", "fetch_conversation", "fetch_messages", "fetch_billing_summary", "create_job", "create_conversation", "append_message"):
+    for name in ("user_has_tenant", "fetch_conversations", "fetch_conversation", "fetch_messages", "fetch_billing_summary", "create_job", "create_conversation", "append_pair"):
         spies[name] = MagicMock(wraps=getattr(db, name))
         monkeypatch.setattr(db, name, spies[name])
     queue = MagicMock(spec_set=["queue_name", "reserve", "publish", "cancel"], queue_name="jup086-test")
@@ -70,6 +70,7 @@ def test_citations_persist_and_reopen_with_authorized_conversation(api):
     response = call(api, "POST", "/assistant/conversations/own/messages", headers=headers(), json={"content": "Costes"})
     assert response.status_code == 201
     message = response.json()["assistant_message"]
+    assert message["metadata"]["generation"]["question_message_id"] == response.json()["user_message"]["id"]
     [citation] = message["metadata"]["source_citations"]
     assert citation["evidence_id"] == "chunk-1"
     assert citation["excerpt"] == "# Costes\nEvidencia"
@@ -91,10 +92,12 @@ def test_invalid_citations_never_persist_an_assistant_answer(api, case, monkeypa
     service = MagicMock()
     service.answer.return_value = {"content": "untrusted-answer", "citations": ["missing"] if case == "missing" else ["chunk-1", "chunk-1"]}
     monkeypatch.setattr(api.app.state, "assistant_service", service)
+    before = (rows(api.db, "conversations"), rows(api.db, "messages"))
     response = call(api, "POST", "/assistant/conversations/own/messages", headers=headers(), json={"content": "Costes"})
     assert response.status_code == 502
     assert response.json() == {"detail": "Invalid response evidence."}
-    assert all(item.kwargs["role"] == "user" for item in api.spies["append_message"].call_args_list)
+    api.spies["append_pair"].assert_not_called()
+    assert (rows(api.db, "conversations"), rows(api.db, "messages")) == before
     if case == "foreign":
         service.answer.assert_not_called()
 
@@ -105,7 +108,7 @@ def call(api, method, path, **kwargs):
 
 
 def no_effects(api, *, resource_reads=True):
-    for name in ("create_job", "create_conversation", "append_message"):
+    for name in ("create_job", "create_conversation", "append_pair"):
         api.spies[name].assert_not_called()
     if resource_reads:
         for name in ("fetch_conversations", "fetch_conversation", "fetch_messages", "fetch_billing_summary"):
