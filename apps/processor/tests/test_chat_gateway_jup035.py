@@ -214,9 +214,9 @@ def test_private_gateway_streams_only_answer_with_roles_and_dynamic_deadline(pri
         assert payload['num_retries']==0
         assert all(branch['additionalProperties'] is False and branch['properties']['metrics']['maxItems']==0
                    for branch in payload['response_format']['json_schema']['schema']['anyOf'])
-        from app.agents.schemas import chat_provider_schema
+        from app.agents.schemas import chat_wire_schema
         assert payload['response_format']['json_schema']['strict'] is True
-        assert payload['response_format']['json_schema']['schema'] == chat_provider_schema(
+        assert payload['response_format']['json_schema']['schema'] == chat_wire_schema(
             financial_metrics_allowed=context['financial_metrics_allowed'], authorized_evidence=[SOURCE])
         assert 'period' not in payload['response_format']['json_schema']['schema']['$defs']['ResponseScope']['properties']
     send(private,scenario)
