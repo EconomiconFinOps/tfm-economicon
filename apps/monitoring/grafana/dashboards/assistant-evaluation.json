@@ -91,7 +91,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "| Qué mide | De dónde salen los datos | Qué no demuestra |\n| --- | --- | --- |\n| La calidad de las respuestas del asistente a una **batería fija de casos**, con rúbrica | Campañas de **JUP-070** sobre la batería de **JUP-069** y las métricas de **JUP-067**; calibración de la recuperación de **JUP-022**; benchmark de modelos de **JUP-078**; robustez de **JUP-071** (todavía sin informe) | El comportamiento con usuarios reales ni con preguntas fuera de la batería |\n\n- **Ejecuciones «no real».** Una ejecución hecha con plantilla, con dobles de prueba, sintética o sin modelo verificado se rotula `no real` con su motivo (`plantilla`, `doble`, `sintetica`, `sin_modelo_verificado`) y sus series se dibujan discontinuas. Es una prueba del flujo, no calidad del asistente.\n- **«No medido» no es 0 %.** Una métrica que no se pudo medir llega vacía y se muestra como «No medido». Un 0 % que se ve es un cero medido.\n- **Sin semáforos.** Los umbrales de JUP-067 son provisionales y no se aplican: ningún valor se colorea como bueno o malo.\n- **Campaña no es tráfico real.** La latencia y la disponibilidad de esta sección son las de las peticiones de una campaña; las del tráfico real están en la sección C.\n- **Evolución.** Solo se dibuja una serie si tiene al menos dos puntos medidos de ejecuciones comparables (misma batería, corpus, modelo y parámetros); una serie con un solo punto no se dibuja y, si ninguna llega a dos, el panel dice «Sin datos: no hay con qué comparar». Las marcas verticales indican un cambio de batería, modelo, prompt o corpus entre ejecuciones consecutivas de la misma fuente.\n- **Rango de tiempo.** El selector de tiempo del dashboard (por defecto, el último año) solo acota las dos gráficas de evolución, que consideran todas las ejecuciones cargadas con fecha dentro de ese rango: para ver ejecuciones más antiguas, amplíalo. Las tablas no se filtran por él y muestran siempre todas las ejecuciones cargadas.",
+        "content": "| Qué mide | De dónde salen los datos | Qué no demuestra |\n| --- | --- | --- |\n| La calidad de las respuestas del asistente a una **batería fija de casos**, con rúbrica | Campañas de **JUP-070** sobre la batería de **JUP-069** y las métricas de **JUP-067**; calibración de la recuperación de **JUP-022**; benchmark de modelos de **JUP-078**; robustez de **JUP-071** (todavía sin informe) | El comportamiento con usuarios reales ni con preguntas fuera de la batería |\n\n- **Ejecuciones «no real».** Una ejecución hecha con plantilla, con dobles de prueba, sintética o sin modelo verificado se rotula `no real` con su motivo (`plantilla`, `doble`, `sintetica`, `sin_modelo_verificado`) y sus series se dibujan discontinuas. Es una prueba del flujo, no calidad del asistente.\n- **«No medido» no es 0 %.** Una métrica que no se pudo medir llega vacía y se muestra como «No medido». Un 0 % que se ve es un cero medido.\n- **Sin semáforos.** Los umbrales de JUP-067 son provisionales y no se aplican: ningún valor se colorea como bueno o malo.\n- **Campaña no es tráfico real.** La latencia y la disponibilidad de esta sección son las de las peticiones de una campaña; las del tráfico real están en la sección C.\n- **Evolución.** Solo se dibuja una serie si tiene al menos dos puntos medidos de ejecuciones comparables (misma batería, corpus, modelo y parámetros); una serie con un solo punto no se dibuja y, si ninguna llega a dos, el panel dice «Sin datos: no hay con qué comparar». Las marcas verticales indican un cambio de batería, modelo, prompt o corpus entre ejecuciones consecutivas de la misma fuente.\n- **La línea une puntos medidos.** En las gráficas de evolución la línea une los puntos medidos de una serie. Una ejecución en la que esa métrica no se midió no genera punto: la línea salta de la ejecución anterior medida a la siguiente medida y no se inventa ningún valor.\n- **Rango de tiempo.** El selector de tiempo del dashboard (por defecto, el último año) solo acota las dos gráficas de evolución, que consideran todas las ejecuciones cargadas con fecha dentro de ese rango: para ver ejecuciones más antiguas, amplíalo. Las tablas no se filtran por él y muestran siempre todas las ejecuciones cargadas.",
         "mode": "markdown"
       },
       "title": "Cómo leer la sección A",
@@ -1063,7 +1063,7 @@
         ]
       },
       "gridPos": {
-        "h": 14,
+        "h": 36,
         "w": 24,
         "x": 0,
         "y": 25
@@ -1256,7 +1256,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 175
+                "value": 190
               }
             ]
           },
@@ -1272,7 +1272,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 215
+                "value": 185
               },
               {
                 "id": "mappings",
@@ -1325,7 +1325,14 @@
               },
               {
                 "id": "custom.width",
-                "value": 165
+                "value": 205
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto",
+                  "wrapText": true
+                }
               }
             ]
           },
@@ -1487,7 +1494,7 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 39
+        "y": 61
       },
       "id": 6,
       "options": {
@@ -1594,7 +1601,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 53
+        "y": 75
       },
       "id": 7,
       "options": {
@@ -1740,7 +1747,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 53
+        "y": 75
       },
       "id": 8,
       "options": {
@@ -2135,7 +2142,7 @@
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 62
+        "y": 84
       },
       "id": 9,
       "options": {
@@ -2483,7 +2490,7 @@
         "h": 5,
         "w": 24,
         "x": 0,
-        "y": 74
+        "y": 96
       },
       "id": 10,
       "options": {
@@ -2673,7 +2680,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 175
+                "value": 190
               }
             ]
           },
@@ -2689,7 +2696,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 215
+                "value": 170
               },
               {
                 "id": "mappings",
@@ -2742,7 +2749,14 @@
               },
               {
                 "id": "custom.width",
-                "value": 200
+                "value": 270
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto",
+                  "wrapText": true
+                }
               }
             ]
           },
@@ -2892,7 +2906,7 @@
         "h": 5,
         "w": 24,
         "x": 0,
-        "y": 79
+        "y": 101
       },
       "id": 11,
       "options": {
@@ -2929,7 +2943,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 84
+        "y": 106
       },
       "id": 12,
       "panels": [],
@@ -2942,7 +2956,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 85
+        "y": 107
       },
       "id": 13,
       "options": {
@@ -3455,7 +3469,7 @@
         "h": 26,
         "w": 24,
         "x": 0,
-        "y": 91
+        "y": 113
       },
       "id": 14,
       "options": {
@@ -3492,7 +3506,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 117
+        "y": 139
       },
       "id": 15,
       "panels": [],
@@ -3505,7 +3519,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 118
+        "y": 140
       },
       "id": 16,
       "options": {
@@ -3576,7 +3590,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 126
+        "y": 148
       },
       "hideTimeOverride": false,
       "id": 17,
@@ -3666,7 +3680,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 126
+        "y": 148
       },
       "hideTimeOverride": false,
       "id": 18,
@@ -3756,7 +3770,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 126
+        "y": 148
       },
       "hideTimeOverride": false,
       "id": 19,
@@ -3847,7 +3861,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 134
+        "y": 156
       },
       "hideTimeOverride": false,
       "id": 20,
@@ -3938,7 +3952,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 134
+        "y": 156
       },
       "hideTimeOverride": false,
       "id": 21,
