@@ -46,7 +46,7 @@
   - crea o actualiza el rol `grafana_evaluation_reader` con `USAGE` y `SELECT` solo sobre `evaluation`;
   - toma la contraseña de `GRAFANA_EVALUATION_DB_PASSWORD` y la envía solo por la entrada estándar;
   - termina con error claro si falta la variable.
-- [ ] 3.4 (hallazgos del QA de 3.3: documentar que `docker compose exec` necesita la pila levantada y el `.env` completo —también en CI y DockerServer, donde se puede usar `--psql-command "docker exec -i <contenedor> psql …"`—; que la contraseña de Grafana y la de `load` son la misma variable; y que los tests con PostgreSQL real necesitan Docker) Scripts `evaluation-dashboard:load`, `evaluation-dashboard:rows` y `evaluation-dashboard:test` en `package.json`, y `evaluation-dashboard:test` en el paso «Validate governance tooling» de `.github/workflows/ci.yml`
+- [x] 3.4 (hallazgos del QA de 3.3: documentar que `docker compose exec` necesita la pila levantada y el `.env` completo —también en CI y DockerServer, donde se puede usar `--psql-command "docker exec -i <contenedor> psql …"`—; que la contraseña de Grafana y la de `load` son la misma variable; y que los tests con PostgreSQL real necesitan Docker) Scripts `evaluation-dashboard:load`, `evaluation-dashboard:rows` y `evaluation-dashboard:test` en `package.json`, y `evaluation-dashboard:test` en el paso «Validate governance tooling» de `.github/workflows/ci.yml`
 
 ## 4. Grafana y compose
 
