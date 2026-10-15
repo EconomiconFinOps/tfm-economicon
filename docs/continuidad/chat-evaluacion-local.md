@@ -75,6 +75,17 @@ comprobar contadores/identidades y retomar el mismo plan/ledger desde015r3.
 Quedan14 muestras, comparación completa, correcciones medidas, criterios con los
 revisores, adjudicación y N5 según alcance. B no aceptada ni publicada.
 
+Procedimiento preparado en la carpeta externa de evidencia:
+extend-b-existing-key-expiry-prepared.py (sólo ejecutar tras autorización expresa
+de vigencia hasta15/10 10:02UTC; no crea claves ni resetea contadores). Después
+crear un nuevo controlador sobre candidate-7be57c05-campaign-cap10-v2.json,
+verificando prefijo70/365 filas y claves/contadores vigentes. No repetir la retención
+v4 ni launch-v1, que sólo admite una carpeta vacía. freeze-final-b-cap10-n3.py sólo
+se usa tras recoger84; el snapshot parcial70 ya existe y no debe reemplazarse.
+El túnel UI propio PID16168 está cerrado tras comprobar comando/hora de creación;
+otras sesiones SSH y todos los servicios remotos permanecen intactos. Prueba
+final-b-ui-cap10-tunnel-closed.json. B sigue disponible para lectura/reanudación.
+
 ### Reanudación autorizada desde009 — 15/10/2026 07:12 UTC
 
 Herramientas5f32ea0869aaf1e9ff00d5d0b0faa3fb676c364c: CAP10 y retención
