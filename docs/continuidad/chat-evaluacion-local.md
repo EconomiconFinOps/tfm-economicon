@@ -7,7 +7,44 @@ continuar desde009 usando la corrección contable, sin repetir las ocho muestras
 anteriores ni liberar reservas pendientes. Sustituye los máximos anteriores;
 no reinicia gasto, ledger, intentos ni caducidad. B sigue sin publicar.
 
-### Correcciones 015/003/013 en preparación — 15/10/2026
+### Candidato corregido 6a80a16a, validación técnica en curso — 15/10/2026
+
+Producto final congelado `6a80a16a78aa5e614704e4e4aaf0deed8d00016d`, después
+de bdb6f574 y la corrección de precisión. Archivo versionado SHA
+`9b148765db0b96a83da6b585b975bd76bcad52713fdd734acae76c717d7c8afb`;
+plan N3 de84 muestras SHA
+`a0787990167273b6b8a5dcb9f7e7aec1bac7b0679785c7167478889e1c7012de`.
+No se altera el corpus, banco, etiquetas anteriores ni snapshot84 de7be.
+
+Se encontró un borde de la ruta nueva: `display` redondeaba operandos pequeños
+a seis decimales y un porcentaje muy grande podía exceder la precisión Decimal.
+6a conserva exactamente los operandos y calcula la visualización del porcentaje
+con precisión80, indicando aproximación cuando corresponda.57 pruebas locales
+de correcciones/recursos PASS; el fallo anterior del test usaba13 dígitos donde
+la gramática admite12 y se conserva en `corrections-precision-v1.xml`.
+
+Linux bdb: primer lote152PASS; siguiente proceso sin JUnit, salida aún no
+clasificada como fallo de producto. Reinicio técnico v2 con casos que cargan
+tokenizador separados; no reenvíos al proveedor. Originales y logs privados
+preservados. El controlador final6a espera esa regresión, verifica que sólo
+cinco archivos cambiaron (aritmética, manifiesto/pin y su prueba), repite sus
+ficheros afectados y pgvector y construye las dos imágenes. Frontend se reutiliza
+con fuente idéntica comprobada; no se activa ningún candidato intermedio.
+
+Lectura11:18UTC: contador conservador2.933234199 +reservas/seed3.201520 =
+6.134754199/10USD.379 filas y contadores de ambas claves sin nuevos consumos B.
+No es gasto exacto atribuible al trabajo. Claves caducadas10:02UTC: sólo lectura,
+sin inferencias. Se ha consultado ampliar únicamente su caducidad hasta18:00París
+(16:00UTC), conservando claves/límites/contadores/ledger; pendiente de respuesta.
+Procedimiento `extend-b-existing-key-expiry-1800-prepared.py`, no ejecutado.
+
+Pruebas/build: `corrections-bdb6f574-launch-v2.json`,
+`corrections-6a80a16a-launch-v1.json` en la carpeta externa de evidencias.
+Sin publicación B ni Discord. Siguiente: concluir técnica/build, activar sólo B
+ociosa con rollback y hash de fuentes, comprobar vigencia aplicable y ejecutar
+la nueva N3 con cobertura de todas las campañas y reservas históricas.
+
+### Implementación inicial de correcciones — 15/10/2026
 
 Nueva instrucción del usuario: corregir los tres defectos y volver a validar,
 manteniendo10USD y todas las reservas. Sin publicación B ni Discord autorizados.
