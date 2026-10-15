@@ -1,5 +1,9 @@
 # JUP-036 — Evidencia de implementación
 
+Corte local más reciente: reconciliación de `1cf4087f` con develop `a3f514f7`
+(#129), documentada al final. Las cifras y bases anteriores se conservan como
+historia; no se presentan como ejecuciones nuevas del candidato reconciliado.
+
 Verificación: 2026-10-13. Base integrada: `bfaf39839718` (develop).
 Trello: https://trello.com/c/LxaVVLcH · PR: https://github.com/EconomiconFinOps/tfm-economicon/pull/69
 
@@ -153,3 +157,42 @@ Los primeros fallos de tipos/lint se debieron a dependencias anteriores al merge
 resueltos con pnpm install --frozen-lockfile sin modificar el lockfile integrado.
 La prueba de periodo inventado se acota al rótulo de fecha, para permitir la ayuda
 general que menciona el mes de referencia sin mostrar fechas cuando la API falla.
+
+## Reconciliación con JUP-120 — 15/10/2026
+
+Origen publicado `1cf4087f6ab355be6fcef7cb787c9240f352c0dd`, con los cuatro
+arreglos de Lucía y la integración JUP-122 ya presentes. Se combina sin conflictos
+con develop `a3f514f7b860ca7b61799f0089fae0c293d7156e` (merge #129), mediante
+merge no destructivo. No se reaplica el parche antiguo ni se cambia producto.
+
+Los 612 archivos de aplicaciones, paquetes, infraestructura, CI y dependencias
+contrastados permanecen idénticos a `1cf4087f`. De las 26 rutas entrantes de #129,
+25 coinciden exactamente con develop; el índice conserva las dos entregas.
+El corpus, manifest, preguntas, etiquetas y calibración de #129 se preservan:
+producto1.1.1, 66 fragmentos y registro de 94 llamadas reales anteriores. No se
+repite esa calibración ni se realizan llamadas generativas o Azure.
+
+Se ejecutan sólo los dos casos SQL pendientes, una vez, con configuración
+original de Cockroach24.1.11, nodo propio de 1GiB y puerto exclusivo loopback:
+
+- `test_real_cost_sql[service-x' OR 1=1---None-totals9-ids9-0-cockroach]`: PASS.
+- `test_filter_does_not_hide_overlap[cockroach]`: PASS.
+
+Resultado nuevo: 2/2, cero fallos, errores u omisiones. Los 47 casos correctos
+anteriores se reutilizan por identidad del código y sus pruebas; no son una
+ejecución nueva de 49. Recibos de 15/10/2026, 12:37:07–12:37:13UTC. El nodo y
+la red propios se retiran al acabar. Los logs de contenedor se conservan; el
+intento adicional de copiar un directorio de logs inexistente queda registrado,
+sin alterar ni invalidar el resultado de las pruebas.
+
+El retroceso físico de reloj observado en otro ensayo sigue como antecedente:
+no se ha reparado ni atribuido su causa a Windows/WSL. No se modifica reloj,
+offset, tolerancias, VM o servicios ajenos, ni se usa un umbral de preflight
+como requisito del producto. Este pase acredita esos dos casos, no estabilidad
+futura del reloj. Sin nuevas mutaciones, suites globales o construcción de apps.
+
+Los controles documentales de la nueva base, hashes y diff se entregan con el
+candidato al PM. Quedan revisión y validación independientes, CI tras publicar
+y las actuaciones oficiales de PM. La excepción de roles acordada el15/10
+permite su coordinación; no inventa un dictamen de Lucía ni levanta por sí sola
+su solicitud de cambios.

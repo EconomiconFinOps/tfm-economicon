@@ -80,7 +80,7 @@ Diferencia entre un forecast previo y el coste real observado.
 
 ### Anomaly
 
-Coste o uso inesperado respecto al comportamiento normal o previsto. No equivale necesariamente a coste alto.
+Coste o uso inesperado respecto al comportamiento normal o previsto. No equivale necesariamente a coste alto. En Economicon una anomalia es un episodio candidato por servicio y moneda, con criticidad segun su impacto acumulado y un estado de seguimiento; no tiene causa establecida.
 
 ### Baseline
 

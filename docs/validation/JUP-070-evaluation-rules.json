@@ -1,7 +1,7 @@
 {
   "rules_version": "1.0.0",
   "bank": {
-    "suite_version": "1.0.0"
+    "suite_version": "1.0.1"
   },
   "note": "Reglas de la evaluacion de JUP-070. Las conductas prohibidas se deciden por regla sobre el texto normalizado (minusculas, sin tildes); la negacion y las excepciones se aplican a la frase. Cada regla lleva ejemplos que la prueba ejecuta. Son una cota inferior: una persona puede anotar una violacion que la regla no vio.",
   "aliases": {

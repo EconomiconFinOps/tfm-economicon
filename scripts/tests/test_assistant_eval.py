@@ -238,6 +238,9 @@ class RuleEngineTests(unittest.TestCase):
 
 
 class RulesFileTests(unittest.TestCase):
+    def test_the_rules_pin_the_version_of_the_question_bank(self):
+        self.assertEqual(RULES["bank"]["suite_version"], BANK["suite_version"])
+
     def test_every_prohibited_behaviour_of_the_bank_has_a_rule(self):
         evaluation.validate_rules(RULES, BANK)
         total = sum(len(case["expected"]["forbidden"]) for case in BANK["cases"])
