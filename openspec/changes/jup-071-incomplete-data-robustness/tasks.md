@@ -28,7 +28,7 @@
 ## 5. Verificación pendiente fuera de la línea base offline
 
 - [ ] 5.1 Incorporar juicios reales de las personas correspondientes y mantener `not_run` donde falten; no atribuirles pruebas unitarias ni opiniones del agente.
-- [ ] 5.2 Verificar el runtime generativo integrado de JUP-035 (entrega A, #130, con el chat activado, y aceptación en B) y documentar configuración y evidencia de generación antes de reclamar una medición con modelo real.
+- [ ] 5.2 Verificar el runtime generativo integrado de JUP-035 (entrega A, #130, ya integrada en `develop` con el chat desactivado por defecto; activarlo en local y esperar la aceptación en B) y documentar configuración y evidencia de generación antes de reclamar una medición con modelo real.
 - [ ] 5.3 Realizar las tres mediciones finales con idéntica batería/configuración y conservarlas todas, con revisión semántica y limitaciones por ejecución.
 - [ ] 5.4 Obtener revisión y validación independientes de la contribución, vincular la evidencia a la tarjeta por la integración autorizada y archivar el cambio sólo cuando corresponda a su cierre real.
 - [ ] 5.5 Disponer de un colector para `/generations` (el de JUP-123 si encaja o un adaptador propio probado con un doble del servidor) y acordar con quien lidera B el reparto del presupuesto de inferencia antes de cualquier campaña con modelo.

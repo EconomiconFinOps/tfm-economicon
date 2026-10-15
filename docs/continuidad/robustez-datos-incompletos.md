@@ -71,3 +71,7 @@ El PR #90 de Alejandro se cerró sin integrar el 10/10. La contribución se recu
 ## Actualización 2026-10-14
 
 JUP-035 se dividió: #130 (JUP-122) es la entrega A, con el chat desactivado por defecto, y la calidad semántica pasa a B (JUP-123). El chat generativo se sirve por `/generations`; la ruta `/messages` que usa `collect` sigue respondiendo con la plantilla. Medir el chat real exige un colector para `/generations` (el de JUP-123 si encaja) y compartir su presupuesto de inferencia. JUP-071 queda entregable con el instrumento, la batería y las líneas base; la medición con modelo real depende de B.
+
+## Actualización 2026-10-15
+
+`develop` integró #130 (JUP-122, entrega A del chat) y la rama de JUP-071 se actualizó con un merge: referencias de la batería al banco de JUP-069 `1.0.1`, informes de plantilla regenerados con el mismo resultado y conflictos de CI resueltos. El chat generativo entra desactivado y se sirve por `/generations`; el colector actual sigue midiendo la plantilla. Las campañas con modelo real esperan al colector y a la aceptación de la entrega B (JUP-123). Detalle en la [evidencia](../evidence/JUP-071-validation.md).

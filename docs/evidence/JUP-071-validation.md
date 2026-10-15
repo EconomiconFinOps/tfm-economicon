@@ -138,3 +138,11 @@ Primera ejecución de `collect` contra un servidor real y no contra dobles: stac
 Resultado: 29 de 29 casos respondidos, sin fallos de infraestructura, con citas y fragmentos en todos, latencia total entre 737 ms y 1653 ms (mediana 1183 ms). Las 29 respuestas tienen la forma de la plantilla («He encontrado contexto relacionado…»). La puntuación sin juicios es idéntica caso por caso a la de la plantilla offline con recuperación fija: 0 aciertos, 8 fallos y 21 pendientes de juicio. El informe declara `live_unverified` y `model_execution_verified` falso. Se comprobó que la contraseña de la demo no aparece en el crudo, la hoja de revisión, los juicios ni el informe.
 
 Crudos, hoja e informe están fuera de Git. Lo que queda por medir sigue siendo el chat generativo de JUP-035.
+
+## Integración con `develop` del 15/10/2026
+
+`develop` incorporó #130 (entrega A del chat, `cf821570`, con `CHAT_ENABLED=false` por defecto), #127 (datos de demo), #128 (explicación de anomalías), #129 (corpus del asistente con los episodios de anomalía) y #69 (consultas de gasto). Se integró en la rama con un merge y se resolvieron cuatro conflictos de documentación y CI; `develop` retiró `synthetic-costs:test` y la rama conserva solo las dos entradas de robustez.
+
+El banco de JUP-069 pasó a `1.0.1` y cambiaron los hashes de la metodología de JUP-070 y de dos fuentes del corpus (reglas de negocio y contexto de producto, por los episodios de anomalía de #129). Las preguntas y las rúbricas del banco no cambiaron. Se comprobó que la regla de anomalía diaria que usa la variante JUP-071-014 (`relative_delta > 20 %` y `absolute_delta > 100 EUR/day`) sigue igual en el corpus nuevo, y se actualizaron las referencias de la batería (versión y hashes de baseline, metodología y fuentes). La batería propia conserva su versión `1.0.0`. El corpus ahora tiene 66 fragmentos (la recogida HTTP del 13/10 se hizo con 52).
+
+Los dos informes de plantilla se regeneraron sobre el commit `32ddc69` con el mismo resultado: 0 aciertos, 8 fallos y 21 pendientes de juicio entre 29 casos. El chat generativo de #130 sigue sin medirse: se sirve por `/generations` y el colector de este change usa `/messages`, que sigue respondiendo con la plantilla incluso con el chat desactivado.
