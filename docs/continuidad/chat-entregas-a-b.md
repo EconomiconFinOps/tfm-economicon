@@ -4,12 +4,16 @@ Actualizado: 2026-10-15. Origen: chat 01a1270c-e332-7462-9c90-706d49ade92c.
 El usuario confirma aprobación del equipo y autoriza actualizar Trello, publicar
 A y cerrar #120/#121 sin integrar. No autoriza despliegue ni mensajes Discord.
 
-Actualización de B verificada15/10: correcciones003/013/015 y025 pasan3/3 en
-producto30596942/cortea54582fb. N3 completa84/84:80conformes,1fallo de coherencia027,
-2inciertas020 y1fallo técnico429.238tests incrementales Linux y UI de historial
-conformes no acreditan aceptación. Cota final7.7121919645/10USD, reservas4.161376
-íntegras y547filas congeladas; mismas claves hasta18:00París, sinreset. Falta
-reparar027, adjudicar020 y acordar criterios/N5. B sigue sin publicar ni aceptar.
+Actualización de B verificada15/10a19:11UTC: producto d9b1aae9/corte9e2a49a2
+corrige027 mediante métricas tipadas y020 con riesgo condicional explícito.287tests
+incrementales Linux y UI de historial020/027r1PASS; cada caso pasasu primera muestra
+real. N3 nueva detenida50/84:47conformes,3fallos técnicos por429 de proveedor
+(020r2/021r2/022r2) y34pendientes. Snapshots con597filas, originales y juicios;
+547filas/252recibos anteriores intactos. Reservas5.761136 íntegras, cota conservadora
+9.543795305/10USD, mismas claves hasta16/10a18:00París sin reiniciar contadores.
+Seguimiento único para16/10a08:00: continuar023r2 sólo si cabe otro máximo0.319952.
+Sin reenvíos de fallos ni nueva aceptación; criterios/N5 y adjudicación histórica
+de020 siguen pendientes. B sigue sin publicar ni aceptar.
 Detalle, manifiestos y paquete de adjudicación en [evaluación local](chat-evaluacion-local.md).
 Los cortes técnicos y consultas de A inferiores son históricos; no se reafirma su
 estado actual ni su CI con la validación de B.

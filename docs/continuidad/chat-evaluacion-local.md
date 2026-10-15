@@ -10,6 +10,81 @@ continuar desde009 usando la corrección contable, sin repetir las ocho muestras
 anteriores ni liberar reservas pendientes. Sustituye los máximos anteriores;
 no reinicia gasto, ledger, intentos ni caducidad. B sigue sin publicar.
 
+### Corte vigente — 15/10/2026, 19:11 UTC
+
+**027 y 020 corregidos en producto d9b1aae9, corte versionado 9e2a49a2.**
+287 pruebas incrementales Linux PASS/0 FAIL/ERROR/SKIP; módulos compartidos idénticos,
+loaders y descriptor HMAC verificados. Replay offline de83contextos anteriores:
+sólo020/027 seleccionan las rutas nuevas, seis respuestas. La primera ejecución
+real de cada uno es conforme; **aún no hay N3 completa ni aceptación de B**.
+
+La campaña nueva está detenida en **50/84 muestras: 47 conformes, 3 fallos técnicos y 34
+pendientes**. Primera ronda 28/28 conforme. Fallos actuales 020r2/021r2/022r2:
+cuatro HTTP429 por muestra, sin uso informado. El gateway los clasifica como
+`RateLimitError`, proveedor`openrouter`, categoría`vendor_rate_limit`. Los campos
+de presupuesto del error estánvacíos: la hipótesis inicial de error de presupuesto
+se retiró al comprobar que el buscador había coincidido con nombres estándar
+`error_budget_*`. No se conoce plazo de recuperación ni detalle adicional: mensaje
+redactado por logging seguro. No afirmar agotamiento de presupuesto o fallo
+semántico con esos datos. Tres fallos consecutivos, último después de10min de
+descanso; no más inferencia en este corte.
+
+Revisión local: 278 requisitos conformes / 18 no evaluables por fallos técnicos,
+0 fallos de contenido agrupados entre las 47 respuestas observadas. Comparación
+parcial con a545: 271 PASS→PASS y 1 incierto→PASS; técnicos y muestras ausentes
+separados. No prueba ausencia de regresiones en las 34 pendientes. 020 sólo tiene
+r1 conforme y r2 técnica; 027 sólo r1 medida. Juicios históricos inciertos de 020 y
+fallo 027r2 anterior permanecen intactos. N5/criterios y adjudicación humana pendientes.
+
+**Contabilidad19:08UTC:** máximo(contadorOpenRouter3.782659305,
+histórico0.957927619+settled2.813385973)+retenido5.761136
+=**9.543795305/10USD**. Es cota conservadora, no coste real liquidado de B.
+Los4.161376 históricos siguen íntegros; cinco máximos nuevos0.319952 cada uno:
+003r1/019r2 completadas con intentos previos desconocidos y020r2/021r2/022r2 fallidas.
+No se liberó ninguna reserva ni se trató un429como gratuito. Claves mismas huellas,
+límites0.1/3.5USD y contadores conservados; vigencia ampliada24h hasta16/10a18:00París.
+Antes de cada continuación se requiere lectura fresca y cubrir otro máximo0.319952;
+si la cota aumenta puede no caber otra operación, aunque la llamada media sea barata.
+
+**Snapshots inmutables:**
+- Remoto`candidate-9e2a49a2-partial50-cap10-v1`:232ficheros, manifestSHA
+  `b24168a27441b92475dbb66d34ac8b2dd532ada52caf3610dd865c21c3ef273d`;
+  597filas,50recibos originales/derivados y reservas;547filas anteriores intactas.
+- Local`candidate-9e2a49a2-partial50-review-frozen-v1`:106ficheros, manifestSHA
+  `ef7447202cd63f774f30e5c0807cb8ae67ef70eeb1abbd3b52a2a9b731c97a96`;
+  50vistas públicas,47contextos realmente recibidos, juicios y comparación.
+- Auditoría confirma252recibos de las tres campañas anteriores íntegros.
+  Evidencia en`materiales/07-evidencias/PR121-local-evaluation`, fuera de este repo.
+
+UI de020/027r1 de historial/recarga PASS en1280/390px, texto idéntico a recibos,
+0errores/0escrituras del asistente y sin inferencias. Dos capturas inspeccionadas;
+no demuestra streaming ni UI de84muestras. Túnel propio cerrado, servicios intactos.
+002r2 incluye jerga de implementación innecesaria, observación de presentación
+registrada en el juicio; conserva200EUR/25% y no se convierte en regresión de contenido.
+
+**Continuación preparada, no ejecutada:**`resume-9e2a49a2-n3-v6.py`, SHA
+`742e216fe09d8dfe523e90cc6cc2700d53896a4777715c4be5d103c77dfe7b94`.
+Ensayo de sólo lectura conforme:597filas/50recibos iguales al snapshot, mismas
+huellas y runtime. Siguiente023r2, mismo plan; no repetir las50anteriores ni borrar
+los tres fallos. Último controladorv5/PID22568/start_ticks68977026 terminó;
+v6aún no lanzado. Comprobar estado real antes de actuar, no confiar sólo en este PID.
+Ejecutar operadores desde la carpeta de evidencia con
+`C:/Users/DanteInferno/AppData/Roaming/uv/python/cpython-3.12-windows-x86_64-none/python.exe`.
+No volver a ejecutar un operador que ya creó un recibo; inspeccionar primero su resultado.
+
+Seguimiento único creado en este chat: `retomar-validaci-n-jup-123-b`, ACTIVE,
+programado16/10a08:00París. Registro`jup123-followup-20261016-0800.json` en evidencia;
+requiere equipo y Codex abiertos. Permite una reanudación guardada, sin gastar si
+faltan margen/vigencia y sin encadenar más reanudaciones si reaparecen429/uso
+incompleto. No modifica límites ni vence más tarde que la autorización. Sin GitHub
+ni Discord; Trello sólo por la integración de DockerServer. El objetivo de B sigue
+incompleto por la medición pendiente y los criterios de revisión, no se da por logrado.
+Trello actualizado por esa integración, con lectura exacta y lista sin cambios:
+descripción SHA`95977c5d31601f080dd294bfda1c8884519933aabb9bc76ceb51fd95f5c0f387`.
+
+Los apartados siguientes conservan la historia necesaria de este corte y de los
+candidatos anteriores; sus fechas y resultados no son nuevas comprobaciones.
+
 ### Correcciones027/020 y nueva medición — 15/10/2026, 18:10 UTC
 
 **Trabajo posterior autorizado el15/10:** corregir027, revisar020 y medir de nuevo,
@@ -58,6 +133,23 @@ DockerServer, verificación exacta y lista sin cambios, SHA114f0fe4cfd3157cc020d
 Sin nueva aceptación ni adjudicación independiente. Los snapshots completos y
 UI del candidato nuevo se preparan al terminar84; no usar el snapshot anterior
 como si cubriera esta campaña.
+
+**Actualización18:50UTC:**47respuestas conformes y020r2 fallida técnicamente por
+cuatroHTTP429, sin respuesta ni uso informado; no sustituir esa muestra por otra.
+019r2 respondió en tercer intento tras dos429. Ambas operaciones se han auditado
+y retienen cada una0.319952 íntegros; junto a003r1 son tres máximos nuevos retenidos.
+Total desconocido5.121232USD, incluidos4.161376 históricos sin cambiar.
+Recibos y reservas previos conservados; retenciones`retention019r2-v1`/`retention020r2-v1`
+en la evidencia. Controladorv4 retomado desde021r2:PID4148508/start_ticks68911905,
+mismo plan y runtime. No son regresiones semánticas demostradas ni costes cero.
+
+UI de020/027r1 PASS por lectura de historial,1280/390px y recarga, respuesta
+normalizada idéntica a sus recibos y0errores/0escrituras del asistente; sin inferencia
+de navegador. Dos capturas inspeccionadas. Prueba`9e2a49a2-r1-ui-v5-result.json`;
+fallos previos del harness conservados (localizador de login recodificado y espera
+de navegación): se ajustó sólo el test, sin cambiar aplicación. Túnel propioPID23624
+cerrado tras verificar argumentos; servicios y otros túneles intactos. No implica
+streaming ni UI de84muestras. La corrida por API continúa.
 
 Primer corte `d9b1aae9`: archivo SHA1187a68c59d570d2306ca72fbe3ec069630326277ab6faa3f23b0092efa887e8,
 plan SHAa2cc929022ccd0dc32ca5a05ec3f0d75ffc33dbba16d92960bbd04ddc18f23b0.

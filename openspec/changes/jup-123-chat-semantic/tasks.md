@@ -32,6 +32,7 @@
 
 ## 3. Correcciones y entrega
 - [ ] 3.1 Corregir defectos medidos con lógica determinista.
+  - Corte vigente15/10a19:11UTC d9b/9e2:027/020 implementados y conformesr1,287LinuxPASS y UIr1PASS. N3 detenida50/84 con47conformes/3técnicas429 y34pendientes; no contenido fallido entre respuestas observadas.020r2sin respuesta,027r2/r3 aún no ejecutadas. No cerrar por una sola repetición ni por el replay. Snapshots597filas/50recibos y juicios congelados; claves ampliadas hasta16/10a18:00París, reservas5.761136 intactas, cota9.543795305/10USD. Seguimiento único para023r2 con admisión fresca y sin reenvíos. Detalle/hash en continuidad.
   - Producto d9b1aae9/corte9e2a49a2:027 vincula etiquetas y cálculos de gasto total/coste unitario;020 concreta riesgo condicional con política completa y validación previa, sin cambiar juicios históricos.287tests LinuxPASS/0SKIP, replay83contextos activa sólo seis respuestas020/027. Imágenes/HMAC y547filas preservadas al activar sólo B. Nueva N3 en curso con10USD y reservas4.161376 intactos; claves ampliadas24h hasta16/10a18:00París. No cerrar por pruebas/replay; falta medir y comparar con a545.
   - Correcciones014/003 medidas en c7 N3:014 conforme3/3,003 completa3/3. Las1470 pruebas Linux/SQL conservan su alcance; no validan calidad por sí solas.
   - Persisten regresiones001r2/009r1/010r1/011r3/015r1/r2;021r3 falla por ecuación libre, sin candidato privado exacto. Priorizar cobertura tipada y premisas/modalidad; no relajar validadores ni reconocer sólo preguntas del banco.
