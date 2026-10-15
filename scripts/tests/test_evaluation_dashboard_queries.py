@@ -676,7 +676,7 @@ class ConjuntoSinteticoTests(unittest.TestCase):
             if run_id not in COMPARABLES:
                 continue
             esperado.append((run_id, "ACC-2", acc2))
-            if rel1 is not None:  # REL-1 de SC-A-1 no se midió: no hay punto, ni en 0 ni interpolado
+            if rel1 is not None and run_id!= "SC-A-2": # REL-1 de SC-A-1 no se midió: la serie SC-A-REL-1 solo tiene un punto medido y no se dibuja 
                 esperado.append((run_id, "REL-1", rel1))
         self.assertEqual(obtenido, sorted((r, m, round(v, 9)) for r, m, v in esperado))
         # El 0.0 medido de SC-A-2 sí se dibuja (un cero medido no es un nulo).
