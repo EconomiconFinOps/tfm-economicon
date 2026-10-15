@@ -29,7 +29,7 @@ def candidate(key, bound, status='insufficient_data'):
 
 @pytest.mark.parametrize('actual,budget,expected', [('1200','1000','20 %'),('700','1000','-30 %'),
     ('1000','1000','0 %'),('2','3','≈ -33.333333 %'),('10','0','Porcentaje indefinido'),
-    ('1000000000000','0.000000000001','99999999999999999999999900 %')])
+    ('999999999999','0.000000000001','99999999999899999999999900 %')])
 @pytest.mark.parametrize('width',[1,17,8192])
 def test_variance_stream_final_schema_and_authority(actual,budget,expected,width):
     question=('Calcula la desviación del presupuesto.\n\nEscenario sintético: '
@@ -43,6 +43,7 @@ def test_variance_stream_final_schema_and_authority(actual,budget,expected,width
     final=assemble_chat_response(render_response(value,[],quantities=q),None,authorized_evidence=[])
     assert stream==parser.finish()==final['answer']
     assert expected in stream and 'no un forecast' in stream
+    assert f'Presupuesto: {budget} EUR' in stream
     assert final['metrics']==final['evidence']==[] and final['status']=='insufficient_data'
     wrong=copy.deepcopy(value);wrong['answer']['budget_variance']='forged'
     with pytest.raises(ValueError):render_response(wrong,[],quantities=q)

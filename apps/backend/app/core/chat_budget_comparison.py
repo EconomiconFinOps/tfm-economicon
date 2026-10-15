@@ -61,7 +61,10 @@ def budget_variance_answer(value, catalog):
     if bound is None or value != {'budget_variance': bound['id']}:
         raise ValueError('Budget variance is not grounded.')
     from app.core.chat_expressions import display
-    a, b, d = (display(bound['amounts']['actual']), display(bound['amounts']['budget']), display(bound['difference']))
+    def exact(number):
+        text = format(number, 'f')
+        return text.rstrip('0').rstrip('.') if '.' in text else text
+    a, b, d = (exact(bound['amounts']['actual']), exact(bound['amounts']['budget']), exact(bound['difference']))
     unit = bound['currency']
     relation = ('exceso positivo sobre el presupuesto' if bound['difference'] > 0 else
                 'gasto inferior al presupuesto' if bound['difference'] < 0 else 'gasto igual al presupuesto')
