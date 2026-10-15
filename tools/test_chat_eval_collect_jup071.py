@@ -60,8 +60,9 @@ class BridgeTests(unittest.TestCase):
         for sample in plan()['samples']:
             converted = b.public_row(sample, rows[sample['sample_id']])
             self.assertEqual(converted['prompt'], sample['content'])
-            self.assertIsNone(converted['failure_category'])
-            self.assertEqual(converted['citations'], ['source'])
+            self.assertEqual(converted['failure_category'], 'invalid_response')
+            self.assertEqual(converted['answer'], '')
+            self.assertEqual(converted['citations'], [])
             self.assertEqual(converted['retrieved'], [])  # No fabricated distance.
         self.assertTrue(all(path.startswith('/assistant/conversations/') for path in self.seen))
 
@@ -157,6 +158,35 @@ class BridgeTests(unittest.TestCase):
         row = b.public_row(plan()['samples'][0], rows[handle()['sample_id']])
         self.assertEqual(row['retrieved'][0]['distance'], 0.2)
         self.assertEqual(row['retrieved'][0]['content'], 'Never divide by zero.')
+        self.assertIsNone(row['failure_category'])
+        self.assertEqual(row['citations'], ['source'])
+        self.assertEqual(row['answer'], 'Please supply the denominator.')
+
+    def test_corpus_without_measured_distance_blocks_legacy_scoring(self):
+        self.collect()
+        rows, _ = b.rows_from(plan(), self.output)
+        original = rows[handle()['sample_id']]
+        before = copy.deepcopy(original)
+        self.assertEqual(original['collection_state'], 'VERIFIED_PUBLIC_SNAPSHOT')
+        converted = b.public_row(plan()['samples'][0], original)
+        self.assertEqual(converted['failure_category'], 'invalid_response')
+        self.assertEqual(converted['answer'], '')
+        self.assertEqual(converted['citations'], [])
+        self.assertEqual(converted['retrieved'], [])
+        self.assertEqual(converted['public_evidence'], original['authorized_evidence'])
+        self.assertNotIn('distance', converted['public_evidence'][0])
+        self.assertEqual(original, before)
+
+    def test_answer_without_corpus_does_not_require_a_distance(self):
+        op = '/assistant/conversations/c1/generations/o1'
+        self.data[op + '/evidence']['items'] = []
+        self.data[op + '/result']['metadata']['response']['evidence'] = []
+        self.collect()
+        rows, _ = b.rows_from(plan(), self.output)
+        converted = b.public_row(plan()['samples'][0], rows[handle()['sample_id']])
+        self.assertIsNone(converted['failure_category'])
+        self.assertEqual(converted['answer'], 'Please supply the denominator.')
+        self.assertEqual(converted['retrieved'], [])
 
     def test_output_inside_checkout_or_existing_file_rejected(self):
         with self.assertRaises(ValueError):
@@ -198,7 +228,9 @@ class BridgeTests(unittest.TestCase):
         row = rows[handle()['sample_id']]
         self.assertEqual(row['resources'], original['resources'])
         converted = b.public_row(plan()['samples'][0], row)
-        self.assertIsNone(converted['failure_category'])
+        self.assertEqual(converted['failure_category'], 'invalid_response')
+        self.assertEqual(converted['answer'], '')
+        self.assertEqual(converted['citations'], [])
         self.assertEqual(converted['public_evidence'], snapshot['evidence'])
         self.assertEqual(converted['retrieved'], [])
         changed = copy.deepcopy(row)

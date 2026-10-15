@@ -22,16 +22,22 @@ ordenada y hash del payload antes de admitir un suplemento de RAG.
 - **THEN** el original permanece intacto y la exportación queda bloqueada
 
 ### Requirement: Reutilización del banco JUP-071
-El adaptador MUST usar los29casos originales y perturbados del evaluador071 de
+El adaptador MUST usar los 29 casos originales y perturbados del evaluador de JUP-071 de
 una copia local explícita, manteniendo prompts, hashes y rúbricas bajo su autoridad.
 
 #### Scenario: Tres repeticiones
 - **WHEN** se prepara N3
-- **THEN** el plan contiene87muestras con identidad caso/repetición y prompt exacto
+- **THEN** el plan contiene 87 muestras con identidad caso/repetición y prompt exacto
 - **AND** conversaciones u operaciones reutilizadas se rechazan antes de consultar el API
 
 #### Scenario: Exportación compatible
 - **WHEN** se exporta una repetición con recibos verificables
-- **THEN** el evaluador071 acepta raw_version1 y live_unverified
+- **THEN** el evaluador de JUP-071 acepta raw_version: 1 y live_unverified
 - **AND** fallos técnicos quedan blocked, ausentes not_run y juicios pendientes
 - **AND** reexportar la misma repetición conserva el mismo artefacto
+
+#### Scenario: Corpus sin distancia medida
+- **WHEN** un recibo verificado contiene algún fragmento de corpus sin distancia numérica medida
+- **THEN** la exportación indica invalid_response, con respuesta y citas vacías, y el evaluador devuelve blocked
+- **AND** los originales, el suplemento y public_evidence conservan los fragmentos completos sin inventar distancias
+- **AND** no presenta el bloqueo de formato como un fallo de calidad semántica

@@ -2,7 +2,7 @@
 
 [JUP-123](https://trello.com/c/TqtcumIN) · [JUP-071](https://trello.com/c/H0woDubz)
 
-Python3.12+, biblioteca estándar. Esta entrega extrae la recogida de evidencia
+Python 3.12+, biblioteca estándar. Esta entrega extrae la recogida de evidencia
 de B; no cambia backend, processor, frontend, prompts, modelos ni corpus.
 No depende de que se integre B. El servidor debe ofrecer el contrato de operaciones
 de A: `GET /assistant/conversations/{id}` y
@@ -37,17 +37,17 @@ Una vez integrada JUP-071 puede usarse la misma copia mediante `--suite-root .`.
 Los ejemplos parten de la raíz de esta PR y de una copia hermana `../jup071`.
 
 Crear previamente `../evaluacion-jup071` fuera de ambos repositorios. Preparar N3
-(también se admiten1 y5):
+(también se admiten 1 y 5):
 
 ```sh
 python tools/chat-eval-jup071.py --suite-root ../jup071 prepare --repetitions 3 --output ../evaluacion-jup071/plan.json
 ```
 
-El plan contiene29casos×3repeticiones, con los13originales y16perturbaciones;
+El plan contiene 29 casos × 3 repeticiones, con los 13 originales y 16 perturbaciones;
 usa **el prompt exacto de JUP-071** (`contexto + salto de línea + pregunta`), sin
 rúbricas ni respuestas esperadas. Congela commit y hashes del banco, evaluador,
 metodología y fuentes. Si cambia esa copia, el adaptador exige preparar otro plan;
-no altera el banco de28casos de JUP-069 ni los juicios de JUP-071.
+no altera el banco de 28 casos de JUP-069 ni los juicios de JUP-071.
 
 Tras ejecutar cada pregunta en su conversación nueva por el flujo autorizado,
 guardar su identidad durable en `handles.json` (array; se admiten subconjuntos):
@@ -74,7 +74,7 @@ HTTP sin TLS sólo se admite en loopback; para otro host usar HTTPS o túnel SSH
 Se rechazan redirects y proxies del entorno para no reenviar credenciales.
 El directorio de salida debe ser **nuevo**: contiene plan, handles, recibos
 originales en `originals/`, vistas derivadas y manifiesto con hashes. Un timeout,
-HTTPfallido o estado vivo queda incompleto; no provoca otra generación. Si la
+HTTP fallido o estado vivo queda incompleto; no provoca otra generación. Si la
 recogida se interrumpe antes del manifiesto, conservar esos archivos e investigar
 la causa; no sobrescribir ni eliminar el intento para seleccionar un resultado.
 
@@ -107,7 +107,7 @@ Crear `run-info.json` con **exactamente** seis cadenas descriptivas, sin secreto
 
 El adaptador vuelve a comprobar originales, hashes, pregunta, estado y evidencia;
 no se fía de una etiqueta `VERIFIED` modificada. Exportar cada repetición por
-separado, cambiando1 por2 y3 y usando salidas nuevas:
+separado, cambiando 1 por 2 y 3 y usando salidas nuevas:
 
 ```sh
 python tools/chat-eval-jup071.py --suite-root ../jup071 export --plan ../evaluacion-jup071/plan.json --receipts ../evaluacion-jup071/recibos --repetition 1 --run-info ../evaluacion-jup071/run-info.json --output ../evaluacion-jup071/raw-r1.json
@@ -122,14 +122,28 @@ en el scorer); fallo técnico/incompleto → `failure_category:invalid_response`
 El último comando ilustra puntuación sin juicios: para aceptación se aplican los
 juicios y reglas de JUP-071; `review-sheet` no sustituye esa revisión.
 
-`public_evidence` de cada fila conserva los fragmentos completos. La lista antigua
-`retrieved` sólo incluye los que traen distancia numérica real; **no se fabrica
-distancia0** para satisfacer su esquema. La hoja antigua puede no mostrar esos
-fragmentos: revisar también `public_evidence` del JSON y los originales. Toda esa
-evidencia privada permanece fuera de Git. `total_ms:null` evita presentar tiempo
-de lectura como latencia de generación.
+`public_evidence` de cada fila conserva los fragmentos completos. El formato
+antiguo `retrieved` exige una distancia numérica medida: **no se inventa distancia
+0**. Si falta esa distancia en cualquier fragmento de corpus, la exportación queda
+**bloqueada**: `failure_category: invalid_response`, respuesta y citas vacías.
+El scorer de JUP-071 devuelve `blocked`; no puntúa esa respuesta como un fallo
+semántico por citas colgantes o cifras no trazables. Originales, suplemento y
+`public_evidence` permanecen intactos; la recogida puede seguir indicando
+`VERIFIED_PUBLIC_SNAPSHOT` porque su verificación y la compatibilidad del formato
+de puntuación son comprobaciones distintas.
 
-N3 debe recogerse en **un lote** con conversaciones distintas para las87muestras.
+**La evidencia de corpus que ofrece A no incluye `distance`. Por ello, todas
+sus filas con corpus quedan bloqueadas para el evaluador legado**, incluso con
+un suplemento RAG exacto. Las respuestas sin corpus no requieren distancia; los
+fragmentos con distancia real conservan la exportación anterior. Para puntuar
+filas de A sin inventar distancias, JUP-071 necesita adaptar su evaluador para
+usar los IDs y el contenido de `public_evidence`. Ese cambio pertenece a JUP-071
+y queda fuera de esta PR; el bloqueo se mantiene mientras no se integre.
+
+Toda esta evidencia permanece fuera de Git. `total_ms: null` evita presentar
+tiempo de lectura como latencia de generación.
+
+N3 debe recogerse en **un lote** con conversaciones distintas para las 87 muestras.
 Las tres exportaciones de ese lote conservan configuración idéntica y timestamp
 inmutable; reexportar la misma repetición no crea una ejecución independiente.
 Luego puede usarse `assistant-robustness.py compare report-r1.json report-r2.json

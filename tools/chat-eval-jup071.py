@@ -218,6 +218,10 @@ def public_row(sample, row):
     ok = (checked is not None and row['collection_state'] == 'VERIFIED_PUBLIC_SNAPSHOT'
           and checked['collection_state'] == 'VERIFIED_PUBLIC_SNAPSHOT'
           and checked['state'] == 'completed' and not row.get('collection_errors'))
+    # Without a measured distance, the legacy scorer would lose corpus traceability
+    # and count authentic citations as dangling. Preserve evidence but block scoring.
+    ok = ok and all(type(item.get('distance')) in (int, float)
+                    for item in checked['authorized_evidence'] if item.get('kind') == 'corpus')
     result = (checked or {}).get('result', {})
     # Full public originals remain in the sidecar, including actual evidence metadata.
     # The legacy format requires a numeric distance. Never invent an unavailable
@@ -254,7 +258,7 @@ def export_raw(tool, plan, directory, repetition, config):
                                'manifest_sha256': collector.digest(manifest), 'repetition': repetition,
                                'collected_at': manifest['collected_at'],
                                'limitations': ['Runtime/model and latency not attested by GET snapshots.',
-                                               'Inspect complete evidence in original sidecars; legacy distance may be unavailable.']}
+                                               'Corpus without a measured distance blocks legacy scoring; complete evidence remains in sidecars.']}
     raw = {'raw_version': 1, 'execution': execution,
            'cases': [public_row(s, rows[s['sample_id']]) for s in plan['samples']
                      if s['repetition'] == repetition and s['sample_id'] in rows]}

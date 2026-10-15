@@ -12,8 +12,8 @@ El usuario autoriza extraerlo y publicarlo como PR independiente sobre develop.
 ## What Changes
 
 - Extraer colector GET, verificación de recuperación exacta y sus pruebas.
-- Preparar los29casos de JUP-071 con sus propios prompts, hashes y repeticiones.
-- Recoger operaciones existentes y exportar el formato del evaluador071 sin
+- Preparar los 29 casos de JUP-071 con sus propios prompts, hashes y repeticiones.
+- Recoger operaciones existentes y exportar el formato del evaluador de JUP-071 sin
   inventar respuestas, fragmentos, costes, latencia ni juicios.
 - Documentar la copia externa de JUP-071 y ejecutar las pruebas en CI.
 
