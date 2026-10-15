@@ -168,8 +168,39 @@ def provenance(suite, kind, config):
 
 DECLARED_TEXT = re.compile(r"[a-z0-9][a-z0-9./-]{0,63}")
 RUN_INFO_FIELDS = ("commit", "corpus", "provider", "alias", "retrieval", "generation")
+RUN_INFO_KEY = re.compile(r"[a-z][a-z0-9_]{0,39}")
+RUN_INFO_SECRET_KEY = re.compile(r"(^|_)(key|token|secret|password|passwd|bearer|auth)(_|$)")
 DECLARED_COMMIT = re.compile(r"[0-9a-f]{7,40}")
 SECRET_SHAPED = re.compile(r"(^|[-./])(sk|pk|xox[a-z]?|gh[pousr]|akia|eyj|key|token|secret|bearer)([-./0-9]|$)|[a-z0-9]{24,}")
+
+
+def safe_name(value):
+    return re.sub(r"[^A-Za-z0-9_.-]", "?", str(value))[:40]
+
+
+def descriptive(value):
+    """A short text or a flat object of short scalar values: no nested data, no credential-like keys."""
+    if isinstance(value, str):
+        return len(value) <= 128
+    if not isinstance(value, dict) or len(value) > 16:
+        return False
+    for key, item in value.items():
+        if not (isinstance(key, str) and RUN_INFO_KEY.fullmatch(key) and not RUN_INFO_SECRET_KEY.search(key)):
+            return False
+        if not (item is None or isinstance(item, bool) or finite(item) or (isinstance(item, str) and len(item) <= 128)):
+            return False
+    return True
+
+
+def check_run_info(config):
+    require(isinstance(config, dict) and all(k in config for k in RUN_INFO_FIELDS), "run-info requires the JUP-070 configuration fields")
+    extra = sorted(safe_name(k) for k in set(config) - set(RUN_INFO_FIELDS))
+    require(not extra, "run-info has unexpected fields: " + ", ".join(extra))
+    if isinstance(config["generation"], dict):
+        nested = sorted(safe_name(k) for k in set(config["generation"]) - {"model_alias", "temperature"})
+        require(not nested, "run-info generation has unexpected fields: " + ", ".join(nested))
+    for name in ("corpus", "retrieval"):
+        require(descriptive(config[name]), f"run-info {name} must be a short text or a flat object of short values")
 
 
 def declared_text(value, name):
@@ -518,6 +549,7 @@ def main(argv=None):
         if args.command == "validate":
             print(f"JUP-071: {len(suite['cases'])} perturbations, {len(cases)} cases including baselines; hashes OK")
         elif args.command == "prepare":
+            require(outside(args.output), "prompt file must be outside repository")
             evaluation.write_private(args.output, inputs_for(cases))
         elif args.command in ("offline", "collect"):
             require(outside(args.output), "raw output must be outside repository")
@@ -528,9 +560,7 @@ def main(argv=None):
                 password = os.environ.get(args.password_env)
                 require(bool(password), "missing password environment variable")
                 config = read(args.run_info)
-                require(isinstance(config, dict) and all(k in config for k in RUN_INFO_FIELDS), "run-info requires the JUP-070 configuration fields")
-                extra = sorted(re.sub(r"[^A-Za-z0-9_.-]", "?", str(k))[:40] for k in set(config) - set(RUN_INFO_FIELDS))
-                require(not extra, "run-info has unexpected fields: " + ", ".join(extra))
+                check_run_info(config)
                 execution = provenance(suite, "live_unverified", config)
                 run_header(execution, suite, "0" * 64)
                 raw = evaluation.collect_cases(args.base_url, args.email, password, args.tenant, inputs_for(cases), timeout=args.timeout)

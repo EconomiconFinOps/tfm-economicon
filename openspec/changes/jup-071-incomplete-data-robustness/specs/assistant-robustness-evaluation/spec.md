@@ -52,7 +52,7 @@ The suite SHALL cover absent or conflicting tags, shared costs without sufficien
 
 ### Requirement: Prompt fidelity and faithful HTTP collection
 
-The adapter SHALL prepare prompts from only the context and question and SHALL reuse the relevant collection functions of JUP-070. HTTP collection SHALL send the prepared prompt exactly, use a new conversation for every case and record the response, citations, retrieved context, HTTP status and total duration. It SHALL NOT transmit expected behavior, rubric or answer keys, SHALL NOT retry failed cases and SHALL classify infrastructure errors as blocked. Credentials SHALL be read from the environment and SHALL NOT be printed or stored in the run artifacts. A prepare command SHALL write the prepared prompts, and only them, to a file outside the repository. The run description supplied for a collection SHALL contain the six declared fields and no others and SHALL be validated before the first request is sent; an unexpected field SHALL be refused naming the field and not its value, because the description is stored with the raw collection.
+The adapter SHALL prepare prompts from only the context and question and SHALL reuse the relevant collection functions of JUP-070. HTTP collection SHALL send the prepared prompt exactly, use a new conversation for every case and record the response, citations, retrieved context, HTTP status and total duration. It SHALL NOT transmit expected behavior, rubric or answer keys, SHALL NOT retry failed cases and SHALL classify infrastructure errors as blocked. Credentials SHALL be read from the environment and SHALL NOT be printed or stored in the run artifacts. A prepare command SHALL write the prepared prompts, and only them, to a file outside the repository, and SHALL refuse a path inside it even if the path has the name of a generated report. The run description supplied for a collection SHALL contain the six declared fields and no others and SHALL be validated before the first request is sent. Its generation object SHALL carry only a model alias and a temperature, and its corpus and retrieval descriptions SHALL each be a short text or a flat object of at most sixteen short scalar values whose keys are plain lowercase names that do not look like credentials. An unexpected or oversized field SHALL be refused naming the field and not its value, because the description is stored with the raw collection.
 
 #### Scenario: Rubric stays outside the request
 - **WHEN** a case is prepared and sent to the chat
@@ -64,9 +64,9 @@ The adapter SHALL prepare prompts from only the context and question and SHALL r
 - **AND** it is excluded from the pass/fail denominator without disappearing from the report
 
 #### Scenario: Invalid run description
-- **WHEN** the run description names an invalid commit, provider, alias or generation, or carries a field outside the six declared ones
+- **WHEN** the run description names an invalid commit, provider, alias or generation, carries a field outside the six declared ones, or nests an unexpected field or a large or credential-like value inside generation, corpus or retrieval
 - **THEN** collection stops before any request is made and nothing is written
-- **AND** an unexpected field is named in the error without echoing its value
+- **AND** the offending field is named in the error without echoing its value
 
 ### Requirement: Offline template execution is labelled as such
 

@@ -24,7 +24,7 @@ Las "pasadas adversariales" y la auditoría de trazabilidad que se recogen aquí
 Estado del 2026-10-16, Windows, Python 3.14:
 
 - `python tools/assistant-robustness.py validate`: 16 variantes, 29 casos, hashes válidos.
-- `corepack pnpm assistant-robustness:test`: 86 pruebas OK.
+- `corepack pnpm assistant-robustness:test`: 91 pruebas OK.
 - Pruebas de JUP-070 (110) y de métricas de JUP-067 (103): OK.
 - `node --test tools/ci-workflow.test.mjs`: 14 OK (con las dependencias del repositorio principal enlazadas temporalmente, porque el directorio de trabajo no tenía `node_modules`).
 - `corepack pnpm openspec:validate` (74/74), `corepack pnpm jup:check -- --change jup-071-incomplete-data-robustness` y `corepack pnpm jup:cleanup:check`: OK.
@@ -107,6 +107,20 @@ Pasada automatizada sobre el estado final `136eeaec` (base `origin/develop`): **
 | A-18 | LOW | auditoría | Corregido: el protocolo decía que el fragmento fijo del modo offline corresponde al caso; son los primeros 500 caracteres de su primera fuente. |
 | B | — | auditoría | Corregido en la spec: varios comportamientos del código no tenían requisito (comando `prepare`, vinculación de juicios al crudo, validación estricta del crudo, máximo de dos revisores, vocabularios cerrados de la batería). |
 
+## Adversarial Review (pass 5, dirigida)
+
+Pasada automatizada sobre el diff `136eeaec..8f8f71fd`, con mutación manual de una copia del código (19 mutantes, 15 detectados por las pruebas; los supervivientes se resolvieron o eran equivalentes). Veredicto: **accept** (sin BLOCKING ni HIGH; 2 MEDIUM y 3 LOW).
+
+| ID | Sev. | Resolución |
+| --- | --- | --- |
+| ADV-1 | MEDIUM | Corregido: `prepare` no exigía que su salida estuviera fuera del repositorio y la spec lo promete; con un nombre `*-report.json` de `docs/evidence` escribía los prompts en un fichero versionable. Ahora aplica la misma comprobación que `offline`, `collect` y `review-sheet`. |
+| ADV-2 | MEDIUM | Corregido: la restricción de los seis campos de `collect` era superficial. `generation` aceptaba claves extra y `corpus` y `retrieval` cualquier valor, y todo se guardaba en el crudo. Ahora `generation` solo lleva `model_alias` y `temperature`, y `corpus` y `retrieval` son un texto corto o un objeto plano de valores cortos con claves que no parezcan credenciales. |
+| ADV-3 | LOW | Corregido con prueba: la columna de total por tipo de perturbación solo tenía una prueba de la cabecera (un mutante que borraba los valores sobrevivía). Ahora se comprueba el total de cada una de las 16 filas. |
+| ADV-4 | LOW | Corregido con prueba: el máximo de dos revisores por punto no tenía prueba. |
+| ADV-5 | LOW | Aceptado y heredado: `check_number` de JUP-070 acepta como correctas negaciones o contraposiciones («no es del 10 %»); las variantes se comportan igual que su baseline. Lo cubre el juicio humano y la limitación ya registrada de `labelled_by`. |
+
+Los arreglos de ADV-1 a ADV-4 se hicieron con RED previo y no se sometieron a otra pasada.
+
 ## Pattern sweep
 
 - Cifras sin alias y cifras no pedidas: las variantes de cumplimiento eran las únicas con dos cifras o sin alias; JUP-071-010 tiene una cifra y se resuelve por la etiqueta «julio».
@@ -114,6 +128,7 @@ Pasada automatizada sobre el estado final `136eeaec` (base `origin/develop`): **
 - Validación de la batería: el resto de campos ya pasaba por `require`; se cubrieron los accesos que podían lanzar excepciones no controladas, incluidos los enteros enormes. Quedan fuera los de `tools/assistant-eval.py` (JUP-070), que no se modifica.
 - Valores declarados del bloque `run`: los tres campos de texto usan la misma función de validación.
 - Rivales por alias: el cálculo se corrigió para todos los casos con varias cifras; JUP-071-010 tiene una sola.
+- Salidas privadas (pasada 5): `offline`, `collect`, `review-sheet` y `prepare` aplican `outside()`; `score` escribe a propósito en `docs/evidence` y lo acota `protect_outputs`; `compare` no escribe.
 - Lectura de JSON sin límite de profundidad: `read()` y las lecturas de `compare` quedan cubiertas por la captura de `RecursionError` en el CLI.
 
 ## Risks

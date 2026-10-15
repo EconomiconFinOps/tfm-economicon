@@ -30,8 +30,8 @@
 
 - [x] 5.1 Reescribir propuesta, spec y diseño para describir el comportamiento del código (alias y rivales, validación estricta, cobertura reducida, categorías, rutas de salida, metadatos declarados, cabecera de ejecución). La revisión de trazabilidad de 5.2 demostró que esa primera reconciliación contenía afirmaciones sin contrastar, que se corrigen en 5.3.
 - [x] 5.2 Revisión adversarial automatizada de otra sesión del estado final (pasada 4, `accept` con 3 MEDIUM y 3 LOW) y auditoría independiente de trazabilidad entre spec, código, pruebas y documentación (`changes-required`). Ninguna sustituye a la `Revision JUP-071` de una persona.
-- [ ] 5.3 Corregir los hallazgos de 5.2 con ciclo RGR y barrido del mismo patrón, y repetir una revisión dirigida sobre lo cambiado hasta el veredicto `accept` o la aceptación expresa de lo que quede.
-- [ ] 5.4 Actualizar `review.md`, la evidencia y la continuidad con el resultado de la revisión final.
+- [x] 5.3 Corregir los hallazgos de 5.2 con ciclo RGR y barrido del mismo patrón, y repetir una revisión dirigida sobre lo cambiado: la pasada 5 dio `accept` con 2 MEDIUM y 3 LOW, que se corrigieron o se registraron. Esos arreglos finales no pasaron por otra revisión.
+- [x] 5.4 Actualizar `review.md`, la evidencia y la continuidad con el resultado de la revisión final.
 
 ## 6. Verificación pendiente fuera de la línea base offline
 

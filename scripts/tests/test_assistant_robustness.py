@@ -1021,6 +1021,73 @@ class FinalReviewTests(unittest.TestCase):
         self.assertFalse(robustness.outside(shouted))
 
 
+class FifthPassTests(unittest.TestCase):
+    """Regression tests for the targeted fifth pass."""
+
+    def run_collect(self, info):
+        transport = TransportDouble()
+        with tempfile.TemporaryDirectory() as folder:
+            base = Path(folder)
+            run_info, output = base / "run.json", base / "raw.json"
+            run_info.write_text(json.dumps(info), encoding="utf-8")
+            with mock.patch.dict("os.environ", {"JUP071_TEST_PASSWORD": "FIXTURE-PASSWORD"}), mock.patch.object(robustness.evaluation.urllib.request, "build_opener", return_value=transport) as opener:
+                status, stdout, stderr = cli(["collect", "--base-url", "http://transport.invalid", "--tenant", "fixture-tenant", "--password-env", "JUP071_TEST_PASSWORD", "--run-info", run_info, "--output", output])
+            return status, stdout + stderr, opener.call_count, output.exists()
+
+    def test_prepare_never_writes_the_prompts_inside_the_repository(self):
+        for name in ("jup-071-x-report.json", "JUP-071-x-report.md"):
+            with self.subTest(name=name), mock.patch.object(robustness.evaluation, "write_private") as writer:
+                status, _, stderr = cli(["prepare", "--output", ROOT / "docs/evidence" / name])
+                self.assertEqual(status, 2, stderr)
+                writer.assert_not_called()
+
+    def test_nested_run_info_values_cannot_smuggle_extra_fields(self):
+        base = ChatCollectorRunInfoTests.DOCUMENTED
+        hostile = (
+            ("generation", {"model_alias": "m-1", "temperature": None, "api_key": "LEAK-SECRET-VALUE"}),
+            ("retrieval", {"token": "LEAK-SECRET-VALUE"}),
+            ("retrieval", {"top_k": {"nested": "LEAK-SECRET-VALUE"}}),
+            ("corpus", "x" * 5000),
+            ("corpus", ["LEAK-SECRET-VALUE"]),
+            ("retrieval", {"k" + str(n): n for n in range(40)}),
+        )
+        for field, value in hostile:
+            with self.subTest(field=field):
+                status, output, requests, written = self.run_collect({**base, field: value})
+                self.assertEqual(status, 2, output)
+                self.assertEqual((requests, written), (0, False))
+                self.assertNotIn("LEAK-SECRET-VALUE", output)
+                self.assertIn(field, output)
+
+    def test_flat_descriptive_run_info_is_still_accepted(self):
+        base = ChatCollectorRunInfoTests.DOCUMENTED
+        for info in ({**base}, {**base, "corpus": {"documents": 4, "chunks": 66, "embedding": "mock"},
+                                "retrieval": {"top_k": 4, "max_distance": None},
+                                "generation": {"model_alias": "model-x", "temperature": 0.2}}):
+            with self.subTest(info=info):
+                status, output, requests, written = self.run_collect(info)
+                self.assertEqual(status, 0, output)
+                self.assertTrue(written)
+
+    def test_every_perturbation_row_states_its_own_size(self):
+        text = robustness.markdown(scored(raw_fixture(), robustness.empty_judgments(raw_fixture())))
+        rows = {line.split("|")[1].strip(): [cell.strip() for cell in line.split("|")[2:-1]]
+                for line in text.splitlines() if line.startswith("| ") and line.split("|")[1].strip() in
+                {c["perturbation"] for c in SUITE["cases"]}}
+        self.assertEqual(len(rows), 16)
+        for name, cells in rows.items():
+            self.assertEqual(len(cells), 5, name)
+            self.assertEqual(cells[0], "1", name)
+
+    def test_a_third_reviewer_for_one_point_is_refused(self):
+        raw = raw_fixture()
+        judgments = judgments_fixture(raw)
+        judgments["cases"]["JUP-071-001"]["behavior"].append({"reviewer": "fixture-person-c", "result": "pass", "note": "UNIT TEST ONLY"})
+        with self.assertRaises(robustness.Error) as caught:
+            scored(raw, judgments)
+        self.assertIn("at most two", str(caught.exception))
+
+
 class FakeResponse:
     def __init__(self, body, status=200):
         self.body, self.status = body, status

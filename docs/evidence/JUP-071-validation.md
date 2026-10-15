@@ -38,7 +38,7 @@ Windows, Python 3.14, Node 24.
 | Comprobación | Resultado |
 | --- | --- |
 | `python tools/assistant-robustness.py validate` | 16 variantes / 29 casos; hashes válidos |
-| `corepack pnpm assistant-robustness:test` | 86 pruebas OK |
+| `corepack pnpm assistant-robustness:test` | 91 pruebas OK |
 | Pruebas de JUP-070 y de métricas de JUP-067 | 110 y 103 OK |
 | `node --test tools/ci-workflow.test.mjs` | 14 OK (con las dependencias del repositorio principal enlazadas temporalmente) |
 | `corepack pnpm openspec:validate`, `jup:check` del change y `jup:cleanup:check` | 74/74, OK, OK |
@@ -93,7 +93,7 @@ No se probó el chat con un proveedor real, ni la lectura de evidencias y citas 
 
 ### 16/10/2026: revisión final
 
-La rama pasó una cuarta pasada adversarial automatizada (`accept`, con 3 MEDIUM y 3 LOW) y una auditoría independiente de trazabilidad (`changes-required`, con hallazgos HIGH y MEDIUM de código y de documentación). Se resolvieron o se registraron; el detalle de cada hallazgo y su resolución está en `review.md` del change. Ninguna de esas revisiones es la `Revision JUP-071` ni la `Validacion JUP-071` de una persona.
+La rama pasó una cuarta pasada adversarial automatizada (`accept`, con 3 MEDIUM y 3 LOW), una auditoría independiente de trazabilidad (`changes-required`, con hallazgos HIGH y MEDIUM de código y de documentación) y una quinta pasada dirigida sobre lo cambiado (`accept`, con 2 MEDIUM y 3 LOW). Se resolvieron o se registraron; el detalle de cada hallazgo y su resolución está en `review.md` del change. Ninguna de esas revisiones es la `Revision JUP-071` ni la `Validacion JUP-071` de una persona.
 
 ## Límites
 
