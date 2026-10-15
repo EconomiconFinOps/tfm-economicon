@@ -1,6 +1,6 @@
 """Carga de los resultados de evaluación del asistente en la base del dashboard de Grafana (JUP-121).
 
-Por ahora este módulo contiene nueve capas. La primera es la de manifiestos: lee y valida los manifiestos
+Por ahora este módulo contiene diez capas. La primera es la de manifiestos: lee y valida los manifiestos
 que dicen qué informes alimentan el dashboard (`docs/validation/evaluation-runs.json` y los locales). La
 segunda es el adaptador del informe JSON de JUP-070 (`adapt_jup070`), que normaliza ese informe al
 contrato de filas planas `rows-v1` de `docs/validation/evaluation-dashboard.md`. La tercera es el
@@ -20,13 +20,18 @@ declaradas como humanas ni como automáticas y `classify_run_row` añade las tre
 ejecución. La novena une todo lo anterior sin base de datos: `normalize_entry` convierte una entrada del
 manifiesto en `{"run", "results"}` (con `run_id`, huella del informe, clasificación y ruta), `build_dataset`
 reúne los manifiestos en un conjunto de datos sin `run_id` repetidos y `main` lo expone como el subcomando `rows`.
+La décima es la generación del script SQL: `sql_literal` es el único camino por el que un valor entra en el SQL
+(siempre como literal escapado, nunca por interpolación directa) y `build_sql` convierte el conjunto de datos en
+un script transaccional (esquema `evaluation`, vaciado y carga) que `main` expone como el subcomando `sql`.
 Usa solo la biblioteca estándar, no tiene efectos al importarse y nunca abre una conexión de red ni a la base de
-datos. La carga a la base la añaden las tareas siguientes del change.
+datos: el script no lleva credenciales y la carga a la base la añaden las tareas siguientes del change.
 
-Uso por línea de comandos (el JSON del conjunto de datos sale por la salida estándar, o a `--output`; un error
-sale como `error: <mensaje>` por la salida de errores con código 1 y no escribe nada):
+Uso por línea de comandos (el resultado sale por la salida estándar, o a `--output`; un error sale como
+`error: <mensaje>` por la salida de errores con código 1 y no escribe nada): `rows` imprime el conjunto de datos
+en JSON y `sql` el script SQL, con las mismas opciones.
 
     python tools/evaluation-dashboard.py rows [--manifest RUTA]... [--no-versioned] [--output FICHERO] [--root DIR]
+    python tools/evaluation-dashboard.py sql [--manifest RUTA]... [--no-versioned] [--output FICHERO] [--root DIR]
 """
 
 from __future__ import annotations
@@ -1735,6 +1740,302 @@ def build_dataset(manifest_paths, root=ROOT) -> dict:
     return {"dataset_version": DATASET_VERSION, "runs": runs}
 
 
+# --- Generación del script SQL ---------------------------------------------------------------------------
+
+SCHEMA_NAME = "evaluation"
+# Máximo de tuplas por `INSERT` de resultados. Un único `INSERT` con miles de tuplas es válido, pero su tamaño
+# crece sin límite con los informes; 500 mantiene cada sentencia pequeña (fácil de leer y de localizar en un
+# error de `psql`) sin multiplicar los viajes: con los datos versionados cabe todo en un solo bloque.
+INSERT_CHUNK = 500
+
+# Clave del contrato -> columna de la base, en el orden del contrato. Son dicts (y no listas de pares) porque el
+# script lee cada valor por clave y escribe la cabecera por columna desde la MISMA fuente: así el nombre y la
+# posición no pueden divergir. Se derivan de las tuplas de claves existentes y solo se declara lo que cambia de
+# nombre (`commit` es palabra reservada en SQL; `count` es una función agregada): si el contrato `rows-v1`
+# añade una clave, la columna aparece aquí sola y el DDL de `SCHEMA_DDL` obliga a decidir su tipo.
+_RENAMED_COLUMNS = {"commit": "commit_sha", "count": "case_count"}
+RUN_COLUMNS = {key: _RENAMED_COLUMNS.get(key, key) for key in RUN_OUTPUT_KEYS}
+RESULT_COLUMNS = {key: _RENAMED_COLUMNS.get(key, key) for key in RESULT_KEYS}
+# `INSERT` de resultados lleva delante el `run_id` de la ejecución a la que pertenece cada fila.
+RESULT_INSERT_COLUMNS = ("run_id",) + tuple(RESULT_COLUMNS.values())
+
+# Esquema y tablas. Reglas de diseño (ADR-0022, `design.md` D4):
+# * `IF NOT EXISTS` en todo: el script se puede ejecutar cuantas veces haga falta (regeneración idempotente).
+# * `retrieval` es `jsonb` y no columnas sueltas: sus claves (`top_k`, `max_distance`...) dependen de la fuente
+#   y de la versión del contrato, y `jsonb` conserva el objeto tal cual sin migrar la tabla cuando cambian.
+# * Lo que el informe no trae es NULL (columnas sin NOT NULL); solo son obligatorias las que el contrato exige.
+# * `evaluation.results` borra en cascada con su ejecución, y su clave primaria es la clave natural de la fila
+#   (la que `validate_rows` ya garantiza única), de modo que la base y la herramienta rechazan lo mismo.
+# * Las dos `CHECK` de tabla repiten en la base la regla 1 del contrato (lo no medido nunca es cero): un
+#   `not_measured` no puede traer valor, numerador, recuento ni intervalo (el denominador SÍ se conserva) y un
+#   `measured` siempre trae `value`. Se declaran como `CHECK` de tabla porque cruzan varias columnas. Es una
+#   segunda barrera: si alguien carga filas por otra vía (un `INSERT` a mano), la base no admite un 0 inventado.
+# * Sin comentarios SQL: el script se lee y se trocea por sentencias, y los porqués viven aquí, en Python.
+SCHEMA_DDL = f"""\
+CREATE SCHEMA IF NOT EXISTS {SCHEMA_NAME};
+
+CREATE TABLE IF NOT EXISTS {SCHEMA_NAME}.runs (
+  run_id text PRIMARY KEY,
+  source text NOT NULL,
+  run_at timestamptz,
+  commit_sha text,
+  suite text,
+  suite_version text,
+  suite_sha256 text,
+  corpus_sha256 text,
+  embedding_provider text,
+  embedding_alias text,
+  retrieval jsonb,
+  generation_model text,
+  prompt_sha256 text,
+  synthetic boolean NOT NULL,
+  is_real boolean NOT NULL,
+  non_real_reasons text[] NOT NULL,
+  comparability_key text NOT NULL,
+  format text NOT NULL,
+  milestone boolean NOT NULL,
+  report_path text,
+  report_sha256 text NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS {SCHEMA_NAME}.results (
+  run_id text NOT NULL REFERENCES {SCHEMA_NAME}.runs (run_id) ON DELETE CASCADE,
+  measure_type text NOT NULL CHECK (measure_type IN ('A', 'B')),
+  grp text NOT NULL,
+  metric_id text NOT NULL,
+  behavior text NOT NULL,
+  status text NOT NULL CHECK (status IN ('pass', 'fail', 'blocked', 'not_run', 'measured', 'not_measured')),
+  case_count bigint,
+  value double precision,
+  unit text NOT NULL,
+  numerator double precision,
+  denominator bigint,
+  ci_low double precision,
+  ci_high double precision,
+  judgment text CHECK (judgment IS NULL OR judgment IN ('automatic', 'human')),
+  selected boolean NOT NULL DEFAULT false,
+  PRIMARY KEY (run_id, grp, metric_id, behavior, status),
+  CHECK (status <> 'not_measured' OR (value IS NULL AND numerator IS NULL AND case_count IS NULL
+    AND ci_low IS NULL AND ci_high IS NULL)),
+  CHECK (status <> 'measured' OR value IS NOT NULL)
+);"""
+
+# Vaciado previo a la carga. Va en la misma transacción que las inserciones: si algo falla, `ROLLBACK` deja los
+# datos anteriores intactos y nunca se queda una base vacía o a medias (regeneración atómica); y como vacía todo
+# y vuelve a cargar todo, ejecutarlo dos veces da el mismo resultado (idempotente). Es `TRUNCATE` y no `DROP`:
+# el esquema, las tablas y los permisos que se concedan después (el rol de lectura de Grafana) sobreviven a cada
+# regeneración. Las dos tablas van en UNA sentencia porque `results` referencia a `runs` y PostgreSQL no deja
+# vaciar solo la referenciada; así tampoco hace falta `CASCADE`, que arrastraría tablas ajenas que algún día
+# referencien estas.
+TRUNCATE_SQL = f"TRUNCATE {SCHEMA_NAME}.results, {SCHEMA_NAME}.runs;"
+
+# `standard_conforming_strings = on` hace que dentro de `'...'` la barra invertida sea un carácter normal, que es
+# lo que supone `sql_literal` (solo duplica la comilla simple y no toca la barra). Sin esto, con el ajuste
+# desactivado en el servidor o en el rol, `\\` o `\'` de un dato cambiarían de significado y abrirían una
+# inyección. `SET LOCAL` y no `SET`: dura solo hasta el `COMMIT` y no deja la sesión alterada.
+SESSION_SQL = "SET LOCAL standard_conforming_strings = on;"
+
+# Los bloques de DDL van en una lista y no pegados dentro de `build_sql` para que las tareas siguientes (la vista
+# de anotaciones y el rol de lectura) añadan su constante aquí, entre el esquema y el vaciado, sin tocar el orden
+# del resto. Nunca llevan credenciales: la contraseña del rol viaja aparte (por la entrada estándar de `psql`),
+# nunca en el texto de este script, que se imprime, se guarda con `--output` y se puede compartir.
+DDL_BLOCKS = (SCHEMA_DDL,)
+
+
+class SqlError(ValueError):
+    """Valor que no se puede escribir como literal SQL (NaN, infinito, NUL, tipo ajeno).
+
+    Hereda de ValueError, como `AdapterError`, para que quien la capture la trate como un error de datos. La
+    línea de comandos la muestra como `error: <mensaje>` con el código 1 y sin escribir nada.
+    """
+
+
+# Un NUL escapado dentro del texto JSON: `\u0000` precedido de un número PAR de barras (las barras de a pares
+# son barras literales del dato y la `u` ya no es parte de un escape). Se busca en el texto serializado porque
+# `json.dumps` escribe el NUL como `\u0000` y `jsonb` no lo admite; mirar solo `\u0000` daría un falso positivo
+# con el dato `\u0000` escrito como texto, que se serializa `\\u0000`.
+_JSON_NUL_RE = re.compile(r"(?<!\\)(?:\\\\)*\\u0000")
+
+
+def _string_literal(text: str) -> str:
+    # PostgreSQL no admite NUL en un `text`: se rechaza aquí con un error accionable en lugar de truncar el
+    # dato en silencio o fallar a mitad de la transacción.
+    if "\x00" in text:
+        raise SqlError("el texto contiene un carácter NUL, que PostgreSQL no admite")
+    # Con `standard_conforming_strings = on` solo la comilla simple es especial dentro de `'...'`, y se escapa
+    # duplicándola. No se toca la barra invertida ni se usan cadenas `E'...'` ni `$$...$$`: una sola regla de
+    # escape es más fácil de revisar que varias, y la prueba la invierte con un desescapador independiente.
+    return "'" + text.replace("'", "''") + "'"
+
+
+def _json_literal(value: dict) -> str:
+    # Claves ordenadas, separadores compactos y `ensure_ascii`: el mismo JSON canónico que `report_digest`, para
+    # que dos objetos iguales den el mismo texto (script reproducible) y el script sea ASCII puro, sin depender
+    # de la codificación del terminal. `allow_nan=False` porque `NaN` no es JSON y `jsonb` lo rechazaría.
+    try:
+        text = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False)
+    except (ValueError, TypeError, RecursionError) as error:
+        # TypeError: tipo no serializable o claves de tipos mezclados que no se pueden ordenar.
+        raise SqlError(f"el objeto no se puede escribir como jsonb ({type(error).__name__})") from error
+    if _JSON_NUL_RE.search(text):
+        raise SqlError("el objeto contiene un carácter NUL, que jsonb no admite")
+    # La duplicación de comillas se aplica al JSON ya serializado: así una comilla dentro de una clave o un valor
+    # no cierra la cadena SQL. No pasa por `_string_literal` porque el NUL ya se ha comprobado sobre el JSON.
+    return "'" + text.replace("'", "''") + "'::jsonb"
+
+
+def sql_literal(value) -> str:
+    """Único camino por el que un valor entra en el script SQL: devuelve su literal escapado.
+
+    `None` es `NULL`; `bool` es `TRUE`/`FALSE`; `int` y `float` salen en decimal (`repr` del float, la forma más
+    corta que lo reconstruye exacto); `str` va entre comillas con las comillas duplicadas; una lista de cadenas
+    es `ARRAY[...]::text[]`; un `dict` es `jsonb`. NaN, infinitos, NUL y cualquier otro tipo son `SqlError`.
+    Se comparan tipos exactos (`type(x) is ...`) y `bool` va antes que `int` (es su subclase): un tipo ajeno o
+    una subclase con otro `__repr__` no debe colarse en el texto SQL. Nunca se interpola un valor sin pasar por
+    aquí; la alternativa descartada, parámetros del driver, exigiría una base y una dependencia (ADR-0022 D2).
+    """
+    kind = type(value)
+    if value is None:
+        return "NULL"
+    if kind is bool:
+        return "TRUE" if value else "FALSE"
+    if kind is int:
+        return str(value)
+    if kind is float:
+        if not math.isfinite(value):
+            raise SqlError("un número no finito (NaN o infinito) no se puede escribir como literal SQL")
+        return repr(value)
+    if kind is str:
+        return _string_literal(value)
+    if kind is list:
+        if not all(type(item) is str for item in value):
+            raise SqlError("una lista solo se puede escribir como ARRAY de cadenas")
+        # El cast es obligatorio: `ARRAY[]` sin tipo no es válido en PostgreSQL.
+        return "ARRAY[" + ",".join(_string_literal(item) for item in value) + "]::text[]"
+    if kind is dict:
+        return _json_literal(value)
+    raise SqlError(f"un valor de tipo {kind.__name__} no se puede escribir como literal SQL")
+
+
+def _check_dataset_shape(dataset) -> list:
+    if not isinstance(dataset, dict):
+        raise _bad("dataset", "debe ser un objeto")
+    for key in dataset:
+        if key not in ("dataset_version", "runs"):
+            raise _bad("dataset", f"clave desconocida {_key_label(key)!r}")
+    # `type(...) is int`: `True` y `1.0` valen 1 en Python pero no son el entero 1 del contrato.
+    version = dataset.get("dataset_version")
+    if type(version) is not int or version != DATASET_VERSION:
+        raise _bad("dataset", f"dataset_version debe ser {DATASET_VERSION}")
+    runs = dataset.get("runs")
+    if not isinstance(runs, list):
+        raise _bad("dataset", "runs debe ser una lista")
+    return runs
+
+
+def _check_entry_shape(entry, where: str) -> tuple[dict, list]:
+    if not isinstance(entry, dict):
+        raise _bad(where, "debe ser un objeto")
+    for key in entry:
+        if key not in ("run", "results"):
+            raise _bad(where, f"clave desconocida {_key_label(key)!r}")
+    for key in ("run", "results"):
+        if key not in entry:
+            raise _bad(where, f"falta {key!r}")
+    run, results = entry["run"], entry["results"]
+    if not isinstance(run, dict):
+        raise _bad(f"{where}.run", "debe ser un objeto")
+    if not isinstance(results, list):
+        raise _bad(f"{where}.results", "debe ser una lista")
+    return run, results
+
+
+def _validate_dataset(dataset) -> list[tuple[dict, list]]:
+    # Se valida TODO antes de generar una sola línea: el script es una transacción única y un conjunto a medias
+    # no debe producir texto. La forma exacta se comprueba aquí y la semántica de cada ejecución se delega en
+    # `validate_rows` (la misma barrera que ya pasó al normalizar), con el prefijo `runs[i].` de su posición.
+    pairs = []
+    owners: dict[str, int] = {}
+    for index, entry in enumerate(_check_dataset_shape(dataset)):
+        where = f"runs[{index}]"
+        run, results = _check_entry_shape(entry, where)
+        # Claves exactas de la ejecución: una ausente dejaría un NULL donde la base exige NOT NULL, y una
+        # desconocida se perdería sin avisar (el script solo escribe las columnas conocidas).
+        for key in run:
+            if key not in RUN_COLUMNS:
+                raise _bad(f"{where}.run", f"clave desconocida {_key_label(key)!r}")
+        for key in RUN_COLUMNS:
+            if key not in run:
+                raise _bad(f"{where}.run", f"falta {key!r}")
+        try:
+            # `validate_rows` solo conoce las claves del contrato `rows-v1`: se le pasa la ejecución reducida a
+            # `RUN_KEYS` (sin las de clasificación y carga, que se escapan con `sql_literal`).
+            validate_rows({key: run[key] for key in RUN_KEYS}, results)
+        except AdapterError as error:
+            raise AdapterError(f"{where}.{error}") from error
+        # `validate_rows` ya garantiza que `run_id` es un identificador. La clave primaria distingue mayúsculas,
+        # igual que este diccionario, así que `Run-1` y `run-1` no chocan.
+        run_id = run["run_id"]
+        if run_id in owners:
+            raise _bad(f"{where}.run.run_id", f"{run_id!r} repetido; ya lo usa runs[{owners[run_id]}]")
+        owners[run_id] = index
+        pairs.append((run, results))
+    return pairs
+
+
+def _cell(key: str, value) -> str:
+    literal = sql_literal(value)
+    # `run_at` es una cadena ISO 8601 y la columna es `timestamptz`: el cast explícito evita depender del
+    # formato de fecha de la sesión. Un NULL no lleva cast (`NULL::timestamptz` también valdría, pero no aporta).
+    if key == "run_at" and value is not None:
+        literal += "::timestamptz"
+    return literal
+
+
+def _tuple_line(keys, source: dict, prefix: tuple = ()) -> str:
+    # Los valores se leen por clave en el orden de `RUN_COLUMNS`/`RESULT_COLUMNS` y no recorriendo el dict del
+    # conjunto de datos: el orden de sus claves no puede alterar el script.
+    cells = list(prefix) + [_cell(key, source[key]) for key in keys]
+    return "  (" + ", ".join(cells) + ")"
+
+
+def _insert_statement(table: str, columns, lines: list[str]) -> str:
+    # Una tupla por línea: un cambio en una fila se ve como una sola línea en `git diff` y el error de `psql`
+    # (que cita la sentencia) es localizable.
+    return (f"INSERT INTO {SCHEMA_NAME}.{table} ({', '.join(columns)}) VALUES\n"
+            + ",\n".join(lines) + ";")
+
+
+def _insert_blocks(pairs: list[tuple[dict, list]]) -> list[str]:
+    blocks = []
+    if pairs:
+        lines = [_tuple_line(RUN_COLUMNS, run) for run, _ in pairs]
+        blocks.append(_insert_statement("runs", RUN_COLUMNS.values(), lines))
+    # El troceado es sobre la lista GLOBAL de filas (todas las ejecuciones, en orden) y no por ejecución: así
+    # el número de sentencias solo depende del total de filas y un bloque puede mezclar ejecuciones. Sin filas no
+    # se emite ningún `INSERT` (un `VALUES` sin tuplas no es SQL válido).
+    lines = [_tuple_line(RESULT_COLUMNS, row, (sql_literal(run["run_id"]),)) for run, results in pairs for row in results]
+    for start in range(0, len(lines), INSERT_CHUNK):
+        blocks.append(_insert_statement("results", RESULT_INSERT_COLUMNS, lines[start:start + INSERT_CHUNK]))
+    return blocks
+
+
+def build_sql(dataset) -> str:
+    """Genera el script SQL transaccional que carga `dataset` (la salida de `build_dataset`) en `evaluation`.
+
+    Función pura y determinista: solo produce texto (sin base, sin credenciales, sin red) y no muta el conjunto
+    de datos. El script va en una sola transacción: `BEGIN`, `SET LOCAL standard_conforming_strings`, el DDL de
+    `DDL_BLOCKS`, el `TRUNCATE`, las inserciones (ejecuciones y después resultados en bloques de `INSERT_CHUNK`)
+    y `COMMIT`. Un conjunto inválido lanza `AdapterError` (`dataset: `, `runs[i]: ` o `runs[i].<campo>: `) y un
+    valor no escribible, `SqlError`; en ambos casos no se devuelve texto parcial.
+    """
+    pairs = _validate_dataset(dataset)
+    # Fuente única del orden de las secciones: las tareas siguientes añaden bloques a `DDL_BLOCKS`.
+    blocks = ["BEGIN;", SESSION_SQL, *DDL_BLOCKS, TRUNCATE_SQL, *_insert_blocks(pairs), "COMMIT;"]
+    # Línea en blanco entre bloques para que sea legible; un solo `\n` final, sin línea vacía tras `COMMIT;`.
+    return "\n\n".join(blocks) + "\n"
+
+
 def _write_atomically(target: Path, text: str) -> None:
     # Se escribe a un fichero temporal del MISMO directorio y se renombra al final: `os.replace` es atómico en el
     # mismo sistema de ficheros, así que una interrupción o un error de disco nunca deja un `--output` truncado ni
@@ -1759,53 +2060,76 @@ def _build_parser() -> argparse.ArgumentParser:
         prog="evaluation-dashboard.py",
         description="Prepara los resultados de evaluación del asistente para el dashboard de Grafana (JUP-121).",
     )
+    # Opciones comunes en un parser padre (`add_help=False` para que cada subcomando conserve su propio `--help`):
+    # `rows` y `sql` leen exactamente los mismos manifiestos y escriben igual, y declararlas dos veces dejaría que
+    # divergieran. Alternativa descartada: una función que repita `add_argument` en cada subparser; el padre es el
+    # mecanismo de `argparse` para esto y lo comparten también los subcomandos que vengan después.
+    common = argparse.ArgumentParser(add_help=False)
+    common.add_argument("--manifest", action="append", default=[], type=Path, metavar="RUTA",
+                        help="manifiesto local que se añade después del versionado (repetible)")
+    common.add_argument("--no-versioned", action="store_true",
+                        help="no lee el manifiesto versionado (docs/validation/evaluation-runs.json)")
+    common.add_argument("--output", type=Path, metavar="FICHERO",
+                        help="escribe el resultado en este fichero en lugar de la salida estándar")
+    common.add_argument("--root", type=Path, default=ROOT, metavar="DIR",
+                        help="raíz que resuelve las rutas relativas de los manifiestos y el report_path "
+                             "(por defecto, la raíz del repositorio)")
     # `required=True`: sin subcomando argparse termina con el código 2 de error de uso, el mismo que una opción
     # desconocida, y no hay un comportamiento por defecto que adivinar.
     commands = parser.add_subparsers(dest="command", required=True, metavar="comando")
-    rows = commands.add_parser(
-        "rows", help="imprime el conjunto de datos normalizado (JSON) de los informes del manifiesto",
+    commands.add_parser(
+        "rows", parents=[common], help="imprime el conjunto de datos normalizado (JSON) de los informes del manifiesto",
         description="Normaliza los informes de los manifiestos al contrato de filas planas y los imprime como JSON.",
     )
-    rows.add_argument("--manifest", action="append", default=[], type=Path, metavar="RUTA",
-                      help="manifiesto local que se añade después del versionado (repetible)")
-    rows.add_argument("--no-versioned", action="store_true",
-                      help="no lee el manifiesto versionado (docs/validation/evaluation-runs.json)")
-    rows.add_argument("--output", type=Path, metavar="FICHERO",
-                      help="escribe el JSON en este fichero en lugar de la salida estándar")
-    rows.add_argument("--root", type=Path, default=ROOT, metavar="DIR",
-                      help="raíz que resuelve las rutas relativas de los manifiestos y el report_path "
-                           "(por defecto, la raíz del repositorio)")
+    commands.add_parser(
+        "sql", parents=[common], help="imprime el script SQL transaccional que carga ese conjunto de datos",
+        description="Genera el script SQL (esquema, vaciado y carga en una transacción) del conjunto de datos "
+                    "normalizado. No se conecta a ninguna base ni contiene credenciales.",
+    )
     return parser
+
+
+def _render_rows(dataset: dict) -> str:
+    return json.dumps(dataset, indent=2, ensure_ascii=True) + "\n"
+
+
+def _render_sql(dataset: dict) -> str:
+    # `build_sql` se busca por nombre en cada llamada (no se guarda la función en una tabla al importar), como en
+    # `_adapt_entry`: así siempre se usa la actual.
+    return build_sql(dataset)
+
+
+def _write_stdout(text: str) -> None:
+    # La salida estándar se escribe como bytes UTF-8 por `.buffer`, sin pasar por la capa de texto: en
+    # Windows `sys.stdout.write` traduciría `\n` a `\r\n` y la huella de la salida dejaría de coincidir con
+    # la del fichero de `--output` (bytes con `\n`) y con la de Linux. Es el mismo contrato de
+    # reproducibilidad byte a byte para ambas vías. Alternativa descartada: `reconfigure(newline="\n")`,
+    # que muta el flujo global del proceso y no existe en objetos sustituidos como `io.StringIO`.
+    buffer = getattr(sys.stdout, "buffer", None)
+    if buffer is None:
+        # Flujo sin capa binaria (`io.StringIO`, `redirect_stdout` en procesos que embeben `main`):
+        # no hay traducción de saltos que evitar, así que se escribe el texto tal cual.
+        sys.stdout.write(text)
+    else:
+        # Se vacía antes la capa de texto para no intercalar escrituras pendientes con los bytes.
+        sys.stdout.flush()
+        buffer.write(text.encode("utf-8"))
+        buffer.flush()
 
 
 def main(argv=None) -> int:
     """Línea de comandos. Devuelve 0 si todo fue bien y 1 ante un error de datos; el 2 lo da `argparse`."""
     args = _build_parser().parse_args(argv)
-    # Solo existe `rows`; el despacho por `args.command` se añadirá con el siguiente subcomando.
     manifests = ([] if args.no_versioned else [DEFAULT_MANIFEST]) + args.manifest
     try:
         dataset = build_dataset(manifests, root=args.root)
-        # Se serializa ANTES de tocar `--output`: si algo falla no se crea ni se modifica el fichero.
-        text = json.dumps(dataset, indent=2, ensure_ascii=True) + "\n"
+        # Se genera el texto ANTES de tocar `--output`: si algo falla no se crea ni se modifica el fichero.
+        text = _render_rows(dataset) if args.command == "rows" else _render_sql(dataset)
         if args.output is None:
-            # La salida estándar se escribe como bytes UTF-8 por `.buffer`, sin pasar por la capa de texto: en
-            # Windows `sys.stdout.write` traduciría `\n` a `\r\n` y la huella de la salida dejaría de coincidir con
-            # la del fichero de `--output` (bytes con `\n`) y con la de Linux. Es el mismo contrato de
-            # reproducibilidad byte a byte para ambas vías. Alternativa descartada: `reconfigure(newline="\n")`,
-            # que muta el flujo global del proceso y no existe en objetos sustituidos como `io.StringIO`.
-            buffer = getattr(sys.stdout, "buffer", None)
-            if buffer is None:
-                # Flujo sin capa binaria (`io.StringIO`, `redirect_stdout` en procesos que embeben `main`):
-                # no hay traducción de saltos que evitar, así que se escribe el texto tal cual.
-                sys.stdout.write(text)
-            else:
-                # Se vacía antes la capa de texto para no intercalar escrituras pendientes con los bytes.
-                sys.stdout.flush()
-                buffer.write(text.encode("utf-8"))
-                buffer.flush()
+            _write_stdout(text)
         else:
             _write_atomically(args.output, text)
-    except (AdapterError, ManifestError) as error:
+    except (AdapterError, ManifestError, SqlError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
     except OSError as error:
