@@ -107,7 +107,11 @@ ENV_LITERALS_TODAY = [
     "PGVECTOR_PORT=5433",
     "EMBEDDING_PROVIDER=mock",
 ]
-ENV_LINES_TODAY = 85
+# Actualizado tras integrar develop: eran 85 líneas; develop añadió al final de `.env.example` el bloque del chat de
+# JUP-035 (18 líneas: una en blanco, comentarios y variables `CHAT_*`/`SUMMARY_*`/`PROCESSOR_CHAT_*`), así que sin
+# nuestra línea hay 103. Las cinco líneas representativas de arriba no cambian: el recuento total sigue detectando
+# que se borre o se añada cualquier otra línea.
+ENV_LINES_TODAY = 103
 
 
 def _leer(ruta):

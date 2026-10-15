@@ -592,7 +592,15 @@ class MetadatosDelResultadoTests(unittest.TestCase):
         comprobar_metadatos(self, resultado["filas"], runs)
         fila = resultado["filas"][0]
         self.assertEqual(Q.instante(fila["run_at"]), Q.instante(runs[fila["run_id"]]["run_at"]))
-        self.assertEqual(fila["suite_version"], "1.0.0")
+        # Actualizado tras integrar develop: JUP-120 regeneró el informe de calibración con el banco 1.0.1 (antes
+        # 1.0.0). La versión esperada se lee del propio informe real (`bank.suite_version`) y se exige que sea una
+        # cadena no vacía, para que la comprobación siga siendo independiente de la consulta del dashboard.
+        informe = json.loads((Path(__file__).resolve().parents[2] / "docs" / "spikes"
+                              / "JUP-022-retrieval-calibration.json").read_text(encoding="utf8"))
+        version_del_informe = informe["bank"]["suite_version"]
+        self.assertIsInstance(version_del_informe, str)
+        self.assertTrue(version_del_informe)
+        self.assertEqual(fila["suite_version"], version_del_informe)
 
     def test_a8_benchmark_no_rellena_la_fecha_ni_el_commit_que_el_informe_no_trae(self):
         # El informe de JUP-078 no registra fecha, commit, versión de batería ni modelo (el alias de cada modelo

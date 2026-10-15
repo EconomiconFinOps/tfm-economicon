@@ -40,6 +40,7 @@ estas pruebas a una copia mutada. Las pruebas con PostgreSQL real son la tarea 5
 from __future__ import annotations
 
 import copy
+import hashlib
 import importlib.util
 import inspect
 import io
@@ -51,6 +52,7 @@ import sys
 import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest import mock
 
@@ -84,9 +86,21 @@ RESULT_COLUMN_LIST = [
     "numerator", "denominator", "ci_low", "ci_high", "judgment", "selected",
 ]
 
+# Actualizado tras integrar develop: el informe de calibración de JUP-022 lo regenera JUP-120 (no es evidencia
+# congelada), así que su fecha y su `run_id` se derivan del propio informe con json/hashlib/datetime (sin la
+# herramienta): sha256 del JSON canónico y `jup-022-<aaaammddThhmmssZ en UTC>-<8 primeros hex>`. Los otros cuatro
+# `run_id` siguen siendo literales de evidencia fija.
+JUP_022_DOCUMENT = json.loads(
+    (ROOT / "docs" / "spikes" / "JUP-022-retrieval-calibration.json").read_text(encoding="utf-8-sig"))
+JUP_022_RUN_AT = JUP_022_DOCUMENT["generated_at"]
+JUP_022_RUN_ID = "jup-022-{}-{}".format(
+    datetime.fromisoformat(JUP_022_RUN_AT).astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ"),
+    hashlib.sha256(json.dumps(JUP_022_DOCUMENT, sort_keys=True, separators=(",", ":"),
+                              ensure_ascii=True).encode("utf-8")).hexdigest()[:8])
+
 REAL_RUN_IDS = [
     "jup-070-20261008T201354Z-37175957", "jup-070-20261008T210144Z-b64cca76", "jup-078-undated-7ea00edf",
-    "jup-022-20261003T071532Z-0ea0629a", "JUP-068-synthetic-example-v1",
+    JUP_022_RUN_ID, "JUP-068-synthetic-example-v1",
 ]
 REAL_ROW_COUNTS = [48, 48, 10, 140, 23]
 
@@ -799,7 +813,7 @@ class BuildSqlValuesTest(unittest.TestCase):
                  if line.startswith("  (") and len(parse_tuple(line)) == 21}
         self.assertEqual(sorted(by_id), sorted(REAL_RUN_IDS))
         # JUP-022 no registra la huella de la batería ni el commit; JUP-070 no registra el prompt.
-        jup_022 = parse_tuple(by_id["jup-022-20261003T071532Z-0ea0629a"])
+        jup_022 = parse_tuple(by_id[JUP_022_RUN_ID])
         self.assertEqual((jup_022[3], jup_022[6], jup_022[11], jup_022[12]), (None, None, None, None))
         for run_id in ("jup-070-20261008T201354Z-37175957", "jup-070-20261008T210144Z-b64cca76"):
             self.assertIsNone(parse_tuple(by_id[run_id])[12])
@@ -834,7 +848,9 @@ class BuildSqlValuesTest(unittest.TestCase):
         text = real_script()
         self.assertIn("'2026-10-08T20:13:54Z'::timestamptz", text)
         self.assertIn("'2026-10-08T21:01:44Z'::timestamptz", text)
-        self.assertIn("'2026-10-03T07:15:32.826486+00:00'::timestamptz", text)
+        # Actualizado tras integrar develop: la fecha de la calibración es la `generated_at` del informe regenerado
+        # (antes el literal 2026-10-03T07:15:32.826486+00:00), escrita tal cual con su cast.
+        self.assertIn(f"'{JUP_022_RUN_AT}'::timestamptz", text)
         self.assertEqual(text.count("::timestamptz"), 3)
         rows = Script(real_script()).rows("runs")
         self.assertEqual([cells[2] is None for cells in rows], [False, False, True, False, True])
@@ -1516,6 +1532,38 @@ class MainInProcessTest(TmpCase):
             code, out, err = self.call(["rows", "--no-versioned", "--manifest", str(manifest), "--root", str(self.tmp)])
         self.assertEqual((code, err), (0, ""))
         self.assertEqual(json.loads(out)["dataset_version"], 1)
+
+
+class CalibrationDateWithFractionTest(TmpCase):
+    """Añadido tras integrar develop: fecha de calibración con fracción de segundo >= 0.5 s.
+
+    El informe de calibración regenerado por JUP-120 tiene `generated_at` con 0.046773 s; la anterior tenía
+    0.826486 s, y esa fracción alta era la que detectaba un `run_id` que REDONDEARA el segundo en vez de
+    truncarlo (y fijaba el literal `timestamptz` con seis decimales). Con la fecha nueva esas dos comprobaciones
+    perdían filo, así que se reproducen aquí con una copia temporal del informe real con ESA fecha antigua
+    (el repositorio no se toca). Los valores esperados se calculan con json/hashlib/datetime, no con la herramienta.
+    """
+
+    OLD_GENERATED_AT = "2026-10-03T07:15:32.826486+00:00"
+
+    def test_el_run_id_trunca_los_segundos_y_el_script_conserva_la_fecha_exacta(self) -> None:
+        report = json.loads(
+            (ROOT / "docs" / "spikes" / "JUP-022-retrieval-calibration.json").read_text(encoding="utf-8-sig"))
+        report["generated_at"] = self.OLD_GENERATED_AT
+        path = self.write("calibracion/informe.json", report)
+        manifest = self.write("calibracion.json", {"manifest_version": 1, "runs": [
+            {"path": str(path), "format": "jup-022-calibration-v1", "milestone": False}]})
+        dataset = tool.build_dataset([manifest], root=self.tmp)
+        sha = hashlib.sha256(json.dumps(report, sort_keys=True, separators=(",", ":"),
+                                        ensure_ascii=True).encode("utf-8")).hexdigest()
+        # 32.826486 s se trunca a 32 (un redondeo daría 33) y el prefijo de la huella son sus ocho primeros hex.
+        self.assertEqual([item["run"]["run_id"] for item in dataset["runs"]], [f"jup-022-20261003T071532Z-{sha[:8]}"])
+        self.assertEqual(dataset["runs"][0]["run"]["run_at"], self.OLD_GENERATED_AT)
+        text = tool.build_sql(dataset)
+        # La fecha va tal cual con su cast (seis decimales y desplazamiento), una sola vez.
+        self.assertIn(f"'{self.OLD_GENERATED_AT}'::timestamptz", text)
+        self.assertEqual(text.count("::timestamptz"), 1)
+        self.assertEqual(len(Script(text).rows("runs")), 1)
 
 
 if __name__ == "__main__":

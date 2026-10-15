@@ -21,8 +21,8 @@ Contrato que se valida (`adapt_jup022(report, run_id) -> (run, results)`):
 * Un informe de otra versión, de otra fuente o con la forma rota se rechaza con `AdapterError` cuyo
   mensaje EMPIEZA por `<campo>: `. No se copia texto libre ni rutas.
 
-Los valores esperados se escriben a mano a partir del informe real (`docs/spikes/JUP-022-retrieval-
-calibration.json`), nunca llamando al adaptador. Las variantes se construyen con `copy.deepcopy` del
+Los valores esperados salen del informe real (`docs/spikes/JUP-022-retrieval-calibration.json`) leído
+con json/hashlib (actualizado tras integrar develop; antes eran literales), nunca llamando al adaptador. Las variantes se construyen con `copy.deepcopy` del
 informe real o con constructores mínimos para que solo cambie el dato que se quiere probar.
 
 Endurecimiento desde el principio (lección de la mutación de 2.1 a 2.3): bool frente a entero, NaN e
@@ -74,25 +74,34 @@ METRICS = (
 
 MARKER = "Texto libre con espacios que no debe aparecer en la salida"
 
-REAL_GENERATED_AT = "2026-10-03T07:15:32.826486+00:00"
-# sha256 de las cuatro líneas `<clave>=<sha256>` del corpus real, calculado aparte con hashlib.
-REAL_CORPUS_SHA256 = "c7509230e8cf856e910aca9da8786e635cc25cb2d92bad898730f95f2139af9a"
+# Actualizado tras integrar develop: JUP-120 regeneró el informe de calibración (otra fecha, banco 1.0.1,
+# otros hashes de corpus y otras tasas, que ahora también dependen de `top_k`). Los valores que vienen del
+# informe real se LEEN de él (con json/hashlib, nunca con el adaptador) para que una nueva regeneración no
+# obligue a reescribir las pruebas; lo que se mantiene fijo a mano son las anclas independientes del
+# informe: la rejilla del barrido (28 puntos), los denominadores del banco (20, 20, 20, 8, 8), el
+# troceado (500/50) y los formatos de huella de las pruebas con corpus construido a mano.
+REAL_GENERATED_AT = REPORT["generated_at"]
+REAL_SUITE_VERSION = REPORT["bank"]["suite_version"]
 
-# Barrido real (28 puntos = top_k 3..6 x 7 distancias, en ese orden). Las tasas del informe dependen solo
-# de la distancia máxima. Para cada distancia, escritas a mano desde el JSON, cinco pares
-# (tasa, numerador) en el orden de METRICS; los denominadores reales son 20, 20, 20, 8 y 8.
+
+def _real_corpus_sha256() -> str:
+    """Huella del corpus real calculada con hashlib de forma incremental (sin `corpus_hash` ni el adaptador)."""
+    digest = hashlib.sha256()
+    for position, key in enumerate(sorted(REPORT["corpus"])):
+        if position:
+            digest.update(b"\n")
+        digest.update(f"{key}={REPORT['corpus'][key]['sha256']}".encode("utf-8"))
+    return digest.hexdigest()
+
+
+REAL_CORPUS_SHA256 = _real_corpus_sha256()
+
+# Barrido real (28 puntos = top_k 3..6 x 7 distancias, en ese orden). Las tasas se leen de cada punto del
+# informe (ver `real_point_spec`); los denominadores del banco son 20, 20, 20, 8 y 8 (casos `answer`,
+# casos con sección, casos `answer`, casos `non_answer`, casos `non_answer`).
 REAL_TOP_KS = (3, 4, 5, 6)
 REAL_DISTANCES = (None, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75)
 REAL_DENOMINATORS = (20, 20, 20, 8, 8)
-REAL_BY_DISTANCE = {
-    None: ((0.95, 19), (0.75, 15), (0.0, 0), (0.75, 6), (0.0, 0)),
-    0.5: ((0.45, 9), (0.3, 6), (0.55, 11), (0.125, 1), (0.75, 6)),
-    0.55: ((0.65, 13), (0.45, 9), (0.2, 4), (0.125, 1), (0.5, 4)),
-    0.6: ((0.9, 18), (0.7, 14), (0.05, 1), (0.625, 5), (0.0, 0)),
-    0.65: ((0.95, 19), (0.75, 15), (0.0, 0), (0.75, 6), (0.0, 0)),
-    0.7: ((0.95, 19), (0.75, 15), (0.0, 0), (0.75, 6), (0.0, 0)),
-    0.75: ((0.95, 19), (0.75, 15), (0.0, 0), (0.75, 6), (0.0, 0)),
-}
 # El candidato elegido por el informe real: la distancia 0.6 para cada top_k.
 REAL_SELECTED = {(3, 0.6), (4, 0.6), (5, 0.6), (6, 0.6)}
 
@@ -116,7 +125,7 @@ def expected_run(**fields) -> dict:
     """`run` esperado del informe real; cada prueba puede sobrescribir lo que cambie."""
     run = {
         "run_id": RUN_ID, "source": "JUP-022", "run_at": REAL_GENERATED_AT, "commit": None,
-        "suite": "JUP-069", "suite_version": "1.0.0", "suite_sha256": None,
+        "suite": "JUP-069", "suite_version": REAL_SUITE_VERSION, "suite_sha256": None,
         "corpus_sha256": REAL_CORPUS_SHA256, "embedding_provider": "litellm",
         "embedding_alias": "economicon-embedding",
         "retrieval": {"chunk_size": 500, "chunk_overlap": 50},
@@ -147,13 +156,29 @@ def point_rows(behavior: str, selected: bool, spec) -> list[dict]:
             for metric, (value, denominator, numerator) in zip(METRICS, spec)]
 
 
+def real_point_spec(top_k, max_distance) -> list[tuple]:
+    """Cinco tuplas `(tasa, denominador, numerador)` del punto real `(top_k, max_distance)`, en el orden de METRICS.
+
+    Actualizado tras integrar develop: se leen las tasas del informe real (campo por campo, sin el
+    adaptador) y el numerador es `round(tasa * casos)`; los denominadores se comparan con la ancla fija
+    `REAL_DENOMINATORS` para que un cambio del banco no pase inadvertido.
+    """
+    matches = [p for p in REPORT["points"] if p["top_k"] == top_k and p["max_distance"] == max_distance]
+    assert len(matches) == 1, (top_k, max_distance)
+    answer, non_answer = matches[0]["answer"], matches[0]["non_answer"]
+    values = (answer["document_hit_rate"], answer["section_hit_rate"], answer["empty_rate"],
+              non_answer["document_hit_rate"], non_answer["empty_rate"])
+    cases = (answer["cases"], answer["section_cases"], answer["cases"], non_answer["cases"], non_answer["cases"])
+    assert cases == REAL_DENOMINATORS, (top_k, max_distance, cases)
+    return [(value, denominator, round(value * denominator)) for value, denominator in zip(values, cases)]
+
+
 def real_rows() -> list[dict]:
     rows = []
     for top_k in REAL_TOP_KS:
         for distance in REAL_DISTANCES:
-            spec = [(value, denominator, numerator) for (value, numerator), denominator
-                    in zip(REAL_BY_DISTANCE[distance], REAL_DENOMINATORS)]
-            rows += point_rows(behavior_of(top_k, distance), (top_k, distance) in REAL_SELECTED, spec)
+            rows += point_rows(behavior_of(top_k, distance), (top_k, distance) in REAL_SELECTED,
+                               real_point_spec(top_k, distance))
     return rows
 
 
@@ -242,10 +267,10 @@ class RunBlockTest(unittest.TestCase):
         self.assertEqual(run, {
             "run_id": RUN_ID,
             "source": "JUP-022",
-            "run_at": "2026-10-03T07:15:32.826486+00:00",
+            "run_at": REAL_GENERATED_AT,  # actualizado tras integrar develop: se lee del informe regenerado
             "commit": None,
             "suite": "JUP-069",
-            "suite_version": "1.0.0",
+            "suite_version": REAL_SUITE_VERSION,  # actualizado tras integrar develop: banco 1.0.1
             "suite_sha256": None,
             "corpus_sha256": REAL_CORPUS_SHA256,
             "embedding_provider": "litellm",
@@ -272,7 +297,9 @@ class RunBlockTest(unittest.TestCase):
         self.assertEqual(run["run_at"], "2030-01-02T03:04:05+02:00")
 
     def test_corpus_sha256_calculado_con_hashlib_coincide_con_la_constante(self) -> None:
-        # Doble comprobación de la constante del test: se recalcula aquí desde el JSON real.
+        # Doble comprobación de la constante del test: se recalcula aquí desde el JSON real con otra
+        # construcción (`corpus_hash`, una sola llamada) distinta de la de la constante (incremental).
+        # Actualizado tras integrar develop: la constante ya no es un literal del informe antiguo.
         self.assertEqual(corpus_hash(REPORT["corpus"]), REAL_CORPUS_SHA256)
         self.assertEqual(adapt(REPORT)[0]["corpus_sha256"], corpus_hash(REPORT["corpus"]))
 
@@ -379,37 +406,42 @@ class RealReportRowsTest(unittest.TestCase):
         self.assertEqual(order, expected)
 
     def test_primer_punto_sin_umbral(self) -> None:
-        # top_k=3 sin distancia máxima: 0.95/20, 0.75/20, 0.0/20, 0.75/8 y 0.0/8, y no es candidato.
+        # top_k=3 sin distancia máxima: las cinco filas del primer punto del informe, sin `selected`.
+        # Actualizado tras integrar develop: las tasas (antes 0.95/0.75/0.0/0.75/0.0) se leen del informe
+        # regenerado por JUP-120; se mantiene el orden de métricas, los denominadores 20/20/20/8/8 y que
+        # el punto no es candidato.
+        behavior = "top_k=3,max_distance=none"
         self.assertEqual(self.results[:5], [
-            expected_row("document_hit_answer", "top_k=3,max_distance=none", 0.95, 20, 19),
-            expected_row("section_hit_answer", "top_k=3,max_distance=none", 0.75, 20, 15),
-            expected_row("empty_answer", "top_k=3,max_distance=none", 0.0, 20, 0),
-            expected_row("document_hit_non_answer", "top_k=3,max_distance=none", 0.75, 8, 6),
-            expected_row("empty_non_answer", "top_k=3,max_distance=none", 0.0, 8, 0),
+            expected_row(metric, behavior, value, denominator, numerator)
+            for metric, (value, denominator, numerator) in zip(METRICS, real_point_spec(3, None))
         ])
+        self.assertEqual({row["selected"] for row in self.results[:5]}, {False})
 
     def test_punto_candidato_top_k_4_distancia_0_6(self) -> None:
         # Es el punto de índice 10 (top_k 4 empieza en el 7 y la distancia 0.6 es la cuarta): filas 50 a 54. Es candidato, así que `selected` es True.
-        rows = [row for row in self.results if row["behavior"] == "top_k=4,max_distance=0.6"]
+        # Actualizado tras integrar develop: tasas leídas del informe regenerado (antes 0.9/0.7/0.05/0.625/0.0).
+        behavior = "top_k=4,max_distance=0.6"
+        rows = [row for row in self.results if row["behavior"] == behavior]
         self.assertEqual(rows, [
-            expected_row("document_hit_answer", "top_k=4,max_distance=0.6", 0.9, 20, 18, selected=True),
-            expected_row("section_hit_answer", "top_k=4,max_distance=0.6", 0.7, 20, 14, selected=True),
-            expected_row("empty_answer", "top_k=4,max_distance=0.6", 0.05, 20, 1, selected=True),
-            expected_row("document_hit_non_answer", "top_k=4,max_distance=0.6", 0.625, 8, 5, selected=True),
-            expected_row("empty_non_answer", "top_k=4,max_distance=0.6", 0.0, 8, 0, selected=True),
+            expected_row(metric, behavior, value, denominator, numerator, selected=True)
+            for metric, (value, denominator, numerator) in zip(METRICS, real_point_spec(4, 0.6))
         ])
         self.assertEqual(self.results[50:55], rows)
 
     def test_punto_con_umbral_estricto_top_k_5_distancia_0_5(self) -> None:
-        # Umbral muy estricto: casi todo vacío; 0.55 de vacíos sobre 20 es 11 y 0.75 sobre 8 es 6.
-        rows = [row for row in self.results if row["behavior"] == "top_k=5,max_distance=0.5"]
+        # Umbral muy estricto: casi todo vacío (con 0.5 los vacíos de `answer` superan a los aciertos de
+        # documento por sección y los de `non_answer` son la mayoría).
+        # Actualizado tras integrar develop: tasas leídas del informe regenerado (antes 0.45/0.3/0.55/0.125/0.75).
+        behavior = "top_k=5,max_distance=0.5"
+        rows = [row for row in self.results if row["behavior"] == behavior]
         self.assertEqual(rows, [
-            expected_row("document_hit_answer", "top_k=5,max_distance=0.5", 0.45, 20, 9),
-            expected_row("section_hit_answer", "top_k=5,max_distance=0.5", 0.3, 20, 6),
-            expected_row("empty_answer", "top_k=5,max_distance=0.5", 0.55, 20, 11),
-            expected_row("document_hit_non_answer", "top_k=5,max_distance=0.5", 0.125, 8, 1),
-            expected_row("empty_non_answer", "top_k=5,max_distance=0.5", 0.75, 8, 6),
+            expected_row(metric, behavior, value, denominator, numerator)
+            for metric, (value, denominator, numerator) in zip(METRICS, real_point_spec(5, 0.5))
         ])
+        # El comentario original aludía a vacíos 11/20 y 6/8: se conserva la comprobación de que el
+        # umbral estricto es el que más vacíos produce en `answer` de todo el barrido de ese top_k.
+        empty_rates = [real_point_spec(5, d)[2][0] for d in REAL_DISTANCES]
+        self.assertEqual(max(empty_rates), real_point_spec(5, 0.5)[2][0])
 
     def test_veinte_filas_seleccionadas_y_el_resto_no(self) -> None:
         # Cuatro candidatos x cinco filas. Se comprueba el conjunto exacto de comportamientos.
@@ -1051,7 +1083,10 @@ class PurityTest(unittest.TestCase):
         first[0]["run_id"] = "mutado"
         first[0]["retrieval"]["chunk_size"] = -1
         third = adapt(REPORT)
-        self.assertEqual(third[1][0]["numerator"], 19)
+        # Actualizado tras integrar develop: el numerador de la primera fila ya no es el literal 19 de la
+        # calibración antigua sino el que corresponde al informe real regenerado.
+        self.assertEqual(third[1][0]["numerator"], real_point_spec(3, None)[0][2])
+        self.assertNotEqual(third[1][0]["numerator"], 999)
         self.assertEqual(third[0]["run_id"], RUN_ID)
         self.assertEqual(third[0]["retrieval"], {"chunk_size": 500, "chunk_overlap": 50})
 
@@ -1145,7 +1180,7 @@ class NoFreeTextTest(unittest.TestCase):
         # Lista cerrada: cualquier cadena nueva (un campo copiado de más) rompe esta igualdad.
         run, results = adapt(REPORT)
         self.assertEqual(set(string_values(run)), {
-            RUN_ID, "JUP-022", REAL_GENERATED_AT, "JUP-069", "1.0.0", REAL_CORPUS_SHA256, "litellm",
+            RUN_ID, "JUP-022", REAL_GENERATED_AT, "JUP-069", REAL_SUITE_VERSION, REAL_CORPUS_SHA256, "litellm",
             "economicon-embedding",
         })
         behaviors = {behavior_of(k, d) for k in REAL_TOP_KS for d in REAL_DISTANCES}

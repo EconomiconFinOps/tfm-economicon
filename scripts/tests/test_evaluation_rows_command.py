@@ -54,6 +54,7 @@ import sys
 import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest import mock
 
@@ -85,8 +86,22 @@ RESULT_KEYS = (
 CLASSIFICATION_KEYS = ("is_real", "non_real_reasons", "comparability_key")
 RUN_OUTPUT_KEYS = RUN_KEYS + CLASSIFICATION_KEYS + ("format", "milestone", "report_path", "report_sha256")
 
+# Actualizado tras integrar develop: el informe de calibración de JUP-022 NO es evidencia congelada, lo regenera
+# JUP-120 (nueva fecha, nuevo banco, nuevas tasas), así que su fecha, su huella y su `run_id` se derivan aquí del
+# propio informe real, con json/hashlib/datetime y sin la herramienta: la huella es el sha256 del JSON canónico
+# (ordenado, separadores compactos, ASCII) y el `run_id` es `jup-022-<aaaammddThhmmssZ en UTC>-<8 primeros hex>`.
+# Los otros cuatro informes sí son evidencia fija y conservan sus literales, que siguen anclando el algoritmo de
+# huella y el formato del `run_id`.
+JUP_022_DOCUMENT = json.loads(JUP_022_REPORT.read_text(encoding="utf-8-sig"))
+JUP_022_RUN_AT = JUP_022_DOCUMENT["generated_at"]
+JUP_022_SHA = hashlib.sha256(json.dumps(JUP_022_DOCUMENT, sort_keys=True, separators=(",", ":"),
+                                        ensure_ascii=True).encode("utf-8")).hexdigest()
+JUP_022_RUN_ID = "jup-022-{}-{}".format(
+    datetime.fromisoformat(JUP_022_RUN_AT).astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ"), JUP_022_SHA[:8])
+
 # Cinco ejecuciones del manifiesto versionado, con lo esperado escrito a mano. Los `run_id` derivados y las huellas
 # se fijaron a partir del JSON canónico de cada informe; no cambian mientras el informe (evidencia) no cambie.
+# (La de JUP-022 es la excepción descrita arriba y se deriva del informe vigente.)
 REAL_CASES = (
     {
         "path": JUP_070_RUN_1, "format": "jup-070-report-v1", "source": "JUP-070",
@@ -112,8 +127,8 @@ REAL_CASES = (
     {
         "path": JUP_022_REPORT, "format": "jup-022-calibration-v1", "source": "JUP-022",
         "report_path": "docs/spikes/JUP-022-retrieval-calibration.json",
-        "run_id": "jup-022-20261003T071532Z-0ea0629a",
-        "sha": "0ea0629a1ba78b822d8138eb739ef77b6930305b3c237af3efddf45880e4c389",
+        "run_id": JUP_022_RUN_ID,
+        "sha": JUP_022_SHA,
         "rows": 140, "reasons": [],
     },
     {
@@ -432,7 +447,9 @@ class NormalizeRealReportsTest(unittest.TestCase):
     def test_valores_de_fecha_y_modelo_de_los_informes_reales(self) -> None:
         runs = [output["run"] for output in self.normalized]
         self.assertEqual([run["run_at"] for run in runs], [
-            "2026-10-08T20:13:54Z", "2026-10-08T21:01:44Z", None, "2026-10-03T07:15:32.826486+00:00", None])
+            "2026-10-08T20:13:54Z", "2026-10-08T21:01:44Z", None, JUP_022_RUN_AT, None])
+        # Actualizado tras integrar develop: la fecha de la calibración (antes el literal
+        # 2026-10-03T07:15:32.826486+00:00) es la `generated_at` del informe regenerado, copiada sin normalizar.
         self.assertEqual([run["generation_model"] for run in runs],
                          ["plantilla-sin-modelo", "plantilla-sin-modelo", None, None, None])
 

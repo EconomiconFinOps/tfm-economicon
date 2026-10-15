@@ -103,6 +103,7 @@ CI_BLOCK_TODAY = [
     "corepack pnpm docker:validate",
     "corepack pnpm local:test",
     "corepack pnpm cd:test",
+    "corepack pnpm tokenizer:test",
     "corepack pnpm collaboration:test",
     "corepack pnpm contributions:test",
     "corepack pnpm openspec:validate",
