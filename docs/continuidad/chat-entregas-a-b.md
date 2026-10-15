@@ -4,6 +4,11 @@ Actualizado: 2026-10-15. Origen: chat 01a1270c-e332-7462-9c90-706d49ade92c.
 El usuario confirma aprobación del equipo y autoriza actualizar Trello, publicar
 A y cerrar #120/#121 sin integrar. No autoriza despliegue ni mensajes Discord.
 
+Actualización vigente15/10: N3 completa84/84, con fallos/incertidumbres conservados.
+La extensión sólo temporal de las mismas claves fue autorizada y aplicada sin
+reset. Recogida no implica aceptación; estado detallado y snapshots en
+[evaluación local](chat-evaluacion-local.md). Los cortes8/70 inferiores son históricos.
+
 ## Base incorporada: A8ea5a0c4 y develop0543c5ee
 
 Última consulta registrada previa a esta validación: PR130 OPEN/sin merge,

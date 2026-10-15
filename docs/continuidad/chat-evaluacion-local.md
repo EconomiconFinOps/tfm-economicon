@@ -7,7 +7,82 @@ continuar desde009 usando la corrección contable, sin repetir las ocho muestras
 anteriores ni liberar reservas pendientes. Sustituye los máximos anteriores;
 no reinicia gasto, ledger, intentos ni caducidad. B sigue sin publicar.
 
-### Corte vigente70/84, detenido por caducidad — 15/10/2026 08:04 UTC
+### N3 completa, revisión provisional — 15/10/2026
+
+Se completaron **84/84 muestras** del producto `7be57c05`, con el mismo plan y
+ledger: 83 operaciones completadas y un fallo técnico conservado. Sin repetir muestras recogidas, cambiar prompt/banco ni
+liberar reservas anteriores. Los ocho recibos iniciales y 302 filas históricas
+siguen idénticos. El snapshot de 70 permanece inmutable. La ampliación explícita de
+las mismas dos claves hasta las 12:02 de París se aplicó sin reset ni claves nuevas.
+
+| Resultado local provisional | Cantidad |
+| --- | --- |
+| Respuestas conformes | 75 |
+| Respuestas con fallo de contenido | 4 |
+| Respuestas inciertas | 4 |
+| Fallos técnicos conservados | 1 |
+| Requisitos conformes/fallidos/inciertos/no evaluables | 480/5/4/6 |
+
+No es aceptación independiente. El 015 omite seguimiento/alertas en 3/3; el 003:r2 eleva
+campos conceptuales a prerrequisitos. El 013:r3 termina classification_unverified_prose
+sin candidato/campo privado exacto conservado: no inventar la frase causante.
+Incertidumbres 003:r3/012:r3/023:r2/025:r3 pendientes de adjudicación. En 025:r3 se
+puede extender indebidamente la validación de rightsizing a cualquier cambio.
+017/021/027 son conformes 3/3 en este candidato, sin sustituir fallos históricos.
+El 020:r3 inserta una cita literal de commitments en rightsizing: selección de pasaje
+defectuosa aunque el chunk citado sí soporta afirmaciones reales de la respuesta;
+no equivaler conformidad bajo la rúbrica a presentación perfecta.
+
+Comparación por requisito frente a c7: 457 conservan conformidad, 5 pasan de fallo
+a conformidad, 12 de incertidumbre a conformidad, 3 de conformidad a fallo,
+4 de conformidad a incertidumbre y 2 siguen fallidos. Los tres checks regresivos
+se agrupan en dos respuestas: 003:r2 y 015:r3.
+El fallo técnico 013:r3 se compara aparte. No se demuestra cero regresiones
+obligatorias; B sigue sin aceptar, publicar ni integrar.
+
+Contabilidad a las 09:40 UTC: contador conservador 2,910121466 USD + reservas
+y seed 3,201520 USD = **6,111641466 / 10 USD**. No es gasto exacto atribuible
+al trabajo. En la campaña hay 80 costes observados y 4 máximos íntegros retenidos.
+El ledger conserva sus 379 filas, sin reinicio contable.
+
+Snapshot privado: `candidate-7be57c05-n3-complete-cap10-v1`,
+343 archivos, manifest SHA `79d0698702721c450b97c56ccee452aac3daffa92bd2bdafdb5eaf8d769d2415`.
+Snapshot público/juicios: `candidate-7be57c05-complete84-review-frozen-v1`,
+89 archivos, manifest SHA `27a3f2319f585a78b24d8a94022ba56889df8a7d59fc29264476ecae09b07841`.
+Cada vista enlaza por SHA su recibo privado; logs/credenciales no exportados.
+Evidencia externa: `candidate-7be57c05-n3-complete-cap10-freeze-proof-v1.json`,
+`candidate-7be57c05-complete84-local-review-freeze-proof-v1.json` y
+`accounting-final-readonly-1792057232.json` en materiales/07-evidencias/PR121-local-evaluation.
+
+Siguientes pasos: corregir cobertura del 015 con evidencia autorizada que cubra toda
+la pregunta; mejorar diagnóstico estructural del 013 antes de atribuir causa o relajar
+validación; resolver el 003 y las dudas con adjudicación independiente y acordar criterios
+con revisores. Después medir el candidato corregido y N5 según alcance/presupuesto.
+La recogida 2.7 queda completa con costes desconocidos retenidos, no liquidados.
+No iniciar otra campaña bajo claves caducadas ni renovar vigencia implícitamente.
+
+### Reanudación tras ampliar sólo caducidad — 15/10/2026 09:30 UTC
+
+El usuario autorizó expresamente ampliar las mismas dos claves hasta12:02 París
+(10:02UTC). Aplicado09:29UTC: caducidad10:02:19UTC, material de clave idéntico,
+contadores sin disminuir y modelos/límites/reset inalterados. Sin claves nuevas,
+reinicios ni liberación de reservas. Prueba externa
+`existing-key-expiry-extension-20261015.json`.
+
+Lectura previa: contador conservador2.860663886 +reservas3.201520 =6.062183886/10USD.
+No representa gasto exacto atribuible al trabajo. Se comprobaron365 filas idénticas
+al snapshot70, origen365 hashes y70 recibos idénticos. Controladorv5
+PID429838/start_ticks65550532 retoma015r3; ningún recibo anterior se reenvía.
+`candidate-7be57c05-n3-launch-v5.json` y
+`resume-b-after-approved-expiry-v5.py` documentan la reanudación. El primer intento
+de comprobación se detuvo antes de lanzar por exigir liquidación de una reserva
+histórica; se corrigió el guard para exigir sólo disposición de las70 muestras
+actuales y conservar el ledger histórico íntegro. No fue una petición de modelo.
+
+Esta reanudación terminó a las 09:40 UTC sin cambiar producto/prompt/banco.
+El resultado completo figura arriba; los snapshots anteriores se conservan.
+
+### Corte anterior70/84, detenido por caducidad — 15/10/2026 08:04 UTC
 
 Máximo10USD aplicado y comprobado con herramientas5f32ea08/109PASS; producto7be
 inmutable. Se continuó desde009r1 hasta014r3:70 recibos públicos verificados,

@@ -19,7 +19,7 @@
 - [x] 2.5 Recoger N3 del candidato e23e495b:84/84 recibos verificados,78completed/6failed conservados; costes desconocidos con reserva íntegra, no aceptación semántica.
 - [x] 2.6 Recoger y revisar localmente N3 de c7e2d561:84/84 recibos,83 completed/1 failed;70 conformes/7 inciertas/6 fallos de contenido/1 técnico. Snapshot258 hashes; no adjudicación independiente ni aceptación.
 
-- [ ] 2.7 Completar N3 de7be57c05 y su conciliación.
+- [x] 2.7 Completar N3 de7be57c05 y su conciliación (costes desconocidos con máximos íntegros retenidos).
   - Detenida8/84, ocho respuestas verificadas y siete costes conciliados. Primera final008 EOF/500 sin ID upstream, reserva íntegra0.319952. Snapshot31 hashes y ledger303 filas; sin reenvíos manuales. Cota4.790558402/5USD; siguiente reserva exigiría5.110510402. No iniciar009 ni declarar gratuitas fases desconocidas; resolver conciliación/margen y tratamiento de operación completada con consumo parcial. Juicio local8 conformes/49 requisitos; no aceptación ni N3 completa.
 
   - Corrección local4d3 de herramientas: retención íntegra para respuestas completadas con consumo desconocido, sin falsear estado;109 pruebas y ensayo de303 filas conformes,302 anteriores/importes intactos y009 aún rechazado con5USD. Sin transferir/aplicar a campaña/ledger real. Plan7be intacto; revisión de herramientas separada antes de continuar. Consulta6USD pendiente, no autorización.
@@ -27,6 +27,8 @@
   - Autorización15/10 máximo10USD. Herramientas5f32/109PASS separadas del producto7be; retención completed008/018 aplicada sin liberar importe alguno. Ocho recibos r1 inmutables; mismo plan/ledger, continuación desde009. Primera ronda27 conformes/1 fallo015 (seguimiento/alertas); segunda ronda en curso y003r2 con afirmación documental no sustentada.35 revisadas33 conformes/2 fallidas; no N3 completa ni aceptación. Ver continuidad para SHA/costes/UI.
 
   - Corte15/10 08:04UTC:70/84 verificados,69completed/1failed,66costes observados/4maximos íntegros. Snapshot287 hashes y ocho recibos iniciales intactos.63 conformes/3fallidas/3inciertas/1técnica (013r3 classification_unverified_prose). Caducidad bloquea015r3; extensión temporal solicitada, no aplicada. Cota6.059886129/10USD con3.201520 reservados intactos. Faltan14, no cerrar2.7 ni aceptación.
+
+  - Cierre15/10:84/84 recibos verificados,379 filas; {'pass': 75, 'fail': 4, 'pending': 4, 'technical_failure': 1}. Requisitos{'pass': 480, 'fail': 5, 'uncertain': 4, 'unreviewed': 6}. Snapshots privado/público congelados y ocho iniciales intactos; no aceptación. Máximos desconocidos retenidos, sin declarar coste0. Ver continuidad para hashes/comparación y cota6.111641466/10USD.
 
 ## 3. Correcciones y entrega
 - [ ] 3.1 Corregir defectos medidos con lógica determinista.
