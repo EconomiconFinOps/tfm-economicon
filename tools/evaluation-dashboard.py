@@ -2462,10 +2462,34 @@ def _split_psql_command(parser: argparse.ArgumentParser, text):
     return command
 
 
+# Opciones que esperan un valor. Se declaran como constante junto al parser (y no se derivan de `parser._actions`,
+# que es API privada de `argparse`): si se añade una opción con valor hay que apuntarla aquí, y el test del `--`
+# fija las cuatro actuales.
+_VALUE_OPTIONS = ("--manifest", "--root", "--output", "--psql-command")
+
+
+def _drop_pnpm_double_dash(argv: list) -> list:
+    """Quita UN `--` suelto (el primero exacto) que pnpm reenvía al script.
+
+    pnpm 9 pasa el `--` literal al script (`pnpm x -- --opt` ejecuta `x "--" "--opt"`) y `argparse` trataría lo
+    siguiente como posicional. La herramienta no tiene argumentos posicionales, así que ignorarlo no pierde nada.
+    Se respeta el `--` que sigue a una opción con valor: ahí `argparse` responde «expected one argument» y quitarlo
+    convertiría `--manifest -- RUTA` en `--manifest RUTA`, ocultando un error de uso. Solo se quita el primero: un
+    segundo `--` sigue siendo un error de uso, y un `--` pegado a otro texto (`--x`, `---`) no es este argumento.
+    """
+    for index, argument in enumerate(argv):
+        if argument == "--":
+            if index > 0 and argv[index - 1] in _VALUE_OPTIONS:
+                return argv
+            return argv[:index] + argv[index + 1:]
+    return argv
+
+
 def main(argv=None) -> int:
     """Línea de comandos. Devuelve 0 si todo fue bien y 1 ante un error de datos o de carga; el 2 lo da `argparse`."""
     parser = _build_parser()
-    args = parser.parse_args(argv)
+    # Con `argv=None` `argparse` lee `sys.argv[1:]`; se materializa aquí para poder filtrar el `--` de pnpm.
+    args = parser.parse_args(_drop_pnpm_double_dash(list(sys.argv[1:] if argv is None else argv)))
     password = command = None
     if args.command == "load":
         # La contraseña se mira ANTES de leer ningún manifiesto o lanzar nada: sin ella no hay nada que hacer, y el

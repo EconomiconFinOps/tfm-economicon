@@ -44,6 +44,10 @@
     "retrieval-calibration:test": "python -m unittest discover -s scripts/tests -p test_retrieval_calibration.py",
     "assistant-metrics:test": "python -m unittest discover -s scripts/tests -p test_assistant_metrics.py",
     "assistant-eval:test": "python -m unittest discover -s scripts/tests -p test_assistant_eval.py",
+    "evaluation-dashboard:rows": "python tools/evaluation-dashboard.py rows",
+    "evaluation-dashboard:sql": "python tools/evaluation-dashboard.py sql",
+    "evaluation-dashboard:load": "python tools/evaluation-dashboard.py load",
+    "evaluation-dashboard:test": "python -m unittest discover -s scripts/tests -p \"test_evaluation_*.py\"",
     "synthetic-demo:test": "python -m unittest discover -s scripts/tests -p test_synthetic_cost_demo.py",
     "demo-dataset:test": "python -m unittest discover -s scripts/tests -p test_demo_dataset.py",
     "demo-data:test": "python -m unittest discover -s scripts/tests -p test_demo_data.py"
