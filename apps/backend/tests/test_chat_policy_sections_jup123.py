@@ -12,16 +12,26 @@ from app.schemas.chat import provider_response_schema, validate_response
 from app.services.citations import DocumentCitations
 
 
-def actual_catalog(question):
+def actual_catalog(question, include_companion=True):
     root = Path(__file__).resolve().parents[3]
     document = DocumentCitations((root/'docs/assistant-corpus/business-rules/economicon-mvp-rules.md').read_text(encoding='utf-8'))
     sources = []
     for index, left in enumerate(range(0, len(document.normalized), 450)):
-        content = document.normalized[left:left+500]
+        content = document.normalized[left:left+500].strip()
         sources.append({'id': f'rules:{index}', 'kind': 'corpus', 'source': 'rules',
                         'title': document.title, 'content': content,
                         'provenance': {'document_id': 'rules', 'chunk_index': index,
                                        'sections': document.section_spans(content)}})
+    if include_companion:
+        from app.core.chat_policy_sections import policy_topic
+        if policy_topic(question)=='budget_operation':
+            finops=DocumentCitations((root/'docs/assistant-corpus/finops/azure-finops-mvp.md').read_text(encoding='utf-8'))
+            for index,left in enumerate(range(0,len(finops.normalized),450)):
+                content=finops.normalized[left:left+500].strip();spans=finops.section_spans(content)
+                if any(s['section']=='Conceptos FinOps Basicos' for s in spans):
+                    sources.append({'id':f'finops:{index}','kind':'corpus','source':'finops',
+                        'title':finops.title,'content':content,'provenance':{'document_id':'finops',
+                        'chunk_index':index,'sections':spans}})
     return context_quantities({'authorized_evidence': sources, 'messages': [
         {'content': 'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({'question': question})},
         {'content': 'UNTRUSTED_RETRIEVAL_CONTEXT\n'+json.dumps({'evidence': sources})}]})
@@ -29,7 +39,7 @@ def actual_catalog(question):
 
 @pytest.mark.parametrize('question,expected', [
     ('Enumera las reglas de tagging.', ('costcenter', 'businessunit', 'minusculas', 'PII', 'preferentemente')),
-    ('¿Un presupuesto apaga las máquinas?', ('investigacion, no apagado automatico', 'prediccion', 'forecast y budget')),
+    ('¿Un presupuesto apaga las máquinas?', ('investigacion, no apagado automatico', 'prediccion', 'forecast y budget','seguimiento y alertas','no apaga recursos por defecto')),
 ])
 def test_complete_corpus_policy_preserves_rules_in_backend_public_validation(question, expected):
     q = actual_catalog(question)
@@ -48,3 +58,7 @@ def test_complete_corpus_policy_preserves_rules_in_backend_public_validation(que
     tampered = copy.deepcopy(public)
     tampered['evidence'][0]['id'] = 'another-tenant:policy'
     with pytest.raises(ValueError): validate_response(tampered, q.authorized_sources)
+
+
+def test_rules_alone_are_not_complete_budget_coverage():
+    assert required_policy(actual_catalog('¿Un presupuesto apaga las máquinas?',include_companion=False)) is None
