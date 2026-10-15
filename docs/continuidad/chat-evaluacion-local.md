@@ -27,6 +27,15 @@ ahorro. Primeras231pruebas processor y5backend conformes, aún sin nueva campañ
 ni activación. Las etiquetas antiguas de020 siguen inciertas; no se reescriben.
 El resultado que sigue corresponde al candidato anterior congelado.
 
+Primer corte `d9b1aae9`: archivo SHA1187a68c59d570d2306ca72fbe3ec069630326277ab6faa3f23b0092efa887e8,
+plan SHAa2cc929022ccd0dc32ca5a05ec3f0d75ffc33dbba16d92960bbd04ddc18f23b0.
+Transferido sin credenciales, sin activar. Build aislado se detuvo con231pruebas
+de lógica conformes y fallo de fixture de contrato (503en descriptor): faltaba
+incorporar los nuevos campos del contrato esperado en la prueba; no se relaja
+la validación. Se conserva JUnit fallido y se prepara un nuevo corte versionado.
+Replay offline de83contextos anteriores: rutas nuevas sólo020/027,6respuestas;
+no modifica juicios históricos ni cuenta como campaña real.
+
 **003, 013, 015 y 025 pasan 3/3** en el candidato actual. La N3 original de28casos
 terminó84/84 muestras:83respuestas completadas y1fallida. Revisión local provisional:
 **80 conformes,1fallo de coherencia027:r2,2inciertas020:r1/r3 y1fallo técnico022:r1**.
