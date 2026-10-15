@@ -23,6 +23,9 @@ class MigrationRunner:
                         raise ValueError('Missing legacy table.')
                 module=import_module(f'{self.migration_package}.005_reconcile_chat_anomalies')
                 module.verify(connection)
+                if '006' not in versions:
+                    raise ValueError('Incomplete document migration.')
+                import_module(f'{self.migration_package}.006_document_ingestion').verify(connection)
         except Exception:
             raise StartupError('Backend schema is not ready; run the exclusive migrator.') from None
 

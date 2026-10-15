@@ -355,6 +355,27 @@ Puertos visibles:
 - Processor health: `http://localhost:8001/health`
 - Azure Cost API: `http://localhost:8002/health`
 
+### Ingesta de archivos
+
+La pantalla Ingesta permite seleccionar o arrastrar **un archivo por envío**,
+MD/TXT UTF-8/PDF/DOCX/DOC, hasta **20 MB (20.000.000 bytes)**. Una transferencia
+activa excluye otras del mismo usuario entre sesiones; otros usuarios pueden
+subir al mismo cliente. Los estados distinguen transferencia, confirmación,
+cola, procesamiento y finalización. El formulario de texto sigue disponible.
+
+MinIO arranca con el Compose general. Completa `MINIO_ROOT_USER`,
+`MINIO_ROOT_PASSWORD`, `DOCUMENT_S3_ACCESS_KEY` y `DOCUMENT_S3_SECRET_KEY` con
+credenciales propias distintas para administración y aplicación. Alinea
+`DOCUMENT_S3_PUBLIC_ENDPOINT`/`MINIO_HOST_PORT` y los orígenes exactos de
+`DOCUMENT_CORS_ORIGINS` con el navegador; no usar comodines. El primer build
+incluye fuentes oficiales fijadas de MinIO y herramientas locales OCR/Word.
+
+El original se retira automáticamente tras persistir extracción/vectores y
+completed. La representación normalizada se conserva y permite reutilizar el
+documento sin reextraerlo. Los pendientes y reintentos conservan sus originales.
+Configuración, licencias, sandbox Linux, límites y reproducción están en el
+[runbook de ingesta documental](docs/runbooks/document-ingestion.md).
+
 ### Individualmente
 
 Puedes ejecutar cada submodulo por separado desde su propia carpeta:

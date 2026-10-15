@@ -1,4 +1,5 @@
 import json
+import re
 
 from app.agents.guardrails import AgentInputError
 from app.clients.litellm import ProviderError
@@ -45,8 +46,12 @@ def _payload(job: dict, *, persisted: bool = False) -> dict:
             raise InvalidJobMessage("Invalid job message.") from None
     if (
         not isinstance(payload, dict)
-        or not isinstance(payload.get("text_content"), str)
-        or not payload["text_content"].strip()
+        or not (
+            (isinstance(payload.get("text_content"), str) and payload["text_content"].strip())
+            or (isinstance(payload.get("upload_id"), str)
+                and re.fullmatch(r'[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}', payload['upload_id'])
+                and 'text_content' not in payload)
+        )
         or not isinstance(payload.get("metadata", {}), dict)
         or not isinstance(job.get("source"), str)
         or not job["source"].strip()
@@ -97,9 +102,10 @@ def _stored_result(result, stored_as_text: bool = True) -> dict:
 
 
 class IngestTask:
-    def __init__(self, repository: JobRepository, pipeline: PipelineRunner):
+    def __init__(self, repository: JobRepository, pipeline: PipelineRunner, documents=None):
         self.repository = repository
         self.pipeline = pipeline
+        self.documents = documents
 
     def execute(self, job: dict) -> dict:
         if not isinstance(job, dict) or not all(
@@ -126,21 +132,47 @@ class IngestTask:
             # serializado; un `False` por defecto cambiaria su comportamiento sin motivo.
             # El repositorio real (que si lo declara) es quien fija `False` sobre CockroachDB.
             stored_as_text = getattr(self.repository, "json_stored_as_text", True)
-            return _stored_result(stored.get("result"), stored_as_text)
+            result = _stored_result(stored.get("result"), stored_as_text)
+            if self.documents is not None:
+                self.documents.completed(stored, payload)
+            return result
 
-        self.repository.mark_running(job_id, **scope)
+        if self.documents is not None:
+            self.documents.claim(stored, payload)
+        elif 'upload_id' in payload:
+            raise InvalidJobMessage('Document processing is not configured.')
         try:
+            self.repository.mark_running(job_id, **scope)
+        except Exception:
+            if self.documents is not None:
+                self.documents.release(stored)
+            raise
+        try:
+            document = self.documents.prepare(stored, payload) if self.documents is not None else None
             # Only persisted execution content reaches the graph after authorization.
             pipeline_input = {
                 "job_id": job_id,
                 "tenant_id": stored["tenant_id"],
                 "source": stored["source"],
                 "artifact_uri": stored.get("artifact_uri"),
-                "text_content": payload["text_content"],
+                "text_content": document["text"] if document is not None else payload["text_content"],
                 "metadata": payload.get("metadata", {}),
             }
+            if self.documents is not None:
+                self.documents.assert_owned(stored, payload)
             result = self.pipeline.run(pipeline_input)
-            self.repository.mark_completed(job_id, result, **scope)
+            if self.documents is not None:
+                self.documents.assert_owned(stored, payload)
+            completion_scope = scope
+            if self.documents is not None and 'upload_id' in payload:
+                # File text/chunks are already durable in checkpoint/pgvector. Do not
+                # duplicate an unbounded document in Cockroach's jobs.result message.
+                result = {key: value for key, value in result.items() if key not in {'text_content', 'chunks'}}
+                result.update(document_id=job_id, document_schema_version=1)
+                completion_scope = {**scope, 'document_owner': self.documents.owner}
+            self.repository.mark_completed(job_id, result, **completion_scope)
+            if self.documents is not None:
+                self.documents.completed(stored, payload)
             return result
         except ProviderError:
             self.repository.mark_failed(job_id, "ingestion_failed", **scope)
@@ -153,3 +185,7 @@ class IngestTask:
             # worker la lea: la causa se aplana a proposito (`from None`) para no filtrar
             # secretos ni el motivo del guardrail por trazas (JUP-053).
             raise IngestionFailed(permanent=isinstance(exc, AgentInputError)) from None
+
+        finally:
+            if self.documents is not None:
+                self.documents.release(stored)

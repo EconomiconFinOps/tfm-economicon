@@ -47,8 +47,13 @@ class Database:
 
     def update_job_status(
         self, job_id: str, status: str, result: dict | None = None,
-        *, tenant_id: str, created_by: str,
+        *, tenant_id: str, created_by: str, document_owner: str | None = None,
     ) -> None:
+        if document_owner is not None and status != 'completed':
+            raise ValueError('Document ownership fence is only for completion')
+        ownership = """ AND EXISTS (SELECT 1 FROM document_execution_claims c
+            WHERE c.job_id=jobs.id AND c.tenant_id=jobs.tenant_id
+                AND c.owner=:document_owner AND c.expires_at>:updated_at)""" if document_owner is not None else ''
         with self.engine.begin() as connection:
             updated = connection.execute(
                 text(
@@ -59,12 +64,13 @@ class Database:
                         updated_at = :updated_at
                     WHERE id = :job_id AND tenant_id = :tenant_id AND created_by = :created_by
                       AND status <> 'completed'
-                    """
+                    """ + ownership
                 ),
                 {
                     "job_id": job_id,
                     "tenant_id": tenant_id,
                     "created_by": created_by,
+                    "document_owner": document_owner,
                     "status": status,
                     "result": json.dumps(result) if result is not None else None,
                     "updated_at": datetime.now(timezone.utc),

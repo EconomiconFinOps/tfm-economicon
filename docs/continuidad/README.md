@@ -8,6 +8,7 @@ Las fechas indican la última actualización documental, no una nueva ejecución
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
+| [Ingesta documental](ingesta-documental.md) | Etapa experimental: subida privada MinIO, extracción local MD/TXT/PDF/DOCX/DOC, contrato normalizado durable y limpieza tras éxito. Rama `feat/rag-ingestion`; sin JUP oficial ni integración en develop. | 2026-10-15 |
 | [Consultas de coste Azure](../evidence/JUP-036-validation.md) | PR69: reconciliación local de `1cf4087f` con develop `a3f514f7` (#129), sin cambios de producto. Corpus1.1.1 conservado; los dos casos SQL pendientes pasan en Cockroach24.1.11. Revisión/validación independientes del nuevo candidato y CI posterior pendientes. | 2026-10-15 |
 | [División del chat en A/B](chat-entregas-a-b.md) | JUP-122: merge local con develop 0543c5ee resuelto y probado, conservando JUP-038 y los arreglos de A; commit/push pendientes del PM. JUP-123 mantiene calidad/evaluacion fuera de esta entrega. | 2026-10-14 |
 | [Pantallas de maqueta ocultas del MVP](pantallas-ocultas-mvp.md) | JUP-116: Coste Detallado, Corte Global y Recomendaciones ya no tienen ruta ni menú (se conservan en el código y se reactivan con dos líneas) y Overview sale del menú pero conserva su ruta; una dirección desconocida lleva a `/`. 797 pruebas del frontend y 16 comprobaciones en navegador; mergeado en `develop` el 2026-10-12 (#124). | 2026-10-13 |
