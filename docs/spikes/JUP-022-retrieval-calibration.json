@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "jup": "JUP-022",
-  "generated_at": "2026-10-14T05:26:36.814103+00:00",
+  "generated_at": "2026-10-15T09:21:21.046773+00:00",
   "provider": {
     "name": "litellm",
     "alias": "economicon-embedding",
@@ -18,7 +18,7 @@
     },
     "product": {
       "path": "docs/assistant-corpus/product-architecture/economicon-product-context.md",
-      "sha256": "2cb4a8efdc5a5141cad3c1aaf19aa9fd4def9b7df3dc544c8d2b98896eac9bc1"
+      "sha256": "d29c3ec47bf19638b812d77dd9d766495d9df22395546b6671b3cb11845d4430"
     },
     "glossary": {
       "path": "docs/assistant-corpus/glossary/glossary.md",
@@ -41,9 +41,9 @@
   "chunking": {
     "size": 500,
     "overlap": 50,
-    "chunks": 65
+    "chunks": 66
   },
-  "planned_calls": 93,
+  "planned_calls": 94,
   "sweep": {
     "top_k": [
       3,
@@ -752,7 +752,7 @@
         {
           "source": "finops",
           "section": "Showback Y Chargeback",
-          "distance": 0.5689
+          "distance": 0.5688
         },
         {
           "source": "finops",
@@ -817,12 +817,12 @@
         {
           "source": "rules",
           "section": "Servicio sin gasto previo",
-          "distance": 0.6609
+          "distance": 0.6608
         },
         {
           "source": "glossary",
           "section": "Amortized Cost",
-          "distance": 0.6623
+          "distance": 0.6624
         },
         {
           "source": "finops",
@@ -832,7 +832,7 @@
         {
           "source": "rules",
           "section": "Anomaly",
-          "distance": 0.6739
+          "distance": 0.6745
         }
       ]
     },
@@ -867,7 +867,7 @@
         {
           "source": "finops",
           "section": "Showback Y Chargeback",
-          "distance": 0.6345
+          "distance": 0.634
         },
         {
           "source": "rules",
@@ -891,7 +891,7 @@
       "behavior": "answer",
       "category": "costs",
       "coverage": "direct",
-      "best_expected_distance": 0.4483,
+      "best_expected_distance": 0.4484,
       "best_other_distance": 0.4287,
       "retrieved": [
         {
@@ -907,7 +907,7 @@
         {
           "source": "finops",
           "section": "Conceptos FinOps Basicos",
-          "distance": 0.4483
+          "distance": 0.4484
         },
         {
           "source": "finops",
@@ -917,7 +917,7 @@
         {
           "source": "finops",
           "section": "Showback Y Chargeback",
-          "distance": 0.4748
+          "distance": 0.4743
         },
         {
           "source": "rules",
@@ -972,7 +972,7 @@
         {
           "source": "finops",
           "section": "Showback Y Chargeback",
-          "distance": 0.6099
+          "distance": 0.6096
         },
         {
           "source": "product",
@@ -1027,7 +1027,7 @@
         {
           "source": "finops",
           "section": "Showback Y Chargeback",
-          "distance": 0.5404
+          "distance": 0.5399
         },
         {
           "source": "finops",
@@ -1082,7 +1082,7 @@
         {
           "source": "finops",
           "section": "Showback Y Chargeback",
-          "distance": 0.543
+          "distance": 0.5425
         }
       ]
     },
@@ -1092,27 +1092,27 @@
       "category": "allocation",
       "coverage": "direct",
       "best_expected_distance": null,
-      "best_other_distance": 0.3658,
+      "best_other_distance": 0.3657,
       "retrieved": [
         {
           "source": "rules",
           "section": "Estados De Allocation",
-          "distance": 0.3658
+          "distance": 0.3657
         },
         {
           "source": "glossary",
           "section": "Allocated Cost",
-          "distance": 0.4189
+          "distance": 0.4188
         },
         {
           "source": "finops",
           "section": "Coste No Asignado Y Coste Compartido",
-          "distance": 0.4236
+          "distance": 0.4235
         },
         {
           "source": "finops",
           "section": "Showback Y Chargeback",
-          "distance": 0.4719
+          "distance": 0.4714
         },
         {
           "source": "rules",
@@ -1122,7 +1122,7 @@
         {
           "source": "rules",
           "section": "Reglas De Tagging",
-          "distance": 0.5125
+          "distance": 0.5124
         },
         {
           "source": "finops",
@@ -1132,7 +1132,7 @@
         {
           "source": "glossary",
           "section": "Budget",
-          "distance": 0.5536
+          "distance": 0.5537
         }
       ]
     },
@@ -1142,12 +1142,12 @@
       "category": "allocation",
       "coverage": "direct",
       "best_expected_distance": 0.6255,
-      "best_other_distance": 0.5683,
+      "best_other_distance": 0.5682,
       "retrieved": [
         {
           "source": "rules",
           "section": "Reglas De Tagging",
-          "distance": 0.5683
+          "distance": 0.5682
         },
         {
           "source": "glossary",
@@ -1217,12 +1217,12 @@
         {
           "source": "product",
           "section": "Lo Que El Asistente No Debe Exponer",
-          "distance": 0.4845
+          "distance": 0.4776
         },
         {
           "source": "product",
           "section": "Scope, Dataset Y Tenant",
-          "distance": 0.5072
+          "distance": 0.5145
         },
         {
           "source": "product",
@@ -1241,7 +1241,7 @@
       "behavior": "answer",
       "category": "tagging",
       "coverage": "direct",
-      "best_expected_distance": 0.4631,
+      "best_expected_distance": 0.463,
       "best_other_distance": 0.4014,
       "retrieved": [
         {
@@ -1257,7 +1257,7 @@
         {
           "source": "rules",
           "section": "Reglas De Tagging",
-          "distance": 0.4631
+          "distance": 0.463
         },
         {
           "source": "finops",
@@ -1322,7 +1322,7 @@
         {
           "source": "finops",
           "section": "Showback Y Chargeback",
-          "distance": 0.5212
+          "distance": 0.5208
         },
         {
           "source": "glossary",
@@ -1415,11 +1415,6 @@
           "distance": 0.5715
         },
         {
-          "source": "product",
-          "section": "Revisar una anomalia",
-          "distance": 0.6083
-        },
-        {
           "source": "finops",
           "section": "Inform",
           "distance": 0.6148
@@ -1433,6 +1428,11 @@
           "source": "rules",
           "section": "Severidad",
           "distance": 0.629
+        },
+        {
+          "source": "rules",
+          "section": "KPIs Minimos",
+          "distance": 0.6305
         }
       ]
     },
@@ -1475,14 +1475,14 @@
           "distance": 0.5965
         },
         {
-          "source": "product",
-          "section": "Revisar una anomalia",
-          "distance": 0.601
-        },
-        {
           "source": "finops",
           "section": "Idea Fundamental De FinOps",
           "distance": 0.6011
+        },
+        {
+          "source": "finops",
+          "section": "Conceptos FinOps Basicos",
+          "distance": 0.6106
         }
       ]
     },
@@ -1542,12 +1542,12 @@
       "category": "anomalies",
       "coverage": "direct",
       "best_expected_distance": 0.4871,
-      "best_other_distance": 0.4713,
+      "best_other_distance": 0.4714,
       "retrieved": [
         {
           "source": "rules",
           "section": "Episodio y valor esperado",
-          "distance": 0.4713
+          "distance": 0.4714
         },
         {
           "source": "rules",
@@ -1662,17 +1662,17 @@
         {
           "source": "rules",
           "section": "Estados De Allocation",
-          "distance": 0.6265
+          "distance": 0.6266
         },
         {
           "source": "finops",
           "section": "Showback Y Chargeback",
-          "distance": 0.633
+          "distance": 0.6324
         },
         {
           "source": "glossary",
           "section": "Anomaly",
-          "distance": 0.6339
+          "distance": 0.634
         },
         {
           "source": "glossary",
@@ -1767,17 +1767,17 @@
         {
           "source": "finops",
           "section": "Referencias De Contexto",
-          "distance": 0.6071
+          "distance": 0.607
         },
         {
           "source": "finops",
           "section": "Optimize",
-          "distance": 0.611
+          "distance": 0.6109
         },
         {
           "source": "glossary",
           "section": "Azure Advisor",
-          "distance": 0.6111
+          "distance": 0.6112
         },
         {
           "source": "glossary",
@@ -1867,7 +1867,7 @@
         {
           "source": "rules",
           "section": "Reglas De Tagging",
-          "distance": 0.4861
+          "distance": 0.486
         },
         {
           "source": "glossary",
@@ -1892,12 +1892,12 @@
       "category": "scope",
       "coverage": "none",
       "best_expected_distance": null,
-      "best_other_distance": 0.5531,
+      "best_other_distance": 0.5525,
       "retrieved": [
         {
           "source": "finops",
           "section": "Showback Y Chargeback",
-          "distance": 0.5531
+          "distance": 0.5525
         },
         {
           "source": "glossary",
@@ -1912,7 +1912,7 @@
         {
           "source": "finops",
           "section": "Cost Management Y Cost Analysis",
-          "distance": 0.5711
+          "distance": 0.5712
         },
         {
           "source": "finops",
@@ -1952,17 +1952,12 @@
         {
           "source": "rules",
           "section": "Reglas De Tagging",
-          "distance": 0.6051
+          "distance": 0.605
         },
         {
           "source": "finops",
           "section": "Idea Fundamental De FinOps",
           "distance": 0.6151
-        },
-        {
-          "source": "product",
-          "section": "Revisar una anomalia",
-          "distance": 0.6168
         },
         {
           "source": "finops",
@@ -1983,6 +1978,11 @@
           "source": "finops",
           "section": "Budgets, Forecast Y Alertas",
           "distance": 0.6331
+        },
+        {
+          "source": "product",
+          "section": "Revisar una anomalia",
+          "distance": 0.642
         }
       ]
     },
@@ -2010,11 +2010,6 @@
           "distance": 0.5865
         },
         {
-          "source": "product",
-          "section": "Revisar una anomalia",
-          "distance": 0.6
-        },
-        {
           "source": "rules",
           "section": "Severidad",
           "distance": 0.6052
@@ -2033,6 +2028,11 @@
           "source": "glossary",
           "section": "Amortized Cost",
           "distance": 0.6229
+        },
+        {
+          "source": "finops",
+          "section": "Showback Y Chargeback",
+          "distance": 0.6257
         }
       ]
     },
@@ -2062,7 +2062,7 @@
         {
           "source": "finops",
           "section": "Showback Y Chargeback",
-          "distance": 0.5625
+          "distance": 0.5622
         },
         {
           "source": "glossary",
@@ -2091,13 +2091,13 @@
       "behavior": "answer",
       "category": "allocation",
       "coverage": "direct",
-      "best_expected_distance": 0.3995,
+      "best_expected_distance": 0.3994,
       "best_other_distance": 0.5595,
       "retrieved": [
         {
           "source": "finops",
           "section": "Showback Y Chargeback",
-          "distance": 0.3995
+          "distance": 0.3994
         },
         {
           "source": "glossary",
@@ -2125,14 +2125,14 @@
           "distance": 0.6172
         },
         {
-          "source": "finops",
-          "section": "Coste No Asignado Y Coste Compartido",
-          "distance": 0.6302
+          "source": "product",
+          "section": "Revisar una anomalia",
+          "distance": 0.6274
         },
         {
           "source": "finops",
-          "section": "Anomalias De Coste",
-          "distance": 0.6324
+          "section": "Coste No Asignado Y Coste Compartido",
+          "distance": 0.6302
         }
       ]
     }

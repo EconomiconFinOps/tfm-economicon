@@ -116,6 +116,27 @@ La revisión del PR #129 señaló que #127 (JUP-119) ya estaba en `develop` y qu
 
 Límite: igual que en la calibración anterior, mide qué fragmentos se recuperan, no lo que dice el modelo.
 
+## Correccion posterior a #128 (2026-10-15)
+
+La revalidacion de Paris sobre `1e3e99d9` solicito completar la guia porque #128
+ya esta en la base `0543c5ee`. Se conserva la historia anterior: el seguimiento
+de "Explicar en el asistente" deja de estar aplazado y se atiende en esta adenda.
+
+La correccion local incorpora el enlace del detalle, la casilla del redactor,
+la necesidad de una conversacion y la evidencia guardada. No cambia el producto,
+las preguntas ni sus rubricas. Version de producto 1.1.1; huellas encadenadas
+actualizadas. Troceador sin cambios: producto 16 a 17 fragmentos, primeros 11
+identicos y seis finales cambiados o nuevos; total 65 a 66.
+
+La calibracion real anterior se conserva como historia y no acredita el texto
+nuevo. Se ejecuto el calibrador nativo con el proveedor real sobre el texto
+corregido: 94 llamadas sin reintentos, 8359 tokens y coste registrado de
+0,00016718 USD. Los 28 puntos conservan sus metricas agregadas; los candidatos
+mantienen distancia 0,6. La comprobacion simulada solo acredita la mecanica.
+Control independiente pendiente; no se atribuyen a esta correccion las
+aprobaciones historicas de abajo.
+Detalle en [la evidencia de correccion](../../../../docs/evidence/JUP-120-guide-correction-20261015.md).
+
 ## Aplicabilidad de ADR
 
 No hace falta un ADR nuevo: no hay una decisión arquitectónica. Se añade una nota fechada a ADR-0020 (el corpus se actualizó en este change y no en JUP-038) y otra a ADR-0017 (las cifras de calibración citadas son las del 03/10).

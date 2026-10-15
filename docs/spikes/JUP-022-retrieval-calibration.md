@@ -1,7 +1,7 @@
 # Calibracion de la recuperacion (JUP-022)
 
-Generado: 2026-10-14T05:26:36.814103+00:00. Proveedor: `litellm`, alias `economicon-embedding`, dimension 1536.
-Banco: docs/validation/JUP-069-questions.json v1.0.1. Troceado: 500 caracteres con solape 50 (65 fragmentos). Llamadas previstas: 93.
+Generado: 2026-10-15T09:21:21.046773+00:00. Proveedor: `litellm`, alias `economicon-embedding`, dimension 1536.
+Banco: docs/validation/JUP-069-questions.json v1.0.1. Troceado: 500 caracteres con solape 50 (66 fragmentos). Llamadas previstas: 94.
 
 ## Regla de seleccion
 
@@ -61,31 +61,31 @@ Para cada top_k, la menor distancia maxima del barrido que conserva al menos 90%
 | JUP-069-001 | answer | partial | 0.5699 | 0.5172 |
 | JUP-069-002 | answer | partial | 0.6096 | 0.623 |
 | JUP-069-003 | clarify | direct | 0.5627 | 0.5766 |
-| JUP-069-004 | answer | direct | 0.4483 | 0.4287 |
+| JUP-069-004 | answer | direct | 0.4484 | 0.4287 |
 | JUP-069-005 | answer | direct | 0.4891 | 0.5468 |
 | JUP-069-006 | answer | direct | None | 0.4409 |
 | JUP-069-007 | answer | direct | None | 0.4411 |
-| JUP-069-008 | clarify | direct | None | 0.3658 |
-| JUP-069-009 | clarify | direct | 0.6255 | 0.5683 |
+| JUP-069-008 | clarify | direct | None | 0.3657 |
+| JUP-069-009 | clarify | direct | 0.6255 | 0.5682 |
 | JUP-069-010 | answer | direct | 0.3825 | 0.388 |
-| JUP-069-011 | answer | direct | 0.4631 | 0.4014 |
+| JUP-069-011 | answer | direct | 0.463 | 0.4014 |
 | JUP-069-012 | answer | direct | 0.3316 | 0.3815 |
 | JUP-069-013 | answer | direct | 0.5826 | 0.5958 |
 | JUP-069-014 | answer | direct | 0.5654 | 0.5435 |
 | JUP-069-015 | answer | direct | 0.5113 | 0.5118 |
 | JUP-069-016 | answer | direct | 0.4674 | 0.4446 |
-| JUP-069-017 | answer | direct | 0.4871 | 0.4713 |
+| JUP-069-017 | answer | direct | 0.4871 | 0.4714 |
 | JUP-069-018 | answer | direct | 0.4881 | 0.5413 |
 | JUP-069-019 | clarify | partial | 0.7495 | 0.5242 |
 | JUP-069-020 | answer | direct | 0.5318 | 0.5407 |
 | JUP-069-021 | answer | direct | 0.6285 | 0.5288 |
 | JUP-069-022 | answer | direct | 0.5483 | 0.56 |
 | JUP-069-023 | abstain | direct | 0.5056 | 0.4193 |
-| JUP-069-024 | clarify | none | None | 0.5531 |
+| JUP-069-024 | clarify | none | None | 0.5525 |
 | JUP-069-025 | abstain | direct | 0.6196 | 0.5553 |
 | JUP-069-026 | clarify | none | None | 0.5754 |
 | JUP-069-027 | answer | direct | 0.5994 | 0.5126 |
-| JUP-069-028 | answer | direct | 0.3995 | 0.5595 |
+| JUP-069-028 | answer | direct | 0.3994 | 0.5595 |
 
 ## Limites
 

@@ -96,3 +96,35 @@ Exploración hecha el 12/10, para retomarla sin repetir la investigación:
 - **Aplazado:** las aclaraciones del corpus del asistente (`RF-114-001`, punto 11 del ADR-0020) siguen `Open`: el documento está fijado por sha256 en JUP-069, JUP-022 y JUP-070 y cambiarlo obliga a regenerar huellas y repetir la calibración. Hallazgos nuevos `RF-038-001` a `009` en el backlog; las pruebas intermitentes de JUP-098 en esta máquina ya estaban en `RF-098-004` y `RF-103-005`.
 - **Validación hecha:** pruebas por grupo con mutación, regresión con CockroachDB real y con configuración de CI, y recorrido en un navegador real con el stack aislado (capturas e informes en `docs/evidence/JUP-038/`), con la explicación de Compute recalculada de forma independiente. Detalle, conteos y lo no validado en [JUP-038-validation.md](../evidence/JUP-038-validation.md).
 - **Conflictos previstos con JUP-035 (PR #120 y #121):** este change añade cambios en `routes/assistant.py` y `AnswerEvidence.tsx`, además del conflicto que `AnomaliesPanel.tsx` ya tenía; quien integre debe usar `append_pair` también en la rama `anomaly_query` (`RF-038-005`).
+
+## Guia del asistente tras integrar JUP-038 (2026-10-15)
+
+La base `0543c5ee` ya incluye #128 y la rama de #129 la incorpora en `1e3e99d9`.
+La condicion pendiente de JUP-120 se atiende en una correccion documental local:
+el contexto de producto explica "Explicar en el asistente" desde el detalle y
+"Explicar una anomalia" desde el redactor, con conversacion abierta y evidencia
+guardada. No cambia producto, reglas de negocio, preguntas, rubricas ni etiquetas.
+`RF-114-001` sigue `Fixed`, resuelto por JUP-120; las notas anteriores son historia.
+
+Producto 1.1.1; 66 fragmentos con el troceador 500/50 sin modificar. Calibracion
+real actualizada: 94 llamadas sin reintentos, coste registrado 0,00016718 USD;
+los 28 puntos conservan las metricas agregadas. El registro anterior de 65
+fragmentos queda como historia. Revalidacion independiente pendiente; no se
+declara aceptacion propia ni cierre.
+Evidencia y comandos en [la correccion de #129](../evidence/JUP-120-guide-correction-20261015.md).
+
+### Reconciliacion con #130 (2026-10-15)
+
+El candidato local combina `1e3e99d9` con `develop` `cf821570` y despues aplica
+la correccion documental revisada. La unica coincidencia de rutas con los
+14 archivos del arreglo es `docs/continuidad/README.md`; se conserva la fila
+de A/B aportada por #130. No hay conflictos de contenido ni cambios ejecutables.
+Las dos entradas JUP-038 siguen en `/assistant`: enlace desde el episodio y
+casilla del redactor, con evidencia y pareja persistida. El chat generativo
+permanece desactivado por defecto, igual que en #130.
+
+Banco, rubricas, etiquetas, corpus, calibrador, proveedor y transporte de
+embeddings y troceador son identicos al arreglo revisado. Se reutiliza su
+calibracion real de 94 llamadas; esta reconciliacion no consume credito.
+La revision y validacion independientes del delta actualizado quedan pendientes;
+no se declara publicada ni integrada esta correccion de #129.

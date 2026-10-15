@@ -64,6 +64,8 @@ Al abrir el detalle se ven el impacto acumulado, los dias con impacto, el valor 
 
 Desde el detalle una persona puede usar "Marcar en investigacion" (pasa a Investigando) o "Cerrar", que permite elegir "Resuelta" o "Falso positivo" y confirmar el cierre. Cerrar pide un motivo, no se puede deshacer, y si el gasto vuelve a subir se abre una anomalia nueva. El panel no apaga ni modifica ningun recurso de Azure: solo informa.
 
+Desde el detalle, "Explicar en el asistente" abre el asistente con la anomalia preseleccionada. Abre o crea una conversacion y envia la pregunta propuesta. Tambien puedes marcar "Explicar una anomalia" en el redactor y elegir una del cliente activo. La respuesta explica los datos guardados y sus limites: no demuestra una causa ni actua sobre recursos. Queda guardada con la evidencia del episodio en ese momento.
+
 Este documento explica como funcionan las anomalias en general. Las cifras de una anomalia concreta (dia de apertura, valor de referencia, impacto acumulado y estado) estan en su detalle y no se pueden deducir de este documento: si el usuario pregunta por una anomalia concreta, hay que indicarle que abra su detalle en el panel y no inventar importes.
 
 ## Scope, Dataset Y Tenant
