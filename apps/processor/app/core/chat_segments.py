@@ -124,11 +124,13 @@ def bind_segments(schema, records=None, quantities=None):
     from app.core.chat_reporting import required_reporting
     from app.core.chat_missing_spend import required_missing_spend
     from app.core.chat_documentary_decisions import required_documentary_answer
+    from app.core.chat_resource_actions import required_resource_action
     reporting = required_reporting(quantities)
     missing = required_missing_spend(quantities)
     policy = required_policy(quantities)
     documentary = required_documentary_answer(quantities)
-    candidates = [(key, bound, 'insufficient_data') for key, bound, _ in scenario_terminals(quantities)]
+    candidates = [('resource_action', required_resource_action(quantities), 'refused')]
+    candidates += [(key, bound, 'insufficient_data') for key, bound, _ in scenario_terminals(quantities)]
     candidates += [('documentary_answer', documentary, documentary['public_fields']['status'] if documentary else None),
                    ('policy_section', policy, 'ok'), ('reporting_basis', reporting, 'ok'),
                    ('missing_spend', missing, 'insufficient_data')]
@@ -246,6 +248,9 @@ def bind_segments(schema, records=None, quantities=None):
 
 
 def render_classified_answer(value,expressions):
+    if isinstance(value, dict) and set(value) == {'resource_action'}:
+        from app.core.chat_resource_actions import resource_action_answer
+        return resource_action_answer(value, expressions.catalog if expressions else None)['answer']
     for key, _, render in scenario_terminals(expressions.catalog if expressions else None):
         if isinstance(value, dict) and set(value) == {key}:
             return render(value, expressions.catalog if expressions else None)
@@ -366,6 +371,14 @@ def render_response(value, records, *, quantities=None):
     if not isinstance(value,dict) or 'answer' not in value:
         raise ValueError('Invalid calculation response.')
     expressions=ExpressionRenderer(quantities) if quantities is not None else None
+    from app.core.chat_resource_actions import required_resource_action, resource_action_answer
+    resource_action = required_resource_action(quantities)
+    if resource_action is not None:
+        if ('basis' in value or value.get('status') != 'refused'
+                or any(value.get(field) != [] for field in
+                       ('evidence', 'metrics', 'recommendations', 'assumptions', 'limitations', 'next_actions'))):
+            raise ValueError('Invalid resource action authority or auxiliary fields.')
+        return {**value, **resource_action_answer(value['answer'], quantities)}
     for _, bound, render in scenario_terminals(quantities):
         if bound is not None:
             if ('basis' in value or value.get('status') != 'insufficient_data'
