@@ -10,7 +10,7 @@ incrementales Linux y UI de historial020/027r1PASS; cada caso pasasu primera mue
 real. N3 nueva detenida50/84:47conformes,3fallos técnicos por429 de proveedor
 (020r2/021r2/022r2) y34pendientes. Snapshots con597filas, originales y juicios;
 547filas/252recibos anteriores intactos. Reservas5.761136 íntegras, cota conservadora
-9.543795305/10USD, mismas claves hasta16/10a18:00París sin reiniciar contadores.
+9.57494663/10USD comprobada19:16UTC, mismas claves hasta16/10a18:00París sin reiniciar contadores.
 Seguimiento único para16/10a08:00: continuar023r2 sólo si cabe otro máximo0.319952.
 Sin reenvíos de fallos ni nueva aceptación; criterios/N5 y adjudicación histórica
 de020 siguen pendientes. B sigue sin publicar ni aceptar.

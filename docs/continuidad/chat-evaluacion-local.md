@@ -10,7 +10,7 @@ continuar desde009 usando la corrección contable, sin repetir las ocho muestras
 anteriores ni liberar reservas pendientes. Sustituye los máximos anteriores;
 no reinicia gasto, ledger, intentos ni caducidad. B sigue sin publicar.
 
-### Corte vigente — 15/10/2026, 19:11 UTC
+### Corte vigente — 15/10/2026, 19:16 UTC
 
 **027 y 020 corregidos en producto d9b1aae9, corte versionado 9e2a49a2.**
 287 pruebas incrementales Linux PASS/0 FAIL/ERROR/SKIP; módulos compartidos idénticos,
@@ -36,15 +36,18 @@ separados. No prueba ausencia de regresiones en las 34 pendientes. 020 sólo tie
 r1 conforme y r2 técnica; 027 sólo r1 medida. Juicios históricos inciertos de 020 y
 fallo 027r2 anterior permanecen intactos. N5/criterios y adjudicación humana pendientes.
 
-**Contabilidad19:08UTC:** máximo(contadorOpenRouter3.782659305,
+**Contabilidad 19:16 UTC:** máximo(contadorOpenRouter3.81381063,
 histórico0.957927619+settled2.813385973)+retenido5.761136
-=**9.543795305/10USD**. Es cota conservadora, no coste real liquidado de B.
+=**9.57494663/10USD**. Es cota conservadora, no coste real liquidado de B.
 Los4.161376 históricos siguen íntegros; cinco máximos nuevos0.319952 cada uno:
 003r1/019r2 completadas con intentos previos desconocidos y020r2/021r2/022r2 fallidas.
 No se liberó ninguna reserva ni se trató un429como gratuito. Claves mismas huellas,
 límites0.1/3.5USD y contadores conservados; vigencia ampliada24h hasta16/10a18:00París.
 Antes de cada continuación se requiere lectura fresca y cubrir otro máximo0.319952;
 si la cota aumenta puede no caber otra operación, aunque la llamada media sea barata.
+Entre las lecturas de19:08y19:16 el contador superior aumentó mientras las dos
+claves de B y el ledger no cambiaron; no atribuir esa diferencia a nueva inferencia
+de este trabajo. Recibo`accounting-covered-readonly-1792091796.json`.
 
 **Snapshots inmutables:**
 - Remoto`candidate-9e2a49a2-partial50-cap10-v1`:232ficheros, manifestSHA
