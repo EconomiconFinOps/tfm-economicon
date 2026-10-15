@@ -32,6 +32,7 @@
 
 ## 3. Correcciones y entrega
 - [ ] 3.1 Corregir defectos medidos con lógica determinista.
+  - Producto d9b1aae9/corte9e2a49a2:027 vincula etiquetas y cálculos de gasto total/coste unitario;020 concreta riesgo condicional con política completa y validación previa, sin cambiar juicios históricos.287tests LinuxPASS/0SKIP, replay83contextos activa sólo seis respuestas020/027. Imágenes/HMAC y547filas preservadas al activar sólo B. Nueva N3 en curso con10USD y reservas4.161376 intactos; claves ampliadas24h hasta16/10a18:00París. No cerrar por pruebas/replay; falta medir y comparar con a545.
   - Correcciones014/003 medidas en c7 N3:014 conforme3/3,003 completa3/3. Las1470 pruebas Linux/SQL conservan su alcance; no validan calidad por sí solas.
   - Persisten regresiones001r2/009r1/010r1/011r3/015r1/r2;021r3 falla por ecuación libre, sin candidato privado exacto. Priorizar cobertura tipada y premisas/modalidad; no relajar validadores ni reconocer sólo preguntas del banco.
   - Compilador de secciones completas integrado localmente:247 pruebas processor y2 backend PASS, cargas en frío propias y replay010r1/r2/r3 con once unidades correctos. Sin medición ni despliegue.015 aún necesita recuperar su sección; otros defectos y variantes pendientes. No cerrar3.1 por este bloque.

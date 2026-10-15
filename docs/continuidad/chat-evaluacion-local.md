@@ -10,7 +10,7 @@ continuar desde009 usando la corrección contable, sin repetir las ocho muestras
 anteriores ni liberar reservas pendientes. Sustituye los máximos anteriores;
 no reinicia gasto, ledger, intentos ni caducidad. B sigue sin publicar.
 
-### Resultado congelado — 15/10/2026, 15:55 UTC
+### Correcciones027/020 y nueva medición — 15/10/2026, 18:10 UTC
 
 **Trabajo posterior autorizado el15/10:** corregir027, revisar020 y medir de nuevo,
 con máximo acumulado10USD y sin liberar reservas. Las mismas dos claves se han
@@ -20,12 +20,44 @@ en la carpeta de evidencia establecida; claves, límites, contadores y ledger
 comprobados intactos al ampliar. Lectura17:54UTC: cota7.912911256/10USD,
 incluyendo4.161376USD de máximos retenidos. No equivale a coste real liquidado.
 
-Corrección local en preparación:027 usa un terminal de comparación gasto/volumen
+Corrección implementada:027 usa un terminal de comparación gasto/volumen
 que calcula cada métrica con su etiqueta;020 añade consejo documental acotado
 con riesgo condicional explícito y validación previa, sin actuar ni garantizar
-ahorro. Primeras231pruebas processor y5backend conformes, aún sin nueva campaña
-ni activación. Las etiquetas antiguas de020 siguen inciertas; no se reescriben.
-El resultado que sigue corresponde al candidato anterior congelado.
+ahorro. Las etiquetas antiguas de020 siguen inciertas; no se reescriben.
+
+Producto `d9b1aae94784eea88927045347e399151b8992d1`, corte de prueba/archivo
+`9e2a49a2dab34bb2cb7379590fdcd7b16b5bdc2d` (sólo actualiza fixture y documentación).
+Archivo SHAfbcbdf0ae42fb10c1ecc29bbd979cb3d6c76d5b401f8654a218a9a8d4d0ec562;
+plan N3 SHA405add52ee1100faf0fd98d570b1bba3d655c0bb276637ae7d2c20b159aadf5e.
+287pruebas LinuxPASS,0FAIL/ERROR/SKIP; prueba técnica SHA46e92f871b71be74facbf1807c815c89d9962ec60e47cf006f3935bbdbf838c4.
+1793identidades de regresión anteriores conservan su fecha y alcance; las58nativas
+no se repiten al no cambiar SQL/producer. Dos imágenes construidas y verificadas
+contra369ficheros del plan más tokenizer; frontend y bases intactos.
+
+Activado sólo B;547filas y mismas claves intactas antes/después. Descriptor HMAC
+conforme a prompt`jup-035.chat.v3:ce0ec0e17b2c2b8b35e3a9cbd3eafe68e16e6ebf64da6c2f0fe89529208d031e`.
+N3 nueva de84muestras iniciada desde001r1, sin sustituir ni repetir muestras de
+campañas anteriores. ControladorPID3851790/start_ticks68672404;
+`candidate-9e2a49a2-n3-controller-v1.py`, ledger/planes históricos conservados,
+retención íntegra de costes desconocidos y máximo10USD. No hay resultados
+semánticos nuevos certificados en este corte documental; revisar recibos y coste
+antes de continuar una campaña detenida, sin relanzarla desde el principio.
+
+**Actualización18:29UTC:** primera ronda completa28/28 respuestas conformes en
+revisión local provisional,020/027 incluidos. Segunda ronda iniciada;29 muestras
+recogidas/revisadas al leer sus vistas, sin fallos semánticos ni técnicos aún.
+003r1 completó en segundo intento; el primero recibió429sinuso informado.
+Máximo íntegro0.319952 retenido como `COST_UNKNOWN_RESERVED`, sin liquidarlo
+parcialmente ni repetir la muestra; prueba `candidate-9e2a49a2-retention003r1-v1.json`.
+Controladorv1 detenido y reemplazado porv2 desde004r1 después de auditar:PID3876702,
+start_ticks68692083. Reservas desconocidas históricas4.161376 más nueva003r1
+=4.481328USD; no se ha liberado ninguna. Auditoría confirma547filas y252recibos
+históricos intactos. Cota18:29UTC8.573169059/10USD incluye además0.319952 de
+operación activa; no es gasto liquidado. Trello actualizado mediante la integración
+DockerServer, verificación exacta y lista sin cambios, SHA114f0fe4cfd3157cc020da2aa7b06d6a1319db21f8994b3650d1116e62a8b51a.
+Sin nueva aceptación ni adjudicación independiente. Los snapshots completos y
+UI del candidato nuevo se preparan al terminar84; no usar el snapshot anterior
+como si cubriera esta campaña.
 
 Primer corte `d9b1aae9`: archivo SHA1187a68c59d570d2306ca72fbe3ec069630326277ab6faa3f23b0092efa887e8,
 plan SHAa2cc929022ccd0dc32ca5a05ec3f0d75ffc33dbba16d92960bbd04ddc18f23b0.
@@ -35,6 +67,8 @@ incorporar los nuevos campos del contrato esperado en la prueba; no se relaja
 la validación. Se conserva JUnit fallido y se prepara un nuevo corte versionado.
 Replay offline de83contextos anteriores: rutas nuevas sólo020/027,6respuestas;
 no modifica juicios históricos ni cuenta como campaña real.
+
+### Resultado anterior congelado — 15/10/2026, 15:55 UTC
 
 **003, 013, 015 y 025 pasan 3/3** en el candidato actual. La N3 original de28casos
 terminó84/84 muestras:83respuestas completadas y1fallida. Revisión local provisional:
