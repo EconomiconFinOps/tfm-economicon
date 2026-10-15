@@ -11,8 +11,8 @@ reset. Recogida no implica aceptación; estado detallado y snapshots en
 
 Correcciones posteriores015/003/013: producto d2f8a440, pruebas/build72a2f767,
 1793 identidades chat conformes con SQL nativo e imágenes verificadas el15/10.
-No activadas ni medidas todavía con el proveedor: claves caducadas y ampliación
-de vigencia pendiente. No sustituye la N3 anterior ni valida A/B por sí solo.
+Activadas sólo en B, con fuentes y descriptor firmado conformes. Sin medición
+nueva con el proveedor: claves caducadas y ampliación de vigencia pendiente. No sustituye la N3 anterior ni valida A/B por sí solo.
 
 ## Base incorporada: A8ea5a0c4 y develop0543c5ee
 

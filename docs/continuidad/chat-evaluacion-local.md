@@ -31,7 +31,7 @@ modificados. Los58SKIP offline están cubiertos por6pgvector y52CockroachDB
 nativos del candidato. No es una ejecución monolítica. Se conservan el fallo
 del antiguo fixture de policy, OOM/salidas137 sin JUnit y la colisión125 del
 contenedor propio; la aserción de policy ahora exige la nueva cobertura completa,
-no se elimina. Bases temporales propias retiradas y runtime B anterior intacto.
+no se elimina. Bases temporales propias retiradas; las pruebas no reiniciaron el runtime.
 
 Prueba externa `candidate-72a2f767-technical-proof-v1.json`; colector
 `audit-corrected-72-technical-v1.py`. Orígenes: `corrections-bdb6f574-v1..v4`,
@@ -45,27 +45,38 @@ reutilizado con fuente idéntica. Archivo versionado SHA
 `3f71fc55290299fbaa85ee764f6042bcc79c23c9bcbefed26515db641ecbcd60`;
 plan84 SHA `897f7d53616958ddca97e218757ba76c2bbd916d6d5c5da4e92695f7f7131ad8`.
 
-**Sin activar ni nueva N3**. Preparados `activate-corrections-72a2f767.py`
-(incluye guarda de cobertura técnica), `launch-corrected-72-n3-v1.py` y
-adaptador `candidate-72a2f767-step-v2.py`. Conservan379 filas,84 recibos
-anteriores y todas las reservas. La revisión sólo se reutiliza si coinciden
+**Activado sólo en B; sin nueva N3**. Activación del corte72 completada el15/10,
+con365 hashes de fuente y artefactos generados verificados en ejecución.
+`candidate-72a2f767-activation-v1.json` y
+`candidate-72a2f767-activation-history-v1.json` acreditan
+bases/frontend/estados de operaciones intactos, mismas379 filas y material de
+claves idéntico. Bloqueo exclusivo de campaña durante la activación; no inferencias.
+El verificador de recursos del backend acepta el descriptor HMAC del processor:
+`candidate-72a2f767-live-readiness-v2.json`, protocolo server-documentation-v4,
+prompt jup-035.chat.v3:7246753ac88a34ed35efe4c8f3551fe23a11eba42c0559b730c9257f68b5583a.
+El comprobador v1 falló por atributos inexistentes en su propio script;
+v2 usa verify_descriptor del producto sin modificar la aplicación.
+
+Preparado `launch-corrected-72-n3-v1.py` con adaptador step-v2. Conserva379 filas,
+84 recibos anteriores y reservas. La revisión sólo se reutiliza si coinciden
 respuesta, citas y hash del contexto autorizado realmente recibido; si cambia
 ese contexto, requiere contraste nuevo. No hay aceptación semántica nueva.
 
-Lectura12:23UTC: contador conservador2.933234199 +reservas/seed3.201520 =
+Lectura posterior12:29UTC: contador conservador2.933234199 +reservas/seed3.201520 =
 6.134754199/10USD; mismas379 filas y contadores. No es gasto exacto atribuible
 al trabajo. Sin nuevas inferencias B. Las mismas claves caducaron10:02UTC
 (12:02París). Consulta pendiente para ampliar sólo su vigencia hasta18:00París;
 no aplicada ni autorizada implícitamente por el nuevo máximo. No crear claves,
 resetear contadores ni liberar reservas. Próximo: autorización de vigencia,
-activar sólo B ociosa con rollback y fuentes verificadas, nueva N3 y comparación
-emparejada contra7be. Criterios/adjudicación independientes siguen pendientes.
-Sin publicación B, cambios de otros despliegues ni mensajes Discord.
+nueva N3 y comparación emparejada contra7be. Criterios/adjudicación independientes
+siguen pendientes. Sin publicación B, cambios de otros despliegues ni Discord.
 
 Trello JUP-123 actualizado por la integración obligatoria de DockerServer y
 leído de vuelta exactamente, sin mover lista: prueba
-`jup123-trello-corrected72-technical-update.json`, descripción SHA
-`cd250723e1062f5a48e451c395f53dd8f383c5fdcc08699505ca0952afb8dbe5`.
+`jup123-trello-corrected72-active-update.json`, descripción SHA
+`61327f4f55d93a40e49e9b431c8cea84171bf4ea330ca4a0d3b5667bd790a4f6`.
+El recibo técnico anterior permanece conservado; esta actualización sí refleja
+la activación aislada posterior sin inferencia.
 
 ### Antecedente6a y preparación inicial — 15/10/2026
 
