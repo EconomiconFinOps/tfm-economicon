@@ -206,3 +206,17 @@ Decisiones y hallazgos diferidos:
 | DoD | Lint, type-check y secretos en verde. Regresión: 145 fallos del backend (`RF-119-004`), idénticos |
 
 Decisión: el job «OpenSpec» tenía `timeout-minutes: 10` y el paso nuevo suma unos 70 s más la descarga de la imagen de PostgreSQL; se sube a 20 (el mismo que el job de pruebas de Python) para no arriesgar un fallo por tiempo. Queda por comprobar en la primera ejecución real de la CI cuánto tarda el paso. Los tests con PostgreSQL real se saltan sin avisar si el runner no tuviera Docker (hoy `ubuntu-latest` lo trae).
+
+### 4.1 Datasource PostgreSQL de Grafana y variable de su contraseña
+
+| Fase | Evidencia |
+| --- | --- |
+| Red | `scripts/tests/test_evaluation_grafana_datasource.py` (30 tests de solo lectura de ficheros, ejecutados también por `corepack pnpm evaluation-dashboard:test` y la CI), commit `864a1c31`: 20 en rojo; los 10 que pasan fijan lo que no debe cambiar (el datasource de Prometheus, el dashboard técnico por huella, el resto del servicio `grafana` y de `postgres-pgvector`, el resto de `.env.example`). El test congelado `tools/docker-topology.test.mjs` no hace falta tocarlo: solo fija ciertas variables y que `depends_on` sea únicamente `prometheus` |
+| Green | `apps/monitoring/grafana/provisioning/datasources/evaluation-postgres.yml`, una línea en `docker-compose.yml` (`GRAFANA_EVALUATION_DB_PASSWORD: ${GRAFANA_EVALUATION_DB_PASSWORD:?required}`, sin `depends_on` ni puertos nuevos) y una en `.env.example`, commit `0aef3359`; `docker:validate` 36, `ci:check:test` 12 y `repository:governance:test` 13 en verde |
+| Mutación | Configuración: no aplica un mutador de código. El tester mató 26 mutantes de configuración (contraseña en claro, `isDefault: true`, `:-` en lugar de `:?`, variable en otro servicio, `depends_on`, uid duplicado, tipo `postgres`, `sslmode`, tabuladores…) con copias de los ficheros |
+| QA | `accept`, sin BLOCKING. **Runtime real** con una red desechable, PostgreSQL 17 y Grafana 11.3.0 con los montajes de solo lectura del compose: el datasource se provisiona aunque la base aún no tenga esquema ni rol; tras `load` el health devuelve «Database Connection OK», `SELECT count(*) FROM evaluation.results` por `/api/ds/query` devuelve 269 y la consulta de anotaciones funciona (vacía con los datos reales); `Prometheus` sigue siendo el predeterminado; el rol no puede crear tablas ni leer `pg_authid`; con una contraseña equivocada el health falla sin filtrar la contraseña en el mensaje, la API ni los logs. Compose se niega a arrancar, y nombra la variable, tanto si falta como si está vacía. Todo se limpió (contenedores, red y volúmenes iguales que al inicio) |
+| DoD | Lint, type-check y secretos en verde. Regresión: 145 fallos del backend (`RF-119-004`), idénticos |
+
+**Para quien despliegue o pruebe en local:** el `.env` del repositorio no tiene `GRAFANA_EVALUATION_DB_PASSWORD`, así que `docker compose up` (y `docker compose config`) fallará con `required variable GRAFANA_EVALUATION_DB_PASSWORD is missing a value: required` hasta que se añada una línea `GRAFANA_EVALUATION_DB_PASSWORD=<valor>`. Debe ser el mismo valor con el que se ejecute `corepack pnpm evaluation-dashboard:load`. Lo mismo en el `.env` de DockerServer antes de desplegar.
+
+Hallazgos para la tarea 4.3 (anotados en `tasks.md`): el tipo del datasource en los paneles, el `format` por tipo de panel, `$__timeFilter` y el rango del dashboard, y `run_at IS NOT NULL` en las series.
