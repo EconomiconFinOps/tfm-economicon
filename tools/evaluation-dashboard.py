@@ -22,7 +22,8 @@ manifiesto en `{"run", "results"}` (con `run_id`, huella del informe, clasificac
 reúne los manifiestos en un conjunto de datos sin `run_id` repetidos y `main` lo expone como el subcomando `rows`.
 La décima es la generación del script SQL: `sql_literal` es el único camino por el que un valor entra en el SQL
 (siempre como literal escapado, nunca por interpolación directa) y `build_sql` convierte el conjunto de datos en
-un script transaccional (esquema `evaluation`, vaciado y carga) que `main` expone como el subcomando `sql`.
+un script transaccional (esquema `evaluation`, sus dos vistas `config_changes` y `comparable_runs`, vaciado y
+carga) que `main` expone como el subcomando `sql`.
 Usa solo la biblioteca estándar, no tiene efectos al importarse y nunca abre una conexión de red ni a la base de
 datos: el script no lleva credenciales y la carga a la base la añaden las tareas siguientes del change.
 
@@ -1835,11 +1836,118 @@ TRUNCATE_SQL = f"TRUNCATE {SCHEMA_NAME}.results, {SCHEMA_NAME}.runs;"
 # inyección. `SET LOCAL` y no `SET`: dura solo hasta el `COMMIT` y no deja la sesión alterada.
 SESSION_SQL = "SET LOCAL standard_conforming_strings = on;"
 
-# Los bloques de DDL van en una lista y no pegados dentro de `build_sql` para que las tareas siguientes (la vista
-# de anotaciones y el rol de lectura) añadan su constante aquí, entre el esquema y el vaciado, sin tocar el orden
-# del resto. Nunca llevan credenciales: la contraseña del rol viaja aparte (por la entrada estándar de `psql`),
-# nunca en el texto de este script, que se imprime, se guarda con `--output` y se puede compartir.
-DDL_BLOCKS = (SCHEMA_DDL,)
+# Vistas del panel (`design.md` D5 y D6). Se calculan en la base y no en el dashboard para que Grafana solo lea y
+# para que la regla viva en UN sitio, probada contra un PostgreSQL real. Decisiones:
+# * `CREATE OR REPLACE VIEW` y no `DROP VIEW` + `CREATE`: el script es idempotente sin destruir nada; un borrado
+#   se llevaría por delante los permisos que se concedan después a la vista (el rol de lectura de Grafana, tarea
+#   3.3) y rompería cualquier consulta abierta. Es además lo que exige `build_sql`, que no admite `DROP` en su DDL.
+#   Limitación conocida: `CREATE OR REPLACE VIEW` no permite quitar ni reordenar columnas de una vista ya creada;
+#   si el contrato de columnas cambiara habría que migrar a mano, no regenerar.
+# * Vistas normales y no materializadas: la carga hace `TRUNCATE` + `INSERT` y una materializada se quedaría vieja
+#   hasta el siguiente `REFRESH`, un paso más que se podría olvidar.
+# * Solo cuentan las ejecuciones CON `run_at`: sin fecha no hay orden, así que no se puede decir cuál es la anterior
+#   de cuál. Se filtran ANTES de calcular la anterior (y no después), para que una ejecución sin fecha ni aparezca
+#   ni interrumpa la cadena de las demás. Sin ese filtro, `ORDER BY run_at` pondría los NULL al final (NULLS LAST)
+#   y fabricaría pares falsos.
+# * `ORDER BY run_at, run_id`: el instante (`timestamptz`, no el texto) y, a igualdad, el identificador, para que el
+#   resultado no dependa del orden físico de las filas ni de la zona horaria de la sesión.
+# * `config_changes` compara cada ejecución con la inmediatamente anterior DE LA MISMA `source` (`PARTITION BY
+#   source`), no con la primera ni con otra fuente: así una vuelta a la configuración anterior cuenta como cambio.
+# * `IS DISTINCT FROM` y no `<>` en batería, modelo y corpus: `<>` con un NULL da NULL (ni verdadero ni falso) y un
+#   cambio de «sin dato» a «con dato» se perdería. Aquí la ausencia de dato frente a un valor SÍ es un cambio, y
+#   dos NULL no lo son.
+# * `prompt` es la excepción y exige las DOS huellas registradas y distintas: «prompt no registrado» no es un
+#   cambio de prompt, es desconocimiento, y anotarlo sería inventar un dato (escenario «Prompt no registrado»).
+#   Por eso tampoco se usa `IS DISTINCT FROM` ahí.
+# * `changes` sale en el orden fijo batería, modelo, prompt, corpus (el de los `CASE`), no alfabético; la anotación
+#   lo reutiliza con `array_to_string`, así que anotación y array no pueden divergir. Los `CASE` sin `ELSE` dan
+#   NULL y `array_remove(..., NULL)` los descarta; un par sin cambios queda con el array vacío y se filtra.
+# * `comparable_runs` cuenta las ejecuciones con fecha de cada clave de comparabilidad con una función de ventana
+#   (`count(*) OVER (PARTITION BY comparability_key)`), no un `GROUP BY`: así cada fila conserva sus propias
+#   columnas (`is_real`, `milestone`) y se queda con el tamaño de SU serie. Una clave con una sola ejecución con
+#   fecha no aparece: de ahí sale el aviso «Sin datos: no hay con qué comparar» del panel (escenario «Una sola
+#   ejecución comparable»), sin que el dashboard tenga que contar nada.
+# * Nombres siempre cualificados con el esquema y sin comentarios SQL ni `;` dentro de cadenas: el script se trocea
+#   por sentencias y los porqués viven aquí, en Python.
+VIEWS_DDL = f"""\
+CREATE OR REPLACE VIEW {SCHEMA_NAME}.config_changes AS
+WITH ordered AS (
+  SELECT
+    run_id,
+    source,
+    run_at,
+    suite_version,
+    suite_sha256,
+    generation_model,
+    prompt_sha256,
+    corpus_sha256,
+    lag(run_id) OVER w AS previous_run_id,
+    lag(suite_version) OVER w AS previous_suite_version,
+    lag(suite_sha256) OVER w AS previous_suite_sha256,
+    lag(generation_model) OVER w AS previous_generation_model,
+    lag(prompt_sha256) OVER w AS previous_prompt_sha256,
+    lag(corpus_sha256) OVER w AS previous_corpus_sha256
+  FROM {SCHEMA_NAME}.runs
+  WHERE run_at IS NOT NULL
+  WINDOW w AS (PARTITION BY source ORDER BY run_at, run_id)
+),
+detected AS (
+  SELECT
+    run_id,
+    previous_run_id,
+    source,
+    run_at,
+    array_remove(ARRAY[
+      CASE WHEN suite_version IS DISTINCT FROM previous_suite_version
+             OR suite_sha256 IS DISTINCT FROM previous_suite_sha256 THEN 'bateria'::text END,
+      CASE WHEN generation_model IS DISTINCT FROM previous_generation_model THEN 'modelo'::text END,
+      CASE WHEN prompt_sha256 IS NOT NULL AND previous_prompt_sha256 IS NOT NULL
+             AND prompt_sha256 <> previous_prompt_sha256 THEN 'prompt'::text END,
+      CASE WHEN corpus_sha256 IS DISTINCT FROM previous_corpus_sha256 THEN 'corpus'::text END
+    ], NULL) AS changes
+  FROM ordered
+  WHERE previous_run_id IS NOT NULL
+)
+SELECT
+  run_id,
+  previous_run_id,
+  source,
+  run_at,
+  changes,
+  'Cambia: ' || array_to_string(changes, ', ') AS annotation
+FROM detected
+WHERE cardinality(changes) > 0;
+
+CREATE OR REPLACE VIEW {SCHEMA_NAME}.comparable_runs AS
+SELECT
+  comparability_key,
+  run_id,
+  source,
+  run_at,
+  is_real,
+  milestone,
+  series_runs
+FROM (
+  SELECT
+    comparability_key,
+    run_id,
+    source,
+    run_at,
+    is_real,
+    milestone,
+    count(*) OVER (PARTITION BY comparability_key) AS series_runs
+  FROM {SCHEMA_NAME}.runs
+  WHERE run_at IS NOT NULL
+) AS dated
+WHERE series_runs >= 2;"""
+
+# Los bloques de DDL van en una tupla y no pegados dentro de `build_sql` para que las tareas siguientes (el rol de
+# lectura) añadan su constante aquí, entre las vistas y el vaciado, sin tocar el orden del resto. El orden importa:
+# esquema y tablas primero, porque una vista no se puede crear sobre una tabla que aún no existe; el `TRUNCATE`
+# va después y no toca las vistas (solo vacía las tablas). Nunca llevan credenciales: la contraseña del rol viaja
+# aparte (por la entrada estándar de `psql`), nunca en el texto de este script, que se imprime, se guarda con
+# `--output` y se puede compartir.
+DDL_BLOCKS = (SCHEMA_DDL, VIEWS_DDL)
 
 
 class SqlError(ValueError):
