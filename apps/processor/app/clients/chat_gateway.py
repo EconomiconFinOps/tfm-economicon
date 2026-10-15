@@ -22,7 +22,7 @@ import threading
 import time
 from urllib import error,request
 
-from app.agents.schemas import chat_provider_schema, assemble_chat_response
+from app.agents.schemas import chat_wire_schema, assemble_chat_response
 from app.clients.chat_dns import resolve
 from app.core.context_budget import budget
 from app.clients.chat_stream_parser import SegmentAnswerJSON,SSEFrames,complete_json
@@ -386,7 +386,7 @@ class ChatGateway:
             source_quantities=context_quantities(context)
             payload['response_format']={'type':'json_schema','json_schema':{
                 'name':'FinOpsResponse','strict':True,
-                'schema':chat_provider_schema(
+                'schema':chat_wire_schema(
                     financial_metrics_allowed=context.get('financial_metrics_allowed'),
                     authorized_evidence=context.get('authorized_evidence', []), quantities=source_quantities)}}
             if phase=='draft':

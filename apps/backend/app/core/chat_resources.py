@@ -9,13 +9,13 @@ from dataclasses import dataclass, field
 from app.core.context_budget import budget
 from pathlib import Path
 
-from app.schemas.chat import canonical, response_schema, provider_response_schema
+from app.schemas.chat import canonical, response_schema, provider_wire_response_schema as provider_response_schema
 
 TOKENIZER_SHA = '19e773648cb4e65de8660ea6365e10acca112d42a854923df93db4a6f333a82d'
 TOKENIZER_REVISION = 'a66456a59f21345d1e5e586345c448a9106d29d7'
 BASE_SHA = '8e3197acc5cc50b4368d547fbde9ea198cad3364414cec489cd9050f922e6edf'
 INPUT_SHA = 'a69db50801cfc42eb5b633fc724bbc7e4b3b590326f6713cd6b8616bf0ccfb42'
-ASSEMBLER_SHA = '4fa3c2a544fb02f03778cd86f4982561aa5f932e64cfd1e52d84dab0ff26e1e3'
+ASSEMBLER_SHA = '660b39a78480ce8990b3c225a514db262294cb0a6494c692577c2327fe852c69'
 from app.core.chat_expressions import context_question, context_quantities
 
 # This control is generated locally, never by an LLM. The entire current
@@ -120,6 +120,7 @@ def load_resources(directory, tokenizer_file=None):
             or manifest.get('assembler_sha256') != ASSEMBLER_SHA
             or sha(canonical(manifest['input_contract']).encode()) != INPUT_SHA
             or sha(canonical(manifest['assembler_contract']).encode()) != ASSEMBLER_SHA
+            or manifest['assembler_contract'].get('generation_schema',{}).get('module_sha256') != sha(Path(__file__).with_name('chat_generation_schema.py').read_text(encoding='utf-8').encode())
             or manifest.get('tokenizer') != {'library_version':'0.22.1','revision':TOKENIZER_REVISION,'sha256':TOKENIZER_SHA,'bytes':20217442}
             or manifest.get('budgets') != {'variable_tokens':8192,'wrapper_margin_tokens':1024,'output_tokens':3200,'model_context_tokens':1048576}):
         raise ValueError('Bundle contract mismatch.')

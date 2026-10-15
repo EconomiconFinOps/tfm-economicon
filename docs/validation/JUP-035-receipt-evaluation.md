@@ -3,6 +3,25 @@
 Estado: propuesta local del 13/10/2026; no sustituye JUP-070 ni una review humana.
 Herramienta: `tools/chat-receipt-eval.py`, biblioteca estándar, sin acceso a red.
 
+Actualización15/10: la comparación de modelos distingue errores del proveedor,
+respuestas técnicamente válidas y requisitos semánticos adjudicados. Un replay de
+generación con contexto congelado no acredita API, SQL, historial ni navegador.
+No se convierte una respuesta recogida en PASS por coincidencias de números.
+
+El adaptador `chat_generation_schema.py` conserva el esquema lógico completo:
+expande constantes exactas y elimina sólo gramáticas inaccesibles. Los validadores
+de respuesta y la unión de modos siguen aplicándose; no hay reparación de JSON,
+reintentos ocultos ni generación de datos por defecto. Backend y processor cuentan
+el esquema enviado al proveedor, y su manifiesto incorpora la versión y hash del
+adaptador. Un descriptor de la versión anterior no sirve para admitir la nueva.
+La copia de backend debe coincidir con la fuente de processor y con el hash del
+manifiesto; esto no resuelve la deuda previa de módulos duplicados en el proyecto.
+
+Las pruebas de equivalencia usan `jsonschema==4.25.1` sólo como dependencia de
+desarrollo. El runtime no incorpora esa dependencia. Cambiar esta representación
+del esquema no demuestra que un proveedor la acepte ni que el contenido cumpla:
+ambas cosas requieren evidencia separada sobre el candidato correspondiente.
+
 ## Contrato
 
 Se mantienen intactos los 28 casos y los 109 requisitos originales de

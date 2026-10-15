@@ -1,5 +1,8 @@
 """Compare original and provider spellings with an independent schema engine."""
 import copy
+import json
+import threading
+import time
 
 import pytest
 from jsonschema import Draft202012Validator
@@ -107,3 +110,31 @@ def test_recursive_live_reference_and_literal_ref_are_preserved():
 def test_unknown_reference_scopes_fail_closed(original):
     with pytest.raises(ValueError):
         generation_schema(original)
+
+
+@pytest.mark.parametrize('read_size', [1, 7, 8192])
+@pytest.mark.parametrize('forged', [False, True])
+def test_wire_adapter_preserves_public_stream_and_rejects_forged_source(monkeypatch, read_size, forged):
+    from test_chat_auto_jup035 import provider, wire
+    from test_chat_gateway_jup035 import SOURCE, SUPPORTED_ANSWER, supported_provider
+    from app.agents.schemas import chat_wire_schema
+    from app.core.chat_expressions import context_quantities
+    value = supported_provider()
+    if forged:
+        value['answer'][-1]['documentary']['source_id'] = 'unauthorized'
+    gateway, calls = provider(monkeypatch, [wire({'content': json.dumps(value)})], read_size=read_size)
+    context = {'messages': [
+        {'role': 'user', 'content': 'UNTRUSTED_CURRENT_CONTEXT\n{"question":"Synthetic question."}'},
+        {'role': 'user', 'content': 'UNTRUSTED_RETRIEVAL_CONTEXT\n' + json.dumps({'evidence': [SOURCE], 'omissions': []})}],
+        'financial_metrics_allowed': False, 'authorized_evidence': [SOURCE]}
+    records = list(gateway._records(context, time.time() + 60, {}, threading.Event()))
+    expected = chat_wire_schema(financial_metrics_allowed=False, authorized_evidence=[SOURCE],
+                                quantities=context_quantities(context))
+    assert calls[0]['response_format']['json_schema']['schema'] == expected
+    if forged:
+        assert records[-1]['type'] == 'error' and records[-1]['status'] == 422
+        assert not any(r['type'] == 'candidate' for r in records)
+        assert 'Synthetic grounding.' not in ''.join(r.get('text', '') for r in records)
+    else:
+        assert records[-1]['type'] == 'candidate' and records[-1]['result'] == SUPPORTED_ANSWER
+        assert ''.join(r.get('text', '') for r in records) == SUPPORTED_ANSWER['answer']

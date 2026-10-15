@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 from app.agents.prompts import CHAT_SYSTEM_PROMPT
-from app.agents.schemas import FinOpsResponse, chat_provider_schema
+from app.agents.schemas import FinOpsResponse, chat_provider_schema, chat_wire_schema
 from test_chat_private_jup035 import private,signed
 
 
@@ -77,6 +77,9 @@ ASSEMBLER_CONTRACT['review']={'version':2,'draft_tokens':1000,'final_tokens':220
     'module_sha256':hashlib.sha256((Path(__file__).parents[1]/'app/core/chat_review.py').read_text(encoding='utf-8').encode()).hexdigest()}
 
 ASSEMBLER_CONTRACT['documentary_excerpt_module_sha256']=hashlib.sha256((Path(__file__).parents[1]/'app/core/chat_claims.py').read_text(encoding='utf-8').encode()).hexdigest()
+ASSEMBLER_CONTRACT['generation_schema']={
+    'version':'equivalent-constants-reachable-definitions-v1',
+    'module_sha256':hashlib.sha256((Path(__file__).parents[1]/'app/core/chat_generation_schema.py').read_text(encoding='utf-8').encode()).hexdigest()}
 
 
 def canonical(value): return json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':'),allow_nan=False).encode()
@@ -121,7 +124,7 @@ def resources(private,tmp_path,monkeypatch):
     schema_sha=digest(canonical(FinOpsResponse.model_json_schema()))
     manifest={'v':3,'kind':'jup-035.chat.v3','system_sha256':digest(system.encode()),'input_sha256':digest(input_text.encode()),
               'system_base_sha256':digest(CHAT_SYSTEM_PROMPT.encode()),'response_schema_sha256':schema_sha,
-              'provider_response_schema_sha256':digest(canonical(chat_provider_schema(financial_metrics_allowed=True))),
+              'provider_response_schema_sha256':digest(canonical(chat_wire_schema(financial_metrics_allowed=True))),
               'financial_metrics_policy':'server-billing-authority-empty-metrics-v1',
               'response_period_policy':'server-verified-unique-utc-v1',
               'response_subscriptions_policy':'server-canonical-selection-v1',

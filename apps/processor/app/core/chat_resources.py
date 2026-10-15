@@ -104,6 +104,9 @@ ASSEMBLER_CONTRACT.update(review={'version':2,'draft_tokens':1000,'final_tokens'
     'usage':'observed-partial-explicit-legs-v1','deadline':'shared-120s',
     'draft_max_bytes':DRAFT_MAX_BYTES,'serialized_plan_input_reserve':2*DRAFT_MAX_BYTES,
     'module_sha256':hashlib.sha256(Path(__file__).with_name('chat_review.py').read_text(encoding='utf-8').encode()).hexdigest()})
+ASSEMBLER_CONTRACT['generation_schema']={
+    'version':'equivalent-constants-reachable-definitions-v1',
+    'module_sha256':hashlib.sha256(Path(__file__).with_name('chat_generation_schema.py').read_text(encoding='utf-8').encode()).hexdigest()}
 
 
 def continuation_messages(context, assistant, result):
@@ -177,7 +180,7 @@ class ChatResources:
         return variable
 
     def validate_tool_result(self, context, assistant, result):
-        from app.agents.schemas import chat_provider_schema
+        from app.agents.schemas import chat_wire_schema as chat_provider_schema
         messages=continuation_messages(context,assistant,result)
         sources=context.get('authorized_evidence',[])+json.loads(result['content'])['evidence']
         schema=chat_provider_schema(financial_metrics_allowed=context['financial_metrics_allowed'], authorized_evidence=sources, quantities=context_quantities({'messages':messages,'authorized_evidence':sources}))
@@ -192,7 +195,7 @@ class ChatResources:
         return messages
 
     def validate_context(self, context):
-        from app.agents.schemas import chat_provider_schema
+        from app.agents.schemas import chat_wire_schema as chat_provider_schema
         if not isinstance(context, dict) or context.get('prompt_version') != self.prompt_version:
             raise ValueError('Context version mismatch.')
         if len(canonical(context)) > self.context_budget['body_limit_bytes']:
@@ -244,7 +247,7 @@ class ChatResources:
 def load_resources(directory=None, tokenizer_file=None):
     import tokenizers
     from app.agents.prompts import CHAT_SYSTEM_PROMPT
-    from app.agents.schemas import FinOpsResponse, chat_provider_schema
+    from app.agents.schemas import FinOpsResponse, chat_wire_schema as chat_provider_schema
     root = Path(directory) if directory else Path(__file__).parents[1] / 'agents/prompt_resources/jup035/chat/v3'
     if root.is_symlink() or not root.is_dir():
         raise ValueError('Unavailable resources.')

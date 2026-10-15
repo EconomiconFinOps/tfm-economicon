@@ -188,6 +188,11 @@ def chat_provider_schema(*, financial_metrics_allowed=False, authorized_evidence
     return bind_segments(_bind_chat_evidence(schema, authorized_evidence), calculations, quantities)
 
 
+def chat_wire_schema(**kwargs):
+    from app.core.chat_generation_schema import generation_schema
+    return generation_schema(chat_provider_schema(**kwargs))
+
+
 def assemble_chat_response(value, period, subscriptions=None, *, authorized_evidence=None):
     if not isinstance(value, dict) or not isinstance(value.get('scope'), dict):
         raise ValueError('Invalid response scope.')

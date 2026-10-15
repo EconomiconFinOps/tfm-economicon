@@ -151,6 +151,11 @@ def provider_response_schema(*, financial_metrics_allowed=False, authorized_evid
     return bind_segments(_bind_chat_evidence(schema, authorized_evidence), calculations, quantities)
 
 
+def provider_wire_response_schema(**kwargs):
+    from app.core.chat_generation_schema import generation_schema
+    return generation_schema(provider_response_schema(**kwargs))
+
+
 def _validate(value, rule, schema, depth=0):
     if depth > 32:
         raise ResponseValidationError('schema_depth')
