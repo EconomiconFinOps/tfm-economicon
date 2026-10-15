@@ -1,6 +1,6 @@
 """Carga de los resultados de evaluación del asistente en la base del dashboard de Grafana (JUP-121).
 
-Por ahora este módulo contiene ocho capas. La primera es la de manifiestos: lee y valida los manifiestos
+Por ahora este módulo contiene nueve capas. La primera es la de manifiestos: lee y valida los manifiestos
 que dicen qué informes alimentan el dashboard (`docs/validation/evaluation-runs.json` y los locales). La
 segunda es el adaptador del informe JSON de JUP-070 (`adapt_jup070`), que normaliza ese informe al
 contrato de filas planas `rows-v1` de `docs/validation/evaluation-dashboard.md`. La tercera es el
@@ -17,19 +17,31 @@ validación. La octava es la clasificación de ejecuciones: `classify_run` dice 
 es real (plantilla, doble, sintética o sin modelo verificado), `comparability_key` calcula el hash que agrupa
 las ejecuciones comparables entre sí, `unclassified_metrics` avisa de las métricas del catálogo que no están
 declaradas como humanas ni como automáticas y `classify_run_row` añade las tres columnas de clasificación a una
-ejecución. Usa solo la biblioteca estándar, no tiene efectos al importarse y nunca abre una conexión de red ni a
-la base de datos. La carga a la base la añaden las tareas siguientes del change.
+ejecución. La novena une todo lo anterior sin base de datos: `normalize_entry` convierte una entrada del
+manifiesto en `{"run", "results"}` (con `run_id`, huella del informe, clasificación y ruta), `build_dataset`
+reúne los manifiestos en un conjunto de datos sin `run_id` repetidos y `main` lo expone como el subcomando `rows`.
+Usa solo la biblioteca estándar, no tiene efectos al importarse y nunca abre una conexión de red ni a la base de
+datos. La carga a la base la añaden las tareas siguientes del change.
+
+Uso por línea de comandos (el JSON del conjunto de datos sale por la salida estándar, o a `--output`; un error
+sale como `error: <mensaje>` por la salida de errores con código 1 y no escribe nada):
+
+    python tools/evaluation-dashboard.py rows [--manifest RUTA]... [--no-versioned] [--output FICHERO] [--root DIR]
 """
 
 from __future__ import annotations
 
+import argparse
 import copy
 import hashlib
 import json
 import math
+import os
 import re
 import subprocess
-from datetime import datetime
+import sys
+import tempfile
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -241,6 +253,25 @@ def _bad(where: str, problem: str) -> AdapterError:
     return AdapterError(f"{where}: {problem}")
 
 
+# Máximo de caracteres de un nombre ajeno (clave de un informe) que se vuelca dentro de un mensaje.
+KEY_LABEL_LIMIT = 80
+
+
+def _escape_control(text: str) -> str:
+    # Solo se escapa lo no imprimible (saltos de línea, ESC, NUL...): las tildes y los espacios se dejan tal cual
+    # para que el mensaje siga siendo legible. `unicode_escape` carácter a carácter y no `repr()` para no añadir
+    # comillas ni cambiar el mensaje de las claves normales.
+    return "".join(char if char.isprintable() else char.encode("unicode_escape").decode("ascii") for char in text)
+
+
+def _key_label(key: str) -> str:
+    # Los mensajes citan la clave desconocida para que se pueda corregir, pero una clave es texto del informe:
+    # una clave con un salto de línea partiría el error en dos líneas, una con ESC inyectaría secuencias de terminal y una de
+    # medio megabyte inundaría la salida. Se escapa y se trunca (escapar primero acota el resultado final).
+    label = _escape_control(key)
+    return label if len(label) <= KEY_LABEL_LIMIT else label[:KEY_LABEL_LIMIT] + "..."
+
+
 def _load_catalogue() -> dict:
     try:
         return json.loads(CATALOGUE_PATH.read_text(encoding="utf-8"))
@@ -296,8 +327,8 @@ def _check_metrics(report: dict, catalogue_by_id: dict) -> dict:
         # Una métrica fuera del catálogo es un informe de otra versión: se rechaza en lugar de inventarle
         # familia y unidad. Una métrica del catálogo que falta no es error (no se inventa lo ausente).
         if metric_id not in catalogue_by_id:
-            raise _bad(f"metrics.{metric_id}", "métrica desconocida (no está en el catálogo de JUP-067)")
-        _check_object(data, f"metrics.{metric_id}")
+            raise _bad(f"metrics.{_key_label(metric_id)}", "métrica desconocida (no está en el catálogo de JUP-067)")
+        _check_object(data, f"metrics.{_key_label(metric_id)}")
     return metrics
 
 
@@ -704,10 +735,10 @@ def _check_calibration_sections(report: dict) -> None:
     if not corpus:
         raise _bad("corpus", "debe tener al menos un documento")
     for key, entry in corpus.items():
-        entry = _check_object(entry, f"corpus.{key}")
+        entry = _check_object(entry, f"corpus.{_key_label(key)}")
         sha = entry.get("sha256")
         if not isinstance(sha, str) or not sha:
-            raise _bad(f"corpus.{key}.sha256", "debe ser una cadena no vacía")
+            raise _bad(f"corpus.{_key_label(key)}.sha256", "debe ser una cadena no vacía")
     _check_identifier_field(_check_object(report.get("bank"), "bank"), "suite_version", "bank")
     chunking = _check_object(report.get("chunking"), "chunking")
     for field in ("size", "overlap"):
@@ -1139,7 +1170,7 @@ def _check_keys(item: dict, expected: tuple, where: str) -> None:
     # dejaría que un informe se declarara de hito por su cuenta.
     for key in item:
         if key not in expected:
-            raise _bad(f"{where}.{key}", "clave desconocida")
+            raise _bad(f"{where}.{_key_label(key)}", "clave desconocida")
     for key in expected:
         if key not in item:
             raise _bad(f"{where}.{key}", "campo obligatorio ausente")
@@ -1215,7 +1246,7 @@ def _validate_run_retrieval(run: dict) -> None:
     _check_object(retrieval, "run.retrieval")
     for key in retrieval:
         if key not in RETRIEVAL_KEYS:
-            raise _bad(f"run.retrieval.{key}", "clave desconocida")
+            raise _bad(f"run.retrieval.{_key_label(key)}", "clave desconocida")
     for key in RETRIEVAL_KEYS:
         # Se recorre RETRIEVAL_KEYS y no el dict para que el orden del error no dependa del orden del documento.
         if key in retrieval:
@@ -1371,7 +1402,7 @@ def adapt_rows_v1(document, run_id=None) -> tuple[dict, list[dict]]:
     document = _check_object(document, "document")
     for key in document:
         if key not in ROWS_DOCUMENT_KEYS:
-            raise _bad(f"document.{key}", "clave desconocida")
+            raise _bad(f"document.{_key_label(key)}", "clave desconocida")
     # `type(...) is int`: True == 1 y 1.0 == 1 en Python, y solo el entero 1 exacto es la versión del contrato.
     version = _document_field(document, "contract_version")
     if type(version) is not int or version != ROWS_CONTRACT_VERSION:
@@ -1525,3 +1556,250 @@ def classify_run_row(run) -> dict:
     row["non_real_reasons"] = list(reasons)
     row["comparability_key"] = comparability_key(run, reasons)
     return row
+
+
+# --- Normalización de entradas y subcomando rows ---------------------------------------------------------------
+
+DEFAULT_MANIFEST = ROOT / "docs" / "validation" / "evaluation-runs.json"
+DATASET_VERSION = 1
+# Columnas de la ejecución que salen al conjunto de datos: las del contrato `rows-v1`, las tres de clasificación
+# y las cuatro que añade la carga (formato, hito, ruta y huella del informe). Es una tupla porque el orden es
+# parte del contrato de salida.
+RUN_OUTPUT_KEYS = RUN_KEYS + CLASSIFICATION_KEYS + ("format", "milestone", "report_path", "report_sha256")
+
+# Alfabeto de `report_path`: más estricto que el de los identificadores (sin `:=,+@`) porque la ruta se guarda
+# tal cual en la base y en un script SQL, y un nombre con espacios o tildes no aporta nada que la huella no dé.
+REPORT_PATH_RE = re.compile(r"[A-Za-z0-9._/-]+")
+# `run_id` con el que los adaptadores devuelven la ejecución mientras no se conoce el definitivo: el derivado
+# necesita la fecha y la huella, y la fecha solo la conoce el adaptador. Es un identificador válido para que
+# `validate_rows` revise el resto de la ejecución antes de derivar nada.
+PROVISIONAL_RUN_ID = "pendiente"
+# Formatos cuyo `run_id` se deriva si la entrada no lo fija: los tres informes de los que el adaptador recibe el
+# documento ya parseado. JUP-068 (lo lee Node) y `rows-v1` traen su propio `run_id`.
+DERIVED_RUN_ID_FORMATS = ("jup-070-report-v1", "jup-078-benchmark-v1", "jup-022-calibration-v1")
+
+
+def derive_run_id(source: str, run_at, report_sha256: str) -> str:
+    """`run_id` derivado: `<fuente en minúsculas>-<AAAAMMDDThhmmssZ en UTC o undated>-<8 primeros hex>`.
+
+    Es determinista (misma fuente, fecha y huella dan el mismo identificador) para que regenerar el conjunto de
+    datos no cambie los `run_id` ya cargados. La fecha se pasa a UTC y se truncan las fracciones de segundo, sin
+    redondear: redondear podría subir al segundo siguiente y dos informes del mismo segundo ya se distinguen por
+    la huella. `run_at` ya viene validado (`validate_rows`), por lo que `fromisoformat` no puede fallar aquí.
+    """
+    if run_at is None:
+        stamp = "undated"
+    else:
+        try:
+            moment = datetime.fromisoformat(run_at).astimezone(timezone.utc)
+        except OverflowError:
+            # Un año 0001 con desfase positivo no cabe en UTC: se informa como dato inválido y no como traza.
+            raise _bad("run.run_at", "la fecha no se puede pasar a UTC") from None
+        # Campos numéricos y no `strftime`: `%Y` no rellena con ceros los años de menos de cuatro cifras en todas
+        # las plataformas y el identificador cambiaría de una máquina a otra.
+        stamp = (f"{moment.year:04d}{moment.month:02d}{moment.day:02d}"
+                 f"T{moment.hour:02d}{moment.minute:02d}{moment.second:02d}Z")
+    return f"{source.lower()}-{stamp}-{report_sha256[:8]}"
+
+
+def report_digest(document) -> str:
+    """sha256 del JSON canónico del documento YA PARSEADO (no de los bytes del fichero).
+
+    Los bytes de un informe cambian según el fin de línea (`autocrlf` de Git en Windows), la sangría o el orden
+    de las claves, y los `run_id` derivados llevan esta huella: tienen que ser iguales en todas las máquinas y no
+    depender de cómo se guardó el fichero. Se serializa con claves ordenadas, separadores compactos y
+    `ensure_ascii` (mismo criterio que `comparability_key`), así que dos documentos iguales dan siempre la misma
+    huella y uno distinto (otro valor, otro tipo, otro orden de una lista) da otra.
+    """
+    text = json.dumps(document, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def _report_location(path, root) -> tuple[str, str | None]:
+    # Devuelve (etiqueta para los errores, ruta relativa con barras si el informe cuelga de `root`, si no None).
+    # Se comparan rutas RESUELTAS y por componentes (`relative_to`), no cadenas: un prefijo textual daría por
+    # dentro `raiz-otra` respecto a `raiz`, y un `..` haría pasar por fuera un informe que está dentro.
+    # Fuera de la raíz solo se usa el nombre del fichero: una ruta absoluta local puede llevar nombres de usuario
+    # y estos mensajes acaban en registros de CI y en revisiones públicas.
+    location = Path(path)
+    try:
+        relative = location.resolve().relative_to(Path(root).resolve())
+    except (ValueError, OSError, RuntimeError):
+        return _escape_control(location.name), None
+    posix = relative.as_posix()
+    return _escape_control(posix), posix
+
+
+def _read_report(path) -> object:
+    # Todo fallo de lectura o de JSON sale como AdapterError (el prefijo del fichero lo añade el llamador). Del
+    # error del sistema solo se cita `strerror`: su texto completo repite la ruta absoluta, que aquí no debe salir.
+    try:
+        # utf-8-sig tolera el BOM de los editores de Windows sin alterar el UTF-8 normal (como en los manifiestos).
+        text = Path(path).read_text(encoding="utf-8-sig")
+    except OSError as error:
+        raise _bad("report", f"no se puede leer el informe ({error.strerror or type(error).__name__})") from error
+    except UnicodeDecodeError as error:
+        raise _bad("report", f"no se puede leer el informe ({error})") from error
+    try:
+        return json.loads(text)
+    except (ValueError, RecursionError) as error:
+        raise _bad("report", f"JSON inválido ({error})") from error
+
+
+def _adapt_entry(entry: dict, document) -> tuple[dict, list[dict]]:
+    # Aplica el adaptador del formato. Con `run_id` explícito el adaptador ya lo recibe; sin él, los de JUP-070,
+    # JUP-078 y JUP-022 devuelven uno provisional que `normalize_entry` sustituye por el derivado.
+    fmt, explicit = entry["format"], entry["run_id"]
+    if fmt == "rows-v1":
+        # El formato trae su propio `run_id`; el de la entrada lo sustituye (un hito de un informe repetido).
+        return adapt_rows_v1(document, run_id=explicit)
+    if fmt == "jup-068-input-v1":
+        # La entrada de JUP-068 no es el informe: lo genera Node, que ya trae un `run_id` (el del ejemplo versionado
+        # lo declara). Por eso aquí el orden es explícito > informe, y no se deriva nunca.
+        report = read_business_report(entry["path"])
+        run_id = explicit if explicit is not None else report.get("run_id")
+        if run_id is None:
+            raise _bad("run_id", "el informe de negocio no trae run_id y la entrada del manifiesto tampoco")
+        return adapt_jup068(report, run_id)
+    run_id = PROVISIONAL_RUN_ID if explicit is None else explicit
+    # Cadena de `if` y no una tabla `formato -> función`: la tabla guardaría las funciones al importar y un
+    # cambio posterior de `adapt_*` (o un doble en las pruebas) no se vería; así siempre se llama a la actual.
+    if fmt == "jup-070-report-v1":
+        return adapt_jup070(document, run_id)
+    if fmt == "jup-078-benchmark-v1":
+        return adapt_jup078(document, run_id)
+    return adapt_jup022(document, run_id)
+
+
+def normalize_entry(entry, root=ROOT) -> dict:
+    """Convierte una entrada de `read_manifest` en `{"run": {...}, "results": [...]}`.
+
+    `run` tiene exactamente `RUN_OUTPUT_KEYS`. El `run_id` es, por orden, el explícito de la entrada, el del
+    informe (JUP-068 y `rows-v1`) o el derivado de la fuente, la fecha y la huella. Todo fallo es un
+    `AdapterError` que empieza por `<fichero>: `, con la ruta relativa a `root` si el informe cuelga de ella y solo
+    el nombre en otro caso. Función sin efectos: solo lee el informe (y, en JUP-068, ejecuta Node).
+    """
+    label, report_path = _report_location(entry["path"], root)
+    # `report_path` solo se guarda si el informe está dentro de la raíz del repositorio Y su ruta cumple el
+    # alfabeto cerrado: una ruta local absoluta puede llevar nombres de usuario y una con espacios o tildes no es
+    # un identificador seguro. En esos casos queda None y el informe se identifica solo por su huella.
+    if report_path is not None and REPORT_PATH_RE.fullmatch(report_path) is None:
+        report_path = None
+    try:
+        document = _read_report(entry["path"])
+        run, results = _adapt_entry(entry, document)
+        # Validación común SIEMPRE sobre la salida cruda del adaptador (también la de `rows-v1`, que ya la hizo):
+        # los adaptadores copian valores sin comprobar su alfabeto y esta es la barrera que lo hace. Va antes de
+        # derivar el `run_id` para que una fecha inadmisible sea un error de `run.run_at` y no un identificador.
+        validate_rows(run, results)
+        # Un informe sin filas es un error y no un conjunto vacío: lo más probable es un informe truncado o un
+        # barrido sin puntos, y cargarlo en silencio dejaría una ejecución sin datos en el dashboard.
+        if not results:
+            raise _bad("results", "el informe no produce ninguna fila")
+        digest = report_digest(document)
+        if entry["run_id"] is None and entry["format"] in DERIVED_RUN_ID_FORMATS:
+            run["run_id"] = derive_run_id(run["source"], run["run_at"], digest)
+        # La clasificación se calcula sobre el `run` CRUDO: `rows-v1` rechaza las claves desconocidas, así que
+        # clasificar después de añadir formato, hito, ruta y huella haría fallar la validación de `classify_run`.
+        output_run = classify_run_row(run)
+        output_run.update(format=entry["format"], milestone=entry["milestone"], report_path=report_path,
+                          report_sha256=digest)
+    except (AdapterError, ManifestError) as error:
+        # ManifestError también: un fallo de un adaptador no debe escaparse con otro tipo, y la línea de comandos
+        # solo trata los errores de datos. El mensaje original se conserva tal cual tras el prefijo.
+        raise AdapterError(f"{label}: {error}") from error
+    except RecursionError as error:
+        raise AdapterError(f"{label}: el documento está demasiado anidado") from error
+    return {"run": output_run, "results": results}
+
+
+def build_dataset(manifest_paths, root=ROOT) -> dict:
+    """Une los manifiestos en `{"dataset_version": 1, "runs": [...]}`, en el orden de los manifiestos dados.
+
+    Es atómico: cualquier fallo (manifiesto, informe o `run_id` repetido) lanza la excepción sin devolver nada,
+    para que la línea de comandos no deje un conjunto de datos a medias. `merge_manifests` ya rechaza el mismo
+    informe o el mismo `run_id` explícito en dos entradas; aquí se detectan los choques que solo se ven al
+    normalizar: la misma ejecución copiada a otro nombre (mismo contenido, mismo `run_id` derivado) o un `run_id`
+    explícito igual al que trae otro informe.
+    """
+    runs = []
+    owners: dict[str, str] = {}
+    for entry in merge_manifests(list(manifest_paths), root=root):
+        item = normalize_entry(entry, root=root)
+        run_id = item["run"]["run_id"]
+        label = _report_location(entry["path"], root)[0]
+        if run_id in owners:
+            raise _bad("run_id", f"{run_id!r} repetido en {label}; ya lo usa {owners[run_id]}")
+        owners[run_id] = label
+        runs.append(item)
+    return {"dataset_version": DATASET_VERSION, "runs": runs}
+
+
+def _write_atomically(target: Path, text: str) -> None:
+    # Se escribe a un fichero temporal del MISMO directorio y se renombra al final: `os.replace` es atómico en el
+    # mismo sistema de ficheros, así que una interrupción o un error de disco nunca deja un `--output` truncado ni
+    # pisa el anterior. En bytes UTF-8 y no en modo texto para que el fin de línea sea `\n` en todas las
+    # plataformas y el fichero versionado no cambie de una máquina a otra.
+    handle, temporary = tempfile.mkstemp(prefix=f".{target.name}.", suffix=".tmp", dir=target.parent)
+    try:
+        with os.fdopen(handle, "wb") as stream:
+            stream.write(text.encode("utf-8"))
+        os.replace(temporary, target)
+    except BaseException:
+        # Se limpia el temporal también ante Ctrl+C; la excepción sigue su camino.
+        try:
+            os.unlink(temporary)
+        except OSError:
+            pass
+        raise
+
+
+def _build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="evaluation-dashboard.py",
+        description="Prepara los resultados de evaluación del asistente para el dashboard de Grafana (JUP-121).",
+    )
+    # `required=True`: sin subcomando argparse termina con el código 2 de error de uso, el mismo que una opción
+    # desconocida, y no hay un comportamiento por defecto que adivinar.
+    commands = parser.add_subparsers(dest="command", required=True, metavar="comando")
+    rows = commands.add_parser(
+        "rows", help="imprime el conjunto de datos normalizado (JSON) de los informes del manifiesto",
+        description="Normaliza los informes de los manifiestos al contrato de filas planas y los imprime como JSON.",
+    )
+    rows.add_argument("--manifest", action="append", default=[], type=Path, metavar="RUTA",
+                      help="manifiesto local que se añade después del versionado (repetible)")
+    rows.add_argument("--no-versioned", action="store_true",
+                      help="no lee el manifiesto versionado (docs/validation/evaluation-runs.json)")
+    rows.add_argument("--output", type=Path, metavar="FICHERO",
+                      help="escribe el JSON en este fichero en lugar de la salida estándar")
+    rows.add_argument("--root", type=Path, default=ROOT, metavar="DIR",
+                      help="raíz que resuelve las rutas relativas de los manifiestos y el report_path "
+                           "(por defecto, la raíz del repositorio)")
+    return parser
+
+
+def main(argv=None) -> int:
+    """Línea de comandos. Devuelve 0 si todo fue bien y 1 ante un error de datos; el 2 lo da `argparse`."""
+    args = _build_parser().parse_args(argv)
+    # Solo existe `rows`; el despacho por `args.command` se añadirá con el siguiente subcomando.
+    manifests = ([] if args.no_versioned else [DEFAULT_MANIFEST]) + args.manifest
+    try:
+        dataset = build_dataset(manifests, root=args.root)
+        # Se serializa ANTES de tocar `--output`: si algo falla no se crea ni se modifica el fichero.
+        text = json.dumps(dataset, indent=2, ensure_ascii=True) + "\n"
+        if args.output is None:
+            sys.stdout.write(text)
+        else:
+            _write_atomically(args.output, text)
+    except (AdapterError, ManifestError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    except OSError as error:
+        # `--output` en un directorio inexistente o sin permisos: error del entorno, no una traza.
+        print(f"error: no se puede escribir la salida ({error.strerror or type(error).__name__})", file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
