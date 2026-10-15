@@ -4,7 +4,7 @@ import copy
 import pytest
 from jsonschema import Draft202012Validator
 
-from app.core.chat_generation_schema import expand_constants
+from app.core.chat_generation_schema import expand_constants, generation_schema
 
 
 @pytest.mark.parametrize('value', [None, True, False, 0, 1, -3, 2.5, '😀', '',
@@ -57,3 +57,42 @@ def test_constraints_and_modes_are_never_dropped():
 def test_unsupported_intersections_fail_before_dispatch(schema):
     with pytest.raises(ValueError):
         expand_constants(schema)
+
+
+def test_empty_collections_remove_only_unreachable_grammars():
+    original = {'type': 'object', 'properties': {
+        'answer': {'$ref': '#/$defs/Live'},
+        'evidence': {'type': 'array', 'maxItems': 0, 'items': {'$ref': '#/$defs/Dead'}}},
+        'required': ['answer', 'evidence'], 'additionalProperties': False,
+        '$defs': {'Live': {'type': 'object', 'properties': {'id': {'$ref': '#/$defs/Id'}},
+                          'required': ['id'], 'additionalProperties': False},
+                  'Id': {'const': 'real'}, 'Dead': {'type': 'string', 'pattern': '^dead$'}}}
+    wire = generation_schema(original)
+    assert set(wire['$defs']) == {'Live', 'Id'}
+    for value in ({'answer': {'id': 'real'}, 'evidence': []},
+                  {'answer': {'id': 'forged'}, 'evidence': []},
+                  {'answer': {'id': 'real'}, 'evidence': ['dead']},
+                  {'answer': {'id': 'real', 'extra': 1}, 'evidence': []}):
+        assert Draft202012Validator(original).is_valid(value) == Draft202012Validator(wire).is_valid(value)
+
+
+def test_recursive_live_reference_and_literal_ref_are_preserved():
+    original = {'$defs': {'Node': {'anyOf': [{'type': 'null'}, {'type': 'array', 'items': {'$ref': '#/$defs/Node'}}]},
+                         'Dead': {'type': 'string'}}, '$ref': '#/$defs/Node'}
+    wire = generation_schema(original)
+    assert set(wire['$defs']) == {'Node'}
+    for value in (None, [], [None, []], 'wrong'):
+        assert Draft202012Validator(original).is_valid(value) == Draft202012Validator(wire).is_valid(value)
+    assert generation_schema({'enum': [{'$ref': 'data-not-a-reference'}]}) == {'enum': [{'$ref': 'data-not-a-reference'}]}
+
+
+@pytest.mark.parametrize('original', [
+    {'$ref': 'https://invalid.example/schema'},
+    {'$defs': {}, '$ref': 'https://invalid.example/schema'},
+    {'$defs': {}, '$ref': '#/$defs/Missing'},
+    {'$defs': {'A': {}}, '$ref': '#/$defs/A/properties/x'},
+    {'$id': 'scope', '$defs': {}},
+])
+def test_unknown_reference_scopes_fail_closed(original):
+    with pytest.raises(ValueError):
+        generation_schema(original)

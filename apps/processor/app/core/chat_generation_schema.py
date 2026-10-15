@@ -66,3 +66,64 @@ def expand_constants(schema):
         if key in result:
             result[key] = [expand_constants(item) for item in result[key]]
     return result
+
+
+def _children(schema):
+    if not isinstance(schema, dict):
+        return
+    for key in ('$defs', 'definitions', 'properties', 'patternProperties', 'dependentSchemas'):
+        yield from schema.get(key, {}).values()
+    for key in ('items', 'additionalProperties', 'contains', 'not', 'if', 'then', 'else', 'propertyNames'):
+        if key in schema:
+            yield schema[key]
+    for key in ('anyOf', 'oneOf', 'allOf', 'prefixItems'):
+        yield from schema.get(key, [])
+
+
+def generation_schema(schema):
+    """Equivalent constants and reachable definitions, without dead grammars.
+
+    An array with maxItems zero has no item to constrain. Its unused item grammar
+    must not make a provider compile financial/citation definitions that cannot
+    occur in this response. Cross-field unions and every active constraint stay.
+    Only local, root $defs references used by the generated contract are accepted.
+    """
+    result = expand_constants(schema)
+
+    def simplify(node):
+        if not isinstance(node, dict):
+            return
+        if any(key in node for key in ('$id', '$anchor', '$dynamicRef', '$recursiveRef')):
+            raise ValueError('Unsupported generation reference scope.')
+        if node.get('type') == 'array' and node.get('maxItems') == 0:
+            node['items'] = {'type': 'string'}
+            node.pop('prefixItems', None)
+        for child in _children(node):
+            simplify(child)
+
+    simplify(result)
+    if not isinstance(result, dict):
+        return result
+    definitions = result.pop('$defs', {})
+    retained = {}
+
+    def visit(node):
+        if not isinstance(node, dict):
+            return
+        if '$ref' in node:
+            ref = node['$ref']
+            if not isinstance(ref, str) or not ref.startswith('#/$defs/') or '/' in ref[8:]:
+                raise ValueError('Unsupported generation reference.')
+            name = ref[8:].replace('~1', '/').replace('~0', '~')
+            if name not in definitions:
+                raise ValueError('Unknown generation reference.')
+            if name not in retained:
+                retained[name] = definitions[name]
+                visit(definitions[name])
+        for child in _children(node):
+            visit(child)
+
+    visit(result)
+    if retained:
+        result['$defs'] = {key: definitions[key] for key in definitions if key in retained}
+    return result
