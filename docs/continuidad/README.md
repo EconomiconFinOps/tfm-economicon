@@ -8,7 +8,7 @@ Las fechas indican la última actualización documental, no una nueva ejecución
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
-| [Evaluación local del chat](chat-evaluacion-local.md) | Correcciones015/003/013 congeladas en6a80a16a; regresión Linux/build aislados en curso. N3 anterior84 intacta:75 conformes/4 fallidas/4 inciertas/1 técnica. Reservas3.201520 conservadas; cota6.134754199/10USD. Ampliación sólo temporal de claves consultada; B no aceptada. | 2026-10-15 |
+| [Evaluación local del chat](chat-evaluacion-local.md) | Correcciones015/003/013: producto d2f8a440 y pruebas ccf27d7c; regresión Linux/build aislados en curso tras exit137 conservado. N3 anterior84 intacta. Reservas3.201520 conservadas; cota6.134754199/10USD. Vigencia de claves pendiente; B no aceptada. | 2026-10-15 |
 | [Chat conversacional](chat-conversacional.md) | PR121: focal28 3PASS/4FAIL, JSONB7PASS. Corrección29 de soporte literal visible e interpretación separada en regresión offline; aceptación/batería real pendientes. Gasto0.957927619/2USD. | 2026-10-13 |
 | [División del chat en A/B](chat-entregas-a-b.md) | B7be/A8ea/develop0543: técnica conforme y N3 completa84/84; cobertura015, diagnóstico013, adjudicación y criterios pendientes. Reservas conservadas; B no aceptada ni publicada. Reviews/CI de A sólo históricas. | 2026-10-15 |
 | [Pantallas de maqueta ocultas del MVP](pantallas-ocultas-mvp.md) | JUP-116: Coste Detallado, Corte Global y Recomendaciones ya no tienen ruta ni menú (se conservan en el código y se reactivan con dos líneas) y Overview sale del menú pero conserva su ruta; una dirección desconocida lleva a `/`. 797 pruebas del frontend y 16 comprobaciones en navegador; mergeado en `develop` el 2026-10-12 (#124). | 2026-10-13 |

@@ -7,7 +7,49 @@ continuar desde009 usando la corrección contable, sin repetir las ocho muestras
 anteriores ni liberar reservas pendientes. Sustituye los máximos anteriores;
 no reinicia gasto, ledger, intentos ni caducidad. B sigue sin publicar.
 
-### Candidato corregido 6a80a16a, validación técnica en curso — 15/10/2026
+### Candidato corregido d2f8a440 / pruebas ccf27d7c — 15/10/2026
+
+Producto `d2f8a4405a6e782b8753d48f69fbbe58f19cae89`: añade a6a el vínculo
+entre mes solicitado y mes aportado; otro mes o un mes no especificado no se
+usan para responder una petición de agosto.59 pruebas locales de correcciones
+y recursos PASS (`corrections-period-v1.xml`).
+
+Corte de pruebas `ccf27d7ce5c15d426d26b8bb615674c777b2e58d`: sólo cambia
+el fixture SQL para usar `.strip()` igual que `TextChunker`, sin cambios de
+aplicación respecto ad2. Archivo versionado SHA
+`d1f56ece6bb996d5b36ef687f3cf6b35d36a9b317009cc91e7fd116bd10e74b9`;
+plan84 SHA `391d82e74eae33ca14c3ac0825efb0d6e1e96ab5e26b74f488560c7a1c198309`.
+El build final verificará la igualdad de todos los bytes de aplicación con d2.
+
+Controladores6a/d2 se retiraron mientras esperaban, sin hijos ni inferencias;
+evidencia `corrections-{6a80a16a,d2f8a440}-superseded-v1.json`. ccf-v1 también
+terminó antes de pruebas/build al encontrar el proceso base interrumpido.
+No se activó ninguno de esos candidatos ni se generó una respuesta nueva.
+
+La base Linux bdb-v2 verificó197 lotes (978 casos,6 omisiones), además del lote
+inicial152 sin doble suma; luego backend-capacity salió137 sin JUnit, conservado
+en `missing-junit.json`. No contar el lote incompleto ni atribuirlo al producto.
+bdb-v3 retoma sólo el backend pendiente, separa cargas de tokenizador y conserva
+los197 lotes. Ante otro exit137 sin JUnit conserva el intento y repite los casos
+individualmente; un fallo funcional con JUnit detiene, sin buscar un PASS.
+
+Controladores vigentes: `corrections-bdb6f574-launch-v3.json` y
+`corrections-ccf27d7c-launch-v2.json`. El último espera offline completo,
+contrasta todos los archivos, repite los ficheros modificados y pgvector con
+fixture normalizado y después construye dos imágenes; B sigue sin activar.
+Los antecedentes6a/bdb inferiores conservan su alcance histórico.
+
+Preparados, sin ejecutar: `activate-corrections-ccf27d7c.py` y
+`launch-corrected-ccf-n3-v1.py`. Guardas de imágenes/tests/SQL comprobadas por
+AST contra cinco pruebas negativas/positiva, evidencia
+`candidate-ccf27d7c-harness-safety-v1.json`. La nueva N3 sólo se admite tras
+vigencia aplicable de las mismas claves, activación verificada y comprobación
+de379 filas/84 recibos históricos intactos; conserva3.201520 de reservas.
+
+La consulta de ampliar sólo caducidad hasta18:00París sigue pendiente. No se
+admite ninguna inferencia con las claves caducadas; máximo acumulado10USD.
+
+### Antecedente6a y preparación inicial — 15/10/2026
 
 Producto final congelado `6a80a16a78aa5e614704e4e4aaf0deed8d00016d`, después
 de bdb6f574 y la corrección de precisión. Archivo versionado SHA
