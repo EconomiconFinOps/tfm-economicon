@@ -41,12 +41,12 @@
   - `NULL` conservados y escapado seguro de literales;
   - sin credenciales en la salida.
 - [x] 3.2 Vista `evaluation.config_changes` (cambios de batería, modelo, prompt o corpus entre ejecuciones consecutivas de la misma fuente; sin anotación de prompt cuando no está registrado) y consultas de comparabilidad (series con al menos dos ejecuciones)
-- [ ] 3.3 Subcomando `load` (hallazgos del QA de 3.1: el rol y los permisos van en un script APARTE del de `build_sql`, que no puede contener `GRANT`, `PASSWORD`, `CREATE ROLE` ni `DROP`; se ejecuta después de crear el esquema y en el mismo `psql`; `CREATE ROLE` no tiene `IF NOT EXISTS`, se usa un `DO` que mira `pg_roles` o `ALTER ROLE`; la contraseña se escribe con `sql_literal` con `standard_conforming_strings` activo en esa sesión; se pasan a `psql` bytes UTF-8, con `PGCLIENTENCODING=UTF8` si hace falta; el `TRUNCATE` bloquea brevemente la lectura de Grafana hasta el `COMMIT`):
+- [x] 3.3 Subcomando `load` (hallazgos del QA de 3.1: el rol y los permisos van en un script APARTE del de `build_sql`, que no puede contener `GRANT`, `PASSWORD`, `CREATE ROLE` ni `DROP`; se ejecuta después de crear el esquema y en el mismo `psql`; `CREATE ROLE` no tiene `IF NOT EXISTS`, se usa un `DO` que mira `pg_roles` o `ALTER ROLE`; la contraseña se escribe con `sql_literal` con `standard_conforming_strings` activo en esa sesión; se pasan a `psql` bytes UTF-8, con `PGCLIENTENCODING=UTF8` si hace falta; el `TRUNCATE` bloquea brevemente la lectura de Grafana hasta el `COMMIT`):
   - pasa el script al `psql` de `postgres-pgvector` por la entrada estándar con `ON_ERROR_STOP`;
   - crea o actualiza el rol `grafana_evaluation_reader` con `USAGE` y `SELECT` solo sobre `evaluation`;
   - toma la contraseña de `GRAFANA_EVALUATION_DB_PASSWORD` y la envía solo por la entrada estándar;
   - termina con error claro si falta la variable.
-- [ ] 3.4 Scripts `evaluation-dashboard:load`, `evaluation-dashboard:rows` y `evaluation-dashboard:test` en `package.json`, y `evaluation-dashboard:test` en el paso «Validate governance tooling» de `.github/workflows/ci.yml`
+- [ ] 3.4 (hallazgos del QA de 3.3: documentar que `docker compose exec` necesita la pila levantada y el `.env` completo —también en CI y DockerServer, donde se puede usar `--psql-command "docker exec -i <contenedor> psql …"`—; que la contraseña de Grafana y la de `load` son la misma variable; y que los tests con PostgreSQL real necesitan Docker) Scripts `evaluation-dashboard:load`, `evaluation-dashboard:rows` y `evaluation-dashboard:test` en `package.json`, y `evaluation-dashboard:test` en el paso «Validate governance tooling» de `.github/workflows/ci.yml`
 
 ## 4. Grafana y compose
 
