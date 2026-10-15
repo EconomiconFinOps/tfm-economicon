@@ -1,6 +1,6 @@
 # Dashboard de resultados de evaluación del asistente (JUP-121)
 
-Contrato de datos y guía de uso del dashboard de Grafana que reúne los resultados de evaluación del asistente. Tarjeta: [JUP-121](https://trello.com/c/aIdxwsXR). Decisión: [ADR-0022](../adr/ADR-0022-assistant-evaluation-results-in-grafana.md). Requisitos: [spec](../../openspec/changes/jup-121-assistant-evaluation-dashboard/specs/assistant-evaluation-dashboard/spec.md).
+Contrato de datos y guía de uso del dashboard de Grafana que reúne los resultados de evaluación del asistente. Tarjeta: [JUP-121](https://trello.com/c/aIdxwsXR). Decisión: [ADR-0022](../adr/ADR-0022-assistant-evaluation-results-in-grafana.md). Requisitos: [spec](../../openspec/changes/archive/2026-10-15-jup-121-assistant-evaluation-dashboard/specs/assistant-evaluation-dashboard/spec.md).
 
 > **Estado:** implementado. Este documento fija el contrato de datos y describe el dashboard (`apps/monitoring/grafana/dashboards/assistant-evaluation.json`, uid `economicon-assistant-evaluation`). La herramienta `tools/evaluation-dashboard.py` y los comandos de abajo funcionan; la sección de robustez espera el informe de JUP-071.
 

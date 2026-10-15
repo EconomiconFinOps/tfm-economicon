@@ -2,7 +2,7 @@
 
 - Status: Proposed
 - Date: 2026-10-14
-- Related JUP/OpenSpec: JUP-121, [jup-121-assistant-evaluation-dashboard](../../openspec/changes/jup-121-assistant-evaluation-dashboard/design.md)
+- Related JUP/OpenSpec: JUP-121, [jup-121-assistant-evaluation-dashboard](../../openspec/changes/archive/2026-10-15-jup-121-assistant-evaluation-dashboard/design.md)
 - Trello: https://trello.com/c/aIdxwsXR
 - Supersedes: none
 - Superseded by: none
@@ -47,7 +47,7 @@ El estado actual de Grafana es ADR-0005: Prometheus como único datasource y un 
 
 ## Evidence And Follow-up
 
-- Diseño y decisiones de detalle: [design.md](../../openspec/changes/jup-121-assistant-evaluation-dashboard/design.md). Requisitos: [spec.md](../../openspec/changes/jup-121-assistant-evaluation-dashboard/specs/assistant-evaluation-dashboard/spec.md).
+- Diseño y decisiones de detalle: [design.md](../../openspec/changes/archive/2026-10-15-jup-121-assistant-evaluation-dashboard/design.md). Requisitos: [spec.md](../../openspec/changes/archive/2026-10-15-jup-121-assistant-evaluation-dashboard/specs/assistant-evaluation-dashboard/spec.md).
 - Seguimiento: JUP-071 cargará la robustez por `rows-v1`. JUP-046 (alertas sobre degradación) y la carga automática tras cada despliegue quedan fuera de este ADR.
 - Pendiente: que la CD de DockerServer (JUP-052) ejecute la carga tras desplegar, si el equipo lo decide.
 - Estado `Proposed` hasta la revisión del pull request; la evidencia de validación se enlazará desde `docs/evidence/JUP-121-validation.md`.

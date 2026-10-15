@@ -5,7 +5,7 @@
 ## Estado
 
 - Rama `feat/JUP-121-assistant-evaluation-dashboard`, creada desde `develop`; `origin/develop` integrado dos veces (JUP-120 y JUP-122). Sin push ni PR todavía.
-- OpenSpec: `openspec/changes/jup-121-assistant-evaluation-dashboard/` (propuesta, diseño, spec, tareas y `review.md` con la evidencia por tarea). ADR: [ADR-0022](../adr/ADR-0022-assistant-evaluation-results-in-grafana.md), en estado Proposed.
+- OpenSpec: `openspec/changes/archive/2026-10-15-jup-121-assistant-evaluation-dashboard/` (propuesta, diseño, spec, tareas y `review.md` con la evidencia por tarea). ADR: [ADR-0022](../adr/ADR-0022-assistant-evaluation-results-in-grafana.md), en estado Proposed.
 - Guía y contrato de datos: [evaluation-dashboard.md](../validation/evaluation-dashboard.md). Manifiesto versionado: [evaluation-runs.json](../validation/evaluation-runs.json). Evidencia: [JUP-121-validation.md](../evidence/JUP-121-validation.md) y capturas en `docs/evidence/JUP-121/`.
 - Producto: `tools/evaluation-dashboard.py` (adaptadores, SQL, carga, rol), `apps/monitoring/grafana/dashboards/assistant-evaluation.json` (21 paneles, secciones A, B y C), datasource `evaluation-postgres.yml`, variable `GRAFANA_EVALUATION_DB_PASSWORD` en `docker-compose.yml` y `.env.example`, scripts `evaluation-dashboard:*` y un paso de CI. Cambio mínimo en el backend: `assistant.py` crea a 0 las series de `backend_retrieval_failures_total`.
 

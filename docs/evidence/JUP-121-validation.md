@@ -2,7 +2,7 @@
 
 Trello: https://trello.com/c/aIdxwsXR
 Fecha: 2026-10-15. Rama: `feat/JUP-121-assistant-evaluation-dashboard`. Change de OpenSpec:
-`openspec/changes/jup-121-assistant-evaluation-dashboard/` (evidencia por tarea en su `review.md`).
+`openspec/changes/archive/2026-10-15-jup-121-assistant-evaluation-dashboard/` (evidencia por tarea en su `review.md`).
 Decisión: [ADR-0022](../adr/ADR-0022-assistant-evaluation-results-in-grafana.md). Guía:
 [evaluation-dashboard.md](../validation/evaluation-dashboard.md).
 
