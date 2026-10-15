@@ -208,9 +208,14 @@ el episodio; el 9 sube 250 y lo continua; el impacto acumulado es 400.
 
 JUP-038 explica episodios guardados: por que se abrieron (referencia, observado,
 reglas y version), cuanto llevan (impacto acumulado y criticidad), en que estado
-estan y sus limitaciones, sin recalcularlos ni atribuir causa o ahorro. La
-adaptacion al envelope comun de herramientas (correlation ID, source, evidence
-IDs, assumptions y limitations) corresponde al consumidor; estas rutas no
+estan y sus limitaciones, sin atribuir causa o ahorro. Lo hace en el asistente,
+con una explicacion determinista y evidencia guardada: contrato, formulas y
+ejemplo real en [anomaly-explanations.md](anomaly-explanations.md). Lee el
+episodio con `Database.fetch_anomaly_episode_snapshot`, que devuelve el payload
+de estas rutas mas los valores exactos de las columnas (los importes de esta API
+van redondeados a dos decimales; 100.004 se veria como 100.00). La adaptacion al
+envelope comun de herramientas (correlation ID, source, evidence IDs,
+assumptions y limitations) sigue correspondiendo al consumidor; estas rutas no
 registran ninguna herramienta del agente.
 
 ## Limitaciones

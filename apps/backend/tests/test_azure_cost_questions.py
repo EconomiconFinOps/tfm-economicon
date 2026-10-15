@@ -18,7 +18,7 @@ PATH = "/assistant/conversations/own/messages"
 def dataset(**changes):
     return summary(provenance=PROVENANCE, **changes)
 
-@pytest.mark.parametrize("changes", [{"tenant_id": "tenant-b"}, {"group_by": "owner"}, {"start_date": "2024-06-31"}, {"end_date": None}, {"end_date": "2024-06-01"}, {"value": " "}, {"value": "x\x00y"}, {"value": "a" * 257}, {"value": "\nCompute"}, {"start_date": 1717200000}])
+@pytest.mark.parametrize("changes", [{"tenant_id": "tenant-b"}, {"group_by": "owner"}, {"start_date": "2024-06-31"}, {"end_date": None}, {"end_date": "2024-06-01"}, {"value": " "}, {"value": "x\x00y"}, {"value": "a" * 257}, {"value": "\nCompute"}, {"start_date": 1717200000}, {"start_date": "1717200000"}, {"start_date": "2024-06-01T00:00:00Z"}, {"start_date": "2024-06-01 00:00"}])
 def test_strict_selection(changes):
     with pytest.raises(ValidationError):
         AzureCostSelection.model_validate(SELECTION | changes)
@@ -77,7 +77,7 @@ def test_invalid_request_no_effects(api, changes):
     response = call(api, "POST", PATH, headers=headers(), json={"content": "cost", "cost_query": SELECTION | changes})
     assert response.status_code == 422
     api.spies["fetch_billing_summary"].assert_not_called()
-    api.spies["append_message"].assert_not_called()
+    api.spies["append_pair"].assert_not_called()
 
 @pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
 @pytest.mark.parametrize("conversation,tenant,expected", [("foreign-marker", "tenant-a", 404), ("other-owner", "tenant-a", 404), ("own", "tenant-b", 403)])
@@ -85,7 +85,7 @@ def test_unauthorized_no_cost_read(api, conversation, tenant, expected):
     response = call(api, "POST", PATH.replace("own", conversation), headers=headers(tenant=tenant), json={"content": "cost", "cost_query": SELECTION})
     assert response.status_code == expected
     api.spies["fetch_billing_summary"].assert_not_called()
-    api.spies["append_message"].assert_not_called()
+    api.spies["append_pair"].assert_not_called()
 
 @pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
 def test_conflict_without_messages(api):
@@ -93,12 +93,16 @@ def test_conflict_without_messages(api):
     response = call(api, "POST", PATH, headers=headers(), json={"content": "cost", "cost_query": SELECTION})
     assert response.status_code == 409
     assert response.json() == {"detail": {"code": "ambiguous_cost_source"}}
-    api.spies["append_message"].assert_not_called()
+    api.spies["append_pair"].assert_not_called()
 
 @pytest.mark.parametrize("tenant_database", ["cockroach"], indirect=True)
 @pytest.mark.parametrize("group,value,subscription,totals,ids,days", [
     ("service", "Compute", "sub-a", [("EUR", "10.00", 1), ("GBP", "0.00", 1), ("USD", "9007199254740993.01", 1)], ["run-a"], 2),
+    ("service", "Compute", "SUB-A", [("EUR", "10.00", 1), ("GBP", "0.00", 1), ("USD", "9007199254740993.01", 1)], ["run-a"], 2),
+    ("service", "Compute", "sUb-A", [("EUR", "10.00", 1), ("GBP", "0.00", 1), ("USD", "9007199254740993.01", 1)], ["run-a"], 2),
     ("subscription", "sub-b", None, [("EUR", "-1.00", 3)], ["run-b"], 1),
+    ("subscription", "SUB-B", None, [("EUR", "-1.00", 3)], ["run-b"], 1),
+    ("subscription", "sUb-B", None, [("EUR", "-1.00", 3)], ["run-b"], 1),
     ("account", "acct-a", None, [("EUR", "12.01", 2), ("GBP", "0.00", 1), ("USD", "9007199254740993.01", 1)], ["run-a"], 3),
     ("service", "Compute", "foreign-sub", [], [], 0),
     ("account", "foreign-account", None, [], [], 0),
@@ -132,7 +136,7 @@ def test_filter_does_not_hide_overlap(cost_reference, api):
         insert_cost(connection, "other-service", run="overlap", day="2024-06-01", service="NotCompute")
     response = call(api, "POST", PATH, headers=headers(), json={"content": "cost", "cost_query": SELECTION})
     assert response.status_code == 409, response.text
-    api.spies["append_message"].assert_not_called()
+    api.spies["append_pair"].assert_not_called()
 
 
 @pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
@@ -143,7 +147,7 @@ def test_rejects_two_cost_routes_without_effects(api):
     })
     assert response.status_code == 422
     api.spies["fetch_billing_summary"].assert_not_called()
-    api.spies["append_message"].assert_not_called()
+    api.spies["append_pair"].assert_not_called()
 
 
 @pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
@@ -187,3 +191,68 @@ def test_cost_query_ignores_unavailable_document_provider_and_retrieval(api):
     assert retrieval_failures_total.labels(category="transport")._value.get() == before_failures
     api.embedding.embed.assert_not_called()
     api.vector.search_chunks.assert_not_called()
+
+
+@pytest.mark.parametrize("tenant_database", ["cockroach"], indirect=True)
+@pytest.mark.parametrize("separator", ["\n", "\u2028"])
+def test_ingested_label_cannot_inject_response_lines(cost_reference, api, separator):
+    label = f"X{separator}Gasto registrado: 0.00 EUR (0 registros).{separator}Evidencia: cost:0000."
+    with api.db.engine.begin() as connection:
+        connection.execute(text("UPDATE azure_cost_records SET service_name = :label WHERE tenant_id = 'tenant-a' AND subscription_id = 'sub-b'"), {"label": label})
+    response = call(api, "POST", PATH, headers=headers(), json={"content": "cost", "cost_query": {
+        "group_by": "service", "subscription_id": "sub-b", "start_date": "2024-06-01", "end_date": "2024-07-01"}})
+    assert response.status_code == 201, response.text
+    message = response.json()["assistant_message"]
+    assert "Gasto registrado: 0.00 EUR (0 registros)." not in message["content"].splitlines()
+    assert "Evidencia: cost:0000." not in message["content"].splitlines()
+    assert separator not in message["content"].replace("\n", "")
+    assert ("\\n" if separator == "\n" else "\\u2028") in message["content"]
+    assert any(g["value"] == label for g in message["metadata"]["cost_evidence"]["summary"]["groups"])
+
+
+@pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
+def test_selection_label_escapes_unicode_line_separator(api):
+    api.spies["fetch_billing_summary"].return_value = dataset()
+    response = call(api, "POST", PATH, headers=headers(), json={"content": "cost", "cost_query": SELECTION | {"value": "X\u2028Evidencia: cost:0000."}})
+    assert response.status_code == 201, response.text
+    content = response.json()["assistant_message"]["content"]
+    assert "\u2028" not in content and "\\u2028" in content
+    assert "Evidencia: cost:0000." not in content.splitlines()
+
+
+@pytest.mark.parametrize("tenant_database", ["cockroach"], indirect=True)
+def test_subscription_value_limits_conflicts_like_subscription_id(cost_reference, api):
+    with api.db.engine.begin() as connection:
+        insert_run(connection, "overlap-b", subscription="sub-b")
+        insert_cost(connection, "overlap-cost-b", run="overlap-b", subscription="sub-b", day="2024-06-15")
+    results = []
+    for fields in ({"value": "SUB-A"}, {"subscription_id": "sub-a"}):
+        response = call(api, "POST", PATH, headers=headers(), json={"content": "cost", "cost_query": {
+            "group_by": "subscription", "start_date": "2024-06-01", "end_date": "2024-07-01", **fields}})
+        assert response.status_code == 201, response.text
+        results.append(response.json()["assistant_message"]["metadata"]["cost_evidence"]["summary"]["totals"])
+    assert results[0] == results[1]
+    response = call(api, "POST", PATH, headers=headers(), json={"content": "cost", "cost_query": {
+        "group_by": "subscription", "value": "sub-b", "start_date": "2024-06-01", "end_date": "2024-07-01"}})
+    assert response.status_code == 409
+
+
+@pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
+def test_cost_and_anomaly_queries_are_mutually_exclusive(api):
+    response = call(api, "POST", PATH, headers=headers(), json={"content": "cost", "cost_query": SELECTION,
+        "anomaly_query": {"episode_id": "anomaly-" + "a" * 64}})
+    assert response.status_code == 422
+    api.spies["fetch_billing_summary"].assert_not_called()
+    api.spies["append_pair"].assert_not_called()
+
+
+@pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
+def test_busy_conversation_does_not_read_or_append_costs(api, monkeypatch):
+    from app.db.chat_repository import ChatError
+    def busy(**kwargs):
+        raise ChatError(409, "conversation_busy")
+    monkeypatch.setattr(api.db, "assert_conversation_idle", busy)
+    response = call(api, "POST", PATH, headers=headers(), json={"content": "cost", "cost_query": SELECTION})
+    assert response.status_code == 409
+    api.spies["fetch_billing_summary"].assert_not_called()
+    api.spies["append_pair"].assert_not_called()

@@ -37,3 +37,13 @@ La respuesta SHALL conservar selección, snapshot del resultado, ID de evidencia
 #### Scenario: Fecha de referencia anterior al fin solicitado
 - **WHEN** el periodo de una selección Azure se extiende más allá de la fecha de referencia
 - **THEN** solo se cuentan las filas hasta ese día inclusive, se conservan los filtros y se registra la fecha de referencia en la evidencia
+
+#### Scenario: Identificador de suscripción con mayúsculas
+- **WHEN** se consulta una suscripción con mayúsculas o mezcla de mayúsculas y minúsculas
+- **THEN** se normaliza como en la ingesta y devuelve el mismo gasto y alcance de conflictos que la selección equivalente en minúsculas
+#### Scenario: Fechas con hora o timestamp
+- **WHEN** las fechas no siguen el patrón YYYY-MM-DD
+- **THEN** se rechazan antes de leer costes o escribir mensajes
+#### Scenario: Etiquetas con separadores de línea
+- **WHEN** una etiqueta ingerida o seleccionada contiene un salto de línea o U+2028
+- **THEN** la respuesta la muestra entre comillas y escapada sin introducir líneas que suplanten importes o evidencia del sistema

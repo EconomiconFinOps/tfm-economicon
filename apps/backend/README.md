@@ -268,3 +268,28 @@ pruebas con CockroachDB real (`tests/test_anomaly_episode_*.py`) necesitan
 ### Consultas de coste Azure
 
 El chat acepta `cost_query` para consultar por suscripción, cuenta de facturación o servicio. Véase [contrato y ejemplos](../../docs/api/azure-cost-questions.md).
+### Explicacion de anomalias (JUP-038)
+
+`POST /assistant/conversations/{id}/messages` acepta el campo opcional `anomaly_query`
+(`{"episode_id": "anomaly-<64 hex en minuscula>"}`), excluyente con `ownership_query`
+(enviar los dos da `422`). El asistente responde con una explicacion **determinista**, sin
+embeddings ni modelo, y la guarda con su evidencia (`metadata.anomaly_evidence`) sin migracion
+nueva. El cliente sale siempre de la sesion, nunca del cuerpo.
+
+| Respuesta | Cuando | Se guardan mensajes |
+| --- | --- | --- |
+| `201` | Anomalia del cliente activo, explicable | Si, el de la pregunta y el de la explicacion |
+| `404 {"detail":{"code":"anomaly_episode_not_found"}}` | Anomalia de otro cliente o inexistente (misma respuesta) | No |
+| `409 {"detail":{"code":"anomaly_explanation_unavailable"}}` | Version de reglas que no se sabe explicar o datos incoherentes | No |
+| `422` | Identificador con otro formato, campos de mas o las dos selecciones a la vez | No |
+
+Los `401`, `403` y el `404` de conversacion se resuelven antes de leer ninguna anomalia. La
+lectura (`Database.fetch_anomaly_episode_snapshot`) es una sola sentencia SQL y devuelve el
+episodio, los valores exactos de las columnas (12 decimales) y la marca de datos sinteticos; el
+explicador es una funcion pura (`app/services/anomaly_explanations.py`) y la ruta no registra nada
+del episodio. Contrato, formulas y ejemplo real:
+[docs/api/anomaly-explanations.md](../../docs/api/anomaly-explanations.md). Las pruebas de la ruta
+con SQLite y un doble de la lectura (`tests/test_anomaly_explanation_api.py` y `..._schema.py`)
+corren en CI; las de la lectura y el recorrido completo con CockroachDB real
+(`tests/test_anomaly_episode_snapshot*.py` y `tests/test_anomaly_explanation_cockroach.py`)
+necesitan `JUP086_COCKROACH_TEST_URL` y no corren en CI.

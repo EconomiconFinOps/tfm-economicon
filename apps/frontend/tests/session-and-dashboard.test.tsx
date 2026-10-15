@@ -186,14 +186,15 @@ describe("tenant bootstrap and dashboard", () => {
     const user = userEvent.setup();
     const { requests } = mockBackend({ "GET /tenants": () => jsonResponse({ items: [] }) });
     restoreSession();
-    renderApp(["/overview-legacy"]);
+    const { router } = renderApp(["/overview-legacy"]);
 
     expect(await screen.findByRole("heading", { name: "Elige un cliente" })).toBeVisible();
     expect(screen.getByText("No hay ningún cliente activo en esta sesión.")).toBeVisible();
     await user.click(screen.getByRole("link", { name: "Ingesta" }));
     expect(screen.getByRole("heading", { name: "Cliente requerido" })).toBeVisible();
     expect(screen.queryByRole("button", { name: "Encolar ingesta" })).not.toBeInTheDocument();
-    await user.click(screen.getByRole("link", { name: "Asistente" }));
+    expect(screen.queryByRole("link", { name: "Asistente" })).toBeNull();
+    await act(async () => { await router.navigate("/assistant"); });
     expect(screen.getByRole("heading", { name: "Cliente requerido" })).toBeVisible();
     // The reference date is the same for every client, so it is not a tenant-scoped product request.
     expect(requests.every((request) => ["/tenants", "/health", "/me", "/billing/reference-date"].includes(request.path))).toBe(true);

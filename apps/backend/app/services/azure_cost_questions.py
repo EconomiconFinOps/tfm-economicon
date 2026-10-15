@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from app.schemas.assistant import AzureCostSelection
 from app.schemas.billing import BillingSummary
 from app.services import reference_date
+from app.services.ownership_questions import display_label
 
 
 class AzureCostQuestionService:
@@ -20,7 +21,8 @@ class AzureCostQuestionService:
         }
         raw = database.fetch_billing_summary(
             tenant_id, start_date=start, end_date=end, group_by=selection.group_by,
-            selected_subscription=selection.subscription_id, selected_value=selection.value,
+            selected_subscription=(selection.subscription_id or
+                (selection.value if selection.group_by == "subscription" else None)), selected_value=selection.value,
             include_provenance=True,
         )
         summary = BillingSummary.model_validate(raw).model_dump(mode="json")
@@ -34,9 +36,9 @@ class AzureCostQuestionService:
         status = ("no_data" if not summary["totals"] else
                   "partial" if summary["data_status"] == "partial" else "ok")
         labels = {"subscription": "suscripción", "account": "cuenta de facturación", "service": "servicio"}
-        scope = f"{labels[selection.group_by]}: {selection.value or 'todos los valores'}"
+        scope = f"{labels[selection.group_by]}: {display_label(selection.value) if selection.value is not None else 'todos los valores'}"
         if selection.subscription_id:
-            scope += f"; suscripción: {selection.subscription_id}"
+            scope += f"; suscripción: {display_label(selection.subscription_id)}"
         lines = [f"Coste real Azure simulado — {scope}.",
                  f"Periodo UTC: {start.isoformat()} a {end.isoformat()} (fin excluido).",
                  f"Fecha de referencia: {evidence_payload['reference_date']}."]
@@ -50,7 +52,7 @@ class AzureCostQuestionService:
         if selection.value is None and summary["groups"]:
             lines.append(f"Desglose por {labels[selection.group_by]}:")
             for group in summary["groups"][:20]:
-                lines.append(f"- {group['value'] if group['value'] is not None else '(sin valor)'}: {group['cost']} {group['currency']} ({group['record_count']} registros).")
+                lines.append(f"- {display_label(group['value']) if group['value'] is not None else '(sin valor)'}: {group['cost']} {group['currency']} ({group['record_count']} registros).")
             if len(summary["groups"]) > 20:
                 lines.append("Se muestran los primeros 20 grupos; el desglose completo se conserva en la evidencia.")
         if len(summary["totals"]) > 1:

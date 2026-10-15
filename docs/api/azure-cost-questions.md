@@ -62,8 +62,8 @@ sin dimensión o sin fecha; presencia de filas tampoco demuestra cobertura
 completa del periodo. Los registros sin fecha se cuentan en el ámbito autorizado
 de suscripción (no pueden asignarse al periodo); la advertencia es conservadora.
 El servicio consulta el dataset simulado, sin acceder a Azure real y sin determinar
-amortización, ahorro o utilización. Persistencia de los dos mensajes usa el flujo
-existente: no se añade transacción atómica de la pareja ni idempotencia del envío.
+amortización, ahorro o utilización. La pareja de mensajes se guarda atómicamente mediante el flujo compartido de JUP-122;
+no se añade idempotencia propia a esta ruta.
 
 ## Verificación reproducible
 
@@ -102,3 +102,23 @@ formulario y la respuesta usan ese mismo mes. La consulta conserva el periodo
 solicitado y limita las filas al día de referencia inclusive, también cuando
 se filtra por cuenta, suscripción o servicio. La evidencia registra `reference_date`
 y la respuesta indica el corte cuando el periodo se extiende más allá de él.
+
+
+## Normalización y etiquetas (revisión del 15/10/2026)
+
+Los identificadores de suscripción se normalizan con `casefold()` igual que en
+la ingesta: se aplica a `subscription_id` y a `value` cuando `group_by=subscription`.
+Los nombres de cuenta y servicio conservan su comparación exacta. Elegir una
+suscripción por cualquiera de los dos campos delimita también los solapamientos;
+si ambos se indican, se aplica la intersección de los filtros.
+
+Las fechas admiten solo `YYYY-MM-DD`: se rechazan timestamps numéricos en texto
+y cadenas con hora, además de fechas inexistentes o periodos incompletos.
+Las etiquetas de selección y de ingesta se muestran entre comillas y escapadas
+mediante `ownership_questions.display_label`; los saltos de línea y U+2028 no
+pueden introducir afirmaciones o IDs de evidencia como líneas del sistema.
+La metadata conserva las etiquetas ingeridas originales y la selección normalizada para su trazabilidad.
+
+La ruta comparte con JUP-122 el bloqueo de conversaciones ocupadas y el guardado
+atómico de pregunta/respuesta. `cost_query`, `ownership_query` y `anomaly_query`
+son mutuamente excluyentes.

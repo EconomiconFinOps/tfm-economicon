@@ -113,3 +113,43 @@ del mismo JSONB. El formulario se prueba en ambos modos con fecha simulada y fal
 de carga de referencia. Typecheck, lint, build, higiene y OpenSpec70/70 pasan.
 Resultados SQL: **195 pasan, cero omisiones** en costes Azure, fecha de referencia, billing, presupuestos, ownership y etiquetas. Publicación/CI pendientes en este corte. No se repite ni atribuye
 al candidato nuevo la suite completa registrada para c1d4ef51 el13/10.
+
+
+## Correcciones de la revisión de Lucía — 15/10/2026
+
+[Revision JUP-036, cambios pedidos](https://github.com/EconomiconFinOps/tfm-economicon/pull/69#pullrequestreview-5528549577), sobre47a8df7a.
+Se integra develop cf821570, que incorpora JUP-038 y la entrega A JUP-122.
+La validación de Paris5519177796 corresponde al head anterior y debe revalidarse.
+
+| Petición | Corrección y regresión |
+| --- | --- |
+| Suscripciones sin distinguir mayúsculas | `AzureCostSelection` aplica casefold a subscription_id y a value para group_by=subscription, conservando cuenta/servicio exactos. Casos SUB-A/sUb-A y SUB-B/sUb-B en SQL real. |
+| Etiquetas que suplantan líneas de respuesta | Se reutiliza ownership_questions.display_label para selección y grupos. Regresiones con salto de línea y U+2028 verifican la presentación escapada y el dato original en metadata. |
+| Alcance del conflicto según selección | value con group_by=subscription delimita selected_subscription cuando no se indica éste. Regresión con solapamiento ajeno: sub-a responde igual por ambos campos y sub-b mantiene409. |
+| Fechas estrictas | Mismo patrón YYYY-MM-DD de ownership; se rechazan timestamp en texto y ambas formas con hora además del entero. |
+
+Compatibilidad de base: la ruta Azure utiliza assert_conversation_idle,
+prepare_message/append_pair y la respuesta de chat_history de JUP-122; los tres
+modos estructurados son excluyentes. Las regresiones de bloqueo y exclusión
+Azure/anomalía pasan. Se conserva la rama de explicación JUP-038 y su formulario.
+
+Sugerencias no bloqueantes: se corrige la ayuda del formulario para hablar del mes
+de referencia y ocultar la explicación de etiquetas de ownership en modo Azure;
+se aclara que los IDs de suscripción no distinguen mayúsculas. El límite de más
+1000 grupos, traducción general de errores JSON y captura única del reloj siguen
+sin ampliarse en esta corrección. No se atribuye su aceptación a Lucía.
+
+Frontend focal final: **63/63**, seis archivos; prueba de ocupación y exclusión Azure/anomalía: **2/2**.
+SQL amplio: 287 pasan y dos fallos de pruebas, no defectos del producto: la nueva
+fixture de solapamiento usó un día distinto al de la fuente original y se corrige
+a15/06; el recorrido JUP-038 esperaba exactamente dos claves de metadata aunque
+JUP-122 ya añade generation. Ahora también verifica el vínculo a la pregunta.
+Repetición final de Azure completo y recorrido JUP-038: **46/46 PASS**, sin omisiones,
+con CockroachDB real. Los recuentos se solapan y no se suman; no quedan fallos
+conocidos de los casos ejecutados. Log: `tmp/jup036-lucia-sql-final.log` del workspace.
+Build y tipos pasan; lint sin errores, con advertencia ya presente en
+ChatPresentation.tsx:101. OpenSpec73/73, políticas84/84, higiene y trazabilidad PASS.
+Los primeros fallos de tipos/lint se debieron a dependencias anteriores al merge;
+resueltos con pnpm install --frozen-lockfile sin modificar el lockfile integrado.
+La prueba de periodo inventado se acota al rótulo de fecha, para permitir la ayuda
+general que menciona el mes de referencia sin mostrar fechas cuando la API falla.

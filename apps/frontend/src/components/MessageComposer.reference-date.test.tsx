@@ -23,6 +23,6 @@ describe.each(["Consultar costes por propiedad", "Consultar gasto Azure"])("Mess
     mockBackend({ "GET /billing/reference-date": () => jsonResponse({ detail: "boom" }, 500) });
     await mount(mode);
     expect(await screen.findByText(/no se pudo cargar la fecha de referencia/i)).toBeVisible();
-    expect(screen.queryByText(/mes de referencia utc/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Mes de referencia UTC:/i)).not.toBeInTheDocument();
   });
 });

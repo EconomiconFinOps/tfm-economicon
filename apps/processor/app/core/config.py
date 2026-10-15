@@ -4,7 +4,7 @@ import re
 from typing import Literal
 from urllib.parse import urlsplit
 
-from pydantic import SecretStr, field_validator, model_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.core.runtime_secrets import StartupError, register_secrets, validate_connections
@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     processor_port: int = 8001
     processor_concurrency: int = 2
     processor_queue_name: str = "processor:jobs"
+    summary_timeout_seconds: int = Field(default=180, ge=30, le=300)
     runtime_environment: Literal["production", "development", "test"] = "production"
     allow_insecure_local_database: bool = False
     database_url: SecretStr

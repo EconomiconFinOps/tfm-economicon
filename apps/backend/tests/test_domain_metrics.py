@@ -42,6 +42,16 @@ class _FakeDatabase:
             "updated_at": "2026-09-01T00:00:00Z",
         }
 
+    def assert_conversation_idle(self, **scope):
+        return None
+
+    def prepare_message(self, **kwargs):
+        return {"id": "message-" + kwargs["role"], "created_at": "2026-09-01T00:00:00Z", "metadata": {}, **kwargs}
+
+    def append_pair(self, *, question, assistant):
+        assert question["role"] == "user" and assistant["role"] == "assistant"
+        return question, assistant
+
     def append_message(self, **kwargs):
         return {
             "id": "message-1",

@@ -64,6 +64,32 @@ def atomic_json(path, value):
     temporary.replace(path)
 
 
+def chat_hmac_file(root):
+    """Stable host secret shared across releases; never copied into an image.
+
+    Compose file secrets bind the source mode, ignoring uid/gid/mode remaps.
+    0444 permits both non-root containers to read the mount; the enclosing
+    host directory is 0700 so other host users cannot traverse to the file.
+    All callers hold the existing deployment root lock.
+    """
+    directory = root / "private"
+    if directory.is_symlink():
+        raise ValueError("Private secret directory must not be a symlink")
+    directory.mkdir(mode=0o700, exist_ok=True)
+    os.chmod(directory, 0o700)
+    path = directory / "chat-hmac"
+    if path.is_symlink():
+        raise ValueError("HMAC secret must not be a symlink")
+    if not path.exists():
+        descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(descriptor, "w", encoding="ascii") as stream:
+            stream.write(secrets.token_hex(32))
+    if not path.is_file() or not 32 <= path.stat().st_size <= 4096:
+        raise ValueError("Invalid existing HMAC secret; refusing to rotate it")
+    os.chmod(path, 0o444)
+    return path.resolve()
+
+
 def init(root, port_base):
     if not 1024 <= port_base <= 65424:
         raise ValueError("Port base must leave room for both eleven-port slots")
@@ -82,6 +108,7 @@ def init(root, port_base):
                   EMBEDDING_PROVIDER="mock", LLM_PROVIDER="mock", AI_EXECUTION_MODE="development")
     atomic_json(root / "secrets.json", values)
     atomic_json(root / "config.json", {"port_base": port_base})
+    chat_hmac_file(root)
 
 
 def compose(release, *args, capture=False):
@@ -107,7 +134,7 @@ def prepare(root, source, sha, slot):
     temporary.mkdir(parents=True, mode=0o700)
     try:
         shutil.copytree(source, temporary, dirs_exist_ok=True,
-                        ignore=shutil.ignore_patterns(".git", "node_modules", ".venv", ".env*", "__pycache__"))
+                        ignore=shutil.ignore_patterns(".git", "node_modules", ".venv", ".env*", ".secrets", "__pycache__"))
         # data-filtered Git archives extracted under our private umask have
         # 0700 directories. Docker COPY preserves those modes, preventing the
         # non-root app user from traversing its code inside the image.
@@ -121,6 +148,11 @@ def prepare(root, source, sha, slot):
         os.chmod(temporary, 0o700)
         base = json.loads((root / "config.json").read_text())["port_base"] + slot * 100
         values = json.loads((root / "secrets.json").read_text())
+        # Also upgrades pre-chat roots without replacing any existing secret.
+        values['CHAT_HMAC_FILE'] = str(chat_hmac_file(root))
+        # The candidate is checked while the current release remains running.
+        values.update(CHAT_PRIVATE_SUBNET=f"172.30.{35 + slot}.0/24",
+                      PROCESSOR_CHAT_PRIVATE_IP=f"172.30.{35 + slot}.3")
         values.update({name: str(base + offset) for name, offset in PORTS.items()})
         namespace = hashlib.sha256(str(root.resolve()).encode()).hexdigest()[:12]
         values.update(COMPOSE_PROJECT_NAME=f"economicon-cd-{namespace}-{sha[:12]}",
