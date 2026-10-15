@@ -1,6 +1,6 @@
 """Carga de los resultados de evaluación del asistente en la base del dashboard de Grafana (JUP-121).
 
-Por ahora este módulo contiene siete capas. La primera es la de manifiestos: lee y valida los manifiestos
+Por ahora este módulo contiene ocho capas. La primera es la de manifiestos: lee y valida los manifiestos
 que dicen qué informes alimentan el dashboard (`docs/validation/evaluation-runs.json` y los locales). La
 segunda es el adaptador del informe JSON de JUP-070 (`adapt_jup070`), que normaliza ese informe al
 contrato de filas planas `rows-v1` de `docs/validation/evaluation-dashboard.md`. La tercera es el
@@ -13,8 +13,12 @@ filas del mismo contrato. La quinta es el adaptador de las métricas de negocio 
 (`validate_rows`), la barrera final del contrato `rows-v1` que se aplica a la salida de todos los
 adaptadores y a la entrada `rows-v1`. La séptima es el adaptador `adapt_rows_v1`, que normaliza un
 documento `rows-v1` ya escrito (por ejemplo, el informe de robustez de JUP-071) y lo pasa por esa misma
-validación. Usa solo la biblioteca estándar, no tiene efectos al importarse y nunca abre una conexión de
-red ni a la base de datos. La carga a la base la añaden las tareas siguientes del change.
+validación. La octava es la clasificación de ejecuciones: `classify_run` dice por qué motivos una ejecución no
+es real (plantilla, doble, sintética o sin modelo verificado), `comparability_key` calcula el hash que agrupa
+las ejecuciones comparables entre sí, `unclassified_metrics` avisa de las métricas del catálogo que no están
+declaradas como humanas ni como automáticas y `classify_run_row` añade las tres columnas de clasificación a una
+ejecución. Usa solo la biblioteca estándar, no tiene efectos al importarse y nunca abre una conexión de red ni a
+la base de datos. La carga a la base la añaden las tareas siguientes del change.
 """
 
 from __future__ import annotations
@@ -1390,3 +1394,134 @@ def adapt_rows_v1(document, run_id=None) -> tuple[dict, list[dict]]:
         {key: copy.deepcopy(run[key]) for key in RUN_KEYS},
         [{key: row[key] for key in RESULT_KEYS} for row in rows],
     )
+
+
+# --- Clasificación de ejecuciones y clave de comparabilidad ---------------------------------------------------
+
+# Motivos por los que una ejecución no es real, en el orden fijo del contrato («Ejecuciones no reales»). Es una
+# tupla y no un conjunto porque el orden es parte del contrato: ordena los motivos de cada ejecución, entra en
+# la clave de comparabilidad y hace reproducible la columna `non_real_reasons`.
+NON_REAL_REASONS = ("plantilla", "doble", "sintetica", "sin_modelo_verificado")
+# Columnas que la clasificación añade a la ejecución, al final y en este orden.
+CLASSIFICATION_KEYS = ("is_real", "non_real_reasons", "comparability_key")
+
+# Valores exactos que delatan una ejecución no real. Igualdad exacta (no `in`, `startswith` ni minúsculas):
+# un nombre parecido («Mock», «mock2», «plantilla») es otro valor y no debe descartar una ejecución real.
+TEMPLATE_MODEL = "plantilla-sin-modelo"
+DOUBLE_NAME = "mock"
+# Campañas sobre el chat: solo ellas deberían registrar el modelo que generó la respuesta.
+CHAT_CAMPAIGN_SOURCES = ("JUP-070", "JUP-071")
+
+# Campos de la ejecución que definen la comparabilidad, en el orden del contrato. Se enumeran aquí y no se
+# derivan de `RUN_KEYS` por exclusión: añadir un campo a la ejecución no debe cambiar en silencio las claves
+# ya guardadas (eso rompería la comparación con el histórico).
+COMPARABILITY_FIELDS = (
+    "source", "suite_version", "suite_sha256", "corpus_sha256", "embedding_provider", "embedding_alias",
+    "retrieval", "generation_model", "prompt_sha256",
+)
+
+# Métricas del catálogo de JUP-067 que se miden sin juicio humano. Junto con `HUMAN_METRICS` debe cubrir el
+# catálogo entero (`unclassified_metrics`). `ACC-2` figura aquí aunque su fila `judged` sea humana (`HUMAN_ROWS`):
+# la disjunción se exige entre métricas enteras, y esa fila es una excepción por fila, no por métrica.
+AUTOMATIC_METRICS = frozenset({
+    "ACC-2", "REL-1", "REL-2", "REL-3", "REL-4", "GRD-1", "GRD-2", "GRD-3",
+    "LAT-1", "LAT-2", "LAT-3", "LAT-4", "STR-1", "STR-2", "AVL-1",
+})
+
+
+def classify_run(run) -> tuple[str, ...]:
+    """Devuelve los motivos por los que `run` no es real, en el orden fijo de `NON_REAL_REASONS`; `()` si lo es.
+
+    Valida primero con `validate_rows(run, [])` y deja propagar su `AdapterError`: sin validar, un `synthetic`
+    como `1` o `"true"` (truthy) se clasificaría mal, y la regla `is True` solo tiene sentido sobre un booleano
+    ya garantizado. Cada motivo se evalúa por separado y se añade en el orden de la tupla, así que no depende
+    del orden de las claves del diccionario ni puede repetirse.
+    """
+    validate_rows(run, [])
+    reasons = []
+    if run["generation_model"] == TEMPLATE_MODEL:
+        reasons.append("plantilla")
+    # `doble` mira proveedor y alias: un doble puede declararse en cualquiera de los dos (JUP-070 lo escribe en
+    # el proveedor; un alias `mock` también apunta a un embedding simulado). Mirar solo uno dejaría pasar
+    # como real una ejecución con recuperación simulada. Una sola condición `or` evita repetir el motivo.
+    if run["embedding_provider"] == DOUBLE_NAME or run["embedding_alias"] == DOUBLE_NAME:
+        reasons.append("doble")
+    if run["synthetic"] is True:
+        reasons.append("sintetica")
+    # `sin_modelo_verificado` solo se aplica a campañas sobre el chat: JUP-078 trae varios modelos y no registra
+    # ninguno en `run`, y JUP-022 y JUP-068 no generan respuestas. Allí `generation_model` nulo es lo normal y
+    # marcarlas como no reales sería un falso positivo.
+    if run["source"] in CHAT_CAMPAIGN_SOURCES and run["generation_model"] is None:
+        reasons.append("sin_modelo_verificado")
+    return tuple(reasons)
+
+
+def _check_reasons(reasons) -> None:
+    # Solo tupla o lista: una cadena se confundiría con una secuencia de letras y un conjunto o un diccionario
+    # no tienen orden fiable, y el orden entra en la clave.
+    if not isinstance(reasons, (tuple, list)):
+        raise _bad("reasons", "debe ser una tupla o una lista de motivos")
+    for reason in reasons:
+        # `type(...) is str` antes de la pertenencia: rechaza `None`, números y listas anidadas (no hashables)
+        # sin que salte otra excepción por el camino.
+        if type(reason) is not str or reason not in NON_REAL_REASONS:
+            raise _bad("reasons", f"motivo desconocido {reason!r}; los válidos son {list(NON_REAL_REASONS)}")
+    # Orden fijo y sin repetidos a la vez: las posiciones en `NON_REAL_REASONS` deben crecer estrictamente. Dos
+    # listas con los mismos motivos en distinto orden darían claves distintas para lo mismo.
+    positions = [NON_REAL_REASONS.index(reason) for reason in reasons]
+    if any(left >= right for left, right in zip(positions, positions[1:])):
+        raise _bad("reasons", "los motivos deben ir sin repetir y en el orden fijo de NON_REAL_REASONS")
+
+
+def comparability_key(run, reasons) -> str:
+    """Clave de comparabilidad: sha256 hexadecimal (64 minúsculas) de la configuración de `run` y sus motivos.
+
+    Dos ejecuciones con la misma clave son comparables en una misma serie del dashboard. Es un hash y no un
+    texto concatenado para que sea una columna de tamaño fijo, indexable y que no deje ver la configuración; y
+    es `hashlib` y no `hash()` porque `hash()` de una cadena cambia entre procesos (PYTHONHASHSEED) y la clave
+    se guarda y se compara en otras ejecuciones. Se serializa una LISTA en JSON canónico (`sort_keys` ordena
+    las claves de `retrieval`; separadores compactos; `ensure_ascii`; UTF-8) para que ni `a`+`bc` frente a
+    `ab`+`c` ni `null` frente a `"null"` colisionen. Los motivos entran porque una plantilla y una ejecución
+    real con la misma configuración no son comparables. NO entran `run_id`, `run_at` ni `commit` (identifican
+    una ejecución concreta: con ellos nunca habría dos iguales), `suite` (es el nombre del informe de origen,
+    no de la batería; la batería la identifican `suite_version` y `suite_sha256`) ni `synthetic` (ya está
+    representado por el motivo `sintetica`).
+
+    Solo valida `reasons`; no vuelve a validar `run` (de eso se ocupa `classify_run`, que produce los motivos).
+    """
+    _check_reasons(reasons)
+    payload = [run[field] for field in COMPARABILITY_FIELDS] + [list(reasons)]
+    text = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def unclassified_metrics(catalogue=None) -> list[str]:
+    """Identificadores del catálogo que no están ni en `HUMAN_METRICS` ni en `AUTOMATIC_METRICS`, ordenados.
+
+    La tabla «Juicio humano o automático» se declara completa y se comprueba contra el catálogo (y no se
+    deduce de él) porque la clasificación es una decisión de personas: si el catálogo de JUP-067 incorpora una
+    métrica nueva, una prueba que exija `[]` avisa de que hay que decidir si es humana o automática antes de
+    que sus filas lleguen al dashboard con un juicio por defecto equivocado. Un catálogo con menos métricas que
+    las clasificadas no falla: lo que falta en el catálogo no es un error de clasificación. Con `catalogue=None`
+    lee el de JUP-067 con `_load_catalogue` (resuelto al llamar, no al importar).
+    """
+    if catalogue is None:
+        catalogue = _load_catalogue()
+    classified = HUMAN_METRICS | AUTOMATIC_METRICS
+    return sorted(metric["id"] for metric in catalogue["metrics"] if metric["id"] not in classified)
+
+
+def classify_run_row(run) -> dict:
+    """Copia de `run` con `is_real`, `non_real_reasons` y `comparability_key` añadidas al final.
+
+    Es una copia (con `retrieval` copiado en profundidad) y no una mutación de `run` porque `rows-v1` rechaza
+    las claves desconocidas: la ejecución original debe seguir siendo válida para `validate_rows`. `is_real`
+    es un `bool` estricto (`not reasons`) y `non_real_reasons` una lista nueva en cada llamada, que es lo que
+    espera la columna de la base y evita que dos filas compartan el mismo objeto mutable.
+    """
+    reasons = classify_run(run)
+    row = copy.deepcopy(run)
+    row["is_real"] = not reasons
+    row["non_real_reasons"] = list(reasons)
+    row["comparability_key"] = comparability_key(run, reasons)
+    return row
