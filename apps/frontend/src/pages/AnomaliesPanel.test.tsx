@@ -470,7 +470,13 @@ describe("JUP-114 panel de anomalías: exportación", () => {
     fireEvent.click(screen.getByText("Exportar Resultados"));
     expect(screen.getByText("Exportar CSV")).toBeInTheDocument();
     expect(screen.queryByText("Exportar PDF")).not.toBeInTheDocument();
-    const lines = (await (blob as Blob).text()).split("\n");
+    const csv = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(reader.error);
+      reader.readAsText(blob as Blob);
+    });
+    const lines = csv.split("\n");
     expect(lines).toHaveLength(2);
     expect(lines[1]).toContain("\"Database\"");
     expect(lines[1]).toContain("\"Sintéticos\"");

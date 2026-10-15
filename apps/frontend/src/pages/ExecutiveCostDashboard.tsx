@@ -12,17 +12,32 @@ import {
   compareEndpoints, currentUtcMonth, defaultMonthSelection, describeCostError,
   monthlyCostPoint, monthLabel, selectedMonthRange, snapshotCurrencies
 } from "@/lib/executiveCostDashboard";
+import { useReferenceDate } from "@/hooks/useReferenceDate";
+import { referenceDay } from "@/lib/referenceDate";
 import type { MonthlyCostPoint } from "@/lib/executiveCostDashboard";
 import type { SessionOutletContext } from "@/layouts/SessionGate";
 import type { BillingGrouping } from "@/services/contracts";
+import { billingDataset, failedBillingDataset, useFunctionalScreen } from "@/components/chat/ScreenCaptureProvider";
 
 const inputClass = "mt-1 block w-full min-w-0 rounded-md border border-input bg-background p-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 const buttonClass = "inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground transition-all hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-wait disabled:opacity-50";
 
 export function ExecutiveCostDashboard() {
+  const { token } = useOutletContext<SessionOutletContext>();
+  const reference = useReferenceDate(token);
+  if (reference.isError && !reference.data) {
+    return <div className="p-6"><p role="alert" className="rounded-md border border-destructive/40 p-4 text-sm text-destructive">
+      No se pudo cargar la fecha de referencia. Los costes no se piden hasta conocerla.
+    </p></div>;
+  }
+  if (!reference.data) return <div className="p-6"><p role="status" className="text-sm text-muted-foreground">Cargando la fecha de referencia…</p></div>;
+  return <ExecutiveCostBody today={referenceDay(reference.data)} />;
+}
+
+function ExecutiveCostBody({ today: referenceNow }: { today: Date }) {
   const queryClient = useQueryClient();
   const { token, activeTenant } = useOutletContext<SessionOutletContext>();
-  const [period, setPeriod] = useState(defaultMonthSelection);
+  const [period, setPeriod] = useState(() => defaultMonthSelection(referenceNow));
   const [groupBy, setGroupBy] = useState<BillingGrouping>("service");
   const [tagKey, setTagKey] = useState("");
   const [selectedCurrency, setSelectedCurrency] = useState("");
@@ -55,10 +70,31 @@ export function ExecutiveCostDashboard() {
   const monthlyErrors = snapshot?.months.some(({ result }) => result.kind === "error") ?? false;
   const aggregateError = snapshot?.aggregate.kind === "error" ? snapshot.aggregate.error : query.error;
   const hasError = query.isError || snapshot?.aggregate.kind === "error" || monthlyErrors;
-  const today = currentUtcMonth();
+  const today = currentUtcMonth(referenceNow);
   const labels = period.first && period.last && range ? monthLabel(period.first) + " – " + monthLabel(period.last) : "";
   const periodNotice = range?.months.some((month) => month >= today);
   const partialMonths = points.some((point) => point.partial);
+  const capture = useMemo(() => {
+    const selection = { start_date: range?.start_date, end_date: range?.end_date, group_by: groupBy,
+      ...(groupBy === "tag" ? { tag_key: tagKey } : {}), ...(currency ? { selected_currency: currency } : {}) };
+    if (!validSelection || !token || !activeTenant || query.isError) {
+      return { source: "error" as const, selection, datasets: [] };
+    }
+    if (query.isFetching || !snapshot || !range) {
+      return { source: "loading" as const, selection, datasets: [] };
+    }
+    const period = { start_date: range.start_date, end_date: range.end_date, timezone: "UTC" as const };
+    const effectiveTag = groupBy === "tag" ? tagKey : null;
+    return { source: "loaded-screen" as const, selection, datasets: [
+      snapshot.aggregate.kind === "success" ? billingDataset(snapshot.aggregate.data) : failedBillingDataset(period, groupBy, effectiveTag),
+      ...snapshot.months.map(({ month, result }) => {
+        if (result.kind === "success") return billingDataset(result.data);
+        const monthly = selectedMonthRange(month, month);
+        return failedBillingDataset(monthly ? { start_date: monthly.start_date, end_date: monthly.end_date, timezone: "UTC" } : period, groupBy, effectiveTag);
+      })
+    ] };
+  }, [range, groupBy, tagKey, currency, validSelection, token, activeTenant, query.isError, query.isFetching, snapshot]);
+  useFunctionalScreen(capture);
 
   return (
     <div className="min-w-0 space-y-6 p-6">

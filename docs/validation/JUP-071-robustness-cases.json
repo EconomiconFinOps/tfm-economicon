@@ -7,17 +7,17 @@
   "provenance": "Casos sintéticos de robustez derivados de la batería JUP-069; no son datos de clientes, respuestas observadas ni evidencia de un modelo. La rúbrica no se envía al asistente ni se incorpora al índice.",
   "baseline": {
     "path": "docs/validation/JUP-069-questions.json",
-    "suite_version": "1.0.0",
-    "sha256": "0bd8a31792d68ff82c2bb222d42593f139d9596e2d24ad37f77c08d648a9f2e7"
+    "suite_version": "1.0.1",
+    "sha256": "15afb8db2605288d90a70761c5a8daf6787809aae13726618fcf05d98181e684"
   },
   "methodology": {
     "path": "docs/validation/JUP-070-evaluation.md",
-    "sha256": "1063aeb35d964d323641d64af5d3944cdd89887d72aa736d53817edeaeac1ada"
+    "sha256": "7c55f9d701896b45d4017b31c93420cff47f10970b137dbb5a7b3e54bb06af25"
   },
   "sources": {
     "rules": {
       "path": "docs/assistant-corpus/business-rules/economicon-mvp-rules.md",
-      "sha256": "36e05ef2eb6996d6f763512ba5d945a6b0f5c5c1aebeb705e176a185dbcb6ac1"
+      "sha256": "b186de0a4592368e651b49ff2d975e13c604990378fc2f96e3e189824c4c483e"
     },
     "finops": {
       "path": "docs/assistant-corpus/finops/azure-finops-mvp.md",
@@ -25,7 +25,7 @@
     },
     "product": {
       "path": "docs/assistant-corpus/product-architecture/economicon-product-context.md",
-      "sha256": "be2f0c9016b497ead4a201f3f3f2b48e60c7d709117d24fa82b9db4464ff913b"
+      "sha256": "d29c3ec47bf19638b812d77dd9d766495d9df22395546b6671b3cb11845d4430"
     }
   },
   "cases": [

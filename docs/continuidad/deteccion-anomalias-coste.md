@@ -61,8 +61,8 @@ El PR #91 se cerro el 10/10 sin integrar. La contribucion se retoma en la rama `
 
 [Tarjeta JUP-114](https://trello.com/c/F492abeY), liderada por Lucia Mateo, se divide en tres changes en la misma rama y un solo PR al final (como JUP-107; decision de Lucia del 12/10). El primero, `jup-114-persisted-anomalies` (rama `feat/JUP-114-anomaly-circuit`), guarda **episodios** de anomalia por tenant, moneda y servicio con la regla diaria de negocio de JUP-019, referencia anclada, impacto acumulado, criticidad P1/P2/P3 y estados `new`, `investigating`, `resolved` y `false_positive`; API en [anomaly-episodes.md](../api/anomaly-episodes.md) y decision en [ADR-0020](../adr/ADR-0020-cost-anomaly-episodes.md). La evaluacion de JUP-030 no cambia y queda como consulta de prueba sin guardar.
 
-- Decisiones de Lucia del 12/10, en el ADR: episodio con tolerancia de 3 dias, regla diaria (se descarto la semanal), referencia anclada, criticidad por impacto acumulado (pendiente de confirmar con Paris), umbrales nominales en EUR y USD, «Detectar ahora» con un maximo de 7 dias pendientes por pulsacion, cualquier miembro del tenant cambia estados.
-- El documento de reglas del corpus no se toca: esta fijado por huella en las evaluaciones de JUP-022, JUP-069 y JUP-070 (`RF-114-001`, para JUP-038).
+- Decisiones de Lucia del 12/10, en el ADR: episodio con tolerancia de 3 dias, regla diaria (se descarto la semanal), referencia anclada, criticidad por impacto acumulado (pendiente de confirmar con Paris), umbrales nominales en EUR y USD, «Detectar ahora» sin limite de dias por pulsacion (el limite de 7 dias se quito en el change 2 de JUP-114), cualquier miembro del tenant cambia estados.
+- El documento de reglas del corpus no se tocó en JUP-114: está fijado por huella en las evaluaciones de JUP-022, JUP-069 y JUP-070 (`RF-114-001`). Lo corrige [JUP-120](https://trello.com/c/ifIn4Vjr) (change `jup-120-assistant-corpus-anomaly-episodes`, no JUP-038): reglas y producto describen los episodios, la severidad por impacto acumulado y el panel; se vuelven a fijar las huellas de la batería JUP-069 (versión 1.0.1), de las etiquetas de JUP-022 y del ejemplo sintético de JUP-067.
 - Siguientes changes: `jup-114-anomalies-panel-live` (panel `/anomalies` y datos de demo, incluida la limpieza de episodios al retirarlos, `RF-114-007`) y la tarjeta [JUP-115](https://trello.com/c/0wQKN1yz), planeada antes como el change `jup-114-anomaly-alerts-schedule`, (ejecucion periodica y avisos; la puesta al dia completa ya la hace la deteccion desde el change 2, `RF-114-006` resuelto).
 - JUP-038 (explicar anomalias en el chat) estaba en espera del PR de JUP-114: el PR #122 se mergeo el 12/10, asi que Lucia puede liberarlo (la etapa 2 ya no forma parte de JUP-114).
 - **Change 1 archivado el 12/10** (`openspec/changes/archive/2026-10-12-jup-114-persisted-anomalies/`) con dos pasadas de revision adversarial (la segunda `accept`), validacion con stack real (18/18) y aprobacion de Lucia; specs `cost-anomaly-episodes` (nueva), `cost-anomaly-detection` y `finops-agent-tool-contract` sincronizadas; evidencia en [JUP-114-validation.md](../evidence/JUP-114-validation.md); hallazgos `RF-114-001` a `RF-114-010`. Sin PR todavia: el PR unico se abre al terminar el change 3.
@@ -84,3 +84,47 @@ Exploración hecha el 12/10, para retomarla sin repetir la investigación:
 - **Dónde correría:** servicio Compose propio con la imagen del backend y bucle con intervalo configurable (recomendado), hilo dentro del backend (como el publisher de RabbitMQ) o timer del sistema.
 - **Qué sería «avisar»:** nivel 1, dentro de la app (insignia «N nuevas, M P1» con el estado `new`, que ya significa «nadie lo ha mirado», y aviso en el panel); nivel 2, nivel 1 más una regla de Grafana sobre una métrica de P1 abiertas, como JUP-045; nivel 3, salida externa (webhook, correo, Discord), que choca con JUP-081 y exige secretos y reintentos. Recomendación: nivel 1 como primer incremento.
 - **«Antes de cierre»:** se interpretó como detectar a diario para que aparezca días antes del cierre mensual, sin cuenta atrás; una cuenta atrás exigiría modelar un calendario de cierre que no existe.
+
+## Explicar anomalías detectadas — JUP-038 (2026-10-13)
+
+[Tarjeta JUP-038](https://trello.com/c/QzkjVY7P), liderada por Víctor Mendez (pairing Paris Arcos Martin, revisión Lucía Mateo, validación, pruebas y documentación Alejandro Aguado). El PR #94 se cerró sin integrar el 10/10 y **no se reutiliza ni su rama ni su código**: se reinició desde `develop` (`2175c60`, con el PR #122 de JUP-114) en la rama `feat/JUP-038-explain-anomaly-episodes`, change `jup-038-explain-anomaly-episodes`. Estado: implementado y validado en la rama, change archivado el 13/10 (`openspec/changes/archive/2026-10-13-jup-038-explain-anomaly-episodes/`), **sin PR abierta todavía**; la revisión de Lucía y la validación independiente de Alejandro siguen pendientes.
+
+- **Qué hace:** el usuario elige un episodio guardado y el asistente responde con una explicación **determinista, sin modelo generativo** (patrón de JUP-037): por qué se abrió (referencia, observado, diferencia absoluta y porcentual frente a los umbrales de `jup019-daily-v1`), cuánto lleva (impacto acumulado, días y severidad P1/P2/P3), en qué estado está y sus limitaciones. Siempre como candidata, sin causa raíz, ahorro ni conversión de moneda. Contrato en [anomaly-explanations.md](../api/anomaly-explanations.md), con un ejemplo real.
+- **Cómo se pide:** enlace «Explicar en el asistente» en el detalle del panel `/anomalies` (abre `/assistant?episode=<id>`) o casilla «Explicar una anomalía» en el redactor. El cuerpo lleva `anomaly_query` (`episode_id`), nunca tenant ni usuario; un id ajeno o inexistente da el mismo 404 `anomaly_episode_not_found`.
+- **Fotografía fijada:** la respuesta se guarda en la conversación con su evidencia (`anomaly_evidence`, id por sha256 y `explained_at`), porque el episodio cambia con el tiempo. Las diferencias y porcentajes salen de los operandos exactos de la tabla (12 decimales), con un único redondeo, no de las cadenas redondeadas de la API.
+- **Piezas:** el explicador es una función pura (`explain_episode` en `services/anomaly_explanations.py`) que JUP-035 podrá envolver como la herramienta `detect_cost_anomaly_candidates`; **este change no registra ninguna herramienta del agente** (`RF-038-006`). La lectura es `fetch_anomaly_episode_snapshot` (una sola consulta con el tenant de la sesión). Sin migración nueva y sin ADR nuevo: nota fechada en [ADR-0020](../adr/ADR-0020-cost-anomaly-episodes.md).
+- **Aplazado:** las aclaraciones del corpus del asistente (`RF-114-001`, punto 11 del ADR-0020) siguen `Open`: el documento está fijado por sha256 en JUP-069, JUP-022 y JUP-070 y cambiarlo obliga a regenerar huellas y repetir la calibración. Hallazgos nuevos `RF-038-001` a `009` en el backlog; las pruebas intermitentes de JUP-098 en esta máquina ya estaban en `RF-098-004` y `RF-103-005`.
+- **Validación hecha:** pruebas por grupo con mutación, regresión con CockroachDB real y con configuración de CI, y recorrido en un navegador real con el stack aislado (capturas e informes en `docs/evidence/JUP-038/`), con la explicación de Compute recalculada de forma independiente. Detalle, conteos y lo no validado en [JUP-038-validation.md](../evidence/JUP-038-validation.md).
+- **Conflictos previstos con JUP-035 (PR #120 y #121):** este change añade cambios en `routes/assistant.py` y `AnswerEvidence.tsx`, además del conflicto que `AnomaliesPanel.tsx` ya tenía; quien integre debe usar `append_pair` también en la rama `anomaly_query` (`RF-038-005`).
+
+## Guia del asistente tras integrar JUP-038 (2026-10-15)
+
+La base `0543c5ee` ya incluye #128 y la rama de #129 la incorpora en `1e3e99d9`.
+La condicion pendiente de JUP-120 se atiende en una correccion documental local:
+el contexto de producto explica "Explicar en el asistente" desde el detalle y
+"Explicar una anomalia" desde el redactor, con conversacion abierta y evidencia
+guardada. No cambia producto, reglas de negocio, preguntas, rubricas ni etiquetas.
+`RF-114-001` sigue `Fixed`, resuelto por JUP-120; las notas anteriores son historia.
+
+Producto 1.1.1; 66 fragmentos con el troceador 500/50 sin modificar. Calibracion
+real actualizada: 94 llamadas sin reintentos, coste registrado 0,00016718 USD;
+los 28 puntos conservan las metricas agregadas. El registro anterior de 65
+fragmentos queda como historia. Revalidacion independiente pendiente; no se
+declara aceptacion propia ni cierre.
+Evidencia y comandos en [la correccion de #129](../evidence/JUP-120-guide-correction-20261015.md).
+
+### Reconciliacion con #130 (2026-10-15)
+
+El candidato local combina `1e3e99d9` con `develop` `cf821570` y despues aplica
+la correccion documental revisada. La unica coincidencia de rutas con los
+14 archivos del arreglo es `docs/continuidad/README.md`; se conserva la fila
+de A/B aportada por #130. No hay conflictos de contenido ni cambios ejecutables.
+Las dos entradas JUP-038 siguen en `/assistant`: enlace desde el episodio y
+casilla del redactor, con evidencia y pareja persistida. El chat generativo
+permanece desactivado por defecto, igual que en #130.
+
+Banco, rubricas, etiquetas, corpus, calibrador, proveedor y transporte de
+embeddings y troceador son identicos al arreglo revisado. Se reutiliza su
+calibracion real de 94 llamadas; esta reconciliacion no consume credito.
+La revision y validacion independientes del delta actualizado quedan pendientes;
+no se declara publicada ni integrada esta correccion de #129.

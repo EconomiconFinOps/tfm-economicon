@@ -216,8 +216,10 @@ moneda, periodos, reglas, quality, limitaciones e `evidence_id`, sin recalcular
 ni inventar causa, ahorro, despliegues, uso o severidad. Una respuesta
 provisional debe conservar esa condicion y cualquier baseline no evaluable.
 
-Este endpoint no registra ni habilita por si mismo una herramienta del agente y
-no ha probado una integracion JUP-038.
+Este endpoint no registra ni habilita por si mismo una herramienta del agente.
+JUP-038 ya esta entregado y explica los episodios guardados, no estos candidatos:
+ver [anomaly-explanations.md](anomaly-explanations.md). Esta consulta de prueba
+no tiene explicacion en el asistente.
 
 La regla diaria de `detect_cost_anomaly_candidates` en
 [JUP-084](../architecture/finops-agent-tools.md#detect_cost_anomaly_candidates)

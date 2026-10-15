@@ -129,13 +129,14 @@ test("retains all existing governance, corpus and gateway validations", () => {
     "assistant-eval:test",
     "assistant-robustness:validate",
     "assistant-robustness:test",
-    "synthetic-costs:test",
     "synthetic-demo:test",
-    "synthetic-anomalies:test",
+    "demo-dataset:test",
+    "demo-data:test",
     "assistant-corpus:validate",
     "llm-gateway:test",
     "docker:validate",
     "local:test",
+    "tokenizer:test",
     "collaboration:test",
     "openspec:validate",
   ]) {
@@ -156,6 +157,28 @@ test("requires real frontend tests and lint before the mandatory build", () => {
   assert.equal(workflow.jobs["frontend-build"]["continue-on-error"], undefined);
   const frontend = JSON.parse(fs.readFileSync(path.join(root, "apps/frontend/package.json"), "utf8"));
   assert.equal(frontend.scripts.test, "vitest run");
+});
+
+test("JUP-122 prepares the fixed tokenizer before Python application tests", () => {
+  const steps = workflow.jobs["python-tests"].steps;
+  const prepare = steps.findIndex((step) => step.run === "python apps/processor/build_tokenizer.py");
+  const tests = steps.findIndex((step) => step.run === "python -m pytest tests -q");
+  assert.ok(prepare >= 0 && tests > prepare);
+  assert.equal(steps[prepare].if, "matrix.service.name != 'azure-cost-api'");
+  assert.equal(steps[prepare]["continue-on-error"], undefined);
+});
+
+test("JUP-122 native SQL requires processor cleanup with its own database", () => {
+  const native = parse(fs.readFileSync(path.join(root, ".github/workflows/chat-engineering.yml"), "utf8"));
+  const steps = native.jobs["native-sql"].steps;
+  const prepare = steps.findIndex((step) => step.run === "python apps/processor/build_tokenizer.py");
+  const backend = steps.findIndex((step) => step["working-directory"] === "apps/backend");
+  const processor = steps.findIndex((step) => step["working-directory"] === "apps/processor");
+  assert.ok(prepare >= 0 && prepare < backend && backend < processor);
+  assert.match(steps[processor].run, /pytest tests\/test_chat_summary_sql_deadline_jup035\.py -q/);
+  assert.equal(steps[processor].env.JUP035_REQUIRE_NATIVE_SQL, "true");
+  assert.notEqual(steps[processor].env.JUP035_COCKROACH_TEST_URL, steps[backend].env.JUP035_COCKROACH_TEST_URL);
+  assert.equal(steps[processor]["continue-on-error"], undefined);
 });
 
 test("requires pull requests while keeping administrator bypass PR-only", () => {

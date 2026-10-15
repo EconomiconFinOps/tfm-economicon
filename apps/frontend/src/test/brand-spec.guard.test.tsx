@@ -59,7 +59,9 @@ describe("armazón de marca", () => {
   it("las pestañas de navegación caben a 1280 px con la barra de desplazamiento vertical", () => {
     // jsdom no mide el diseño: con 9 pestañas la fila medía 1242 px de 1265 en Chrome y con px-3 pasaba a 1314; se conserva el relleno compacto para que reactivar pantallas ocultas no desborde.
     const tabs = [...renderLayout().querySelectorAll("nav a")];
-    expect(tabs).toHaveLength(5);
+    // JUP-035 removes the fictitious assistant tab; the real chat remains in the panel.
+    expect(tabs).toHaveLength(4);
+    expect(tabs.some((tab) => tab.getAttribute("href") === "/assistant")).toBe(false);
     for (const tab of tabs) {
       expect(tab.className).toContain("px-2");
       expect(tab.className).not.toContain("px-3");

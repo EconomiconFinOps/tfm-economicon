@@ -16,14 +16,40 @@ import type {
   LoginRequest,
   LoginResponse,
   MessageCreateRequest,
+  ReferenceDateInfo,
   TenantCollection,
   UserProfile
 } from "./contracts";
-import { isBillingSummary, isTagCoverage, isLoginResponse, isUserProfile } from "./contracts";
+import { isBillingSummary, isTagCoverage, isLoginResponse, isReferenceDateInfo, isUserProfile } from "./contracts";
 import type { AnomalyDetectionRun, AnomalyEpisode, AnomalyEpisodeList, AnomalyStatusChange } from "./contracts";
 import { isAnomalyDetectionRun, isAnomalyEpisode, isAnomalyEpisodeList } from "./contracts";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+
+/** Streaming shares the existing session invalidation and authorization rules. */
+export async function fetchChatResponse(path: string, options: {
+  token: string; tenantId: string; signal: AbortSignal; method?: string; body?: string;
+}): Promise<Response> {
+  const generation = getSessionGeneration();
+  const { token, tenantId, signal, method = "GET", body } = options;
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method, signal, headers: buildHeaders(token, tenantId), ...(body !== undefined ? { body } : {})
+  });
+  if (generation !== getSessionGeneration() || signal.aborted) {
+    await response.body?.cancel().catch(() => {});
+    throw new DOMException("Session changed.", "AbortError");
+  }
+  if (response.status === 401) {
+    invalidateSession(generation, "expired");
+    await response.body?.cancel().catch(() => {});
+    throw new DOMException("Session changed.", "AbortError");
+  }
+  if (!response.ok) {
+    await response.body?.cancel().catch(() => {});
+    throw new ApiError(response.status, "No se pudo completar la solicitud del asistente.");
+  }
+  return response;
+}
 
 // Union cerrada de motivos de invalidacion (tarea 2.1). Solo dos valores:
 // "expired" (401 recibido fuera de /me) y "manual" (logout explicito u otro
@@ -155,6 +181,10 @@ export function fetchHealth() {
 
 export function fetchProfile(token: string) {
   return fetchJson<UserProfile>("/me", { token, validate: isUserProfile });
+}
+
+export function fetchReferenceDate(token: string, signal?: AbortSignal) {
+  return fetchJson<ReferenceDateInfo>("/billing/reference-date", { token, signal, validate: isReferenceDateInfo });
 }
 
 export function fetchTenants(token: string) {

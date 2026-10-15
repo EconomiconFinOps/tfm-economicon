@@ -4,8 +4,20 @@ import { chartLegendFormatter, chartTooltipItemStyle, chartTooltipStyle } from "
 // Datos de demostracion extraidos a src/data/demo/ (JUP-095, grupo 5,
 // tarea 5.2): mismo contenido que el origen, solo cambia la ubicacion.
 import { detailedData, hourlyData, providerData } from "@/data/demo/operationalCostDashboard";
+import { useMemo } from "react";
+import { demoDataset, useFunctionalScreen } from "@/components/chat/ScreenCaptureProvider";
 
 export function OperationalCostDashboard() {
+  const capture = useMemo(() => ({ source: "loaded-screen" as const, selection: {}, datasets: [
+    demoDataset("demo:operational-services", detailedData.map(row => ({ label: `${row.servicio} · ${row.proyecto} · ${row.proveedor} · Uso ${row.uso}% · ${row.tendencia}`, amount: String(row.coste), currency: "EUR" }))),
+    demoDataset("demo:operational-hours", hourlyData.map(row => ({ label: row.hora, amount: String(row.coste), currency: "EUR" })), {}, ["hourly_date"]),
+    demoDataset("demo:operational-providers", providerData.flatMap(row => [
+      { label: `${row.proveedor} · Compute`, amount: String(row.compute), currency: "EUR" },
+      { label: `${row.proveedor} · Storage`, amount: String(row.storage), currency: "EUR" },
+      { label: `${row.proveedor} · Network`, amount: String(row.network), currency: "EUR" }
+    ]))
+  ] }), []);
+  useFunctionalScreen(capture);
   return (
     <div className="p-6 space-y-6">
       {/* Header */}

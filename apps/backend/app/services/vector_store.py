@@ -1,7 +1,12 @@
+import asyncio
+import ipaddress
 import math
+import time
 
 import structlog
 from sqlalchemy import bindparam, create_engine, text
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.pool import NullPool
 
 from app.core.runtime_secrets import StartupError
 from app.services.citations import DocumentCitations
@@ -24,10 +29,22 @@ class EmbeddingDimensionMismatch(StartupError):
 class PgVectorQueryStore:
     def __init__(self, database_url: str):
         self.engine = create_engine(database_url, future=True, pool_pre_ping=True)
+        self._resolved_peer=None
+
+    def _capture_peer(self, connection):
+        """Read only the peer of an already authenticated ordinary connection."""
+        try:
+            info=connection.connection.driver_connection.info
+            address=str(ipaddress.ip_address(info.hostaddr))
+            host,port=info.host,str(info.port)
+            if not isinstance(host,str) or not host or ',' in host: return
+            self._resolved_peer=(host,port,address)
+        except (AttributeError,TypeError,ValueError):
+            return
 
     def search_chunks(
         self, tenant_id: str, query_embedding: list[float], top_k: int = 4, max_distance: float | None = None,
-        provider: str | None = None,
+        provider: str | None = None, *, deadline: float | None = None, cancelled=None,
     ) -> list[dict]:
         if isinstance(top_k, bool) or not isinstance(top_k, int) or not 1 <= top_k <= MAX_TOP_K:
             raise ValueError(f"top_k must be an integer between 1 and {MAX_TOP_K}")
@@ -44,7 +61,15 @@ class PgVectorQueryStore:
             parameters["provider"] = provider
         if max_distance is not None:
             parameters["max_distance"] = float(max_distance)
-        with self.engine.connect().execution_options(isolation_level="REPEATABLE READ") as connection:
+        def query(connection):
+            def timeout():
+                if deadline is None: return
+                remaining=deadline-time.time()
+                if remaining<=0 or cancelled.is_set(): raise TimeoutError('Retrieval deadline.')
+                milliseconds=max(1,int(remaining*1000))
+                connection.execute(text("SELECT set_config('statement_timeout', :timeout, true), "
+                    "set_config('lock_timeout', :timeout, true)"),{'timeout':str(milliseconds)})
+            timeout()
             rows = connection.execute(
                 text(
                     f"""
@@ -75,6 +100,7 @@ class PgVectorQueryStore:
                 return []
             # Fetch each source document once, scoped to the same tenant and
             # transaction snapshot as retrieval (including concurrent reingestion).
+            timeout()
             documents = connection.execute(
                 text("""
                     SELECT id, text_content FROM knowledge_documents
@@ -98,9 +124,84 @@ class PgVectorQueryStore:
                 for row in rows
             ]
 
+        if deadline is not None:
+            if not isinstance(deadline,(int,float)) or not math.isfinite(deadline) or cancelled is None:
+                raise ValueError('Invalid retrieval deadline.')
+            return self._bounded_query(query,deadline,cancelled)
+        with self.engine.connect().execution_options(isolation_level="REPEATABLE READ") as connection:
+            self._capture_peer(connection)
+            return query(connection)
+
+    def _bounded_query(self, query, deadline, cancelled):
+        """Request-owned async IO: no shared pool checkout or synchronous read."""
+        import psycopg
+        args,parameters=self.engine.dialect.create_connect_args(self.engine.url)
+        peer=getattr(self,'_resolved_peer',None)
+        # SQLAlchemy's adapters context is a Python driver option, not libpq
+        # conninfo. Preserve it for connect, exclude only from address checking.
+        libpq_parameters={key:value for key,value in parameters.items() if key!='context'}
+        configured=psycopg.conninfo.conninfo_to_dict(psycopg.conninfo.make_conninfo(*args,**libpq_parameters))
+        if (peer is None or configured.get('host')!=peer[0]
+                or str(configured.get('port','5432'))!=peer[1]):
+            raise ValueError('Retrieval address unavailable.')
+        # Keep the original hostname (including TLS verify-full), supply only
+        # the peer observed during startup/ordinary work. Never resolve here.
+        parameters={**parameters,'hostaddr':peer[2]}
+        async def run():
+            driver=None
+            async def connect():
+                nonlocal driver
+                remaining=deadline-time.time()
+                if remaining<=0 or cancelled.is_set(): raise TimeoutError('Retrieval deadline.')
+                kwargs={**parameters,'connect_timeout':max(1,math.ceil(remaining))}
+                options=kwargs.get('options','')
+                milliseconds=max(1,int(remaining*1000))
+                kwargs['options']=options+f' -c statement_timeout={milliseconds} -c lock_timeout={milliseconds}'
+                driver=await psycopg.AsyncConnection.connect(*args,**kwargs)
+                return driver
+            engine=create_async_engine(self.engine.url,poolclass=NullPool,async_creator=connect,
+                isolation_level='REPEATABLE READ')
+            async def read():
+                async with engine.connect() as connection:
+                    return await connection.run_sync(query)
+            task=asyncio.create_task(read())
+            try:
+                while not task.done():
+                    remaining=deadline-time.time()
+                    if remaining<=0 or cancelled.is_set():
+                        # Closing before task.cancel avoids psycopg's extra 5s+5s
+                        # cancellation/read fallback outside the common deadline.
+                        if driver is not None:
+                            if remaining>0:
+                                allowance=min(.05,remaining)
+                                try:
+                                    await asyncio.wait_for(driver.cancel_safe(timeout=allowance),allowance)
+                                except Exception: pass
+                            driver.pgconn.finish()
+                        task.cancel()
+                        await asyncio.gather(task,return_exceptions=True)
+                        raise TimeoutError('Retrieval deadline.')
+                    await asyncio.wait({task},timeout=min(.01,remaining))
+                if cancelled.is_set() or time.time()>=deadline:
+                    raise TimeoutError('Retrieval deadline.')
+                try:
+                    return task.result()
+                except Exception as failure:
+                    if getattr(getattr(failure,'orig',failure),'sqlstate',None)=='57014':
+                        raise TimeoutError('Retrieval deadline.') from None
+                    raise
+            finally:
+                if not task.done():
+                    if driver is not None: driver.pgconn.finish()
+                    task.cancel()
+                    await asyncio.gather(task,return_exceptions=True)
+                await engine.dispose()
+        return asyncio.run(run())
+
     def embedding_column_dimension(self) -> int | None:
         """Dimension declared by chunk_embeddings.embedding, or None while the table does not exist yet."""
         with self.engine.connect() as connection:
+            self._capture_peer(connection)
             value = connection.execute(text(
                 "SELECT atttypmod FROM pg_attribute "
                 "WHERE attrelid = to_regclass('chunk_embeddings') AND attname = 'embedding'"
@@ -122,6 +223,7 @@ class PgVectorQueryStore:
     def ping(self) -> bool:
         try:
             with self.engine.connect() as connection:
+                self._capture_peer(connection)
                 connection.execute(text("SELECT 1"))
             return True
         except Exception:

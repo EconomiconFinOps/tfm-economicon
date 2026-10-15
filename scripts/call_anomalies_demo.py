@@ -1,6 +1,6 @@
 """Llama a POST /billing/anomalies/evaluate con la peticion de referencia de la demo y muestra el resultado.
 
-Los datos son sinteticos (scripts/synthetic_anomalies.py): no son facturas de Azure ni vienen del dataset publico.
+Los datos son sinteticos (scripts/demo_dataset.py, cargados con scripts/demo_data.py): no son facturas de Azure ni vienen del dataset publico.
 Se ejecuta dentro del contenedor del backend, que ya tiene DEMO_PASSWORD en su entorno; la contrasena y el token
 no se imprimen nunca:
 

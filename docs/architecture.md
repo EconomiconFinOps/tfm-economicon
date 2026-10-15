@@ -60,7 +60,7 @@ flowchart TB
 
 ## 3. Flujos implementados y vertical objetivo
 
-### 3.1 Chat síncrono: recuperación documental y consultas de ownership
+### 3.1 Chat síncrono: recuperación documental, consultas de ownership y explicación de anomalías
 
 ```mermaid
 sequenceDiagram
@@ -73,7 +73,12 @@ sequenceDiagram
   U->>UI: Pregunta en conversación
   UI->>B: POST /assistant/conversations/{id}/messages
   B->>DB: Usuario, membership y propietario de conversación
-  alt ownership_query explícito
+  alt anomaly_query explícito
+    B->>DB: Lectura del episodio del tenant y marca de datos sintéticos (una sentencia)
+    DB-->>B: Episodio y operandos exactos
+    B->>B: Explicación determinista y anomaly_evidence
+    B->>DB: Persistir mensaje de usuario tras explicar
+  else ownership_query explícito
     B->>DB: Agregación SQL por tenant, periodo, moneda y dimensiones
     DB-->>B: Costes y procedencia
     B->>B: Respuesta determinista y cost_evidence
@@ -87,9 +92,23 @@ sequenceDiagram
   B->>B: Plantilla determinista y validación de citas
   end
   B->>DB: Persistir mensaje de asistente
-  B-->>UI: Respuesta con citations o cost_evidence
+  B-->>UI: Respuesta con citations, cost_evidence o anomaly_evidence
   UI-->>U: Texto y fuentes
 ```
+
+Cuando el mensaje lleva `anomaly_query` (JUP-038), la ruta lee el episodio del
+tenant de la sesión con `Database.fetch_anomaly_episode_snapshot` (una sola
+sentencia SQL: episodio, operandos exactos y marca de datos sintéticos) y arma la
+explicación con el explicador puro
+[anomaly_explanations.py](../apps/backend/app/services/anomaly_explanations.py):
+texto determinista y `anomaly_evidence` con las cifras exactas y un identificador
+reproducible. No usa embeddings, recuperación documental ni modelo generativo, y
+solo guarda los dos mensajes cuando la explicación está calculada: un episodio
+inexistente o de otro cliente da el mismo 404 y uno que no se sabe explicar da
+409, sin dejar nada en la conversación. Es excluyente con `ownership_query`.
+Véase [contrato de la explicación](api/anomaly-explanations.md). La explicación
+no es una herramienta del agente todavía: el chat con modelo generativo es
+JUP-035.
 
 La [ruta](../apps/backend/app/api/routes/assistant.py) no llama al processor ni
 a la cola. Cuando recibe `ownership_query`, usa
@@ -201,6 +220,16 @@ JUP-114 sí: «Detectar ahora» aplica la regla diaria de negocio sobre el coste
 diario por servicio y guarda episodios con criticidad y estado
 ([API](api/anomaly-episodes.md), [ADR-0020](adr/ADR-0020-cost-anomaly-episodes.md)).
 El panel `/anomalies` los lee, detecta bajo demanda y cambia estados. No hay ejecución periódica ni avisos.
+
+**Datos de demostración y fecha de referencia (JUP-119, [ADR-0021](adr/ADR-0021-demo-cost-data-single-path-and-reference-date.md)).**
+Los datos de la demo entran por la misma ruta que cualquier coste: `scripts/demo_dataset.py` genera un CSV con el
+formato de exportación de Azure (dataset público con las fechas desplazadas a septiembre de 2026 y series sintéticas,
+todo en la ventana del 1 de julio al 30 de octubre de 2026), una segunda instancia de la API simulada lo sirve
+(perfil `demo` de Compose) y `scripts/demo_data.py` lo carga con la ingesta del processor, nunca insertando filas.
+La consulta agrupa por dos campos (servicio y etiqueta `Project`), así que la demo no lleva grupo de recursos,
+centro de coste ni el resto de etiquetas. El «hoy» de la aplicación lo decide un solo servicio del backend,
+`COST_REFERENCE_DATE` (sin valor, el día UTC real): las lecturas de coste y los episodios no muestran nada posterior y
+el frontend lee la fecha de `GET /billing/reference-date` ([API](api/reference-date.md)).
 [Contrato billing](../openspec/specs/azure-cost-kpis/spec.md) y
 [consulta SQL](../apps/backend/app/db/database.py).
 
@@ -219,7 +248,7 @@ flowchart LR
   U[Usuario] -.-> UI[UI]
   UI -.-> B[Backend: identidad y tenant]
   B -.-> O[Orquestación conversacional pendiente]
-  O -.-> T[Tools deterministas de costes y ownership]
+  O -.-> T[Tools deterministas de costes, ownership y anomalías]
   O -.-> R[RAG del mismo tenant]
   T -.-> G[Contexto y respuesta estructurada]
   R -.-> G

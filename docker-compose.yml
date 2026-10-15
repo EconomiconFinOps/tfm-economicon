@@ -100,11 +100,119 @@ services:
       retries: 5
       start_period: 10s
 
+  # Demo data (JUP-119), opt-in: `docker compose --profile demo up` loads it once; the default `up` never does.
+  azure-cost-api-demo:
+    profiles: ["demo"]
+    build:
+      context: .
+      dockerfile: apps/azure-cost-api/Dockerfile
+    environment:
+      AZURE_COST_DATASET_PATH: /demo/demo-cost.csv
+      AZURE_COST_AUTH_ENABLED: "${AZURE_COST_AUTH_ENABLED:-true}"
+      AZURE_COST_VALID_TOKENS: "${AZURE_COST_VALID_TOKENS:-jupiter-local-token}"
+      AZURE_COST_FORBIDDEN_TOKENS: "${AZURE_COST_FORBIDDEN_TOKENS:-jupiter-forbidden-token}"
+      AZURE_COST_PAGE_SIZE: "${AZURE_COST_PAGE_SIZE:-10}"
+      AZURE_COST_SKIPTOKEN_SECRET: "${AZURE_COST_SKIPTOKEN_SECRET:-jupiter-local-skiptoken-secret}"
+    volumes:
+      - ./fixtures/azure-cost/demo:/demo:ro
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health').read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  demo-data:
+    profiles: ["demo"]
+    build:
+      context: ./apps/processor
+    command: ["python", "scripts/demo_data.py", "apply"]
+    working_dir: /repo
+    healthcheck:
+      disable: true
+    environment:
+      RUNTIME_ENVIRONMENT: ${RUNTIME_ENVIRONMENT:-production}
+      ALLOW_INSECURE_LOCAL_DATABASE: ${ALLOW_INSECURE_LOCAL_DATABASE:-false}
+      DATABASE_URL: ${DATABASE_URL:?required}
+      RABBITMQ_URL: ${RABBITMQ_URL:?required}
+      VECTOR_DATABASE_URL: ${VECTOR_DATABASE_URL:?required}
+      AZURE_COST_API_BASE_URL: http://azure-cost-api-demo:8002
+      AZURE_COST_API_TOKEN: ${AZURE_COST_API_TOKEN:-jupiter-local-token}
+      PROCESSOR_APP_DIR: /app
+    volumes:
+      - ./scripts:/repo/scripts:ro
+      - ./fixtures:/repo/fixtures:ro
+    depends_on:
+      azure-cost-api-demo:
+        condition: service_healthy
+      cockroachdb:
+        condition: service_healthy
+      processor:
+        condition: service_healthy
+    restart: "no"
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+
+  backend-migrate:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    command: ["python", "-m", "app.migrate"]
+    environment:
+      RUNTIME_ENVIRONMENT: ${RUNTIME_ENVIRONMENT:-production}
+      ALLOW_INSECURE_LOCAL_DATABASE: ${ALLOW_INSECURE_LOCAL_DATABASE:-false}
+      DATABASE_URL: ${DATABASE_URL:?required}
+      RABBITMQ_URL: ${RABBITMQ_URL:?required}
+      VECTOR_DATABASE_URL: ${VECTOR_DATABASE_URL:?required}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-mock}
+      EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-8}
+      LITELLM_API_KEY: ${BACKEND_LITELLM_API_KEY:-}
+      AUTH_SECRET_KEY: ${AUTH_SECRET_KEY:?required}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS-[]}
+      DEMO_SEED_ENABLED: ${DEMO_SEED_ENABLED:-false}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-}
+    depends_on:
+      cockroachdb:
+        condition: service_healthy
+    restart: "no"
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      disable: true
+
   backend:
     build:
-      context: ./apps/backend
+      context: .
+      dockerfile: apps/backend/Dockerfile
     environment:
       API_PORT: 8000
+      BACKEND_SCHEMA_MODE: verify
+      SUMMARY_TIMEOUT_SECONDS: ${SUMMARY_TIMEOUT_SECONDS:-180}
+      CHAT_MAX_ACTIVE: ${CHAT_MAX_ACTIVE:-8}
+      CHAT_ENABLED: ${CHAT_ENABLED:-false}
+      SUMMARY_ENABLED: ${SUMMARY_ENABLED:-true}
+      CHAT_CONTEXT_TOKENS: ${CHAT_CONTEXT_TOKENS:-1048576}
+      CHAT_MAX_OUTPUT_TOKENS: ${CHAT_MAX_OUTPUT_TOKENS:-3200}
+      SUMMARY_CONTEXT_TOKENS: ${SUMMARY_CONTEXT_TOKENS:-1048576}
+      CHAT_RESOURCE_DIRECTORY: /opt/economicon/chat/v3
+      SUMMARY_RESOURCE_DIRECTORY: /opt/economicon/summary/v3
+      CHAT_TOKENIZER_FILE: /opt/economicon/chat/v3/tokenizer.json
+      PROCESSOR_CHAT_BASE_URL: http://processor-chat:8003
+      CHAT_SERVICE_HMAC_KEY_FILE: /run/secrets/chat-hmac
       RUNTIME_ENVIRONMENT: ${RUNTIME_ENVIRONMENT:-production}
       ALLOW_INSECURE_LOCAL_DATABASE: ${ALLOW_INSECURE_LOCAL_DATABASE:-false}
       DATABASE_URL: ${DATABASE_URL:?required}
@@ -125,7 +233,10 @@ services:
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS-[]}
       DEMO_SEED_ENABLED: ${DEMO_SEED_ENABLED:-false}
       DEMO_PASSWORD: ${DEMO_PASSWORD:-}
+      COST_REFERENCE_DATE: ${COST_REFERENCE_DATE:-}
     depends_on:
+      backend-migrate:
+        condition: service_completed_successfully
       cockroachdb:
         condition: service_healthy
       rabbitmq:
@@ -134,6 +245,11 @@ services:
         condition: service_healthy
     ports:
       - "${API_HOST_PORT:-8000}:8000"
+    secrets:
+      - chat-hmac
+    networks:
+      default: {}
+      chat-private: {}
     init: true
     read_only: true
     tmpfs:
@@ -152,6 +268,19 @@ services:
       context: ./apps/processor
     environment:
       PROCESSOR_PORT: 8001
+      SUMMARY_TIMEOUT_SECONDS: ${SUMMARY_TIMEOUT_SECONDS:-180}
+      CHAT_ENABLED: ${CHAT_ENABLED:-false}
+      SUMMARY_ENABLED: ${SUMMARY_ENABLED:-true}
+      CHAT_CONTEXT_TOKENS: ${CHAT_CONTEXT_TOKENS:-1048576}
+      CHAT_MAX_OUTPUT_TOKENS: ${CHAT_MAX_OUTPUT_TOKENS:-3200}
+      SUMMARY_CONTEXT_TOKENS: ${SUMMARY_CONTEXT_TOKENS:-1048576}
+      CHAT_MAX_ACTIVE: ${CHAT_MAX_ACTIVE:-8}
+      PROCESSOR_CHAT_BIND_HOST: ${PROCESSOR_CHAT_PRIVATE_IP:-172.30.35.3}
+      PROCESSOR_CHAT_PORT: 8003
+      CHAT_SIGNING_KEY_FILE: /run/secrets/chat-hmac
+      CHAT_RESOURCE_DIRECTORY: /app/app/agents/prompt_resources/jup035/chat/v3
+      SUMMARY_RESOURCE_DIRECTORY: /app/app/agents/prompt_resources/jup035/summary/v3
+      CHAT_TOKENIZER_FILE: /app/app/agents/prompt_resources/jup035/chat/v2/tokenizer.json
       RUNTIME_ENVIRONMENT: ${RUNTIME_ENVIRONMENT:-production}
       ALLOW_INSECURE_LOCAL_DATABASE: ${ALLOW_INSECURE_LOCAL_DATABASE:-false}
       PROCESSOR_CONCURRENCY: ${PROCESSOR_CONCURRENCY:-2}
@@ -193,6 +322,14 @@ services:
         condition: service_healthy
     ports:
       - "${PROCESSOR_HOST_PORT:-8001}:8001"
+    secrets:
+      - chat-hmac
+    networks:
+      default: {}
+      chat-private:
+        ipv4_address: ${PROCESSOR_CHAT_PRIVATE_IP:-172.30.35.3}
+        aliases:
+          - processor-chat
     init: true
     read_only: true
     tmpfs:
@@ -265,6 +402,17 @@ services:
         condition: service_healthy
     ports:
       - "127.0.0.1:${GRAFANA_PORT:-3000}:3000"
+
+secrets:
+  chat-hmac:
+    file: ${CHAT_HMAC_FILE:?required private HMAC file}
+
+networks:
+  chat-private:
+    internal: true
+    ipam:
+      config:
+        - subnet: ${CHAT_PRIVATE_SUBNET:-172.30.35.0/24}
 
 volumes:
   cockroach-data:

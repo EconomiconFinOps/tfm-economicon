@@ -162,15 +162,7 @@ def test_empty_unobserved_and_unmatched_data_do_not_become_zero_spend(raw, query
 
 
 def test_default_period_is_utc_calendar_month_with_exclusive_year_boundary(monkeypatch):
-    import app.services.ownership_questions as service_module
-
-    class FrozenDateTime(datetime):
-        @classmethod
-        def now(cls, tz=None):
-            assert tz is timezone.utc
-            return cls(2024, 12, 31, 23, 59, 59, tzinfo=timezone.utc)
-
-    monkeypatch.setattr(service_module, "datetime", FrozenDateTime)
+    monkeypatch.setattr("app.services.reference_date._utc_now", lambda: datetime(2024, 12, 31, 23, 59, 59, tzinfo=timezone.utc))
     result, db = answer(selected=OwnershipSelection(group_by="project"))
     assert db.fetch_billing_summary.call_args.kwargs["start_date"] == date(2024, 12, 1)
     assert db.fetch_billing_summary.call_args.kwargs["end_date"] == date(2025, 1, 1)
@@ -250,7 +242,7 @@ def request_body(**query):
 
 def assert_no_cost_or_retrieval_effects(api):
     api.spies["fetch_billing_summary"].assert_not_called()
-    api.spies["append_message"].assert_not_called()
+    api.spies["append_pair"].assert_not_called()
     api.vector.search_chunks.assert_not_called()
     api.embedding.embed.assert_not_called()
 
@@ -304,7 +296,7 @@ def test_api_rejected_cost_answer_never_persists_a_partial_turn_or_calls_retriev
                     headers=headers(), json=request_body())
     assert response.status_code == expected, response.text
     assert response.json() == {"detail": {"code": code}}
-    api.spies["append_message"].assert_not_called()
+    api.spies["append_pair"].assert_not_called()
     api.vector.search_chunks.assert_not_called()
     api.embedding.embed.assert_not_called()
     assert rows(api.db, "messages") == before

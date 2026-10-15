@@ -81,7 +81,7 @@ La ejecución con `mock` no mide relevancia. Para REL-1 y REL-2 con embeddings r
 4. La ficha de la ejecución lleva el proveedor y el alias reales. Se consulta el gasto de la clave en el gateway al terminar.
 5. Hay que parar el stack con `docker compose -p <proyecto> down -v` y el gateway al terminar.
 
-Solo se pagan llamadas de embeddings (céntimos de dólar con 28 preguntas y 52 fragmentos). Mientras el chat no genere con modelo, la evaluación no llama a ningún modelo de lenguaje.
+Solo se pagan llamadas de embeddings (94 llamadas con 28 preguntas y 66 fragmentos en la calibracion del 15/10/2026; coste y limites en [la evidencia JUP-120](../evidence/JUP-120-guide-correction-20261015.md)). Mientras el chat no genere con modelo, la evaluación no llama a ningún modelo de lenguaje.
 
 ## Cómo se decide una cifra
 

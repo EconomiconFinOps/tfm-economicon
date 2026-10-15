@@ -100,7 +100,7 @@ respuestas semánticas suficientes: conservar ese resultado sin alterar la clave
 El JSON es la fuente única de preguntas y rúbricas. Los hashes impiden que un
 cambio del corpus modifique silenciosamente la referencia: revisar los casos
 afectados, actualizar expectativas y hash, incrementar `suite_version` y repetir
-las pruebas. Conservar los IDs; no reutilizar un ID para otra pregunta. Un cambio
+las pruebas. Conservar los IDs; no reutilizar un ID para otra pregunta. La huella de la batería (`suite_sha256`) también está en `tools/fixtures/assistant-metrics/synthetic-results.json`: actualizarla en el mismo cambio. Los informes de JUP-070 conservan la huella de su ejecución como histórico: esa huella ya no coincide con el repositorio. Un cambio
 incompatible del formato requiere nueva `schema_version` y adaptación del validador.
 
 JUP-069 entrega el instrumento de prueba y su preparación determinista. La

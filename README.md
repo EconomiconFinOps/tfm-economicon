@@ -583,7 +583,7 @@ Esta base prioriza:
 - API Azure Cost simulada y cliente de ingesta paginado
 - normalizacion y persistencia idempotente de costes por tenant
 - almacenamiento vectorial basico con provider mock por defecto en development y test, y recuperacion semantica del backend con `litellm` (ver [apps/backend/README.md](apps/backend/README.md))
-- chat con retrieval minimo por tenant y respuesta determinista, todavia sin LLM real
+- chat con retrieval por tenant, mock explicito e IA mediante el gateway JUP-108; la configuracion no acredita calidad semantica
 - CI en GitHub Actions con validaciones de gobernanza, OpenSpec, pruebas y build
 - documentacion versionada de arquitectura, ADR, roadmap y evidencias
 
@@ -604,6 +604,184 @@ exista un prototipo o un provider mock no acredita el cierre de esas tarjetas.
 GET `/health/status` usa `HEALTH_PROBE_TIMEOUT_SECONDS=8` por defecto (número finito entre 2 y 8 segundos inclusivos), 18 segundos de agregación después de autorizar y 20 segundos de espera del cliente. El plazo de la sonda incluye arranque/importaciones del proceso desechable; conserva cuatro slots y no añade reintentos. Puede reducirse dentro del rango si el entorno lo permite; un timeout sigue siendo no verificado. POST conserva 30/35 segundos servidor/cliente y el polling GET visible 30 segundos. El health público mantiene su contrato.
 
 El transporte elimina del modelo informativo cualquier reflexión de la credencial diagnóstica completa antes del recibo y de su retención/serialización, sin invalidar una respuesta funcional sana por metadata descartada. Para reproducir disponibilidad y recuperación, usar el Compose documentado y el override no generativo del [runbook de salud](docs/runbooks/system-health.md), con recursos propios y credenciales sintéticas; no activar proveedor real para regresiones.
+# QA dialogue memory: summary bundle v3
+
+The active compression bundle is
+`apps/processor/app/agents/prompt_resources/jup035/summary/v3`. It preserves the
+SummaryResponse v2 JSON shape; the chat still uses FinOpsResponse 1.0 and reserves
+3200 output tokens by default. Compression reserves 10000 output tokens independently, accepts
+at most 8192 canonical JSON tokens and 6144 textual tokens, and requests concise
+complete sentences. These are ceilings, not target lengths.
+
+Both services must agree on `CHAT_CONTEXT_TOKENS`, `CHAT_MAX_OUTPUT_TOKENS` and `SUMMARY_CONTEXT_TOKENS`;
+the default is 1048576. Summary context must exceed 11024 tokens (output plus
+margin). For the bounded large-history QA run, set both variables to 32768 in
+both services. The authenticated descriptor includes the effective reserve.
+Request byte guards remain 1 MiB for summary and 2 MiB for chat.
+
+Package or mount the **whole summary directory**, retaining the unmodified `v2`
+beside `v3`. Backend defaults to `/opt/economicon/summary/v3`; processor defaults
+to its packaged `app/agents/prompt_resources/jup035/summary/v3`. Override
+`SUMMARY_RESOURCE_DIRECTORY` per service when mounting an isolated QA bundle.
+Keep the existing pinned chat tokenizer and `CHAT_TOKENIZER_FILE` configuration.
+Copying only v3 is insufficient: startup verifies the legacy sibling before
+accepting existing artifacts. The processor's existing `COPY app` includes both
+versions; the backend image copies both from the repository build context.
+
+V2 artifacts are validated with their original exact contract and limits. Reading
+does not relabel or rewrite them. Successor v3 artifacts retain parent identity,
+hash, lineage and previous payload; new observations include the execution
+budget. Chat measures the complete escaped memory prefix together with essentials,
+schema, output and margin, and rejects insufficient context rather than truncating.
+
+## Project Compose chat (JUP-035)
+
+### Pinned tokenizer preparation (JUP-122)
+
+The 20 MB tokenizer is generated, not versioned. Backend and processor image
+builds download it from the official `zai-org/GLM-5.2` repository at revision
+`a66456a59f21345d1e5e586345c448a9106d29d7`, then verify 20217442 bytes and SHA256
+`19e773648cb4e65de8660ea6365e10acca112d42a854923df93db4a6f333a82d` before installing
+it. Chat and summary retain their existing tokenizer pins. A corrupt download
+fails the build; neither runtime downloads model assets.
+
+Before running Python tests outside Docker, prepare the same local artifact:
+
+```sh
+corepack pnpm tokenizer:prepare
+corepack pnpm tokenizer:test
+```
+
+Preparation reuses a verified local cache without network and replaces an
+artifact only after successful verification. Its default path is
+`apps/processor/app/agents/prompt_resources/jup035/chat/v2/tokenizer.json`, excluded
+from Git and Docker contexts. Image builds fetch their own verified copy.
+CI prepares the resource before backend/processor tests, including native SQL.
+Build requires access to the pinned source; application startup does not.
+
+The existing mock and AI preparation below remains unchanged. The delivery A
+default is `CHAT_ENABLED=false`; packaging checks do not enable the chat or
+certify semantic quality. AI deployment uses the existing gateway configuration
+and credentials; these engineering checks require no paid requests.
+
+CD excludes `.secrets` directories at any depth from releases. Docker contexts
+also exclude them. The private CD HMAC remains outside each release, retains its
+existing bytes and permissions, and still rejects symbolic links. This does not
+introduce automatic local HMAC preparation.
+
+Use an isolated Compose project and an external environment file populated from
+`.env.example`; the example intentionally has no usable secrets. Supply
+`CHAT_HMAC_FILE` as an absolute path to an operator-owned private file containing
+at least 32 bytes, readable by container uid 10001. It is mounted read-only in
+backend and processor, not frontend. Choose an unused `CHAT_PRIVATE_SUBNET` and
+matching `PROCESSOR_CHAT_PRIVATE_IP`; private port 8003 is not published.
+
+For mock set `RUNTIME_ENVIRONMENT=development`, explicitly opt into the disposable
+local database, `AI_EXECUTION_MODE=development`, `LLM_PROVIDER=mock`,
+`EMBEDDING_PROVIDER=mock`, `EMBEDDING_DIMENSION=8`. Configure the existing database,
+broker, authentication and browser-origin settings. Then:
+
+```sh
+docker compose --env-file /absolute/private/mock.env -p economicon-chat-mock build backend processor
+docker compose --env-file /absolute/private/mock.env -p economicon-chat-mock up -d
+```
+
+The existing backend migrator runs once before the verify-only backend; processor
+keeps ownership of its own and vector migrations. No manual schema creation is
+needed. Image builds install the existing hash-locked dependency closure together,
+check compatibility and validate pinned assets. Runtime needs no tokenizer download.
+Public health alone does not verify the private handshake: after processor is
+healthy, sign in and submit a question through the actual chat UI/backend.
+
+Mock output explicitly identifies simulation. Its compression preserves only
+bounded literal quotes and reports omissions; it does not certify semantic memory
+or real RAG. Original messages are not deleted. Mock never replaces a failed AI call.
+
+For AI reuse [JUP-108 configuration](infra/litellm/README.md), its gateway, aliases
+and separate application virtual keys. Select both providers `litellm`, dimension
+1536 and `AI_EXECUTION_MODE=evaluation`; supply `SUMMARY_API_KEY_FILE` pointing to
+a third, budgeted virtual-key file distinct from the main key. Only processor
+receives it. Never inject gateway master/upstream keys into applications.
+
+```sh
+docker compose --env-file /absolute/private/ai.env -p economicon-chat-ai -f docker-compose.yml -f infra/litellm/compose.ai.yml --profile ai up -d --build
+```
+
+Use separate volumes/projects for mock8 and real1536; do not change dimensions on
+an existing corpus. Real requests require an explicit budget. Chat reserves 3200
+output tokens by default; summary reserves 10000 independently. Reduced context values must
+match across both services. Do not change the shared gateway/model defaults for
+this deployment. Build and isolated runtime validation are distinct checks.
+
+The active chat bundle is `jup035/chat/v3`; the original v2 bundle is retained
+unchanged; its generated pinned tokenizer is reused by v3. Backend images package
+the v3 prompts and that tokenizer together. `CHAT_MAX_OUTPUT_TOKENS` accepts
+integers 1..3200 in both services, with 3200 as the approved default and maximum.
+Paris authorized this default directly on 11/10/2026, superseding the initial
+1600-then-escalate procedure. This does not change ingestion's 800-token configuration,
+models, retry limits, rate caps or chat deadlines.
+
+Chat retrieval keeps the configured primary hits and adds immediate neighboring
+chunks only when present in a pool of at most 20 candidates under the same tenant,
+provider and distance filters. Neighbor lookup is restricted to each primary
+document and does not recurse. IDs, content and citations remain those of the
+stored chunks. Financial evidence consumes the same 20-item evidence capacity;
+context token and byte limits still apply. The `contiguous_context_bounded`
+omission records this limitation and how many available neighbors were omitted
+for capacity. It does not assert that every continuation was found. No corpus
+changes, new SQL, reindexing or relaxed search fallback are involved.
+
+Incomplete documentary rules must not justify guessed categories or thresholds.
+Tagging explanations include team ownership and privacy restrictions; comparisons
+include absolute and relative differences only for requested amount comparisons
+when the baseline is nonzero, without adding unsolicited threshold comparisons.
+Requested percentage comparisons distinguish relative variation from percentage
+points. Existing status and financial evidence rules remain unchanged, including for hypothetical
+arithmetic that actually uses conceptual documentary evidence.
+
+Analysis completeness rules distinguish undefined ratios with zero denominators,
+cost-weighted coverage versus resource counts, identified versus implemented
+savings and estimates versus verified results. Alerts require investigation of
+cause and whether the change was expected, not automatic shutdown. Rightsizing
+requires explicit consideration of performance/SLA risk. Missing real data calls
+for an authorized tenant source, never credentials or invented integrations.
+Currency conversion requires destination currency, rate and date. Missing data
+is not a verified zero, and citations must support the specific claim, not merely
+share its topic. These prompt instructions require real semantic acceptance;
+resource hashes and authorized citation IDs alone do not establish correctness.
+
+The server incorporates period and subscription scope into FinOpsResponse 1.0;
+the model must not emit those fields. The subscription list comes only from the
+admitted screen selection, whitespace-trimmed, sorted and deduplicated after
+trimming, and is empty without a
+selection. More than 20 distinct selected subscriptions returns 422
+`subscription_scope_limit` before claiming a provider attempt; the public schema
+is unchanged. Whitespace-only selected IDs return 422 before provider claim;
+the original screen capture is not normalized or rewritten. The existing
+1..256-character input limit is retained before trimming, and the 20-ID limit
+counts distinct normalized IDs. Hypothetical calculations from user-supplied figures belong
+only in `answer`, with assumptions and a non-verified-data limitation, never in
+financial metrics or invented evidence. Without authorized evidence their status
+remains non-actionable. The backend still rejects unverified financial metrics.
+
+Backend rejection logs contain only operation, attempt, stage and a fixed rule
+code. `provider_budget_insufficient` denotes insufficient remaining provider
+wait time (120 seconds), not insufficient financial credit. Real battery runs
+must wait for completed/failed/cancelled/paused before dispatching the next case;
+SSE `retry_scheduled` is not a terminal operation result.
+
+`SUMMARY_TIMEOUT_SECONDS` sets the absolute compression-lot deadline independently
+of chat: integer 30..300 seconds, default 180, mirrored in backend and processor.
+It includes source preparation, generation, validation and installation. The
+summary request and its local socket deadline reserve five seconds for validating
+and installing the result; connection establishment remains capped at five
+seconds. The compression lease lasts this configured window plus 15 seconds.
+Main chat and `LLM_TIMEOUT_SECONDS` retain their existing deadlines. An expired
+lot cannot install output or automatically dispatch again; originals and the last
+valid memory are preserved. Local cancellation does not guarantee upstream work
+or billing stops. A result ending at length or failing validation still fails even
+if it arrives in time. After review rebuild only backend/processor, preserve the
+isolated database/gateway, and repeat only the compression check within its budget.
 
 ## Despliegue privado
 

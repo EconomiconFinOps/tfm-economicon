@@ -68,7 +68,10 @@ salta si   esperado > 0
 ## Dias evaluables y ejecucion
 
 - El ultimo dia con datos del tenant se considera incompleto: el **ultimo dia
-  completo** es el anterior, y nunca hoy (UTC) ni despues.
+  completo** es el anterior, y nunca la fecha de referencia ni despues. La fecha
+  de referencia es el dia UTC real o la que fija `COST_REFERENCE_DATE`
+  ([fecha de referencia](reference-date.md)): las lecturas no ven datos posteriores
+  y un episodio solo se ve si el ultimo dia de su impacto es anterior a ella.
 - Un dia es evaluable si el y sus 7 dias anteriores tienen algun registro del
   tenant en cualquier moneda. Si no, se salta con `not_observed` o
   `reference_incomplete` y no abre, extiende, termina ni suma impacto.
@@ -124,7 +127,7 @@ Ademas de los episodios, para cualquier `scope`, la lista devuelve:
 | Campo | Significado |
 | --- | --- |
 | `last_evaluated_date` | Ultimo dia evaluado del tenant («Revisado hasta»), o null si nunca se detecto. Con un hueco de datos, pulsar cada dia puede dejar la marca en el dia anterior al hueco (`insufficient_data` no guarda nada) hasta el primer dia evaluable, mientras una sola pulsacion la lleva al ultimo dia completo; los episodios son los mismos. |
-| `includes_synthetic_data` | `true` si alguna ingesta completada del tenant lleva la marca `synthetic` (herramientas de JUP-106 y JUP-107). No dice que el resto sea real: hoy la ingesta usa el simulador con el dataset publico. |
+| `includes_synthetic_data` | `true` si alguna ingesta completada del tenant lleva la marca `synthetic` (herramientas antiguas de JUP-106 y JUP-107) o es de una suscripcion con el prefijo reservado `synthetic-` (datos de demo cargados por la ingesta, JUP-119). No dice que el resto sea real: hoy la ingesta usa el simulador con el dataset publico o con los datos de demo. |
 | `open_impact_by_currency` | Impacto acumulado de los episodios `new` e `investigating`, una entrada por moneda, sumado de forma exacta y redondeado una sola vez. Nunca se suman monedas. |
 
 Campos de cada episodio: `id`, `kind: cost_anomaly_candidate`, `currency`,
@@ -205,9 +208,14 @@ el episodio; el 9 sube 250 y lo continua; el impacto acumulado es 400.
 
 JUP-038 explica episodios guardados: por que se abrieron (referencia, observado,
 reglas y version), cuanto llevan (impacto acumulado y criticidad), en que estado
-estan y sus limitaciones, sin recalcularlos ni atribuir causa o ahorro. La
-adaptacion al envelope comun de herramientas (correlation ID, source, evidence
-IDs, assumptions y limitations) corresponde al consumidor; estas rutas no
+estan y sus limitaciones, sin atribuir causa o ahorro. Lo hace en el asistente,
+con una explicacion determinista y evidencia guardada: contrato, formulas y
+ejemplo real en [anomaly-explanations.md](anomaly-explanations.md). Lee el
+episodio con `Database.fetch_anomaly_episode_snapshot`, que devuelve el payload
+de estas rutas mas los valores exactos de las columnas (los importes de esta API
+van redondeados a dos decimales; 100.004 se veria como 100.00). La adaptacion al
+envelope comun de herramientas (correlation ID, source, evidence IDs,
+assumptions y limitations) sigue correspondiendo al consumidor; estas rutas no
 registran ninguna herramienta del agente.
 
 ## Limitaciones

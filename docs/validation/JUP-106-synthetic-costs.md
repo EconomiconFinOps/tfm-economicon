@@ -1,22 +1,23 @@
 # Datos sintéticos de coste (JUP-106)
 
+> **Sustituida por JUP-119 (2026-10-13).** `scripts/synthetic_costs.py` y `scripts/synthetic_anomalies.py` ya no existen:
+> los datos de la demo se generan con `scripts/demo_dataset.py` y se cargan con `scripts/demo_data.py` por la API
+> simulada y la ingesta del processor (ver [la guía de datos](../data/azure-sample-dataset.md)). Esta guía se conserva
+> como registro de lo que se validó entonces; sus comandos ya no funcionan.
+
 Conjunto de datos de coste de varios meses de 2026 para validar en la interfaz la funcionalidad de costes que el dataset público no cubre. **Son datos sintéticos: no son facturas de Azure, no proceden del dataset público versionado y no deben usarse en una demo como si lo fueran.** Los registros y las ingestas llevan el prefijo reservado `synthetic-jup106-`, cada ingesta guarda `{"synthetic": true}` en su petición y el simulador y su fixture no se tocan.
 
 ## Para qué sirve
 
 El dataset público cubre del 1 al 19 de junio de 2024 y una sola moneda (USD). Con este conjunto se pueden recorrer meses con huecos, un cero registrado, un crédito, dos monedas con meses distintos, un importe fuera del rango seguro de `Number`, dimensiones ausentes, grupos de recursos que solo difieren en mayúsculas y un registro sin fecha. No ejercita la ingesta (se inserta directamente en las tablas de costes, que ya cubren JUP-076 y JUP-077) ni el simulador.
 
-## Cargar, consultar y retirar
+## Cargar, consultar y retirar (histórico: describe la herramienta retirada)
 
 Los comandos se ejecutan desde la raíz del repositorio con el stack levantado y se pasan por la entrada estándar al contenedor del processor, que ya tiene `DATABASE_URL`. El tenant por defecto es `tenant-growth` (el único tenant demo sin costes); se cambia con `--tenant`.
 
-```sh
-docker compose exec -T processor python - apply < scripts/synthetic_costs.py
-docker compose exec -T processor python - status < scripts/synthetic_costs.py
-docker compose exec -T processor python - remove < scripts/synthetic_costs.py
-```
+**Comandos históricos, ya no ejecutables:** los de JUP-106 pasaban por la entrada estándar el script `scripts/synthetic_costs.py`, que ya no existe. Hoy se usa `scripts/demo_data.py` con el perfil `demo` de Compose (`docker compose --profile demo run --rm demo-data python scripts/demo_data.py status|apply|remove`); ver [la preparación de la demo](../demo/JUP-107/preparacion.md).
 
-En PowerShell no existe `<`: `Get-Content -Raw scripts/synthetic_costs.py | docker compose exec -T processor python - apply`. El fichero es solo ASCII para que la codificación de la tubería no lo altere. Con un proyecto Compose aislado, añade `-p <proyecto>` tras `docker compose`.
+En PowerShell, `demo_data.py` se invoca igual: no usa `<`.
 
 - `apply` es idempotente: la segunda vez informa `already-present` y no escribe nada. Se niega (salida 2) si el tenant ya tiene datos de coste que no son sintéticos o si hay un estado parcial o en otro tenant; en esos casos hay que ejecutar `remove` primero. La comprobación de datos reales se repite dentro de la transacción de escritura, de modo que una ingesta real que llegue justo antes de escribir también aborta la carga sin dejar nada.
 - `status` informa del estado (`absent`, `present`, `partial` o `other-tenant`) y de las filas reales del tenant.
