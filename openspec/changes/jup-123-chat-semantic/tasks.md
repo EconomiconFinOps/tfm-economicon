@@ -26,6 +26,8 @@
 
   - Autorización15/10 máximo10USD. Herramientas5f32/109PASS separadas del producto7be; retención completed008/018 aplicada sin liberar importe alguno. Ocho recibos r1 inmutables; mismo plan/ledger, continuación desde009. Primera ronda27 conformes/1 fallo015 (seguimiento/alertas); segunda ronda en curso y003r2 con afirmación documental no sustentada.35 revisadas33 conformes/2 fallidas; no N3 completa ni aceptación. Ver continuidad para SHA/costes/UI.
 
+  - Corte15/10 08:04UTC:70/84 verificados,69completed/1failed,66costes observados/4maximos íntegros. Snapshot287 hashes y ocho recibos iniciales intactos.63 conformes/3fallidas/3inciertas/1técnica (013r3 classification_unverified_prose). Caducidad bloquea015r3; extensión temporal solicitada, no aplicada. Cota6.059886129/10USD con3.201520 reservados intactos. Faltan14, no cerrar2.7 ni aceptación.
+
 ## 3. Correcciones y entrega
 - [ ] 3.1 Corregir defectos medidos con lógica determinista.
   - Correcciones014/003 medidas en c7 N3:014 conforme3/3,003 completa3/3. Las1470 pruebas Linux/SQL conservan su alcance; no validan calidad por sí solas.

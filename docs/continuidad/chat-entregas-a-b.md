@@ -32,11 +32,13 @@ con tres OOM previos conservados y procesos separados sin cambiar aserciones.
 Pgvector20 PASS cubre6 de esas omisiones; Cockroachv5 terminó196 ensayos con194 PASS/2 FAIL conservados. fba415f2 modifica sólo las dos pruebas; repetición completa17 SQL PASS y8 offline (2 PASS/6 SKIP), producto7be intacto. Verificador confirma1747 chat conformes con todos58 SKIP cubiertos nativamente y216 ejecuciones SQL/pgvector conformes. Helpers importados, aplicación/build y JUnit/log SHA contrastados; no es una corrida monolítica ni se borran los fallos. Buildv7 completado y B propio activo con365 hashes/tokenizer verificados y bases intactas. UI001/006/007/008 conforme en escritorio/móvil/recarga. N3 detenida8/84 por consumo incompleto de una fase de008, con reserva íntegra: cota4.790558402/5USD; una nueva ejecución exigiría5.110510402. Ocho respuestas/49 requisitos provisionales conformes no validan el conjunto. Pruebas e IDs en [evaluación local](chat-evaluacion-local.md).
 No se ha publicado B ni modificado A desde este trabajo.
 
-Actualización15/10: máximo10USD autorizado; herramientas contables5f32ea08
-separadas del producto congelado7be.008 conserva su máximo íntegro, todas las
-reservas previas y los ocho recibos intactos; N3 reanudada desde009, sin volver
-a generar el prefijo. El bloqueo por máximo5USD del párrafo anterior es histórico.
-N3 completa/aceptación siguen pendientes; ver evaluación local para estado vivo.
+Actualización15/10 08:04UTC: máximo10USD aplicado; herramientas5f32ea08 separadas
+de producto7be,109PASS. N3 continuó desde009 hasta70/84,69completed/1failed.
+302 filas anteriores y ocho recibos iniciales idénticos; reservas3.201520 intactas.
+63 conformes/3fallidas/3inciertas/1técnica;013r3 classification_unverified_prose.
+Caducidad de claves impide015r3; extensión sólo temporal consultada, no aplicada.
+La cota histórica4.79/5 del párrafo anterior está superada por6.059886129/10USD,
+incluidas reservas, sin atribución exacta del gasto.14 muestras/aceptación pendientes.
 
 ## Corte anterior: cabeza11f84334
 

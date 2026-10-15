@@ -7,6 +7,74 @@ continuar desde009 usando la corrección contable, sin repetir las ocho muestras
 anteriores ni liberar reservas pendientes. Sustituye los máximos anteriores;
 no reinicia gasto, ledger, intentos ni caducidad. B sigue sin publicar.
 
+### Corte vigente70/84, detenido por caducidad — 15/10/2026 08:04 UTC
+
+Máximo10USD aplicado y comprobado con herramientas5f32ea08/109PASS; producto7be
+inmutable. Se continuó desde009r1 hasta014r3:70 recibos públicos verificados,
+69 completed/1 failed,66 costes observados y4 máximos íntegros retenidos en esta
+campaña.365 filas totales,302 anteriores idénticas; ocho recibos iniciales idénticos
+por SHA. Controladorv4 PID4093158/start_ticks65025659 terminado sin admitir015r3.
+Las claves originales caducaron08:02:20UTC; no se han creado, renovado ni ampliado claves.
+La consulta de ampliar sólo su vigencia hasta10:02UTC sigue pendiente de respuesta.
+No se toma el máximo10USD como permiso para cambiar esa vigencia original24h.
+
+Revisión local provisional:63 conformes,3 fallidas,3 inciertas y1 técnica.
+400 requisitos conformes,4 fallidos,3 inciertos,6 no evaluables del fallo técnico;
+14 muestras ausentes (015–028r3). Los4 checks fallidos son3 grupos por respuesta:
+015r1/r2 omiten seguimiento/alertas;003r2 eleva campos conceptuales a prerrequisitos.
+Dudas para adjudicación:003r3 exige utilización/rendimiento/SLA para atribuir causa
+en general;012r3 puede desplazar el sentido de preferentemente equipo del valor
+de owner al uso del tag;023r2 atribuye confirmación a una captura de pantalla aunque
+el arnés envía screen_context JSON sin imagen. No convertir incertidumbre en PASS.
+
+013r3 conserva failed/1intento: diagnóstico estructural model_validation,
+ValueError,finish stop,invalid_response,classification_unverified_prose.
+Ocurrió antes de caducar claves: no atribuirlo a caducidad ni a un HTTP del proveedor.
+No se conserva candidato privado exacto ni campo causante; no afirmar qué frase
+lo produjo ni declararlo corregido con un caso artificial distinto. Su lookup404
+no prueba coste0: máximo0.319952 íntegro, aunque el SDK registra0.0044258775.
+
+014r3 completed tiene SDK completo0.003916005 pero delta de clave0.006045225:
+diferencia0.00212922, igual a una fase gateway registrada del013r3. Es una hipótesis
+de cargo tardío, no atribución contable exclusiva demostrada. Se retiene también
+su máximo0.319952, sin liquidar el coste ambiguo ni liberar el013. Las364 filas
+anteriores, todos los importes y70 recibos quedan intactos tras esa transición.
+La frase sobre alertas de014 está en el fragmentoFinOps13 realmente recibido,
+comprobado por hash del supplement; no se usa corpus ausente para justificarla.
+
+Comparación parcial con c7:385 pass→pass,5 fail→pass,10 uncertain→pass,
+2 pass→fail en003r2,3 pass→uncertain y2 fail→fail. Técnicos aparte:013r3 era completed
+en c7 y ahora failed. No prueba causalidad ni ausencia de regresiones obligatorias.
+001/004/009/010/011 conformes3/3;017 y027 conformes2/2, su r3 sigue pendiente.
+007r3 repite diez veces una misma limitación: deuda mecánica de presentación,
+no diez errores numéricos. No se cambió código/prompt/banco durante la medición.
+
+Contadores sólo de lectura08:04UTC:2.858366129 del contador conservador global
++3.201520 de reservas/seed =6.059886129/10USD. No es coste exacto atribuible al
+trabajo ni admisión con claves caducadas. Diez operaciones históricas con coste
+desconocido conservan máximo, más seed0.002. Ninguna reserva pendiente liberada.
+
+Snapshot privado287 ficheros con recibos originales/derivados, costes y ledger:
+candidate-7be57c05-partial70-cap10-frozen-v1; manifest
+c70c75a6ed9569bafcc8e67f4ba8a6f299431b296d994bebbbfc283f4e638084.
+Snapshot local75 ficheros públicos/juicios provisionales:
+candidate-7be57c05-partial70-review-frozen-v1; manifest
+23a7d14a6a341ea6eeebf84eafcbf7523f740419ecb0635c61d82cad46272e09.
+Fuentes de vistas contrastadas por SHA contra los70 recibos congelados; cuerpos
+originales privados/logs/credenciales no exportados. No se reescribe el snapshot8.
+
+Evidencias externas:partial70-{cap10,local-review}-freeze-proof-v1.json con prefijo
+candidate-7be57c05; expired-accounting-diagnostic-1792051455.json,retention-v4.json,
+014r3-accounting-clarification.json y014r3-authorized-evidence-v2.json con el mismo
+prefijo. El archivo de aclaración matiza la atribución de la prueba originalv4;
+no modifica su hash ni los importes. Reporte en validación/JUP-123-7be57c05-partial-N3.md.
+
+Siguiente paso tras autorización temporal aplicable: ampliar sólo duración de las
+mismas dos claves (sin reset,claves nuevas,modelos/budgets nuevos ni servicios),
+comprobar contadores/identidades y retomar el mismo plan/ledger desde015r3.
+Quedan14 muestras, comparación completa, correcciones medidas, criterios con los
+revisores, adjudicación y N5 según alcance. B no aceptada ni publicada.
+
 ### Reanudación autorizada desde009 — 15/10/2026 07:12 UTC
 
 Herramientas5f32ea0869aaf1e9ff00d5d0b0faa3fb676c364c: CAP10 y retención

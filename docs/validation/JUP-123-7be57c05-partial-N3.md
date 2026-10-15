@@ -1,12 +1,48 @@
-# JUP-123: candidato técnico conforme y medición N3 parcial
+# JUP-123: candidato técnico conforme y N3 parcial70/84
 
 Verificado el 15/10/2026. Origen: chat 01a1270c-e332-7462-9c90-706d49ade92c.
-**B no está aceptada.** Este informe conserva el corte histórico8/84 bajo5USD.
-El15/10 el usuario amplió a10USD y autorizó continuar desde009 sin repetir el
-prefijo ni liberar reservas. Herramientas5f32ea08/109PASS en directorio separado,
-008 completed con máximo íntegro0.319952 y302 filas anteriores idénticas;
-ocho recibos idénticos por SHA. Controladorv2 reanudado, producto/plan intactos.
-Estado posterior en [continuidad](../continuidad/chat-evaluacion-local.md).
+**B no está aceptada.** Corte actual70/84 bajo el máximo10USD autorizado el15/10.
+Se continuó desde009 conservando el prefijo y todas las reservas. Herramientas
+5f32ea08/109PASS en directorio separado; producto/plan intactos. El controladorv4
+terminó por caducidad sin iniciar015r3. Se conserva debajo el antecedente8/84.
+Detalles en [continuidad](../continuidad/chat-evaluacion-local.md).
+
+## Corte actual — 15/10/2026 08:04 UTC
+
+Continuación autorizada bajo10USD, herramientas5f32ea08/109PASS separadas del
+producto7be y del plan original.70 recibos verificados:69 completed/1 failed.
+Los ocho iniciales y302 filas anteriores siguen idénticos; no se reenvían fallos.
+
+| Comprobación provisional | Resultado |
+| --- | --- |
+| Respuestas |63 conformes;3 fallidas;3 inciertas;1 fallo técnico|
+| Requisitos |400 conformes;4 fallidos;3 inciertos;6 no evaluables|
+| Muestras ausentes |14:015–028r3|
+| Costes de esta campaña |66 observados;4 máximos íntegros retenidos|
+| Contador global + reservas/seed |2.858366129 +3.201520 =6.059886129/10USD|
+
+No es aceptación independiente ni gasto exacto del trabajo.015r1/r2 omiten
+seguimiento/alertas;003r2 añade prerrequisitos no documentados. Incertidumbres
+003r3/012r3/023r2 se conservan para adjudicar.013r3 termina failed con diagnóstico
+classification_unverified_prose en model_validation, sin candidato exacto ni
+campo privado causante conservado; no se atribuye a una frase inventada ni a
+la caducidad posterior.017/027 conformes2/2, su tercera repetición aún no existe.
+
+008r1/018r1/013r3/014r3 retienen0.319952 cada uno.014 tiene SDK completo pero
+delta de clave contaminado: la diferencia coincide con una fase del013; eso apoya
+una hipótesis de cargo tardío, no demuestra atribución exclusiva ni liquida coste.
+No se libera ninguna reserva. Las claves caducaron08:02:20UTC;015r3 no se admitió.
+Extensión sólo de vigencia solicitada hasta10:02UTC, pendiente y no aplicada.
+
+Snapshot privado287 archivos, manifest
+c70c75a6ed9569bafcc8e67f4ba8a6f299431b296d994bebbbfc283f4e638084;
+revisión local congelada75 archivos, manifest
+23a7d14a6a341ea6eeebf84eafcbf7523f740419ecb0635c61d82cad46272e09.
+Conservan todos los originales; exportación sólo de vistas públicas sintéticas.
+Detalles y rutas en [continuidad](../continuidad/chat-evaluacion-local.md).
+Los cortes inferiores describen el antecedente8/84 y no sustituyen este estado.
+
+## Antecedente técnico y corte8/84
 
 ## Código y cobertura técnica
 
