@@ -1,158 +1,102 @@
 # JUP-071 — Evidencia de robustez
 
-Verificación: 10/10/2026, Europe/Paris. [Tarjeta](https://trello.com/c/H0woDubz).
-Base `origin/develop`: `c2995a118d419dfe725247bac9c6f219a3f0ea77`.
-Contribución técnica en `test/JUP-071-robustness`, [PR #90 draft](https://github.com/EconomiconFinOps/tfm-economicon/pull/90), commit técnico `d98d18d`; no dictamen humano independiente.
+[Tarjeta](https://trello.com/c/H0woDubz). Última actualización: 16/10/2026. Esta evidencia describe el instrumento, la batería y las líneas base. No contiene ninguna medición de un modelo real ni ningún dictamen humano.
 
-## Resultado y alcance
+## Estado actual (16/10/2026)
 
-Se añaden 16 variantes con 13 referencias JUP-069 (29 casos), un runner que
-reutiliza JUP-070 y dos ejecuciones del servicio de plantilla real. El JSON fija
-hashes del corpus, batería original y metodología. Se prueban owner ausente,
-null/vacío, valores desconocidos, reglas contradictorias, reparto compartido,
-denominadores, periodos, monedas/unidades, ingesta parcial y acceso inexistente.
-Tres variantes `answer` impiden considerar acertada una abstención universal.
+El trabajo vive en la rama local `test/JUP-071-incomplete-data-robustness`, sobre `develop`, sin publicar. Parte de la contribución de Alejandro Aguado (PR #90 draft, commit técnico `d98d18d`, cerrado sin integrar el 10/10), recuperada con sus commits y su autoría.
+
+Se añaden 16 variantes con 13 referencias JUP-069 (29 casos), un runner que reutiliza JUP-070 y dos ejecuciones del servicio de plantilla real. El JSON de la batería fija los hashes del banco original, la metodología y las fuentes del corpus. Se prueban owner ausente, null y vacío, valores desconocidos, reglas contradictorias, reparto compartido, denominadores, periodos, monedas y unidades, ingesta parcial y acceso inexistente. Tres variantes `answer` impiden considerar acertada una abstención universal.
 
 | Ejecución | Total | Pass | Fail numérico | Blocked | Not run | Juicio semántico |
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
 | [Plantilla con fragmento fijo](JUP-071-template-fixed-report.json) | 29 | 0 | 8 | 0 | 21 | Pendiente |
 | [Plantilla sin contexto](JUP-071-template-empty-report.json) | 29 | 0 | 8 | 0 | 21 | Pendiente |
 
-También quedan juicios pendientes en los ocho casos con fallo conocido. Los
-resultados no son una tasa de alucinación ni una evaluación humana. En modo fijo
-el servicio repite el prompt en los 29 casos; en vacío entrega el mismo aviso sin
-contexto. Las cifras requeridas no se obtienen de ese eco. No se ejecutan red,
-gateway, embeddings, base de datos o modelo. No hubo carga ni modificación de
-datos de aplicación. Los dos perfiles no son tres repeticiones equivalentes.
+Los dos informes se generaron con el commit `cfd81778` de la herramienta. También quedan juicios pendientes en los ocho casos con fallo conocido. Los resultados no son una tasa de alucinación ni una evaluación humana: en modo fijo el servicio repite el prompt en los 29 casos y en modo vacío entrega el mismo aviso sin contexto, y las cifras requeridas no se obtienen de ese eco. No se ejecutan red, gateway, embeddings, base de datos ni modelo. Los dos perfiles no son tres repeticiones equivalentes.
+
+### Registro de regeneraciones de los informes de plantilla
+
+Los informes versionados se han regenerado cada vez que cambiaron la herramienta o la batería. El `harness_commit` de cada informe identifica el commit de la herramienta con el que se produjo.
+
+| Fecha | Commit de la herramienta | Motivo |
+| --- | --- | --- |
+| 10/10 | base `c2995a11` (hashes de fichero) | Ejecución original de la contribución |
+| 13/10 | `8cb2a5c5` | Bloque `run` del informe |
+| 13/10 | `5f5253ca` | Correcciones de la pasada 1 (alias, tasas, categorías) |
+| 13/10 | `7e60f1d1` | Correcciones de la pasada 2 |
+| 15/10 | `32ddc696` | Integración de `develop` y banco de JUP-069 `1.0.1` |
+| 16/10 | `2befecb4` | Cabecera `run` con la descripción del colector de JUP-123 |
+| 16/10 | `cfd81778` | Revisión final: una sola cifra en las variantes de cumplimiento |
+
+Los crudos de las ejecuciones originales del 10/10 no están disponibles y no se regeneraron. Cada repetición se hizo con un crudo propio, fuera del repositorio, y los juicios están vacíos.
+
+### Verificaciones del 16/10/2026
+
+Windows, Python 3.14, Node 24.
+
+| Comprobación | Resultado |
+| --- | --- |
+| `python tools/assistant-robustness.py validate` | 16 variantes / 29 casos; hashes válidos |
+| `corepack pnpm assistant-robustness:test` | 86 pruebas OK |
+| Pruebas de JUP-070 y de métricas de JUP-067 | 110 y 103 OK |
+| `node --test tools/ci-workflow.test.mjs` | 14 OK (con las dependencias del repositorio principal enlazadas temporalmente) |
+| `corepack pnpm openspec:validate`, `jup:check` del change y `jup:cleanup:check` | 74/74, OK, OK |
 
 ## Trazabilidad por criterio de Trello
 
 | Criterio original | Entrega / evidencia | Pendiente |
 | --- | --- | --- |
-| Resultado funcional verificable | Runner ejecutable, 29 casos emparejados, informes anteriores y [protocolo](../validation/JUP-071-robustness.md) | Campaña generativa real |
-| Pruebas necesarias añadidas y en verde | `scripts/tests/test_assistant_robustness.py`, validación de suite y checks indicados abajo | CI y validación independiente al publicar |
-| Documentación y decisiones actualizadas | Protocolo, OpenSpec activo, este informe y continuidad | Cambios de procedencia cuando JUP-035 esté integrado |
-| Pull request revisado y vinculado | PR #90 draft publicada como contribución para Paris, liderazgo registrado | Revisión humana e integración, sin suplantar roles |
-| Validación funcional y evidencia enlazadas | Ejecuciones locales e informes sanitizados reproducibles | Lucía valida criterios; no se le atribuye ejecución alguna |
+| Resultado funcional verificable | Runner ejecutable, 29 casos emparejados, informes de plantilla y [protocolo](../validation/JUP-071-robustness.md) | Medición con un modelo real |
+| Pruebas necesarias añadidas y en verde | `scripts/tests/test_assistant_robustness.py`, validación de la batería y las comprobaciones de arriba | CI al publicar y validación independiente |
+| Documentación y decisiones actualizadas | Protocolo, OpenSpec activo, esta evidencia y la continuidad | Cambios de procedencia cuando haya una medición real |
+| Pull request revisado y vinculado | Sin PR: la rama no está publicada y el PR #90 se cerró sin integrar | Publicación, revisión humana e integración, sin suplantar roles |
+| Validación funcional y evidencia enlazadas | Informes sanitizados reproducibles y las verificaciones anteriores | Lucía valida los criterios; no se le atribuye ninguna ejecución |
 
-## Dependencia JUP-035 y roles
+## Historial de verificación
 
-Lectura oficial el 10/10/2026 mediante `DockerServer:/home/danteadmin/economicon-collaboration`,
-cliente `Settings/TrelloClient` dentro del servicio `collaboration`:
-JUP-071 sigue Backlog, sin cambios desde 11/08; JUP-035 está Preparado, actualizada
-08/10. Su alcance exige conectar el chat al modelo y ejecutar JUP-069. La copia
-inspeccionada conserva `apps/backend/app/services/assistant.py` como plantilla;
-no se encontró PR JUP-035 abierta en la consulta inicial. Eso describe este corte,
-no el trabajo posterior de otros chats.
+### 10/10/2026: contribución original (registro histórico)
 
-Roles preservados: Paris liderazgo, Víctor pairing, Alejandro revisión, Lucía
-validación/pruebas/documentación. La contribución técnica propia no acredita
-pairing ni reemplaza los dictámenes; Alejandro no puede revisar independientemente
-su propio código. Paris debe gestionar la integración y la independencia de la
-revisión según `CONTRIBUTING.md`. No se mueve Trello, cambia prioridad, completa
-checklists ni declara Hecho desde esta contribución.
+Verificación del 10/10/2026, Europe/Paris, sobre la base `origin/develop` `c2995a118d419dfe725247bac9c6f219a3f0ea77`, en `test/JUP-071-robustness`. Las cifras de esta sección describen aquel corte y no el estado actual.
 
-## Reproducibilidad y verificaciones
+En aquel corte `AssistantService.answer` era una plantilla: JUP-035 estaba Preparado y su alcance exigía conectar el chat al modelo. Eso se leyó en el cliente desplegado (`DockerServer:/home/danteadmin/economicon-collaboration`) el 10/10 y no se ha vuelto a comprobar. Los roles de la tarjeta eran Paris liderazgo, Víctor pairing, Alejandro revisión y Lucía validación y documentación. La contribución técnica no acreditaba pairing ni sustituía los dictámenes, y Alejandro no puede revisar de forma independiente su propio código.
 
-Versiones locales: Windows, Python 3.14.4, Node 24.14.1, pnpm 9.0.0. La CI usa
-Python 3.12/Node 22; no confundirlas con las versiones comprobadas localmente.
-El JSON de cada ejecución incluye hora UTC, commit base, hash del servicio,
-suite, runner/evaluador/reglas y configuración. El commit base no contenía todavía
-este runner: los hashes de archivos identifican el código evaluado antes del commit.
+Verificaciones de entonces: 38 pruebas propias, 109 de JUP-070, 103 de métricas y 90 de Node OK; OpenSpec 56 items; `jup:check:all` con 9 cambios; trazabilidad e higiene correctas. `corepack pnpm test` y `build` global quedaron bloqueados por `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY` del pnpm fallback de Turbo, sin que eso acredite el conjunto del workspace. La CI remota del commit `d98d18d` dio SUCCESS en OpenSpec, JUP policy, los tres servicios Python, frontend build y type check, y `JUP reviews` en FAILURE por falta de dictámenes humanos. La nota de Trello `6ac9ebf65589a5a1741240c1` (10/10, 07:40:38Z) enlazó la entrega sin mover la tarjeta ni completar criterios.
 
-Crudos y hoja privada están fuera del repositorio, en
-`../materiales/07-evidencias/JUP-071-robustness-2026-10-10/` (fixed/empty-raw.json,
-fixed-review.md, fixed-judgments.json). Los juicios quedan vacíos; no se inventan
-personas o aceptación. Los informes versionados no contienen respuestas, claves
-ni nombres de quienes juzgan. La ficha de una recogida real es privada y sólo se
-exporta su hash; no registrar secretos allí tampoco.
+Crudos y hoja de revisión del 10/10 quedaron fuera de Git (`../materiales/07-evidencias/JUP-071-robustness-2026-10-10/`), con los juicios vacíos. Los informes versionados no contienen respuestas, claves ni nombres de revisores.
 
-Comandos reproducibles en el protocolo. Verificaciones ejecutadas:
+### 13/10/2026: cabecera `run` y repetición de la plantilla
 
-| Comprobación | Resultado |
-| --- | --- |
-| `python tools/assistant-robustness.py validate` | 16 variantes / 29 casos; hashes válidos |
-| `python -m unittest discover -s scripts/tests -p test_assistant_robustness.py -v` | 38 pruebas OK |
-| `python -m unittest discover -s scripts/tests -p test_assistant_eval.py -q` | 109 pruebas OK |
-| `python -m unittest discover -s scripts/tests -p test_assistant_metrics.py -q` | 103 pruebas OK |
-| `node --test tools/pr-policy.test.mjs tools/ci-workflow.test.mjs tools/repository-governance.test.mjs tools/validation-questions.test.mjs` | 90 pruebas OK |
-| `corepack pnpm openspec:validate` | 56 items OK, modo estricto |
-| `corepack pnpm jup:check:all` | 9 cambios trazables OK |
-| `corepack pnpm jup:cleanup:check` | OK |
-| `node tools/validation-questions.mjs validate` | 28 originales y fuentes intactos |
-| `python -m compileall -q tools/assistant-robustness.py scripts/tests/test_assistant_robustness.py` y `git diff --check` | OK |
-| `corepack pnpm test` / `corepack pnpm build` | Bloqueados por `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY` del pnpm fallback invocado por Turbo; no acreditan el conjunto del workspace |
+El informe incorpora un bloque `run` con los nombres de la cabecera de JUP-070 (`run_id`, `commit`, `date`, `provider`, `alias`, `suite_version`, `suite_sha256`, `generation`). En una ejecución con plantilla declara `provider` `template`, `alias` `none` y `plantilla-sin-modelo`. En una recogida HTTP toma esos campos de la configuración declarada, los valida con un patrón restringido y no acredita por ello que un modelo respondiera. Los campos anteriores se mantienen y no cambia ningún resultado ni denominador. El bloque prepara el dashboard de JUP-121, que hará la normalización posterior; el informe sigue sin afirmar compatibilidad con el catálogo de JUP-067.
 
-Los intentos iniciales dentro del sandbox fallaron por permisos de procesos
-hijos/temporales Windows. Las suites indicadas como OK se repitieron fuera del
-sandbox sin cambiar sus expectativas. Instalación fijada: `corepack pnpm install
---frozen-lockfile` OK; el intento `--offline` previo no tenía todos los paquetes.
-Los logs globales contienen un resultado de Azure API reproducido desde caché de
-otro worktree; no se contabiliza como ejecución propia. Logs específicos y
-globales conservados junto a los crudos privados. No se modificó Turbo/pnpm para
-resolver un problema ajeno a JUP-071.
+Los crudos del 10/10 no estaban disponibles, así que los dos informes se sustituyeron por una repetición offline con el código de entonces, con el mismo resultado: 0 aciertos, 8 fallos y 21 pendientes de 29.
 
-CI remota observada sobre `d98d18d37221e90065d5328beccec4c78bc73665`: SUCCESS en
-OpenSpec (incluye las pruebas nuevas), JUP policy, Python tests de backend,
-processor y Azure API, frontend build y frontend type check. `JUP reviews` falla
-por falta de los dictámenes humanos; el draft sigue abierto, sin merge.
-Esto acredita la ejecución de CI en su entorno y no convierte el intento local
-de `pnpm test/build` en exitoso. La nota Trello `6ac9ebf65589a5a1741240c1`,
-publicada por la integración oficial el 10/10/2026 a las 07:40:38Z, enlaza esta
-entrega sin mover la tarjeta ni completar criterios humanos.
+### 13/10/2026: primera recogida HTTP contra un servidor real
 
-## Límites y siguiente paso concreto
+Stack local en modo mock con la rama (commit `7943b97`), corpus de `tenant-core` con 52 fragmentos y embeddings mock, y `AssistantService` en su versión de plantilla. Es una recogida contra el endpoint de mensajes con la plantilla: no hay modelo, no hay gasto y no prueba robustez generativa. 29 de 29 casos respondidos sin fallos de infraestructura, con citas y fragmentos, latencia total entre 737 y 1653 ms (mediana 1183). La puntuación sin juicios fue idéntica caso por caso a la de la plantilla offline con recuperación fija. El informe declaró `live_unverified` y `model_execution_verified` falso, y la contraseña de la demo no apareció en ningún fichero generado. Los artefactos están fuera de Git y no se han vuelto a comprobar.
 
-La separación `template_mock`/`live_unverified` es deliberada: el endpoint no
-atestigua generación. La recogida HTTP reutilizada dispone de pruebas con doble
-explícito, pero no se ha ejecutado esta campaña contra un despliegue real. La
-evaluación semántica sigue dependiendo de personas; las comprobaciones numéricas
-son las de JUP-070 con sus limitaciones documentadas. No se afirma cobertura
-completa de ambigüedad, relevancia de retrieval, latencia ni ausencia de alucinación.
+### 15/10/2026: integración con `develop`
 
-Paris puede integrar la contribución revisada; después de JUP-035, ejecutar tres
-campañas reales con idéntica configuración, entregar la hoja a dos personas y
-contrastar cada punto antes de concluir robustez. El cierre requiere además PR
-revisada/integrada y evidencia enlazada por quien lidera.
+`develop` incorporó #130 (entrega A del chat, `cf821570`, con `CHAT_ENABLED=false` por defecto), #127 (datos de demo), #128 (explicación de anomalías), #129 (corpus del asistente con los episodios de anomalía) y #69 (consultas de gasto). Se integró en la rama con un merge y cuatro conflictos de documentación y CI; `develop` retiró `synthetic-costs:test` y la rama conserva solo las dos entradas de robustez.
 
-## Actualización 13/10/2026: cabecera `run` y repetición de la plantilla
+El banco de JUP-069 pasó a `1.0.1` y cambiaron los hashes de la metodología de JUP-070 y de dos fuentes del corpus. Las preguntas y las rúbricas del banco no cambiaron. Se comprobó que la regla de anomalía diaria que usa la variante JUP-071-014 (`relative_delta > 20 %` y `absolute_delta > 100 EUR/day`) sigue igual en el corpus nuevo, y se actualizaron las referencias de la batería. La batería propia conserva su versión `1.0.0`. El corpus pasó a 66 fragmentos. El chat generativo de #130 sigue sin medirse: se sirve por `/generations` y el colector de esta rama usa `/messages`, que sigue respondiendo con la plantilla incluso con el chat desactivado.
 
-El PR #90 se cerró sin integrar el 10/10. Los dos commits de la contribución se recuperaron sobre `develop` en la rama `test/JUP-071-incomplete-data-robustness`, con la autoría original. Los comandos y los resultados de arriba son los del 10/10 y se conservan como registro histórico.
+### 16/10/2026: colector de JUP-123 (PR #131) con nuestra herramienta
 
-El informe incorpora un bloque `run` con los nombres de la cabecera de JUP-070 (`run_id`, `commit`, `date`, `provider`, `alias`, `suite_version`, `suite_sha256`, `generation`). En una ejecución con plantilla declara `provider` `template`, `alias` `none` y `plantilla-sin-modelo`. En una recogida HTTP toma esos campos de la configuración declarada, los valida con un patrón estricto y no acredita por ello que un modelo respondiera. Los campos anteriores se mantienen y no cambia ningún resultado ni denominador. El bloque es la preparación para el dashboard de JUP-121, que hará la normalización posterior; el informe sigue sin afirmar compatibilidad con el catálogo de JUP-067.
+Prueba de extremo a extremo sin coste: stack local aislado con el código del #131, `CHAT_ENABLED=true`, `LLM_PROVIDER=mock`, corpus de `tenant-core` con 66 fragmentos y el backend de `develop` con #130. Se generaron tres operaciones por `POST /generations` (`JUP-069-002`, `JUP-071-001` y `JUP-071-002`, repetición 1) y se leyeron con el colector usando esta rama como suite. La prueba se hizo dos veces: primero con la cabeza `5cae4942` del #131 y la suite `568734f2`, y de nuevo con la cabeza `af8388d0` (que añadió el bloqueo de filas con corpus sin distancia) y la suite `44c1032e`, con el mismo resultado.
 
-Los crudos del 10/10 están fuera de Git en otro equipo y no se han podido volver a leer, así que no se regeneraron. Los dos informes de `docs/evidence/` se sustituyen por una repetición offline de la plantilla con el código del commit `76e6b1b`, ambas con el servicio sin cambios y 0 aciertos, 8 fallos y 21 pendientes de juicio entre 29 casos, igual que el 10/10. Sus crudos están fuera del repositorio y los juicios siguen vacíos. Sigue sin ser una medición del asistente real.
+El modelo simulado devuelve siempre la misma respuesta de 82 caracteres (`insufficient_data`) sin evidencias, así que no se ejercitaron citas ni recuperación reales y no hay calidad que valorar. Resultado: las tres operaciones quedaron `VERIFIED_PUBLIC_SNAPSHOT` con pregunta, instantánea estable, paridad con el historial y citas conocidas en verdadero. En el log del backend el colector solo hizo GET; los POST fueron los del script que generó las operaciones. La exportación de la repetición 1, `review-sheet` y `score` funcionaron con las herramientas sin parchear: 3 filas de 29, las demás `not_run` por `missing_response`, 0 aciertos, 2 fallos numéricos y 27 pendientes, `live_unverified` y `model_execution_verified` falso. Reexportar produce bytes idénticos y no se encontró la contraseña ni el token en ninguno de los 15 ficheros generados.
 
-| Comprobación (13/10/2026, Windows, Python 3.14) | Resultado |
-| --- | --- |
-| `python tools/assistant-robustness.py validate` | 16 variantes / 29 casos; hashes válidos |
-| `corepack pnpm assistant-robustness:test` | 68 pruebas OK (30 nuevas: bloque `run` y tres pasadas de revisión adversarial) |
-| Pruebas de JUP-070 y de métricas de JUP-067 | 109 y 103 OK |
-| `node --test tools/ci-workflow.test.mjs` | 12 OK |
-| `corepack pnpm openspec:validate`, `jup:check`, `jup:cleanup:check` | 68/68, OK, OK |
+La primera exportación falló: el `run-info` de seis cadenas del colector no era válido para el bloque `run` (commit de 40 hexadecimales y `generation` como objeto). La cabecera pasó a aceptar un commit declarado de 7 a 40 hexadecimales y `generation` como cadena. El adaptador fija el commit y los hashes de la suite en su plan, de modo que cambiar la herramienta obliga a preparar otro plan y a volver a leer los recibos. Los artefactos de esta prueba están fuera de Git.
 
-## Recogida HTTP contra el chat de `develop` (13/10/2026)
+No se probó el chat con un proveedor real, ni la lectura de evidencias y citas reales, ni más de tres muestras. Con evidencias de corpus del chat real, la versión actual del colector bloquearía las filas por falta de `distance`: está registrado como la tarea 6.6.
 
-Primera ejecución de `collect` contra un servidor real y no contra dobles: stack local en modo mock con la rama `test/JUP-071-incomplete-data-robustness` (commit `7943b97`), corpus de `tenant-core` con 52 fragmentos y embeddings mock, y `AssistantService` en su versión de plantilla. Es el nivel «plantilla vía HTTP» del diseño: no hay modelo, no hay gasto y no prueba robustez generativa.
+### 16/10/2026: revisión final
 
-Resultado: 29 de 29 casos respondidos, sin fallos de infraestructura, con citas y fragmentos en todos, latencia total entre 737 ms y 1653 ms (mediana 1183 ms). Las 29 respuestas tienen la forma de la plantilla («He encontrado contexto relacionado…»). La puntuación sin juicios es idéntica caso por caso a la de la plantilla offline con recuperación fija: 0 aciertos, 8 fallos y 21 pendientes de juicio. El informe declara `live_unverified` y `model_execution_verified` falso. Se comprobó que la contraseña de la demo no aparece en el crudo, la hoja de revisión, los juicios ni el informe.
+La rama pasó una cuarta pasada adversarial automatizada (`accept`, con 3 MEDIUM y 3 LOW) y una auditoría independiente de trazabilidad (`changes-required`, con hallazgos HIGH y MEDIUM de código y de documentación). Se resolvieron o se registraron; el detalle de cada hallazgo y su resolución está en `review.md` del change. Ninguna de esas revisiones es la `Revision JUP-071` ni la `Validacion JUP-071` de una persona.
 
-Crudos, hoja e informe están fuera de Git. Lo que queda por medir sigue siendo el chat generativo de JUP-035.
+## Límites
 
-## Integración con `develop` del 15/10/2026
+La separación `template_mock`/`live_unverified` es deliberada: el endpoint no atestigua generación y el informe no distingue una plantilla servida por HTTP de un runtime desconocido más que por lo que declara el operador. La evaluación semántica sigue dependiendo de personas; las comprobaciones numéricas son las de JUP-070 con sus limitaciones documentadas (solo se mira la etiqueta anterior a la cifra: un `fail` numérico se revisa a mano antes de atribuirlo al asistente). No se afirma cobertura completa de ambigüedad, relevancia de retrieval, latencia ni ausencia de alucinación.
 
-`develop` incorporó #130 (entrega A del chat, `cf821570`, con `CHAT_ENABLED=false` por defecto), #127 (datos de demo), #128 (explicación de anomalías), #129 (corpus del asistente con los episodios de anomalía) y #69 (consultas de gasto). Se integró en la rama con un merge y se resolvieron cuatro conflictos de documentación y CI; `develop` retiró `synthetic-costs:test` y la rama conserva solo las dos entradas de robustez.
-
-El banco de JUP-069 pasó a `1.0.1` y cambiaron los hashes de la metodología de JUP-070 y de dos fuentes del corpus (reglas de negocio y contexto de producto, por los episodios de anomalía de #129). Las preguntas y las rúbricas del banco no cambiaron. Se comprobó que la regla de anomalía diaria que usa la variante JUP-071-014 (`relative_delta > 20 %` y `absolute_delta > 100 EUR/day`) sigue igual en el corpus nuevo, y se actualizaron las referencias de la batería (versión y hashes de baseline, metodología y fuentes). La batería propia conserva su versión `1.0.0`. El corpus ahora tiene 66 fragmentos (la recogida HTTP del 13/10 se hizo con 52).
-
-Los dos informes de plantilla se regeneraron sobre el commit `32ddc69` con el mismo resultado: 0 aciertos, 8 fallos y 21 pendientes de juicio entre 29 casos. El chat generativo de #130 sigue sin medirse: se sirve por `/generations` y el colector de este change usa `/messages`, que sigue respondiendo con la plantilla incluso con el chat desactivado.
-
-## Colector de JUP-123 (PR #131) con nuestra herramienta (16/10/2026)
-
-Prueba de extremo a extremo sin coste: stack local aislado con el código del #131 (`5cae4942`), `CHAT_ENABLED=true`, `LLM_PROVIDER=mock`, corpus de `tenant-core` con 66 fragmentos y el backend de `develop` con #130. Se generaron tres operaciones por `POST /generations` (`JUP-069-002`, `JUP-071-001` y `JUP-071-002`, repetición 1) y se leyeron con el colector, usando como suite esta rama (`568734f2`). El modelo simulado devuelve siempre la misma respuesta de 82 caracteres (`insufficient_data`) sin evidencias, así que no se ejercitaron citas ni recuperación reales y no hay calidad que valorar.
-
-Resultado: las tres operaciones quedaron `VERIFIED_PUBLIC_SNAPSHOT` con pregunta, instantánea estable, paridad con el historial y citas conocidas en verdadero. En el log del backend el colector solo hizo GET (los POST fueron los del script que generó las operaciones). La exportación de la repetición 1, `review-sheet` y `score` funcionaron con las herramientas sin parchear: 3 filas de 29, las demás `not_run` por `missing_response`, 0 aciertos, 2 fallos numéricos y 27 pendientes, `live_unverified` y `model_execution_verified` falso. Reexportar produce bytes idénticos y no se encontró la contraseña ni el token en ninguno de los 15 ficheros generados.
-
-La primera exportación falló: el `run-info` de seis cadenas del colector no era válido para el bloque `run` de esta rama (commit de 40 hexadecimales y `generation` como objeto). Se relajó la cabecera para aceptar un commit declarado de 7 a 40 hexadecimales y `generation` como una cadena, con 6 pruebas nuevas (74 en total). El adaptador fija el commit y los hashes de la suite en su plan, de modo que cambiar la herramienta obliga a preparar otro plan y a volver a leer los recibos.
-
-No se probó el chat con un proveedor real, ni la lectura de evidencias y citas reales, ni más de tres muestras; los 29 casos con tres repeticiones siguen sin ejecutarse.
+Siguiente paso: revisión y validación humanas; acordar con quien lidera JUP-123 cómo se puntúan las respuestas con citas del chat real; con el chat activado con un modelo, un presupuesto acordado y juicios humanos, tres campañas iguales con el colector de JUP-123. El cierre requiere además un PR revisado e integrado y la evidencia enlazada por quien lidera.

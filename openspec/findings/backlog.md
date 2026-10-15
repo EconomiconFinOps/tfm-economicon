@@ -382,8 +382,16 @@ Fecha: 2026-10-13. Origen: JUP-071, revision adversarial pasada 3 (ADV-1).
 Tipo: deuda tecnica. Severidad: Medium. Estado: Open. Owner: Equipo Economicon.
 
 - `labelled_by` de `tools/assistant-eval.py` solo mira la etiqueta anterior a la cifra, aunque `docs/validation/JUP-070-evaluation.md` dice «antes, o después si lo de antes nombra otra cifra». Una respuesta como «El coste unitario pasa de 10 EUR/pedido en julio a 6 EUR/pedido en agosto, una reducción del 40 %» falla la cifra de agosto en `JUP-069-027` porque «julio» queda a la izquierda del 6. En JUP-071-002, «Del coste total, solo el 10 % cumple los tags mínimos» falla la cifra 2 porque «coste total» es alias de la cifra 1.
-- El fallo numérico es duro: los juicios humanos no lo revierten. Afecta a los baselines con varias cifras (001, 002, 005, 011, 013, 014, 016-018, 021, 027) y a JUP-071-002 y JUP-071-003.
+- El fallo numérico es duro: los juicios humanos no lo revierten. Afecta a los casos de JUP-069 con varias cifras esperadas (001, 002, 005, 013, 014, 016, 017, 018, 021 y 027); JUP-069-011 y las variantes de JUP-071 tienen una sola cifra.
 - JUP-071 hereda el comportamiento porque reutiliza `check_number`; la propuesta no modifica el evaluador. Al revisar los resultados de una campaña real, un `numbers-N` en `fail` de estos casos se debe mirar a mano antes de leerlo como error del asistente.
+
+## JUP-071 — Aceptados de la revisión final: revisores en formas Unicode de compatibilidad y hash de la configuración
+
+Fecha: 2026-10-16. Origen: JUP-071, revisión adversarial pasada 4 (ADV-4 y ADV-5).
+Tipo: deuda tecnica. Severidad: Low. Estado: Accepted. Owner: Equipo Economicon.
+
+- Dos revisores se distinguen tras `normalize` de JUP-070 (descomposición canónica, mayúsculas, espacios y caracteres de formato), que no equipara formas de compatibilidad como «Ana» y «Ａｎａ» (ancho completo) ni confusables de otro alfabeto. Distinguirlos como revisores independientes requiere intención deliberada del operador, y la identidad no se autentica. Mejorarlo (comparar con NFKC) toca la función de JUP-070 que usan sus dos herramientas.
+- `configuration_sha256` del informe versionable es el SHA-256 de toda la configuración declarada. Los campos extra no se copian al informe y el CLI de recogida los rechaza, pero el hash de una configuración de forma conocida con un secreto corto podría atacarse por fuerza bruta fuera de línea. Los informes actuales no tienen riesgo: la plantilla no lleva secretos. Si se aceptan configuraciones con campos libres, hashear solo los campos validados.
 
 ## JUP-119 — Datos de demo por una sola ruta y fecha de referencia
 

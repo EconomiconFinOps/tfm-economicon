@@ -41,7 +41,8 @@ python tools/assistant-robustness.py score --raw ../evaluacion-jup071/empty-raw.
 ```
 
 `offline` llama al `AssistantService.answer` real del checkout, con recuperación
-vacía o un fragmento fijo del corpus correspondiente al caso. El fragmento fijo
+vacía o un fragmento fijo: los primeros 500 caracteres de la primera fuente que
+declara el caso, sin elegirlo por relevancia con la pregunta. El fragmento fijo
 lleva distancia artificial cero: **no se ejecutan embeddings, búsqueda vectorial,
 HTTP, SQL, gateway ni modelo**. Se importa el servicio de la versión de plantilla
 actual, que no requiere dependencias externas. Si JUP-035 cambia su constructor o
@@ -174,3 +175,13 @@ Los valores declarados del bloque `run` se escriben en minúsculas, sin `:` ni `
 ### Descripción de la ejecución con el colector de JUP-123 (16/10/2026)
 
 El colector de JUP-123 escribe el `run-info` con seis cadenas. El bloque `run` acepta `generation` como una sola cadena, que registra como alias del modelo sin temperatura, y un commit declarado de 7 a 40 caracteres hexadecimales en minúscula. `provider`, `alias` y la propia cadena de `generation` siguen sujetos al patrón restringido (minúsculas, dígitos, `.`, `/`, `-`, hasta 64 caracteres y sin forma de clave), de modo que `SHA_DESPLEGADO_DECLARADO` u otros marcadores de la guía de ese colector hay que sustituirlos por valores reales. El adaptador del colector fija el commit y los hashes de esta herramienta en su plan: cualquier cambio posterior en la copia de JUP-071 obliga a preparar otro plan y a volver a leer los recibos.
+
+### Revisión final (16/10/2026)
+
+Las variantes de cumplimiento de tagging (JUP-071-002 y JUP-071-003) piden ahora una sola cifra, el cumplimiento por coste, igual que el caso de JUP-069 del que derivan; antes exigían además el coste etiquetable, que su pregunta no pide, y una respuesta correcta que daba solo el 10 % fallaba sin remedio por juicio humano.
+
+Los números de las cifras esperadas, la temperatura declarada, las distancias recuperadas y las duraciones deben ser finitos; un entero demasiado grande para un número de coma flotante o un documento anidado miles de niveles terminan en un error controlado con código dos. La descripción de la ejecución de `collect` admite exactamente los seis campos declarados (commit, corpus, proveedor, alias, recuperación y generación): un campo adicional se rechaza por su nombre, sin repetir su valor, porque la descripción se guarda entera junto al crudo. `compare` rechaza con un error controlado informes que no tengan los campos esperados. La tabla de tipos de perturbación del informe muestra el total de cada grupo.
+
+La validación de los valores declarados comprueba la forma y no el significado: `tbd` o `unknown` cumplen el patrón. Lo que se rechaza es lo que el colector de JUP-123 usa como marcador descriptivo (mayúsculas y guiones bajos) y lo que parece una clave.
+
+**Limitación abierta para medir el chat real.** Las evidencias de corpus del chat de JUP-035 entrega A no traen `distance`. La versión actual del colector de JUP-123 bloquea (`blocked`) todas las filas con corpus para el evaluador de JUP-070, y su documentación asigna a este change adaptar el evaluador para usar `public_evidence` sin inventar distancias. Hasta resolverlo con quien lidera JUP-123, una campaña real no podría puntuar las respuestas con citas. Está registrado como tarea 6.6.

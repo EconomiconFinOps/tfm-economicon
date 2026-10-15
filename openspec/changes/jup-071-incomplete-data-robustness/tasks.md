@@ -40,3 +40,4 @@
 - [ ] 6.3 Realizar las tres mediciones finales con idéntica batería/configuración y conservarlas todas, con revisión semántica y limitaciones por ejecución.
 - [ ] 6.4 Obtener revisión y validación independientes de la contribución, vincular la evidencia a la tarjeta por la integración autorizada y archivar el cambio sólo cuando corresponda a su cierre real.
 - [ ] 6.5 Disponer de quien genere las respuestas del chat generativo y consuma el colector de JUP-123 (`/generations`) y acordar con quien lidera B el reparto del presupuesto de inferencia antes de cualquier campaña con modelo.
+- [ ] 6.6 Acordar con quien lidera JUP-123 cómo se puntúan las respuestas del chat real cuya evidencia de corpus no trae distancia: su colector bloquea hoy esas filas para el evaluador de JUP-070 y su documentación asigna a este change adaptar el evaluador para consumir `public_evidence` sin inventar distancias. Hasta resolverlo, ninguna campaña real podrá puntuar respuestas con citas.

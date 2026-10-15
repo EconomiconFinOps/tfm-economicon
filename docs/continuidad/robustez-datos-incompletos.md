@@ -1,81 +1,27 @@
 # Robustez ante datos incompletos — JUP-071
 
-Verificado el 10/10/2026. Origen: encargo «Implementa JUP-071 — Evaluar robustez
-ante datos incompletos o ambiguos», despachado por el chat
-`01a1248a-4e9e-7963-a891-5d8cb49345a6`. [Tarjeta](https://trello.com/c/H0woDubz),
-ID `69da46a3e4f93822c0236e87`. No se conoce aquí el identificador del chat receptor.
+Actualizado el 2026-10-16. [Tarjeta](https://trello.com/c/H0woDubz), ID `69da46a3e4f93822c0236e87`. OpenSpec: `openspec/changes/jup-071-incomplete-data-robustness/`. Evidencia por criterio: [JUP-071-validation.md](../evidence/JUP-071-validation.md). Procedimiento: [JUP-071-robustness.md](../validation/JUP-071-robustness.md).
 
-## Alcance y decisión
+## Estado actual
 
-Contribución propia en `test/JUP-071-robustness`, copia
-`tfm-economicon-jup071`, base `c2995a118d419dfe725247bac9c6f219a3f0ea77` de
-`origin/develop`. El checkout compartido no se cambia. No había rama ni PR propia
-JUP-071 en la inspección inicial; se reutilizan JUP-069/JUP-070 ya integradas.
+- **Dónde está el trabajo.** Rama local `test/JUP-071-incomplete-data-robustness` sobre `develop`, sin publicar y sin PR. Parte de la contribución de Alejandro Aguado (PR #90, cerrado sin integrar el 2026-10-10), recuperada con sus commits y su autoría.
+- **Qué hay.** Una batería de 29 casos (16 variantes y 13 referencias de JUP-069), el runner `tools/assistant-robustness.py` sobre el transporte y la comprobación numérica de JUP-070, un informe con los cuatro estados, las tasas y los denominadores, y un bloque `run` pensado para el dashboard de JUP-121. Dos mediciones de la plantilla (recuperación fija y vacía) dan 0 aciertos, 8 fallos numéricos y 21 casos sin juicio entre 29. Una prueba de extremo a extremo con el colector de JUP-123 (PR #131) contra un backend real con modelo simulado lee y exporta operaciones del chat. La rama pasó tres pasadas de revisión adversarial automatizada (`accept` en la tercera), una cuarta (`accept`) y una auditoría de trazabilidad (`changes-required`), cuyos hallazgos se resolvieron o se registraron.
+- **Qué no hay.** Ninguna medición con un modelo real, ningún juicio humano, ninguna revisión ni validación de una persona sobre esta contribución. El chat generativo de JUP-035 entrega A (#130) está integrado en `develop` pero desactivado por defecto y se sirve por `/generations`, mientras el colector de esta rama usa `/messages`, que sigue respondiendo con la plantilla. `generative_robustness_accepted` y `model_execution_verified` son falsos en todos los informes.
+- **Hueco detectado para medir el chat real.** Las evidencias de corpus del chat de #130 no traen `distance`. La versión actual del colector de JUP-123 bloquea (`blocked`) todas las filas con corpus para el evaluador de JUP-070, y su documentación asigna a JUP-071 adaptar su evaluador para usar `public_evidence`. Sin ese acuerdo entre las dos entregas, una campaña real no podría puntuar las respuestas con citas. Está registrado como tarea 6.6.
+- **Cuándo se cierra.** No hasta que existan los juicios, una medición con modelo real (tres campañas iguales) y la revisión y validación humanas. Los ficheros de instrumento y de línea base están listos para revisarse.
+- **Roles.** Según la tarjeta el 10/10: Paris lidera, Víctor pairing, Alejandro revisión y Lucía validación y documentación. Es una fotografía de ese día, no se ha vuelto a leer, y Alejandro no puede revisar de forma independiente su propia contribución. Nada de esto atribuye pruebas, pairing ni aceptación a nadie.
 
-Entrega publicada como [PR #90 draft](https://github.com/EconomiconFinOps/tfm-economicon/pull/90)
-contra `develop`, commit técnico `d98d18d`. Es una contribución para Paris, sin
-asumir su liderazgo ni presentar una revisión propia como independiente.
-Enlace/evidencia publicados mediante el puente oficial en nota Trello
-`6ac9ebf65589a5a1741240c1` del 10/10/2026 a las 07:40:38Z (09:40 Europe/Paris).
-No se alteraron lista, criterios, fechas o roles.
+## Cronología
 
-La [batería](../validation/JUP-071-robustness-cases.json) añade 16 variantes y
-ejecuta 13 originales: 29 casos. El [runner](../../tools/assistant-robustness.py)
-reutiliza prompts, transporte y comprobación numérica de JUP-070. Requeridos,
-prohibiciones y conducta son juicios humanos; no se inventan ni se sustituyen por
-regex. Los fallos comprobados siguen visibles aunque falten juicios. Todos los
-casos de la campaña requieren dos personas, o una con `--provisional` explícito.
-Los informes propios conservan sus denominadores y no se comparan como una
-medición completa de JUP-067/JUP-070.
+- **2026-10-10.** Contribución original publicada como PR #90 (draft) con commit técnico `d98d18d` sobre la base `c2995a11`. Nota en Trello `6ac9ebf65589a5a1741240c1` del 10/10 a las 07:40:38Z. En ese corte `AssistantService.answer` era una plantilla y JUP-035 estaba Preparado; la CI de ese commit tenía `JUP reviews` en FAILURE por falta de dictámenes humanos. El PR se cerró ese mismo día a las 18:02Z sin integrarse.
+- **2026-10-13.** Recuperación sobre `develop`. Se añade el bloque `run` del informe y se corrigen los hallazgos de las tres primeras pasadas adversariales (alias de cifras, tasas y categorías en el informe, validación de la batería, rutas de salida, cobertura reducida, metadatos declarados). Primera recogida HTTP contra un servidor real (plantilla, sin modelo).
+- **2026-10-14.** JUP-035 se divide: #130 (JUP-122, entrega A) y JUP-123 (entrega B, calidad semántica). Se detecta que el chat generativo no usa `/messages`.
+- **2026-10-15.** `develop` integra #130 y otros cambios; la rama se actualiza con un merge y se actualizan las referencias de la batería al banco de JUP-069 `1.0.1`.
+- **2026-10-16.** Prueba del colector de JUP-123 con nuestra herramienta; la cabecera `run` acepta su descripción de seis cadenas. Reconciliación de propuesta, spec y diseño, revisión adversarial cuarta y auditoría de trazabilidad.
 
-## Evidencia confirmada
+## Siguiente paso concreto
 
-- [Informe por criterio y límites](../evidence/JUP-071-validation.md).
-- [Procedimiento](../validation/JUP-071-robustness.md), OpenSpec activo
-  `openspec/changes/jup-071-incomplete-data-robustness/`.
-- Dos ejecuciones locales del `AssistantService` real: recuperación fija y vacía
-  (dobles explícitos), ambas 8 fallos numéricos/21 sin juicio semántico/0 aciertos
-  entre 29 casos. No son pruebas de modelo, retrieval real ni despliegue.
-- Crudos y hoja fuera de Git:
-  `../materiales/07-evidencias/JUP-071-robustness-2026-10-10/` respecto al workspace
-  del repositorio. Versiones y hashes en los informes; juicios vacíos conservados.
-- Lectura viva del cliente desplegado en
-  `DockerServer:/home/danteadmin/economicon-collaboration`: JUP-071 Backlog y
-  JUP-035 Preparado; el alcance de 035 incluye conectar generación al chat. En el
-  commit inspeccionado `AssistantService.answer` aún es plantilla.
-- Pruebas: 38 propias, 109 JUP-070, 103 métricas y 90 Node OK; OpenSpec 56/56,
-  trazabilidad e higiene correctas. `pnpm test/build` global bloqueado por fallback
-  pnpm/Turbo `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`, sin corrección ajena al alcance.
-- CI remota del commit técnico `d98d18d`: OpenSpec, JUP policy, los tres servicios
-  Python, frontend build y frontend type check SUCCESS. `JUP reviews` FAILURE por
-  dictámenes pendientes; PR draft y mergeable, sin autorización de cierre inferida.
-
-## Roles, pendientes y siguiente paso
-
-Paris mantiene liderazgo, Víctor pairing, Alejandro revisión, Lucía validación.
-La aportación de código de este chat no acredita esos actos humanos ni habilita
-una revisión independiente de Alejandro sobre su propia contribución. La entrega
-se prepara para que Paris la integre y gestione la independencia de dictámenes;
-no se reasignan roles por inferencia ni se mueve la tarjeta.
-
-Pendiente: revisión/validación humanas e integración; después, contrastar JUP-035,
-commit/modelo/prompt/corpus desplegados y realizar tres campañas reales iguales
-con sus juicios. `live_unverified` conserva el límite del endpoint: no atestigua
-qué modelo respondió. `generative_robustness_accepted` sigue falso. No cerrar ni
-archivar la tarjeta o el chat por tener tests del instrumento verdes.
-
-## Actualización 2026-10-13
-
-El PR #90 de Alejandro se cerró sin integrar el 10/10. La contribución se recuperó sobre `develop` actual en `test/JUP-071-incomplete-data-robustness`, con la autoría original de los commits, y se ha trabajado en local sin publicar. El informe lleva ahora un bloque `run` con los campos de la cabecera de JUP-070 y un identificador de ejecución, como preparación del dashboard de resultados de JUP-121. Las dos mediciones de plantilla se repitieron con el código actual y dieron lo mismo. La medición con el chat real sigue pendiente de JUP-035 (PR #120) y de los juicios humanos. Detalle en la [evidencia](../evidence/JUP-071-validation.md).
-
-## Actualización 2026-10-14
-
-JUP-035 se dividió: #130 (JUP-122) es la entrega A, con el chat desactivado por defecto, y la calidad semántica pasa a B (JUP-123). El chat generativo se sirve por `/generations`; la ruta `/messages` que usa `collect` sigue respondiendo con la plantilla. Medir el chat real exige un colector para `/generations` (el de JUP-123 si encaja) y compartir su presupuesto de inferencia. JUP-071 queda entregable con el instrumento, la batería y las líneas base; la medición con modelo real depende de B.
-
-## Actualización 2026-10-15
-
-`develop` integró #130 (JUP-122, entrega A del chat) y la rama de JUP-071 se actualizó con un merge: referencias de la batería al banco de JUP-069 `1.0.1`, informes de plantilla regenerados con el mismo resultado y conflictos de CI resueltos. El chat generativo entra desactivado y se sirve por `/generations`; el colector actual sigue midiendo la plantilla. Las campañas con modelo real esperan al colector y a la aceptación de la entrega B (JUP-123). Detalle en la [evidencia](../evidence/JUP-071-validation.md).
-
-## Actualización 2026-10-16
-
-El colector de JUP-123 (PR #131, de solo lectura) se probó contra un backend real con el chat activado y modelo simulado: las operaciones se leen y se exportan al evaluador de esta rama. Para que la exportación fuera válida, el bloque `run` acepta ahora la descripción de seis cadenas de ese colector (commit declarado de 7 a 40 hexadecimales y `generation` como cadena). Sigue sin haber ninguna medición con un modelo real: el proveedor externo estaba caído en las pruebas de terceros y la campaña de 29 casos por tres repeticiones no se ha ejecutado. Detalle en la [evidencia](../evidence/JUP-071-validation.md).
+1. Revisión y validación por las personas de los roles de la tarjeta, o por la excepción temporal vigente si el equipo la aplica.
+2. Acordar con quien lidera JUP-123 cómo se puntúan las respuestas con citas del chat real (evidencia sin distancia) y quién genera las respuestas.
+3. Con el chat activado con un modelo, un presupuesto de inferencia acordado y los juicios humanos, ejecutar las tres campañas iguales con el colector de JUP-123.
+4. No cerrar ni archivar la tarjeta por tener verdes las pruebas del instrumento.
