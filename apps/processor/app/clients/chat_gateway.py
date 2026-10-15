@@ -92,6 +92,7 @@ def _record_diagnostic(stage, failure, request_hash, finish, *, status=None, cat
     """A bounded structural event; never serialize exceptions or candidate data."""
     try:
         from app.core.chat_calculations import CalculationError
+        from app.core.chat_rules import ClassificationProseError
         correlation = _diagnostic_context.get() or (None, None)
         classes = {ValidationError: 'ValidationError', ValueError: 'ValueError',
                    json.JSONDecodeError: 'JSONDecodeError', UnicodeDecodeError: 'UnicodeDecodeError',
@@ -133,6 +134,15 @@ def _record_diagnostic(stage, failure, request_hash, finish, *, status=None, cat
         if isinstance(failure, CalculationError):
             event['exception_class'] = 'CalculationError'
             event['rule_code'] = failure.rule_code
+        if type(failure) is ClassificationProseError:
+            event['exception_class']='ValueError'
+            event['rule_code']='classification_unverified_prose'
+            location={}
+            if failure.field in {'answer','assumptions','limitations','next_actions','recommendations.action','recommendations.rationale'}:
+                location['field']=failure.field
+            if type(failure.index) is int and 0 <= failure.index < 24:
+                location['item_index']=failure.index
+            if location:event['prose_location']=location
         # Reconstruct a closed structural value; never serialize an exception's
         # attributes, a segment, its prose, a hash of prose, or arbitrary keys.
         if stage == 'provisional_answer' and type(stream_location) is dict:

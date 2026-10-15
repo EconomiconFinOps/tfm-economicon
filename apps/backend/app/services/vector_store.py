@@ -148,7 +148,11 @@ class PgVectorQueryStore:
                     rows = expanded[:top_k]
             policy_ids = set()
             if policy_section is not None:
+                from app.core.chat_policy_sections import COMPANION_SECTIONS
                 policy_rows = self._policy_rows(connection, tenant_id, provider, vector, policy_section, timeout)
+                for companion in COMPANION_SECTIONS.get(policy_section, ()):
+                    policy_rows += self._policy_rows(connection, tenant_id, provider, vector, companion, timeout)
+                policy_rows = list({row.chunk_id: row for row in policy_rows}.values())
                 policy_ids = {row.chunk_id for row in policy_rows}
                 rows = (policy_rows + [row for row in rows if row.chunk_id not in policy_ids])[:top_k]
             if not rows:

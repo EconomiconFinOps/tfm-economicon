@@ -83,7 +83,7 @@ def main():
             'repetitions': args.repetitions, 'samples': campaign(bank, args.repetitions),
             'provider_constraint': {'provider': 'OpenRouter', 'model': 'z-ai/glm-5.2',
                                     'routing': 'DeepInfra', 'fallbacks': False},
-            'budget': {'absolute_cumulative_cap_usd': '5.00',
+            'budget': {'absolute_cumulative_cap_usd': '10.00',
                        'last_confirmed_cumulative_usd': '0.957927619',
                        'live_accounting_verified': False,
                        'note': 'Historical spend is not a live balance. Include embeddings and any judge.'},

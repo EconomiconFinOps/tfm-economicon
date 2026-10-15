@@ -30,12 +30,17 @@ def add_policy(store,document,tenant='tenant-a',provider='mock',body=None,step=4
 def test_exact_section_outside_similarity_threshold_is_complete_and_tenant_provider_scoped(retrieval,section,question,required):
     import json
     add_policy(retrieval,'rules')
+    if section=='Budgets Y Forecast':
+        finops=(Path(__file__).resolve().parents[3]/'docs/assistant-corpus/finops/azure-finops-mvp.md').read_text(encoding='utf-8')
+        add_policy(retrieval,'finops',body=finops)
+        add_policy(retrieval,'foreign-finops','tenant-b',body=finops)
+        add_policy(retrieval,'inactive-finops',provider='inactive',body=finops)
     add_policy(retrieval,'foreign-rules','tenant-b')
     add_policy(retrieval,'other-provider',provider='inactive')
     rows=retrieval.search_chunks('tenant-a',[1.,0,0,0,0,0,0,0],top_k=20,max_distance=.01,
                                  provider='mock',policy_section=section)
-    assert rows and len(rows)<=6
-    assert {x['document_id'] for x in rows}=={'rules'}
+    assert rows and len(rows)<=12
+    assert {x['document_id'] for x in rows}==({'rules','finops'} if section=='Budgets Y Forecast' else {'rules'})
     assert all(x['policy_priority'] and x['tenant_id']=='tenant-a' and x['distance']>.01 for x in rows)
     sources=[{'id':x['chunk_id'],'kind':'corpus','title':x['title'],'source':x['source'],'content':x['content'],
               'provenance':{'document_id':x['document_id'],'chunk_index':x['chunk_index'],'sections':x['section_spans']}}

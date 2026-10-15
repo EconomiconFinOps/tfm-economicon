@@ -252,10 +252,15 @@ class ExpressionRenderer:
         self.excerpt_records={}
         self.excerpt_selections=set()
         self.deduplicate_excerpts=False
+        self.prose_location=('answer',None)
 
     def check_prose(self,text):
-        self.documentary_sources.update(check_classification_prose(text,
-            getattr(self.catalog,'rules',()),getattr(self.catalog,'rule_sources',())))
+        from app.core.chat_rules import ClassificationProseError
+        try:
+            self.documentary_sources.update(check_classification_prose(text,
+                getattr(self.catalog,'rules',()),getattr(self.catalog,'rule_sources',())))
+        except ClassificationProseError:
+            raise ClassificationProseError(*self.prose_location) from None
 
     def _classify(self,node):
         if set(node)!={'operation','rule_id','value'}:raise ValueError('Classification shape.')

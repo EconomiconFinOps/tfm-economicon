@@ -198,6 +198,14 @@ def numerator_matches(node, catalog, rule):
     return len(anchors) == 1 and tuple(anchors[0]) == tuple(rule['anchor'])
 
 
+class ClassificationProseError(ValueError):
+    """No rejected prose is retained; only a closed public-field location."""
+    def __init__(self, field=None, index=None):
+        super().__init__('Unverified documentary classification prose.')
+        self.field = field if field in {'answer','assumptions','limitations','next_actions','recommendations.action','recommendations.rationale'} else None
+        self.index = index if type(index) is int and 0 <= index < 24 else None
+
+
 def check_classification_prose(text, rules, sources):
     """Reject explicit free-form classification conclusions, not generic words.
 
@@ -220,7 +228,7 @@ def check_classification_prose(text, rules, sources):
             continue
         matches = [source['id'] for source in sources if sentence.strip() and sentence.strip() in source['content']]
         if not matches:
-            raise ValueError('Unverified documentary classification prose.')
+            raise ClassificationProseError()
         cited.update(matches)
     return cited
 

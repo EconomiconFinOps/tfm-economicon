@@ -93,11 +93,13 @@ def scenario_terminals(catalog):
     from app.core.chat_shared_allocation import required_shared_allocation, shared_allocation_answer
     from app.core.chat_weighted_coverage import required_weighted_coverage, weighted_coverage_answer
     from app.core.chat_savings_realization import required_savings_realization, savings_realization_answer
+    from app.core.chat_budget_comparison import required_budget_variance, budget_variance_answer
     return [(key, bind(catalog), render) for key, bind, render in (
         ('cost_breakdown', required_cost_breakdown, cost_breakdown_answer),
         ('shared_allocation', required_shared_allocation, shared_allocation_answer),
         ('weighted_coverage', required_weighted_coverage, weighted_coverage_answer),
-        ('savings_realization', required_savings_realization, savings_realization_answer))]
+        ('savings_realization', required_savings_realization, savings_realization_answer),
+        ('budget_variance', required_budget_variance, budget_variance_answer))]
 
 
 def segment_schema(records=None, *, limit=4000, quantities=None):
@@ -463,7 +465,10 @@ def render_response(value, records, *, quantities=None):
             if (not isinstance(item,list) or len(item)!=1 or
                     not isinstance(item[0],dict) or set(item[0]) not in ({'text'},{'inference'},{'documentary'})):
                 raise ValueError('Invalid short prose item.')
-        result[field]=[render_segments(item,[],limit=500,expressions=None if classified else expressions) for item in value[field]]
+        result[field]=[]
+        for index,item in enumerate(value[field]):
+            if expressions is not None:expressions.prose_location=(field,index)
+            result[field].append(render_segments(item,[],limit=500,expressions=None if classified else expressions))
     result.pop('basis',None)
     if not classified:
         result['answer']=response_prefix(basis,quantities)+result['answer']
@@ -472,10 +477,12 @@ def render_response(value, records, *, quantities=None):
             used=expressions.documentary_operand_sources if basis in DOCUMENTARY_BASES else expressions.documentary_sources
             if used:raise ValueError('Response basis contains documentary operands.')
     if expressions is not None:
-        for recommendation in value.get('recommendations',[]):
+        for index,recommendation in enumerate(value.get('recommendations',[])):
             if isinstance(recommendation,dict):
                 for field in ('action','rationale'):
-                    if isinstance(recommendation.get(field),str):expressions.check_prose(recommendation[field])
+                    if isinstance(recommendation.get(field),str):
+                        expressions.prose_location=('recommendations.'+field,index)
+                        expressions.check_prose(recommendation[field])
     if classified:
         known={record['id']:record for record in getattr(quantities,'rule_sources',())}
         if (boolean or zero_change) and not expressions.documentary_sources:
@@ -493,12 +500,13 @@ def render_response(value, records, *, quantities=None):
     selected=dict(expressions.excerpt_records) if expressions is not None else {}
     known={source['id']:source for source in getattr(quantities,'authorized_sources',getattr(quantities,'rule_sources',()))}
     recommendations=[]
-    for recommendation in value.get('recommendations',[]):
+    for index,recommendation in enumerate(value.get('recommendations',[])):
         if not isinstance(recommendation,dict) or 'evidence' in recommendation or 'evidence_ids' in recommendation:
             raise ValueError('Recommendation support must be visible.')
         local=ExpressionRenderer(quantities) if quantities is not None else None
         rendered=dict(recommendation)
         for field in ('action','rationale'):
+            if local is not None:local.prose_location=('recommendations.'+field,index)
             segments=recommendation.get(field)
             if not isinstance(segments,list) or not 1<=len(segments)<=2 or any(not isinstance(item,dict) or set(item) not in ({'inference'},{'documentary'}) for item in segments):
                 raise ValueError('Invalid recommendation visible support.')

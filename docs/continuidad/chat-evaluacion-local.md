@@ -7,7 +7,38 @@ continuar desde009 usando la corrección contable, sin repetir las ocho muestras
 anteriores ni liberar reservas pendientes. Sustituye los máximos anteriores;
 no reinicia gasto, ledger, intentos ni caducidad. B sigue sin publicar.
 
-### N3 completa, revisión provisional — 15/10/2026
+### Correcciones 015/003/013 en preparación — 15/10/2026
+
+Nueva instrucción del usuario: corregir los tres defectos y volver a validar,
+manteniendo10USD y todas las reservas. Sin publicación B ni Discord autorizados.
+Las mismas claves caducaron10:02UTC; no se amplía su vigencia implícitamente.
+
+015: recuperación exacta de la sección complementaria Conceptos FinOps Basicos,
+en el mismo snapshot/tenant/proveedor y sin otro embedding. La respuesta exige
+definición completa de budget más política; si falta alguna no simula cobertura.
+003: ruta documental conservadora de investigación sin cantidades aportadas ni
+evidencia financiera; conserva literalmente el método completo y pide ámbito,
+período, moneda, baseline y desglose sin convertir campos del esquema en requisitos.
+013: terminal tipado de coste actual final frente a presupuesto con fórmula
+explícita, unidades coincidentes y control de autoridad; cero denominador se
+declara indefinido. No afirma conocer el texto que rechazó013r3. El rechazo de
+clasificación conserva ahora sólo campo/índice permitidos, nunca prosa privada.
+
+Pruebas locales:152 processor focales PASS (v4),17 backend PASS con tres casos
+originales contra corpus real y fragmentación de ingesta (v2). Corrida previa
+v3:195PASS con ahorros incluidos. Se conservan fallos previos: el fixture de
+corpus no recortaba espacios como ingesta y se corrigió; tres fallos de recursos
+por manifiesto desactualizado corregidos; nueve pruebas gateway Windows fallaron
+en transporte antes de recibir contenido, pendientes de contrastar en Linux.
+No atribuir esos fallos al proveedor ni afirmar que la validación real está hecha.
+El mensaje inicial sobre fragmentos no prueban un defecto de producción: la
+prueba de corpus pasó tras corregir la normalización del fixture.
+
+Faltan regresión Linux/pgvector, build/activación aislada, vigencia aplicable de
+las mismas claves y nueva N3 bajo guardas contables. Las84 muestras anteriores
+se mantienen inmutables y no cambian de juicio por estas pruebas offline.
+
+### N3 completa anterior, revisión provisional — 15/10/2026
 
 Se completaron **84/84 muestras** del producto `7be57c05`, con el mismo plan y
 ledger: 83 operaciones completadas y un fallo técnico conservado. Sin repetir muestras recogidas, cambiar prompt/banco ni

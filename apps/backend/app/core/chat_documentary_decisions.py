@@ -161,12 +161,49 @@ def _commitment(catalog, question):
 
 def required_documentary_answer(catalog):
     question = getattr(catalog, 'classification_question', '')
-    bound = _cost_basis(catalog, question) or _commitment(catalog, question)
+    bound = _cost_basis(catalog, question) or _commitment(catalog, question) or _investigation(catalog, question)
     if bound is None or len(bound['public_fields']['answer']) > 4000:
         return None
     bound['id'] = hashlib.sha256(json.dumps({'question': question, 'binding': bound},
         ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
     return bound
+
+
+def _investigation(catalog, question):
+    from app.core.chat_policy_sections import policy_topic
+    if policy_topic(question) != 'cost_investigation':
+        return None
+    if any(source.get('kind') != 'corpus' for source in getattr(catalog, 'authorized_sources', ())):
+        return None
+    if any(any(p.get('kind') == 'user' for p in item.get('provenance', ())) for item in catalog.values()):
+        return None  # Numeric scenarios need their own analysis, not a missing-data answer.
+    section = _section(catalog, 'Cost Management Y Cost Analysis')
+    if section is None:
+        return None
+    match = re.search(r'Metodo basico para investigar un aumento de costes:\s*(.+)$', section['body'])
+    if match is None:
+        return None
+    steps = re.split(r'\s+(?=[1-9][0-9]?[.]\s)', match[1])
+    if not 1 <= len(steps) <= 12:
+        return None
+    clauses = []
+    for index, step in enumerate(steps, 1):
+        parsed = re.fullmatch(str(index)+r'[.]\s+([^;]{1,210}[.])', step)
+        if parsed is None:
+            return None
+        clauses.append(parsed[1])
+    chosen = _selections(section, clauses)
+    if chosen is None:
+        return None
+    selected, records = chosen
+    actions = ['Indicar período, suscripción o ámbito, moneda, baseline y desglose de costes para investigar el aumento.']
+    answer = ('No se ha establecido la causa del aumento. Para contrastarlo, indique período, '
+              'suscripción o ámbito, moneda, baseline y desglose de costes.\n'
+              'Método de investigación documentado:\n' + _quotations(selected, records)
+              + '\nEstos pasos orientan la investigación; no prueban una causa concreta ni convierten '
+              'los campos de un modelo conceptual en requisitos previos para empezar a investigar.')
+    return {'topic': 'cost_investigation', 'section': section, 'selections': selected,
+            'sources': records, 'public_fields': {'answer': answer, 'status': 'insufficient_data', 'next_actions': actions}}
 
 
 def documentary_answer(value, catalog):

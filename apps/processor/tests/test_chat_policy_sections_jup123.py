@@ -19,6 +19,9 @@ TAGS = ('## Reglas De Tagging Nuestro equipo requiere estos tags: '
 BUDGET = ('## Budgets Y Forecast Un budget es una expectativa. Un forecast es una prediccion. '
           'Reglas de interpretacion: - superar umbrales requiere investigacion, no apagado automatico; '
           '- forecast y budget son metricas distintas.')
+BUDGET_CONCEPT = ('## Conceptos FinOps Basicos Un **budget** es un limite financiero. '
+                  'Genera seguimiento y alertas, pero no apaga recursos por defecto. '
+                  'Un **forecast** es una prediccion.')
 
 
 def sources(policy=TAGS, heading='Reglas De Tagging', document='policy', width=500, step=250):
@@ -83,9 +86,11 @@ def test_changed_policy_values_and_modal_force_come_from_source_not_python():
 @pytest.mark.parametrize('question', ['¿El presupuesto apagará mis recursos al superarse?',
     '¿Un budget apaga las máquinas?', '¿Cómo apaga recursos un presupuesto?'])
 def test_budget_policy_includes_investigation_and_never_verifies_customer_state(question):
-    q = catalog(question, sources(BUDGET, 'Budgets Y Forecast'))
+    q = catalog(question, sources(BUDGET, 'Budgets Y Forecast') +
+                sources(BUDGET_CONCEPT, 'Conceptos FinOps Basicos', document='finops'))
     final = render_response(response(q), [], quantities=q)
     assert 'requiere investigacion, no apagado automatico' in final['answer']
+    assert 'seguimiento y alertas' in final['answer']
     assert 'no verifica la configuración' in final['answer']
     assert final['metrics'] == []
 
