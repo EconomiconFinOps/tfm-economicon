@@ -1,6 +1,6 @@
 """Carga de los resultados de evaluación del asistente en la base del dashboard de Grafana (JUP-121).
 
-Por ahora este módulo contiene diez capas. La primera es la de manifiestos: lee y valida los manifiestos
+Por ahora este módulo contiene once capas. La primera es la de manifiestos: lee y valida los manifiestos
 que dicen qué informes alimentan el dashboard (`docs/validation/evaluation-runs.json` y los locales). La
 segunda es el adaptador del informe JSON de JUP-070 (`adapt_jup070`), que normaliza ese informe al
 contrato de filas planas `rows-v1` de `docs/validation/evaluation-dashboard.md`. La tercera es el
@@ -23,16 +23,24 @@ reúne los manifiestos en un conjunto de datos sin `run_id` repetidos y `main` l
 La décima es la generación del script SQL: `sql_literal` es el único camino por el que un valor entra en el SQL
 (siempre como literal escapado, nunca por interpolación directa) y `build_sql` convierte el conjunto de datos en
 un script transaccional (esquema `evaluation`, sus dos vistas `config_changes` y `comparable_runs`, vaciado y
-carga) que `main` expone como el subcomando `sql`.
-Usa solo la biblioteca estándar, no tiene efectos al importarse y nunca abre una conexión de red ni a la base de
-datos: el script no lleva credenciales y la carga a la base la añaden las tareas siguientes del change.
+carga) que `main` expone como el subcomando `sql`. La undécima es la carga: `build_role_sql` genera, en un script
+APARTE del anterior, el rol de solo lectura de Grafana con su contraseña y sus permisos mínimos, `load_command` arma
+el comando de `psql` y `run_load` pasa los dos scripts a `psql` por la entrada estándar; `main` lo expone como el
+subcomando `load`.
+Usa solo la biblioteca estándar y no tiene efectos al importarse. `rows` y `sql` nunca abren una conexión de red ni a
+la base de datos y sus resultados no llevan credenciales; solo `load` lanza `psql`, y la contraseña del rol, que lee de
+la variable de entorno `GRAFANA_EVALUATION_DB_PASSWORD`, viaja únicamente por la entrada estándar de `psql` (nunca en
+los argumentos ni en el entorno del proceso hijo) y se tapa con `***` en cualquier mensaje de error.
 
 Uso por línea de comandos (el resultado sale por la salida estándar, o a `--output`; un error sale como
 `error: <mensaje>` por la salida de errores con código 1 y no escribe nada): `rows` imprime el conjunto de datos
-en JSON y `sql` el script SQL, con las mismas opciones.
+en JSON y `sql` el script SQL, con las mismas opciones; `load` carga el conjunto en la base, crea o actualiza el rol
+y solo imprime un resumen de una línea. `--output` es de `rows` y `sql`; `--psql-command` es de `load`.
 
     python tools/evaluation-dashboard.py rows [--manifest RUTA]... [--no-versioned] [--output FICHERO] [--root DIR]
     python tools/evaluation-dashboard.py sql [--manifest RUTA]... [--no-versioned] [--output FICHERO] [--root DIR]
+    GRAFANA_EVALUATION_DB_PASSWORD=... python tools/evaluation-dashboard.py load [--manifest RUTA]... [--no-versioned]
+        [--root DIR] [--psql-command COMANDO]
 """
 
 from __future__ import annotations
@@ -44,9 +52,11 @@ import json
 import math
 import os
 import re
+import shlex
 import subprocess
 import sys
 import tempfile
+import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -2163,37 +2173,246 @@ def _write_atomically(target: Path, text: str) -> None:
         raise
 
 
+# --- Carga a PostgreSQL y rol de solo lectura ----------------------------------------------------------
+
+# Rol con el que Grafana lee el esquema `evaluation`. Es un nombre fijo y no un parámetro: el datasource aprovisionado
+# de Grafana y las pruebas lo citan por este nombre, y un rol configurable abriría la puerta a darle permisos al que no toca.
+READER_ROLE = "grafana_evaluation_reader"
+# Variable de entorno de la que `load` lee la contraseña del rol. Nunca se acepta como argumento de la línea de
+# comandos: un argumento queda en el historial del shell y en la lista de procesos.
+PASSWORD_ENV = "GRAFANA_EVALUATION_DB_PASSWORD"
+# `PGCLIENTENCODING=UTF8` va DENTRO del comando (`-e` de `docker compose exec`) y también en el entorno de la llamada
+# (ver `run_load`): el primero llega al `psql` del contenedor y el segundo al cliente local. Sin él `psql` usaría la
+# página de códigos del sistema y una contraseña con tildes llegaría corrupta. Tupla y no lista: es una constante
+# de todo el proceso y un llamador no debe poder alterarla.
+DEFAULT_PSQL_COMMAND = ("docker", "compose", "exec", "-T", "-e", "PGCLIENTENCODING=UTF8", "postgres-pgvector",
+                        "psql", "-U", "postgres", "-d", "embeddings")
+# `ON_ERROR_STOP=1`: sin él `psql` seguiría tras el primer fallo y el rol se crearía con los datos a medias. `-X`: un
+# `~/.psqlrc` del usuario no puede alterar la sesión. `-q`: sin ruido de `COMMIT`/`NOTICE` en la salida.
+PSQL_FLAGS = ("-v", "ON_ERROR_STOP=1", "-X", "-q")
+# Plazo máximo de `psql`, en segundos: evita que una base colgada o un `docker compose` esperando bloqueen la carga.
+LOAD_TIMEOUT = 120
+# Longitud máxima de la contraseña y del detalle de un error de `psql` que se cita en un mensaje.
+PASSWORD_MAX_LENGTH = 200
+ERROR_DETAIL_LIMIT = 300
+# Con lo que se tapa la contraseña en los mensajes de error.
+REDACTION = "***"
+
+
+class LoadError(ValueError):
+    """Fallo de la carga: contraseña no válida o `psql` que no se pudo ejecutar o terminó mal.
+
+    Hereda de ValueError como el resto de errores de la herramienta, pero NO de `AdapterError`, `ManifestError` ni
+    `SqlError`: quien capture los errores de datos no debe tragarse un fallo de infraestructura sin querer. Los
+    mensajes de contraseña empiezan por `password: ` y los de ejecución por `load: `; ninguno cita la contraseña.
+    """
+
+
+def _check_password(password) -> None:
+    # Cada mensaje dice QUÉ regla incumple y nunca el valor: la contraseña es un secreto y un mensaje de error acaba
+    # en la terminal, en los registros de CI y en los informes de fallos.
+    # `type(...) is str` y no `isinstance`: una subclase de `str` podría redefinir `__repr__` o `__len__` y colar
+    # texto distinto del que se escribe en el script.
+    if type(password) is not str:
+        raise LoadError("password: debe ser una cadena de texto")
+    if not password:
+        raise LoadError("password: no puede estar vacía")
+    # La longitud se mide en caracteres y no en bytes: 200 `ñ` son una contraseña válida.
+    if len(password) > PASSWORD_MAX_LENGTH:
+        raise LoadError(f"password: no puede tener más de {PASSWORD_MAX_LENGTH} caracteres")
+    # Categoría Unicode `Cc` (los `\n`, `\r`, `\t`, NUL, ESC y DEL del contrato): un salto de línea partiría la línea
+    # que `psql` repite al fallar y un NUL no cabe en un `text` de PostgreSQL.
+    if any(unicodedata.category(char) == "Cc" for char in password):
+        raise LoadError("password: no puede contener caracteres de control")
+    # `os.environ` en Linux devuelve los bytes inválidos como sustitutos sueltos (`\udcff`), que no se pueden
+    # codificar en UTF-8. Se rechaza aquí con un error accionable en lugar de dejar escapar un `UnicodeEncodeError`
+    # crudo (una traza) al preparar los bytes de la entrada de `psql`.
+    try:
+        password.encode("utf-8")
+    except UnicodeEncodeError:
+        raise LoadError("password: contiene caracteres que no se pueden codificar en UTF-8") from None
+
+
+def build_role_sql(password) -> str:
+    """Genera el script SQL del rol de solo lectura de Grafana, con la contraseña dada.
+
+    Va en un script APARTE del de `build_sql` a propósito: ese es reproducible, se imprime, se guarda con `--output`
+    y se comparte, así que no puede contener credenciales ni `GRANT`. Este, en cambio, lleva la contraseña y solo
+    existe en memoria y en la entrada estándar de `psql`. Función pura y determinista (la contraseña es el
+    argumento: no lee el entorno). Una contraseña no válida lanza `LoadError` con prefijo `password: `.
+
+    Es una transacción propia con nueve sentencias; el orden importa:
+
+    1. `BEGIN`, y `SET LOCAL standard_conforming_strings = on` ANTES de cualquier literal: `sql_literal` escapa
+       suponiendo que la barra invertida es un carácter normal, y esa suposición debe cumplirse en esta sesión.
+    2. Un bloque `DO` que crea el rol solo si no está en `pg_roles`. `CREATE ROLE` no tiene `IF NOT EXISTS`, así que
+       un `CREATE ROLE` a secas haría fallar toda segunda carga (y, con `ON_ERROR_STOP`, la dejaría a medias).
+       Alternativa descartada: capturar la excepción `duplicate_object`; mirar el catálogo es más explícito.
+    3. `ALTER ROLE ... WITH LOGIN PASSWORD`, SIEMPRE y no solo al crear: así una segunda carga rota la contraseña, y
+       un rol preexistente (creado a mano, o sin `LOGIN`) queda adoptado con el estado que declara este script.
+    4. Los permisos mínimos para leer el dashboard y nada más: `CONNECT` a la base, `USAGE` del esquema, `SELECT` de
+       las tablas y vistas existentes y `ALTER DEFAULT PRIVILEGES` para que las que se creen después (las vistas de
+       las tareas siguientes) nazcan ya legibles. Los privilegios por defecto aplican a los objetos que cree el rol
+       que ejecuta `load`, que es el mismo que crea el esquema en el script de datos. Sin `INSERT`, `UPDATE`,
+       `DELETE`, `TRUNCATE`, `CREATE` ni pertenencia a otros roles: Grafana solo consulta.
+    """
+    _check_password(password)
+    # `sql_literal` es el único camino por el que un valor entra en el SQL: la contraseña no se interpola a mano.
+    role = READER_ROLE
+    blocks = [
+        "BEGIN;",
+        SESSION_SQL,
+        f"DO $$\nBEGIN\n"
+        f"  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = {sql_literal(role)}) THEN\n"
+        f"    CREATE ROLE {role} LOGIN;\n"
+        f"  END IF;\n"
+        f"END\n$$;",
+        f"ALTER ROLE {role} WITH LOGIN PASSWORD {sql_literal(password)};",
+        f"GRANT CONNECT ON DATABASE embeddings TO {role};",
+        f"GRANT USAGE ON SCHEMA {SCHEMA_NAME} TO {role};",
+        f"GRANT SELECT ON ALL TABLES IN SCHEMA {SCHEMA_NAME} TO {role};",
+        f"ALTER DEFAULT PRIVILEGES IN SCHEMA {SCHEMA_NAME} GRANT SELECT ON TABLES TO {role};",
+        "COMMIT;",
+    ]
+    return "\n\n".join(blocks) + "\n"
+
+
+def load_command(psql_command=None) -> list[str]:
+    """Comando completo de `psql`: el comando dado (o el de por defecto) seguido de `PSQL_FLAGS`.
+
+    Devuelve siempre una lista nueva: ni el resultado comparte estado con las constantes ni la entrada se muta.
+    """
+    command = list(DEFAULT_PSQL_COMMAND if psql_command is None else psql_command)
+    # Un comando vacío ejecutaría las opciones de `psql` como si fueran el programa: se rechaza con un error claro.
+    if not command:
+        raise LoadError("load: el comando de psql no puede estar vacío")
+    return command + list(PSQL_FLAGS)
+
+
+def _redact(text: str, password: str) -> str:
+    # `psql` repite en `stderr` la sentencia que falla, y la del rol lleva la contraseña; por eso se tapa en TODO
+    # mensaje de error. Se tapan las dos formas en las que puede salir: la literal y la del literal SQL (comillas
+    # dobladas). Una sola pasada con la alternancia más larga primero, y `re.escape` para que `.` o `(` de la
+    # contraseña se traten como texto y no como expresión regular.
+    forms = sorted({password.replace("'", "''"), password}, key=len, reverse=True)
+    return re.sub("|".join(re.escape(form) for form in forms), REDACTION, text)
+
+
+def _safe_detail(text: str, password: str) -> str:
+    # El orden es parte de la seguridad: PRIMERO se tapa la contraseña y DESPUÉS se escapan los caracteres de
+    # control y se recorta a 300. Recortar antes dejaría un trozo de la contraseña pegado al corte, y escapar antes
+    # podría alterar la contraseña (un carácter de formato no imprimible) e impedir que se reconozca.
+    detail = _escape_control(_redact(text, password))
+    return detail if len(detail) <= ERROR_DETAIL_LIMIT else detail[:ERROR_DETAIL_LIMIT] + "..."
+
+
+def _last_line(stderr) -> str:
+    # `errors="replace"`: un byte inválido sale como U+FFFD y no como una excepción. Se quitan los `\r` (Windows) y
+    # se toma la última línea NO vacía, que es la que dice qué falló (las anteriores son contexto de `psql`).
+    text = (stderr or b"").decode("utf-8", errors="replace").replace("\r", "")
+    lines = [line.strip() for line in text.split("\n") if line.strip()]
+    return lines[-1] if lines else ""
+
+
+def _loaded_summary(dataset: dict) -> str:
+    # Las cuentas salen del conjunto de datos (que `build_sql` ya validó) y no de lo que `psql` diga: con `-q` no
+    # dice nada, y así el resumen no depende de la versión del cliente. «ejecuciones» no cambia con una sola:
+    # un mensaje fijo es más fácil de comprobar y de analizar en un script.
+    runs = dataset["runs"]
+    return f"{len(runs)} ejecuciones y {sum(len(entry['results']) for entry in runs)} resultados cargados"
+
+
+def run_load(dataset, password, psql_command=None, timeout=LOAD_TIMEOUT) -> str:
+    """Carga `dataset` y crea o actualiza el rol de Grafana ejecutando `psql`; devuelve el resumen de lo cargado.
+
+    Concatena el script de datos (`build_sql`) y el del rol (`build_role_sql`), en ese orden, y los pasa a `psql`
+    por la entrada estándar como bytes UTF-8. Son dos transacciones separadas por una línea en blanco: el rol
+    concede permisos sobre un esquema que el script de datos acaba de crear, y el `COMMIT` de los datos queda firme
+    aunque el rol falle. Con `ON_ERROR_STOP` el primer fallo detiene la carga y lo anterior queda como estaba.
+
+    Todo se valida ANTES de lanzar `psql`: un conjunto o una contraseña no válidos no envían ni un byte. Los fallos
+    de ejecución son siempre `LoadError` con prefijo `load: `, con la contraseña tapada.
+    """
+    # Se buscan por nombre en cada llamada (no se guardan al importar) para usar siempre las actuales.
+    data_sql = build_sql(dataset)
+    role_sql = build_role_sql(password)
+    command = load_command(psql_command)
+    # La contraseña solo viaja por la entrada estándar: ni en los argumentos (se verían en la lista de procesos) ni
+    # en el entorno. `main` la lee de `os.environ`, así que se QUITA de la copia que hereda `psql`, sin tocar el
+    # entorno del propio proceso (una segunda llamada la necesita).
+    env = dict(os.environ)
+    env.pop(PASSWORD_ENV, None)
+    env["PGCLIENTENCODING"] = "UTF8"
+    # Bytes y no modo texto: la codificación es explícita (UTF-8, para que la contraseña llegue intacta) y no hay
+    # traducción de saltos de línea. Sin `shell`: la lista de argumentos no pasa por un intérprete que pueda expandir
+    # nada. `cwd=ROOT` porque `docker compose` busca ahí el `docker-compose.yml` del proyecto.
+    try:
+        completed = subprocess.run(
+            command, input=(data_sql + "\n" + role_sql).encode("utf-8"), capture_output=True, timeout=timeout,
+            cwd=ROOT, env=env,
+        )
+    except subprocess.TimeoutExpired:
+        raise LoadError(f"load: timeout de {timeout} s esperando a psql") from None
+    except FileNotFoundError:
+        raise LoadError(f"load: no se encuentra el ejecutable {_safe_detail(command[0], password)}") from None
+    except OSError as error:
+        # `OSError` cubre también `PermissionError` y `BrokenPipeError` (tubería rota al escribir la entrada). Solo
+        # se capturan fallos de ejecución: un `RuntimeError` es un error de programación y debe verse tal cual.
+        # `from None`: encadenar el error original dejaría su mensaje, que puede llevar la contraseña, en la traza.
+        raise LoadError(f"load: no se puede ejecutar {_safe_detail(command[0], password)}: "
+                        f"{_safe_detail(str(error), password)}") from None
+    if completed.returncode != 0:
+        detail = _safe_detail(_last_line(completed.stderr), password)
+        raise LoadError(f"load: psql terminó con código {completed.returncode}" + (f": {detail}" if detail else ""))
+    return _loaded_summary(dataset)
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="evaluation-dashboard.py",
         description="Prepara los resultados de evaluación del asistente para el dashboard de Grafana (JUP-121).",
     )
-    # Opciones comunes en un parser padre (`add_help=False` para que cada subcomando conserve su propio `--help`):
-    # `rows` y `sql` leen exactamente los mismos manifiestos y escriben igual, y declararlas dos veces dejaría que
+    # Opciones comunes en parsers padre (`add_help=False` para que cada subcomando conserve su propio `--help`):
+    # `rows`, `sql` y `load` leen exactamente los mismos manifiestos, y declararlas tres veces dejaría que
     # divergieran. Alternativa descartada: una función que repita `add_argument` en cada subparser; el padre es el
-    # mecanismo de `argparse` para esto y lo comparten también los subcomandos que vengan después.
+    # mecanismo de `argparse` para esto.
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--manifest", action="append", default=[], type=Path, metavar="RUTA",
                         help="manifiesto local que se añade después del versionado (repetible)")
     common.add_argument("--no-versioned", action="store_true",
                         help="no lee el manifiesto versionado (docs/validation/evaluation-runs.json)")
-    common.add_argument("--output", type=Path, metavar="FICHERO",
-                        help="escribe el resultado en este fichero en lugar de la salida estándar")
     common.add_argument("--root", type=Path, default=ROOT, metavar="DIR",
                         help="raíz que resuelve las rutas relativas de los manifiestos y el report_path "
                              "(por defecto, la raíz del repositorio)")
+    # `--output` va en un padre APARTE: solo tiene sentido en `rows` y `sql`, que imprimen un texto. `load` escribe
+    # en la base y su única salida es un resumen de una línea, así que aceptar `--output` ahí sería una opción que
+    # no hace nada (o que guarda un resumen sin interés). Que sea un error de uso evita el malentendido.
+    output = argparse.ArgumentParser(add_help=False)
+    output.add_argument("--output", type=Path, metavar="FICHERO",
+                        help="escribe el resultado en este fichero en lugar de la salida estándar")
     # `required=True`: sin subcomando argparse termina con el código 2 de error de uso, el mismo que una opción
     # desconocida, y no hay un comportamiento por defecto que adivinar.
     commands = parser.add_subparsers(dest="command", required=True, metavar="comando")
     commands.add_parser(
-        "rows", parents=[common], help="imprime el conjunto de datos normalizado (JSON) de los informes del manifiesto",
+        "rows", parents=[common, output],
+        help="imprime el conjunto de datos normalizado (JSON) de los informes del manifiesto",
         description="Normaliza los informes de los manifiestos al contrato de filas planas y los imprime como JSON.",
     )
     commands.add_parser(
-        "sql", parents=[common], help="imprime el script SQL transaccional que carga ese conjunto de datos",
+        "sql", parents=[common, output], help="imprime el script SQL transaccional que carga ese conjunto de datos",
         description="Genera el script SQL (esquema, vaciado y carga en una transacción) del conjunto de datos "
                     "normalizado. No se conecta a ninguna base ni contiene credenciales.",
     )
+    load = commands.add_parser(
+        "load", parents=[common],
+        help="carga el conjunto de datos en PostgreSQL y crea o actualiza el rol de solo lectura de Grafana",
+        description="Carga el conjunto de datos normalizado en la base con `psql` (el script se pasa por la entrada "
+                    "estándar) y crea o actualiza el rol de solo lectura de Grafana. La contraseña del rol se lee "
+                    f"de la variable de entorno {PASSWORD_ENV} y nunca se acepta como argumento ni se imprime.",
+    )
+    load.add_argument("--psql-command", metavar="COMANDO",
+                      help="comando que ejecuta `psql`, partido como lo haría un shell POSIX; las opciones de "
+                           "`psql` se añaden detrás (por defecto, `docker compose exec` sobre postgres-pgvector)")
     return parser
 
 
@@ -2225,19 +2444,52 @@ def _write_stdout(text: str) -> None:
         buffer.flush()
 
 
+def _split_psql_command(parser: argparse.ArgumentParser, text):
+    # `None` es «sin `--psql-command`»: `run_load` usa entonces el comando por defecto. Se parte con `shlex` en modo
+    # POSIX para que las comillas agrupen y se quiten (`split()` las dejaría dentro del argumento) y el resultado
+    # sea una LISTA: así se ejecuta sin shell y la línea no puede inyectar nada. En Windows hay que escribir las
+    # rutas con barras normales: la barra invertida es un escape en modo POSIX.
+    if text is None:
+        return None
+    try:
+        command = shlex.split(text)
+    except ValueError as error:
+        parser.error(f"--psql-command: {error}")
+    # Un comando vacío (`--psql-command ""`) es un error de uso y no «usa el de por defecto»: quien lo escribe
+    # quería otro comando, y ejecutar el de por defecto contra una base que no eligió sería una sorpresa peligrosa.
+    if not command:
+        parser.error("--psql-command: el comando no puede estar vacío")
+    return command
+
+
 def main(argv=None) -> int:
-    """Línea de comandos. Devuelve 0 si todo fue bien y 1 ante un error de datos; el 2 lo da `argparse`."""
-    args = _build_parser().parse_args(argv)
+    """Línea de comandos. Devuelve 0 si todo fue bien y 1 ante un error de datos o de carga; el 2 lo da `argparse`."""
+    parser = _build_parser()
+    args = parser.parse_args(argv)
+    password = command = None
+    if args.command == "load":
+        # La contraseña se mira ANTES de leer ningún manifiesto o lanzar nada: sin ella no hay nada que hacer, y el
+        # error la nombra para que quien lo ve sepa qué variable falta. Una variable vacía cuenta como ausente.
+        # Se pasa tal cual, sin recortar: los espacios al borde pueden ser parte de la contraseña.
+        password = os.environ.get(PASSWORD_ENV)
+        if not password:
+            print(f"error: falta la variable de entorno {PASSWORD_ENV}", file=sys.stderr)
+            return 1
+        command = _split_psql_command(parser, args.psql_command)
     manifests = ([] if args.no_versioned else [DEFAULT_MANIFEST]) + args.manifest
     try:
         dataset = build_dataset(manifests, root=args.root)
+        if args.command == "load":
+            # Solo se escribe el resumen si la carga acaba bien: un fallo sale por `stderr` y no deja salida.
+            _write_stdout(run_load(dataset, password, psql_command=command) + "\n")
+            return 0
         # Se genera el texto ANTES de tocar `--output`: si algo falla no se crea ni se modifica el fichero.
         text = _render_rows(dataset) if args.command == "rows" else _render_sql(dataset)
         if args.output is None:
             _write_stdout(text)
         else:
             _write_atomically(args.output, text)
-    except (AdapterError, ManifestError, SqlError) as error:
+    except (AdapterError, ManifestError, SqlError, LoadError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
     except OSError as error:
