@@ -69,7 +69,20 @@ se debe registrar esta revisión de herramientas por separado, sin cambiar a
 escondidas los ficheros fijados del plan. Última revalidación remota1792025965:
 controlador terminado,8recibos,303 filas, recibo perdido400 y misma cota4.790558402.
 Consulta de margen6USD enviada al liderazgo, pendiente; CAP efectivo sigue5USD.
-Sin inferencias ni renovaciones. Objetivo todavía activo y no completado.
+Sin inferencias ni renovaciones. Objetivo no completado.
+
+**Bloqueo confirmado en la revalidación1792026514:** el controlador sigue terminal,
+hay8 recibos/303 filas, el recibo perdido sigue sin ID válido y la cota permanece
+4.790558402. La nueva reserva exigiría5.110510402, superior a5USD. La corrección
+local de herramientas ya está terminada y probada, pero no crea margen ni prueba
+el coste del proveedor. No queda un proceso vivo que esperar o trabajo de
+validación independiente pendiente de ejecutar con el alcance/presupuesto actual.
+El objetivo automático se marca bloqueado por conciliación/margen; B no aceptada.
+Para retomarlo hace falta evidencia contable nueva o decisión explícita del
+liderazgo sobre el máximo. No tomar el silencio como autorización ni reiniciar.
+Pruebas externas: candidate-7be57c05-n3-observation-1792026513503.json,
+accounting-final-readonly-1792026514.json y
+candidate-7be57c05-008r1-upstream-1792026516.json.
 
 Siguiente paso: recuperar evidencia de coste o decisión explícita de margen,
 conservar reserva y resolver tratamiento de una operación completada con coste

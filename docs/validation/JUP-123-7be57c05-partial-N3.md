@@ -113,3 +113,8 @@ No se transfirió/aplicó esta revisión al runtime, ledger real o campaña cong
 No atribuir a este código nuevo los recibos recogidos con7be; cualquier continuación
 debe registrar sus herramientas por separado sin cambiar el plan o borrar el prefijo.
 La consulta al liderazgo sobre6USD está pendiente y no cambia el CAP efectivo5USD.
+
+Revalidación1792026514: controlador terminal,8recibos/303 filas, mismo contador y
+recibo perdido aún no recuperado. Bloqueo por conciliación/margen confirmado;
+objetivo automático bloqueado, sin aceptación ni nueva inferencia. Retomar exige
+evidencia contable nueva o decisión explícita de máximo, conservando el prefijo.
