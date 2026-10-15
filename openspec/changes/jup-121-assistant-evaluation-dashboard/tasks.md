@@ -32,7 +32,7 @@
   - clave de comparabilidad con `suite_version` además de `suite_sha256` (JUP-022 no trae huella de la batería; las ejecuciones 1 y 2 de JUP-070 dan claves distintas);
   - tabla de juicio humano (recuentos `pass`/`fail`, ACC-1, ACC-3) o automático;
   - prueba que falla si el catálogo de JUP-067 tiene un identificador sin clasificar.
-- [ ] 2.8 Subcomando `rows` que escribe ejecuciones y filas normalizadas en JSON sin tocar la base; antepone el fichero a los mensajes de `AdapterError`, deriva `run_id` y `report_sha256` y decide qué hacer con un informe sin filas (hallazgo L4 del QA de 2.4: error o aviso); clasifica con `classify_run_row` sobre el `run` crudo del adaptador, no sobre uno ya clasificado (la validación rechaza las columnas nuevas), y el motivo `sintetica` de JUP-068 lo resuelve `adapt_jup068` con `synthetic`; al imprimir mensajes que incluyan nombres de clave desconocidos (`run.retrieval.<clave>`, `results[i].<clave>`) los escapa con `repr` o los trunca (hallazgo L1 del QA de 2.6)
+- [x] 2.8 Subcomando `rows` que escribe ejecuciones y filas normalizadas en JSON sin tocar la base; antepone el fichero a los mensajes de `AdapterError`, deriva `run_id` y `report_sha256` y decide qué hacer con un informe sin filas (hallazgo L4 del QA de 2.4: error o aviso); clasifica con `classify_run_row` sobre el `run` crudo del adaptador, no sobre uno ya clasificado (la validación rechaza las columnas nuevas), y el motivo `sintetica` de JUP-068 lo resuelve `adapt_jup068` con `synthetic`; al imprimir mensajes que incluyan nombres de clave desconocidos (`run.retrieval.<clave>`, `results[i].<clave>`) los escapa con `repr` o los trunca (hallazgo L1 del QA de 2.6)
 
 ## 3. Generación de SQL y carga
 

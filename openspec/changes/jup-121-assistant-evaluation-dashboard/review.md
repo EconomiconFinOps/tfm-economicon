@@ -135,3 +135,18 @@ Hallazgos LOW trasladados: nombres de clave desconocidos dentro de los mensajes 
 Resultado con los datos reales: JUP-070 run-1 `("plantilla","doble")`, run-2 `("plantilla",)`, JUP-078 y JUP-022 reales, JUP-068 `("sintetica",)`; las cinco claves de comparabilidad son distintas. La clave incluye `suite_version` (hallazgo M1 del QA de 2.4) y `design.md` queda alineado.
 
 Hallazgos trasladados: la tabla de juicio por fila (calibración, benchmark, recuentos de casos) no pasa por `unclassified_metrics`, que solo cubre el catálogo de JUP-067; `classify_run_row` debe aplicarse al `run` crudo (tarea 2.8), y `comparability_key` no revalida el `run` (lo hace `classify_run`).
+
+### 2.8 Normalización de entradas y subcomando `rows`
+
+| Fase | Evidencia |
+| --- | --- |
+| Red | `scripts/tests/test_evaluation_rows_command.py` (114 tests), commit `5bc48986`; 117 errores, todos `AttributeError` por símbolos ausentes; la CLI se prueba por `subprocess` real y Node. Esperados comprobados con una referencia fuera del repositorio (21 de 22 mutantes morían; el restante se cubrió con un test que parchea la salida de cada adaptador) |
+| Green | `derive_run_id`, `report_digest`, `normalize_entry`, `build_dataset`, `main` (CLI `rows`) y el escape de nombres de clave en los mensajes, commit `03b67226`; 910/910. `python tools/evaluation-dashboard.py rows` imprime las 5 ejecuciones reales (48, 48, 10, 140 y 23 filas) |
+| Mutación (1.ª) | 133/181 (73,5 %) sobre la sección. Supervivientes: unos 35 de prosa (mensajes, textos de ayuda de `argparse`) y ramas defensivas sin test que añadió el coder: error al escribir `--output`, fecha extrema que desborda al pasar a UTC, JSON anidado, informe de negocio sin `run_id` y etiqueta de fichero del duplicado. `test_evaluation_rows_command_gaps.py` (13 tests, commit `c826f4ab`) mata los 7 mutantes |
+| QA | `accept`, sin BLOCKING. Recalculó por su cuenta los `run_id` derivados y las 5 huellas, comprobó que no cambian reescribiendo los informes con CRLF y otra sangría, probó la CLI (salida idéntica byte a byte entre ejecuciones, `--output` atómico, códigos 0/1/2, ninguna ruta absoluta con el informe fuera de la raíz, alfabeto cerrado en las 269 filas) y mató 68 de 71 mutantes manuales |
+| Remediación | M1 (la raíz de `report_path` debe resolverse), L1 (un `OSError` al leer no cita la ruta) y **L2, un defecto real**: en Windows `sys.stdout.write` convertía `\n` en `\r\n`, así que `rows > f` y `--output f` daban bytes distintos. `test_evaluation_rows_command_stdout.py` (9 tests, 2 en rojo, commit `d4e7d6b8`); fix en `main` (commit `0424e713`, salida en bytes UTF-8); 932/932 |
+| DoD | Lint, type-check y secretos en verde. Regresión: 145 fallos del backend idénticos (`RF-119-004`) |
+
+Decisiones de contrato: un informe sin filas es un error; la huella se calcula sobre el JSON canónico del documento parseado y no sobre los bytes (el fin de línea cambia con `autocrlf` y los `run_id` derivados deben ser iguales en todas las máquinas); `report_path` solo se registra para informes dentro del repositorio con alfabeto cerrado (una ruta absoluta local puede llevar nombres de usuario); los errores citan la ruta relativa o solo el nombre del fichero.
+
+Hallazgos LOW trasladados: los mensajes de JUP-068 repiten el nombre del fichero (`bad68.json: business-metrics: bad68.json: …`) y la capa de manifiestos cita rutas absolutas en sus errores, código previo de 2.1 que no se cambia; la huella de JUP-068 es la de la entrada, así que un cambio en `business-metrics.mjs` no cambia el `run_id`.
