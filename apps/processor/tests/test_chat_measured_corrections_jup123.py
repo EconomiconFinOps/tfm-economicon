@@ -63,6 +63,13 @@ def test_variance_ambiguous_inputs_keep_general_path(damage):
     assert required_budget_variance(catalog('Calcula la desviación del presupuesto.\n\n'+scenario,records)) is None
 
 
+@pytest.mark.parametrize('month',['julio',None])
+def test_variance_does_not_answer_august_with_another_or_unspecified_period(month):
+    prefix='Escenario sintético'+(' '+month+' 2026 demo-a' if month else '')
+    q=catalog('¿En cuánto superamos el presupuesto de agosto?\n\n'+prefix+': coste actual final 1200 EUR y budget 1000 EUR. Variación definida como coste menos presupuesto; porcentaje sobre presupuesto.')
+    assert required_budget_variance(q) is None
+
+
 @pytest.mark.parametrize('change',['missing','gap','conflicting','changed_definition'])
 def test_budget_companion_is_required_complete_and_current(change):
     policy=sources(BUDGET,'Budgets Y Forecast')

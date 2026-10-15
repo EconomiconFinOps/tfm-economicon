@@ -15,10 +15,12 @@ def required_budget_variance(catalog):
     from app.core.chat_rules import normalized
     question = getattr(catalog, 'classification_question', '')
     parts = question.split('\n\n')
-    if len(parts) != 2 or not re.fullmatch(
-            r'¿?(?:en cuanto superamos el presupuesto(?: de [a-z]+)?'
+    months = r'enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre'
+    request = re.fullmatch(
+            rf'¿?(?:en cuanto superamos el presupuesto(?: de (?P<month>{months}))?'
             r'|calcula (?:la )?desviacion (?:del|de) presupuesto'
-            r'|cual es la desviacion (?:del|de) presupuesto)[?.]?', normalized(parts[0])):
+            r'|cual es la desviacion (?:del|de) presupuesto)[?.]?', normalized(parts[0])) if parts else None
+    if len(parts) != 2 or request is None:
         return None
     if any(source.get('kind') != 'corpus' for source in getattr(catalog, 'authorized_sources', ())):
         return None
@@ -27,11 +29,13 @@ def required_budget_variance(catalog):
     field = rf'(?P<role>coste actual(?: final)?|budget|presupuesto) (?P<amount>{number}) (?P<currency>{currency})'
     declaration = re.fullmatch(
         r'(?:Contexto del escenario:\s*)?Escenario sint[eé]tico'
-        r'(?: (?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)'
+        rf'(?: (?P<month>{months})'
         r' [12][0-9]{3} [a-zA-Z0-9][a-zA-Z0-9-]{0,63})?: (?P<fields>[^\n]+)[.] '
         r'Variaci[oó]n definida como coste menos presupuesto; porcentaje sobre presupuesto[.]?', parts[1])
     if declaration is None:
         return None
+    if request['month'] is not None and request['month'] != declaration['month']:
+        return None  # A comparison for another period must not answer this request.
     fields = re.split(r' y |; ', declaration['fields'])
     if len(fields) != 2:
         return None
