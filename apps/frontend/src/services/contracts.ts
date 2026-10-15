@@ -62,7 +62,7 @@ export interface TenantCollection {
   items: TenantRecord[];
 }
 
-export type BillingGrouping = "subscription" | "resource_group" | "service" | "project" | "tag";
+export type BillingGrouping = "account" | "subscription" | "resource_group" | "service" | "project" | "tag";
 
 export interface BillingSelection {
   start_date?: string;
@@ -110,7 +110,7 @@ export function isBillingSummary(value: unknown): value is BillingSummary {
   return object(value) && value.contract_version === 2
     && object(value.period) && isoDate(value.period.start_date) && isoDate(value.period.end_date)
     && String(value.period.start_date) < String(value.period.end_date) && value.period.timezone === "UTC"
-    && ["subscription", "resource_group", "service", "project", "tag"].includes(String(value.group_by))
+    && ["account", "subscription", "resource_group", "service", "project", "tag"].includes(String(value.group_by))
     && (value.group_by === "tag" ? typeof value.tag_key === "string" && value.tag_key.trim().length > 0 : value.tag_key === null)
     && ["available", "partial", "empty"].includes(String(value.data_status))
     && Array.isArray(value.totals) && value.totals.every(total)
@@ -197,9 +197,19 @@ export interface ConversationCreateRequest {
   title: string;
 }
 
+export interface AzureCostSelection {
+  group_by: "subscription" | "account" | "service";
+  value?: string;
+  subscription_id?: string;
+  start_date?: string;
+  end_date?: string;
+}
+
 export interface MessageCreateRequest {
   content: string;
   ownership_query?: OwnershipQuery;
+  cost_query?: AzureCostSelection;
+  anomaly_query?: { episode_id: string };
 }
 
 export interface OwnershipQuery {
@@ -463,6 +473,14 @@ export function isAnomalyEpisode(value: unknown): value is AnomalyEpisode {
     && anomalyInstant(value.created_at) && anomalyInstant(value.updated_at);
 }
 
+// Formato del identificador de episodio que acepta el backend (`anomaly_query.episode_id`, JUP-038).
+// Coincidencia COMPLETA con `^...$` y sin la bandera `m`: en JS `$` no admite un salto de linea final
+// (a diferencia de Python), asi que "anomaly-<hex>\n" se rechaza. Se exige aqui, antes de ofrecer una
+// opcion o de enviar, para no mandar al servidor un id que el contrato ya sabe invalido.
+export function isAnomalyEpisodeId(value: unknown): value is string {
+  return typeof value === "string" && /^anomaly-[0-9a-f]{64}$/.test(value);
+}
+
 export function isAnomalyEpisodeList(value: unknown): value is AnomalyEpisodeList {
   if (!anomalyObject(value) || value.contract_version !== 1 || !["open", "all"].includes(String(value.scope))) return false;
   const totals = value.open_impact_by_currency;
@@ -480,4 +498,74 @@ export function isAnomalyDetectionRun(value: unknown): value is AnomalyDetection
       && ["not_observed", "reference_incomplete"].includes(String(item.reason)))
     && Array.isArray(value.unsupported_currencies) && value.unsupported_currencies.every(isNonemptyString)
     && anomalyCount(value.opened) && anomalyCount(value.continued) && anomalyCount(value.no_longer_observed);
+}
+
+// JUP-038: evidencia guardada de la explicación de una anomalía (metadata.anomaly_evidence de un mensaje).
+// Es la fotografía de un solo episodio que genera el backend; los metadatos del mensaje no son fiables,
+// así que este validador es la frontera de confianza antes de pintar ninguna cifra.
+export type AnomalyRoundingNote = "absolute_increase" | "relative_increase" | "accumulated_impact";
+
+export interface AnomalyEvidence {
+  schema_version: "1.0";
+  adapter_version: "anomaly-explanation-1.0";
+  id: string;
+  status: "ok";
+  source: { kind: "anomaly_episodes"; rules_version: string; data_as_of: string };
+  episode: AnomalyEpisode;
+  // Operandos exactos con la escala de la base de datos (p. ej. 12 decimales): se muestran, nunca se recalculan.
+  operands: { reference_seven_day_total: string; opening_observed_cost: string; accumulated_impact_times_seven: string };
+  opening: {
+    reference_daily_cost: string; observed_cost: string; absolute_increase: string; relative_increase_percent: string;
+    absolute_threshold: string; relative_threshold_percent: string; conditions_met: true;
+  };
+  impact: { accumulated_impact: string; day_count: number; through_date: string; severity: AnomalySeverity; severity_band: string };
+  rounding_notes: AnomalyRoundingNote[];
+  includes_synthetic_data: boolean;
+  cause_status: "not_established";
+  assumptions: unknown[];
+  limitations: string[];
+  explained_at: string;
+}
+
+// Operandos y umbrales: números decimales exactos de cualquier escala, validados como TEXTO. Nunca se
+// convierten a Number (perdería dígitos en importes enormes). Sin bandera `m`, `$` no admite un salto de
+// línea final, así que "2800.00\n" se rechaza.
+const anomalyExact = (item: unknown) => typeof item === "string" && /^-?\d+(\.\d+)?$/.test(item);
+const anomalyThreshold = (item: unknown) => typeof item === "string" && /^\d+(\.\d+)?$/.test(item);
+const anomalyRoundingNotes = ["absolute_increase", "relative_increase", "accumulated_impact"];
+
+export function isAnomalyEvidence(value: unknown): value is AnomalyEvidence {
+  if (!anomalyObject(value)) return false;
+  const { source, episode, operands, opening, impact } = value;
+  if (value.schema_version !== "1.0" || value.adapter_version !== "anomaly-explanation-1.0"
+    || typeof value.id !== "string" || !/^anomaly-explanation:[0-9a-f]{64}$/.test(value.id) || value.status !== "ok") return false;
+  // La fuente no se acepta si falta su versión de reglas: sin ella la regla mostrada no sería trazable.
+  if (!anomalyObject(source) || source.kind !== "anomaly_episodes"
+    || typeof source.rules_version !== "string" || source.rules_version.trim().length === 0
+    || !anomalyDate(source.data_as_of)) return false;
+  if (!isAnomalyEpisode(episode)) return false;
+  if (!anomalyObject(operands) || !anomalyExact(operands.reference_seven_day_total)
+    || !anomalyExact(operands.opening_observed_cost) || !anomalyExact(operands.accumulated_impact_times_seven)) return false;
+  // Solo se guarda evidencia de aperturas que cumplieron la regla: conditions_met distinto de true se rechaza.
+  if (!anomalyObject(opening) || opening.conditions_met !== true
+    || !anomalyMoney(opening.reference_daily_cost) || !anomalyMoney(opening.observed_cost)
+    || !anomalyMoney(opening.absolute_increase) || !anomalyMoney(opening.relative_increase_percent)
+    || !anomalyThreshold(opening.absolute_threshold) || !anomalyThreshold(opening.relative_threshold_percent)) return false;
+  if (!anomalyObject(impact) || !anomalyMoney(impact.accumulated_impact) || !anomalyCount(impact.day_count)
+    || !anomalyDate(impact.through_date) || !["P1", "P2", "P3"].includes(String(impact.severity))
+    || typeof impact.severity_band !== "string" || impact.severity_band.trim().length === 0) return false;
+  // Coherencia interna: la evidencia es la foto de UN episodio. Si el bloque de apertura o de impacto no
+  // coincide con el episodio embebido, mezcla datos de dos momentos y no se debe mostrar. Se comparan las
+  // cadenas exactas (sin Number), así que una diferencia de un céntimo ya la rechaza.
+  if (impact.severity !== episode.severity || impact.accumulated_impact !== episode.accumulated_impact
+    || opening.reference_daily_cost !== episode.reference_daily_cost
+    || opening.observed_cost !== episode.opening_observed_cost) return false;
+  // La hora acepta tanto +00:00 (la escribe el backend) como Z (la escribe la API de episodios). Además de
+  // anomalyInstant se valida la parte de fecha por separado: Date.parse de V8 admite "2026-02-30T..." y lo
+  // desplaza a marzo, mientras que anomalyDate comprueba el ida y vuelta y rechaza el día imposible.
+  return Array.isArray(value.rounding_notes) && value.rounding_notes.every((note) => typeof note === "string" && anomalyRoundingNotes.includes(note))
+    && typeof value.includes_synthetic_data === "boolean" && value.cause_status === "not_established"
+    && Array.isArray(value.assumptions)
+    && Array.isArray(value.limitations) && value.limitations.every((item) => typeof item === "string")
+    && anomalyInstant(value.explained_at) && anomalyDate((value.explained_at as string).slice(0, 10));
 }

@@ -14,6 +14,8 @@
     "local:doctor": "node tools/local-doctor.mjs",
     "local:smoke": "node tools/local-smoke.mjs",
     "local:test": "node --test tools/local-doctor.test.mjs tools/local-smoke.test.mjs",
+    "tokenizer:prepare": "python apps/processor/build_tokenizer.py",
+    "tokenizer:test": "python -m unittest discover -s tools -p test_build_tokenizer.py -v",
     "openspec": "openspec",
     "openspec:list": "openspec list",
     "openspec:status": "openspec status",

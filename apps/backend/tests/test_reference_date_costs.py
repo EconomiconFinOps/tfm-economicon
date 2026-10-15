@@ -148,3 +148,27 @@ def test_overlapping_sources_after_the_reference_do_not_refuse_the_request(serie
     reference_date.configure(date(2026, 10, 9))
     refused = call(series, "GET", "/billing/summary?start_date=2026-10-01&end_date=2026-11-01", headers=headers())
     assert refused.status_code == 409 and refused.json()["detail"]["code"] == "ambiguous_cost_source"
+
+
+@pytest.mark.parametrize("group,value", [("subscription", "sub-a"), ("account", "acct-a"), ("service", "Compute")])
+def test_azure_cost_selection_keeps_filters_and_the_reference_limit(series, group, value):
+    with series.db.engine.begin() as connection:
+        connection.execute(text("UPDATE azure_cost_records SET billing_account_id = 'acct-a'"))
+    reference_date.configure(date(2026, 10, 5))
+    response = call(series, "POST", "/assistant/conversations/own/messages", headers=headers(), json={
+        "content": "Coste de la selección", "cost_query": {
+            "group_by": group, "value": value, "subscription_id": "sub-a",
+        },
+    })
+    assert response.status_code == 201, response.text
+    message = response.json()["assistant_message"]
+    evidence = message["metadata"]["cost_evidence"]
+    assert evidence["selection"]["start_date"] == "2026-10-01"
+    assert evidence["selection"]["end_date"] == "2026-11-01"
+    assert evidence["summary"]["totals"] == [{"currency": "EUR", "cost": "50.00", "record_count": 5}]
+    assert evidence["provenance"]["last_usage_date"] == "2026-10-05"
+    assert evidence["reference_date"] == "2026-10-05"
+    assert "Solo se cuentan los días hasta el 2026-10-05, inclusive." in message["content"]
+    history = call(series, "GET", "/assistant/conversations/own", headers=headers())
+    assert history.status_code == 200
+    assert history.json()["messages"][-1]["metadata"]["cost_evidence"] == evidence

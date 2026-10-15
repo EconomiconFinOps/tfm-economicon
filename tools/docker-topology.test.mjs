@@ -19,7 +19,7 @@ const demoServices = ["azure-cost-api-demo", "demo-data"];
 test("declares every MVP application, infrastructure and monitoring service", () => {
   assert.deepEqual(
     Object.keys(compose.services).sort(),
-    [...applicationServices, ...infrastructureServices, ...monitoringServices, ...demoServices].sort(),
+    [...applicationServices, ...infrastructureServices, ...monitoringServices, ...demoServices, "backend-migrate"].sort(),
   );
   assert.deepEqual(
     Object.keys(compose.volumes).sort(),
@@ -127,8 +127,8 @@ test("gives the processor a health window that covers its first migrations", () 
 
 test("waits for healthy dependencies instead of container start only", () => {
   for (const serviceName of ["backend", "processor", "frontend", ...monitoringServices]) {
-    for (const dependency of Object.values(compose.services[serviceName].depends_on)) {
-      assert.equal(dependency.condition, "service_healthy");
+    for (const [name, dependency] of Object.entries(compose.services[serviceName].depends_on)) {
+      assert.equal(dependency.condition, name === "backend-migrate" ? "service_completed_successfully" : "service_healthy");
     }
   }
 });
@@ -320,6 +320,16 @@ test("JUP-053 credential examples leave real secret fields empty", () => {
     "OPENROUTER_API_KEY", "LITELLM_MASTER_KEY", "LITELLM_DATABASE_PASSWORD"]) {
     assert.ok(fields.has(field), `Missing inventory field: ${field}`);
     assert.ok(["", '""', "''"].includes(fields.get(field)), `Example field must be empty: ${field}`);
+  }
+});
+
+test("JUP-122 root and processor contexts exclude nested private files and generated tokenizer", () => {
+  for (const context of [".", "apps/processor"]) {
+    const rules = fs.readFileSync(path.join(root, context, ".dockerignore"), "utf8")
+      .split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+    assert.ok(rules.includes(".secrets") && rules.includes("**/.secrets"));
+    assert.ok(rules.some((rule) => rule.endsWith("chat/v2/tokenizer.json")));
+    assert.ok(!rules.some((rule) => rule.startsWith("!") && rule.includes(".secrets")));
   }
 });
 

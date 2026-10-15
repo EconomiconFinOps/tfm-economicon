@@ -90,7 +90,7 @@ Mapa montado en `src/routes.tsx` (JUP-095). `/login` vive fuera del `Layout`; el
 | `/` | `ExecutiveCostDashboard` | Backend (`GET /billing/summary` v2) | No aplica | Costes almacenados: intervalo mensual, desglose, tendencia y comparación del primer/último mes observado con coste no cero por moneda (JUP-055) |
 | `/anomalies` | `AnomaliesPanel` | Backend (`GET /billing/anomalies/episodes`, `POST /billing/anomalies/detect`, `PATCH /billing/anomalies/episodes/{id}`) | No aplica | Episodios guardados del cliente activo; avisa «Datos sintéticos de demostración» cuando el cliente tiene ingestas sintéticas (JUP-114) |
 | `/ingest` | `IngestPage` | Backend (`POST /jobs/ingest`) | No aplica | Vía `services/api.ts` |
-| `/assistant` | `ConversationsPage` | Backend (`/assistant/conversations`) | No aplica | Vía `services/api.ts` |
+| `/assistant` | `ConversationsPage` | Backend (`/assistant/conversations`, y `GET /billing/anomalies/episodes` solo con el modo «Explicar una anomalía») | No aplica | Vía `services/api.ts`; admite `?episode=<id>` para preseleccionar una anomalía (JUP-038) |
 | `/overview-legacy` | `DashboardPage` | Backend (`GET /billing/summary`, `GET /health`) | No aplica | Ruta puente sin entrada de menú (JUP-116); ver `RF-105-001` en `openspec/findings/backlog.md` |
 | `/system-health` | `SystemHealthDashboard` | Backend (`GET /health/status`, `POST /health/provider-check`) | No aplica | Rotula «Datos de ejemplo» por componente cuando su origen es `mock` (JUP-047) |
 
@@ -258,6 +258,14 @@ pnpm build
   no disponible porque el contrato no lo calcula.
 - El panel `/anomalies` lee los episodios guardados del cliente activo (JUP-114): detección bajo demanda,
   detalle con cambio de estado y exportación solo en CSV; los importes se muestran como texto exacto con su moneda.
+  El detalle ofrece el enlace «Explicar en el asistente» (`/assistant?episode=<id>`) solo si el identificador tiene
+  el formato `anomaly-` más 64 hexadecimales en minúscula; el enlace solo navega (JUP-038).
+- El asistente `/assistant` (JUP-038) tiene el modo «Explicar una anomalía» en el redactor, excluyente con «Consultar
+  costes por propiedad»: carga las anomalías del cliente activo, solo ofrece las de identificador válido, envía
+  `anomaly_query` y pinta la respuesta con el bloque de evidencia `AnomalyEvidence`, que valida la forma de la
+  evidencia guardada (`isAnomalyEvidence`) y no calcula nada. El parámetro `?episode=` solo preselecciona: el envío
+  ocurre al pulsar «Enviar» y el parámetro se quita tras un envío correcto. Contrato:
+  [docs/api/anomaly-explanations.md](../../docs/api/anomaly-explanations.md).
 - Las otras pantallas de coste (Coste Detallado, Corte Global y Recomendaciones, sin ruta)
   conservan los datos de demostración estáticos (`src/data/demo/`; recuento en la sección «Rutas»);
   los gaps restantes de `RF-095-002` en `openspec/findings/backlog.md` no se dan por resueltos por

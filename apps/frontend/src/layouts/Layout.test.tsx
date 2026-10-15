@@ -22,8 +22,8 @@ describe("Layout", () => {
     );
 
     const labels = screen.getAllByRole("link").map((link) => link.textContent);
-    expect(labels).toEqual(["Coste Global", "Anomalías", "Ingesta", "Asistente", "Salud del sistema"]);
-    for (const hidden of ["Coste Detallado", "Corte Global", "Recomendaciones", "Overview"]) {
+    expect(labels).toEqual(["Coste Global", "Anomalías", "Ingesta", "Salud del sistema"]);
+    for (const hidden of ["Asistente", "Coste Detallado", "Corte Global", "Recomendaciones", "Overview"]) {
       expect(screen.queryByText(hidden)).toBeNull();
     }
   });
