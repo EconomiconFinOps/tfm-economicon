@@ -87,7 +87,7 @@ describe("LoginPage - remediacion de mutacion", () => {
 
     // Se envia el formulario tal cual, sin fireEvent.change: el test debe
     // observar los valores por defecto, no unos escritos por el propio test.
-    fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
+    fireEvent.click(screen.getByRole("button", { name: /iniciar sesión/i }));
 
     // `mutation.mutate` invoca la mutationFn en un microtask interno de
     // react-query: se espera con waitFor a que fetch quede registrado (mismo
@@ -109,13 +109,13 @@ describe("LoginPage - remediacion de mutacion", () => {
 
     renderLoginPage();
 
-    fireEvent.change(screen.getByLabelText(/email/i), {
+    fireEvent.change(screen.getByLabelText(/correo/i), {
       target: { value: "nueva@example.com" }
     });
-    fireEvent.change(screen.getByLabelText(/password/i), {
+    fireEvent.change(screen.getByLabelText(/contraseña/i), {
       target: { value: "otra-clave" }
     });
-    fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
+    fireEvent.click(screen.getByRole("button", { name: /iniciar sesión/i }));
 
     await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
     const [, requestInit] = fetchSpy.mock.calls[0] as [string, RequestInit];

@@ -8,11 +8,37 @@ Aplicar primero las [puertas de entrada del ensayo integrado](ensayo-integrado.m
 
 ## 1. Fijar la ejecución
 
-Responsable de preparación: liderazgo/pairing de JUP-065. Validador: Victor según Trello; pendiente ejecución humana. Usar una instancia desechable dedicada, nunca los volúmenes de otro trabajo. Registrar SHA de aplicación, SHA del paquete, imágenes, URLs y nombre Compose en `registro-ensayo.md`. El commit de preparación no implica que el MVP completo esté integrado.
+Responsable de preparación: liderazgo/pairing de JUP-065. Validador: Víctor según Trello; su ejecución de f27eb7f con mock del 11/10 es histórica y no valida este nuevo entorno. Usar una instancia desechable dedicada, nunca los volúmenes de otro trabajo. Registrar SHA de aplicación, SHA del paquete, imágenes, URLs y nombre Compose en `registro-ensayo.md`. El commit de preparación no implica que el MVP completo esté integrado.
 
 La aplicación integrada elegida debe tener las correcciones necesarias para modelo real, retrieval y citas. Consultar su README y configuración vigente: este paquete no crea secretos ni cambia el despliegue. Proveer por canal seguro las variables de BD, RabbitMQ, sesión y gateway; para seed demo establecer `DEMO_SEED_ENABLED=true` y una `DEMO_PASSWORD` externa no heredada. La cuenta creada es `operator@example.com`, con tenants `tenant-core` y `tenant-growth`.
 
 Para una instancia local desechable se requiere el opt-in `RUNTIME_ENVIRONMENT=development` y `ALLOW_INSECURE_LOCAL_DATABASE=true`. Fijar puertos libres para frontend/API/processor/Azure/BD/broker. Un nombre Compose diferente aísla volúmenes, pero **no** evita choques de puertos. No imprimir `docker compose config` con valores resueltos ni adjuntar `.env`.
+
+Requisitos de arranque incorporados por **A / JUP-122 (PR130)**:
+
+- `CHAT_HMAC_FILE`: ruta absoluta a un archivo privado del operador, al menos
+  32 bytes y legible por el UID 10001 del contenedor. Se monta sólo lectura en
+  backend/processor; no imprimirlo, incluirlo en evidencias ni rotar uno existente.
+- Elegir `CHAT_PRIVATE_SUBNET` libre y `PROCESSOR_CHAT_PRIVATE_IP` dentro de ella;
+  el puerto privado 8003 no se publica. El nombre de proyecto no evita solapamientos.
+- Mantener `CHAT_ENABLED=false` durante la preparación sin inferencias. A integrada
+  no implica aceptación de **B / JUP-123**. Sólo tras esa aceptación y autorización
+  explícita del entorno/proveedor/presupuesto, fijar `CHAT_ENABLED=true` en el
+  archivo privado del ensayo y recrear backend y processor con la misma configuración.
+- `backend-migrate` debe terminar con código 0 antes del backend, que verifica el
+  esquema. No exigir que ese servicio de una sola ejecución permanezca running.
+  El processor conserva sus migraciones, incluidas las vectoriales.
+- El build obtiene el tokenizer fijado y verifica revisión/tamaño/SHA; requiere
+  acceso HTTPS a las fuentes del build. El arranque no descarga ese recurso.
+  Seguir [la configuración de chat del README raíz](../../../README.md).
+
+Para un recorrido parcial mock usar `AI_EXECUTION_MODE=development`,
+`LLM_PROVIDER=mock`, `EMBEDDING_PROVIDER=mock`, `EMBEDDING_DIMENSION=8`; no mezclar
+ese índice con el ensayo real. Para IA, seguir la [configuración de gateway](../../../infra/litellm/README.md)
+y el overlay `infra/litellm/compose.ai.yml`, con proveedores `litellm`, dimensión
+compatible y clave de resumen independiente mediante `SUMMARY_API_KEY_FILE`.
+Los comandos base siguientes no configuran ni activan por sí solos el gateway.
+No se concede autorización de consumo mediante este documento.
 
 Ejemplo PowerShell, desde la raíz del checkout **del MVP elegido**, después de completar su archivo de entorno:
 
@@ -21,8 +47,10 @@ $demoProject = 'jup065-demo-ensayo01'
 $demoEnv = '<ruta-absoluta-al-env-privado-del-ensayo>'
 docker compose --env-file $demoEnv -p $demoProject config --quiet
 docker compose --env-file $demoEnv -p $demoProject up -d --build
-docker compose --env-file $demoEnv -p $demoProject ps
+docker compose --env-file $demoEnv -p $demoProject ps --all
 ```
+
+No activar `--profile demo`, ni heredarlo en `COMPOSE_PROFILES`; no ejecutar `demo_data.py apply` en esta instancia. `DEMO_SEED_ENABLED=true` crea las cuentas/tenants, no equivale a cargar costes con el perfil `demo`.
 
 Los marcadores se rellenan con el despliegue elegido; no son credenciales ni comandos ejecutados en esta preparación. Exigir healthchecks correctos de backend, processor, Azure simulada, BD y broker, y probar el frontend con un navegador real, CORS sin bypass. Verificar que frontend y backend apuntan al mismo entorno. No confundir salud HTTP con integración funcional.
 
@@ -50,7 +78,36 @@ Esperado: contrato 2, `available`, moneda USD, total `0.06`, conteo 38, ocho gru
 
 En `/`, con el dashboard de JUP-055 integrado, seleccionar **Mes inicial `2024-06` y Mes final `2024-06`**. Ambos meses son inclusivos y la UI consulta `[2024-06-01, 2024-07-01)`; el valor inicial son los seis últimos meses completos UTC y no contiene esta muestra. La carga y el GET de referencia anteriores mantienen `[2024-06-01, 2024-06-20)`. En el CSV fijado, las 40 filas de esta suscripción terminan el 19/06 y producen 38 registros: ampliar la lectura hasta julio no añade filas. Confirmar esa igualdad en el despliegue elegido; no cambiar el periodo de carga ni presentar la muestra como factura del mes completo.
 
-Verificar Growth vacío en el entorno dedicado, sin el conjunto sintético de JUP-106: esa fixture se carga precisamente en Growth y debe retirarse de una réplica que la haya usado antes de este recorrido. Preferir volúmenes nuevos; no ejecutar una retirada sobre datos ajenos ni asumir que `remove --tenant` limita su alcance. No basar la comprobación de jobs pendientes en `open_ingestions`: en la base examinada cuenta todos los jobs, aunque su nombre sugiera otra cosa; comprobar el estado individual de los jobs.
+Verificar Growth vacío en el entorno dedicado. **JUP-119** sustituye la
+herramienta antigua de JUP-106 por `scripts/demo_data.py`. El perfil `demo` o
+`demo_data.py apply` carga Core y Growth; incluye la suscripción pública con
+fechas desplazadas en Growth, además de datos sintéticos. No usar ese flujo en
+este ensayo de la muestra original de junio de 2024. Ver [guía de datos](../../data/azure-sample-dataset.md).
+
+Si se reutiliza un entorno propio donde ya se aplicó JUP-119, inspeccionar primero:
+
+```powershell
+docker compose --env-file $demoEnv -p $demoProject --profile demo run --rm --no-deps demo-data python scripts/demo_data.py status
+```
+
+`status` no carga costes. Requiere los servicios/imagen configurados y la BD
+accesible; `--no-deps` evita arrancar dependencias incidentalmente. Si hay carga
+previa, preferir **otro proyecto con volúmenes nuevos y puertos/subred libres**.
+Como alternativa sólo sobre datos propios cuya retirada se haya autorizado:
+
+```powershell
+docker compose --env-file $demoEnv -p $demoProject --profile demo run --rm --no-deps demo-data python scripts/demo_data.py remove
+docker compose --env-file $demoEnv -p $demoProject --profile demo run --rm --no-deps demo-data python scripts/demo_data.py status
+```
+
+`remove` actúa sobre todos los tenants del manifiesto; `--tenant` se rechaza.
+Puede retirar episodios derivados cuando no quedan otros costes en el tenant;
+no es un reset limitado a Growth. Conserva ingestas ajenas a las definiciones de
+demo, incluida la muestra original: contrastar después billing de ambos tenants
+con las expectativas de este paquete. No borrar datos de otros trabajos.
+Registrar `COST_REFERENCE_DATE` efectivo (vacío usa la fecha real); seleccionar
+junio de 2024 explícitamente aunque JUP-119 cambie el periodo inicial de la UI.
+No usar `open_ingestions` para inferir jobs pendientes; comprobar cada job por SQL.
 
 ## 3. Cargar el corpus y comprobar el chat
 
@@ -80,9 +137,28 @@ antes de la carga controlada, pues también ingiere datos y altera la línea bas
 
 Antes de la sesión pública comprobar que la pregunta JUP-069-004 recupera el documento FinOps y que la cita abre evidencia pertinente. Si el contrato integrado requiere una carga distinta, registrar su comando validado en el ensayo. La preparación del corpus está hecha; la carga y compatibilidad de embeddings/modelo quedan por ejecutar en el MVP.
 
-En `/assistant`, mantener desmarcado «Consultar costes por propiedad» para todos los prompts de este paquete. JUP-037 añade ese modo estructurado con evidencia de costes; activarlo evita el recorrido de recuperación documental y no comprueba las respuestas conceptuales ni sus citas. Verificar además que cada conversación nueva permanece seleccionada: el cambio de JUP-037 en la creación del hilo no sustituye una prueba del navegador durante el ensayo.
+Para los prompts documentales usar **el panel lateral nuevo**, no la ruta de
+consultas estructuradas `/assistant`. Con sesión Core, en `/`, pulsar
+**«Abrir asistente» / «Asistente FinOps»**, **«Nueva conversación»**, escribir el
+prompt completo en **«Pregunta»** y pulsar **«Enviar»**. El panel sólo aparece si
+`GET /assistant/capabilities` responde `chat_enabled=true`. Con false está oculto
+por diseño; registrar `blocked` para el tramo generativo, sin cambiar la variable
+ni sustituirlo por la pantalla antigua para aparentar éxito.
 
-Registrar proveedor/modelo exactos de **consulta y embeddings**, dimensión y versión de índice, chunking, configuración de generación, commit y hash del corpus; no guardar tokens. Comprobar el proveedor realmente usado por `/assistant` mediante trazas seguras. Si queda un mock, indicar `blocked` para el ensayo de IA real. No comparar únicamente textos idénticos: aplicar todos los `required`, ningún `forbidden` y las tolerancias de `numbers` de cada rúbrica.
+La ruta `/assistant` sigue publicada, aunque ya no tiene entrada «Asistente» en
+el menú. Sus modos Azure/propiedad/anomalía son estructurados y excluyentes; se
+usan sólo para el tramo JUP-036. No aplicar al panel nuevo la instrucción antigua
+de desmarcar «Consultar costes por propiedad»: pertenece a la otra pantalla.
+Verificar selección de conversación, finalización (no texto provisional), cita
+visible y persistencia al reabrir **«Historial»** después de recargar.
+
+Registrar proveedor/modelo de consulta y embeddings, dimensión/versión de índice,
+chunking, generación y hash del corpus. El corpus fijado en `generado/` conserva
+su versión: no mezclarlo silenciosamente con el corpus actualizado por JUP-129.
+Usar índice propio o documentar y revalidar un cambio de corpus antes del ensayo.
+Comprobar mediante trazas seguras el proveedor realmente usado por el panel.
+Con mock, indicar `blocked` para IA real. Aplicar todos los `required`, ningún
+`forbidden` y las tolerancias `numbers`; una respuesta persistida no acredita calidad.
 
 ## 4. Controles para autorizar el ensayo
 

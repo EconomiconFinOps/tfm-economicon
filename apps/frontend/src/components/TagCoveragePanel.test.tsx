@@ -24,7 +24,7 @@ const coverage: TagCoverage = {
 };
 
 async function openPanel() {
-  await screen.findByText("Dashboard Ejecutivo - Coste Global");
+  await screen.findByText("Panel Ejecutivo - Coste Global");
   fireEvent.change(screen.getByLabelText("Mes inicial"), { target: { value: "2024-06" } });
   fireEvent.change(screen.getByLabelText("Mes final"), { target: { value: "2024-06" } });
   await userEvent.click(screen.getByText("Cobertura de etiquetas FinOps"));
@@ -52,7 +52,7 @@ describe("TagCoveragePanel", () => {
   it("loads on expansion with tenant headers and exact money, within the current executive dashboard", async () => {
     const { requests } = mockBackend({ "GET /billing/tag-coverage": () => jsonResponse(coverage) });
     restoreSession(); renderApp();
-    await screen.findByText("Dashboard Ejecutivo - Coste Global");
+    await screen.findByText("Panel Ejecutivo - Coste Global");
     expect(requests.some((r) => r.path === "/billing/tag-coverage")).toBe(false);
     const panel = await openPanel();
     expect((await within(panel).findAllByText("9007199254740993.01 USD"))[0]).toBeVisible();
@@ -111,7 +111,7 @@ describe("TagCoveragePanel", () => {
     restoreSession(); renderApp();
     const panel = await openPanel();
     await within(panel).findAllByText("9007199254740993.01 USD");
-    await userEvent.selectOptions(screen.getByRole("combobox", { name: "Ambito de cliente" }), tenants[1].id);
+    await userEvent.selectOptions(screen.getByRole("combobox", { name: "Ámbito de cliente" }), tenants[1].id);
     await waitFor(() => expect(requests.filter((r) => r.path === "/billing/tag-coverage").at(-1)?.headers.get("X-Tenant-Id")).toBe(tenants[1].id));
     expect(panel).not.toHaveTextContent("9007199254740993");
     expect(panel).toHaveTextContent("Cargando cobertura");

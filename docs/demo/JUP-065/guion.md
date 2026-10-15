@@ -1,6 +1,6 @@
 # Recorrido de demostración — 7 minutos
 
-Audiencia: tutor/equipo. Mensaje: «Economicon permite consultar una muestra de gasto Cloud y contrastar explicaciones con su documentación». Abrir previamente `/login`, `/`, `/assistant` y la ficha de evidencia; evitar terminales con secretos.
+Audiencia: tutor/equipo. Mensaje: «Economicon permite consultar una muestra de gasto Cloud y contrastar explicaciones con su documentación». Abrir previamente `/login`, `/`, el panel lateral «Asistente FinOps» (sólo tras aceptar A/B y autorizar su activación) y la ficha de evidencia; evitar terminales con secretos.
 
 | Tiempo | Acción exacta | Qué decir | Resultado esperado / evidencia |
 | --- | --- | --- | --- |
@@ -9,10 +9,12 @@ Audiencia: tutor/equipo. Mensaje: «Economicon permite consultar una muestra de 
 | 1:00–2:15 | En `/`, Mes inicial `2024-06`, Mes final `2024-06`, agrupar por Grupo de recursos | «Seleccionamos junio, pero los datos son una muestra pública, no una factura mensual completa. Conservamos moneda y procedencia». | Total 0,06 USD; comprobar los 38 registros en `totals[0].record_count` del recibo de billing o sumando la columna Registros, sin exigir un contador global visible; ocho grupos, incluyendo DevTestLab unificado. La UI consulta `[2024-06-01, 2024-07-01)`; la carga y referencia fijadas siguen en `[2024-06-01, 2024-06-20)`. En esta muestra coinciden los registros: no hay filas de la suscripción desde el día 20. Contrastar datos y grupos con `costes-esperados.json`; no confundir ambos periodos ni sumar grupos redondeados para recalcular el total. |
 | 2:15–2:45 | Cambiar a Growth Ops y volver a Core Finance | «El cliente sin carga debe mostrar ausencia de datos». | Growth sin costes; Core recupera 0,06 USD. Esto comprueba separación visual, no sustituye una prueba de autorización contra tenants ajenos. |
 | 2:45–3:15 | Mostrar la evidencia de ingesta ya completada del documento FinOps | «El asistente utiliza este documento versionado». | ID de documento/job/chunks y hash del corpus del ensayo, estado completed comprobado por la consulta SQL del preflight; «queued» no basta. No esperar una indexación larga en directo. |
-| 3:15–4:30 | Conversación nueva en `/assistant`; mantener desmarcado «Consultar costes por propiedad» y enviar el prompt completo JUP-069-004 de `prompts.json` | «¿Uso coste actual o amortizado para repartir el coste de una reserva?» | Distingue facturación de distribución temporal del compromiso; explica uso del amortizado para showback, sin sumar ambas vistas. Texto exacto variable. |
+| 3:15–4:30 | En `/`, «Abrir asistente» → «Nueva conversación»; en «Pregunta» introducir y enviar el prompt completo JUP-069-004 de `prompts.json` | «¿Uso coste actual o amortizado para repartir el coste de una reserva?» | Distingue facturación de distribución temporal del compromiso; explica uso del amortizado para showback, sin sumar ambas vistas. Texto exacto variable. |
 | 4:30–5:15 | Abrir una cita de esa respuesta | «Podemos revisar en qué se apoya la explicación». | Documento correcto, extracto que respalda la afirmación y referencia resoluble del tenant; repetir tras recarga. Un ID de chunk sin evidencia visible no supera este paso. |
-| 5:15–6:15 | Conversación nueva; enviar JUP-069-003 completo | «¿Por qué ha subido tanto el gasto?» | Pide alcance y periodo; propone investigación sin inventar importe, servicio culpable ni causa raíz. |
+| 5:15–6:15 | En el mismo panel, «Nueva conversación»; enviar JUP-069-003 completo | «¿Por qué ha subido tanto el gasto?» | Pide alcance y periodo; propone investigación sin inventar importe, servicio culpable ni causa raíz. |
 | 6:15–7:00 | Mostrar límites y cerrar sesión | «Hemos demostrado consulta de muestra y explicación trazable; el ahorro y las decisiones operativas necesitan más evidencia». | Sin promesas de ahorro ni apagado; ruta protegida vuelve al login tras salir. |
+
+Con `CHAT_ENABLED=false` el panel está oculto: los tramos 3:15–6:15 quedan `blocked`, no se sustituyen por la ruta estructurada `/assistant`. Tras recarga, abrir el panel y «Historial» para recuperar la conversación y su cita. La integración de A no autoriza activar el chat antes de aceptar B.
 
 ## Reserva y ampliación
 

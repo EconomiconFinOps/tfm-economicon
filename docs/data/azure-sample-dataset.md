@@ -141,6 +141,26 @@ actualización en la revisión de código.
 - Mantener `actual` y `amortized` como datasets seleccionables, nunca acumulados.
 - Añadir paginación determinista y tests que incluyan costes negativos y cero.
 
-## Datos sintéticos para validar costes (JUP-106)
+## Datos de demostración con fechas desplazadas y series sintéticas (JUP-119)
 
-El dataset público cubre un periodo corto y una sola moneda. Para validar en la interfaz casos que no cubre (varios meses, huecos, ceros, créditos, dos monedas, importes grandes) hay un conjunto sintético, separado y marcado, que se carga y se retira con una herramienta local: [JUP-106-synthetic-costs.md](../validation/JUP-106-synthetic-costs.md). No sustituye ni modifica este dataset.
+`fixtures/azure-cost/derived/EA-Cost-Actual.shifted-2026-09.sample.csv` es una copia de `EA-Cost-Actual.sample.csv`
+con las columnas `Date`, `BillingPeriodStartDate` y `BillingPeriodEndDate` desplazadas 822 días (el 1 de junio de
+2024 pasa a ser el 1 de septiembre de 2026); el resto de valores son los públicos. Su manifiesto propio
+(`derived/manifest.json`) lo marca como derivado y el manifiesto original no cambia. **No son facturas de 2026.**
+
+`fixtures/azure-cost/demo/demo-cost.csv` junta ese derivado con series sintéticas diarias en la ventana del
+1 de julio al 30 de octubre de 2026 (anomalías en `tenant-core`; costes en euros y dólares en `tenant-growth`) y
+`demo/manifest.json` lista las suscripciones con su origen (`public-shifted` o `synthetic`), el número de registros
+que guarda la ingesta y los campos que los datos no llevan (grupo de recursos, centro de coste, propietario,
+aplicación y entorno). Se regenera con `python scripts/demo_dataset.py` y se carga con `scripts/demo_data.py`
+(ver [la guía de la demo](../demo/JUP-107/preparacion.md)); una prueba comprueba que los ficheros versionados son
+idénticos a los regenerados. Si un stack de desarrollo se cargó con los scripts anteriores (`synthetic-jup106-*` y
+`synthetic-jup107-*`), esas filas cuentan como datos ajenos: hay que recrear el stack con volúmenes nuevos o borrarlas a mano.
+
+## Datos sintéticos para validar costes (JUP-106, sustituido por JUP-119)
+
+Esta sección describe el conjunto anterior, cargado con `scripts/synthetic_costs.py`, que ya no existe: los casos que la API
+simulada no puede entregar (fila sin fecha, importe con céntimos por encima de 2^53, grupos de recurso que solo difieren
+en mayúsculas) los cubren ahora pruebas de billing con CockroachDB real, y la demo usa los datos de JUP-119.
+
+El dataset público cubre un periodo corto y una sola moneda. Para validar en la interfaz casos que no cubre (varios meses, huecos, ceros, créditos, dos monedas, importes grandes) hay un conjunto sintético, separado y marcado, que se carga y se retira con una herramienta local: [JUP-106-synthetic-costs.md](../validation/JUP-106-synthetic-costs.md). No sustituye ni modifica este dataset. Con esos datos hay además una demo corta y reproducible de la funcionalidad de costes (JUP-107), con guion, preparación y valores esperados: [demo JUP-107](../demo/JUP-107/README.md).

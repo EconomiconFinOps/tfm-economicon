@@ -4,6 +4,9 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
+
+from preparar import prepare
 
 from verificar import check
 
@@ -26,6 +29,24 @@ class IntegrityControls(unittest.TestCase):
                     data["cases"][0]["expected"] = "1000 EUR"
                 target.write_text(json.dumps(data), encoding="utf-8")
                 with self.assertRaisesRegex(ValueError, "Archivo no reproducible"):
+                    check(REPO, package)
+
+    def test_rejects_matching_but_invalid_regeneration(self):
+        # Both copies agree: only the independent reference invariant catches this.
+        with tempfile.TemporaryDirectory() as tmp:
+            package = Path(tmp)
+
+            def extra_group(repo, output):
+                expected = prepare(repo, output)
+                expected["groups"].append({"value": "unexpected", "record_count": 0})
+                (output / "costes-esperados.json").write_text(
+                    json.dumps(expected), encoding="utf-8"
+                )
+                shutil.copytree(output, package / "generado")
+                return expected
+
+            with patch("verificar.prepare", side_effect=extra_group):
+                with self.assertRaisesRegex(ValueError, "Referencia o separación"):
                     check(REPO, package)
 
     def test_rejects_missing_or_extra_file(self):

@@ -138,8 +138,7 @@ En `production` se exige HTTPS y el operador aporta los origenes. Solo en
 Son hosts distintos; ajustar el puerto al `FRONTEND_HOST_PORT` que realmente
 usa el navegador y recrear el backend. El bind de Docker no configura CORS.
 El ejemplo mantiene `production` y `[]` por defecto.
-
-La politica permite GET/POST y Authorization, Content-Type, X-Tenant-Id junto
+La politica permite GET, POST y PATCH (PATCH lo usa el cambio de estado de las anomalias, `PATCH /billing/anomalies/episodes/{id}`; una ruta nueva con otro metodo necesita ampliar la lista y la prueba `test_cors.py`) y Authorization, Content-Type, X-Tenant-Id junto
 a las cabeceras safelisted del framework. OPTIONS termina sin consultar JWT,
 usuarios o tenants; max-age 600, sin permisos de cookies y sin cabeceras
 expuestas adicionales. CORS no sustituye JWT ni autorizacion tenant: una
@@ -182,6 +181,18 @@ python -m pytest tests
 - `POST /assistant/conversations/{conversation_id}/messages`
 
 `POST /jobs/ingest` requiere `text_content` como fuente principal del pipeline de embeddings.
+
+**Formato de `source` (JUP-113).** `POST /jobs/ingest` rechaza con `422` un `source` que el processor no
+aceptaría: tras `strip()` y `lower()` debe cumplir `^[a-z0-9][a-z0-9._-]{0,63}$` (letras minúsculas o
+dígitos, con punto, guion o guion bajo, de 1 a 64 caracteres, sin espacios interiores). Valen `aws-cur`,
+`local-smoke`, `azure-cost` o ` Azure-Cost `; no vale `Azure Cost Management`. El `422` usa el cuerpo
+saneado de siempre (`{"detail":[{"type":"validation_error","msg":"Invalid request value"}]}`), no crea
+trabajo, no reserva publicación y no publica nada. El valor admitido se guarda y se publica **tal como se
+envió**, sin normalizar. Antes de este cambio ese valor recibía `202` y el processor lo reencolaba sin fin.
+Un cliente que enviara otro formato pasa de `202` a `422`. La regla está duplicada a propósito en el
+processor (`SAFE_SOURCE`); los dos servicios la prueban con la misma tabla de casos,
+[`docs/api/ingest-source-contract-cases.json`](../../docs/api/ingest-source-contract-cases.json). Decisión en
+[ADR-0019](../../docs/adr/ADR-0019-ingestion-retry-policy.md).
 
 `GET /billing/summary` devuelve el contrato v2 de JUP-026 sobre los costes Azure
 ingeridos, separados por moneda y periodo. Los importes son strings decimales;
@@ -240,4 +251,45 @@ El transporte elimina del modelo informativo cualquier reflexión de la credenci
 desviacion del periodo anterior para el tenant autenticado. Contrato, ejemplos
 y limites: [docs/api/cost-anomalies.md](../../docs/api/cost-anomalies.md).
 Las alertas se devuelven bajo demanda; no implica notificaciones programadas,
-causa demostrada ni conexion del panel de demostracion.
+causa demostrada ni conexion del panel de demostracion. Desde JUP-114 es la
+consulta de prueba sin guardar.
+
+### Episodios de anomalias (JUP-114)
+
+`POST /billing/anomalies/detect` aplica la regla diaria de negocio de JUP-019
+al coste diario por servicio y guarda episodios por tenant (migracion
+`002_anomaly_episodes`); `GET /billing/anomalies/episodes` los lista por
+criticidad e impacto y `PATCH /billing/anomalies/episodes/{id}` cambia su
+estado. Contrato y limites: [docs/api/anomaly-episodes.md](../../docs/api/anomaly-episodes.md);
+decision: [ADR-0020](../../docs/adr/ADR-0020-cost-anomaly-episodes.md). Las
+pruebas con CockroachDB real (`tests/test_anomaly_episode_*.py`) necesitan
+`JUP086_COCKROACH_TEST_URL` y no corren en CI.
+
+### Consultas de coste Azure
+
+El chat acepta `cost_query` para consultar por suscripción, cuenta de facturación o servicio. Véase [contrato y ejemplos](../../docs/api/azure-cost-questions.md).
+### Explicacion de anomalias (JUP-038)
+
+`POST /assistant/conversations/{id}/messages` acepta el campo opcional `anomaly_query`
+(`{"episode_id": "anomaly-<64 hex en minuscula>"}`), excluyente con `ownership_query`
+(enviar los dos da `422`). El asistente responde con una explicacion **determinista**, sin
+embeddings ni modelo, y la guarda con su evidencia (`metadata.anomaly_evidence`) sin migracion
+nueva. El cliente sale siempre de la sesion, nunca del cuerpo.
+
+| Respuesta | Cuando | Se guardan mensajes |
+| --- | --- | --- |
+| `201` | Anomalia del cliente activo, explicable | Si, el de la pregunta y el de la explicacion |
+| `404 {"detail":{"code":"anomaly_episode_not_found"}}` | Anomalia de otro cliente o inexistente (misma respuesta) | No |
+| `409 {"detail":{"code":"anomaly_explanation_unavailable"}}` | Version de reglas que no se sabe explicar o datos incoherentes | No |
+| `422` | Identificador con otro formato, campos de mas o las dos selecciones a la vez | No |
+
+Los `401`, `403` y el `404` de conversacion se resuelven antes de leer ninguna anomalia. La
+lectura (`Database.fetch_anomaly_episode_snapshot`) es una sola sentencia SQL y devuelve el
+episodio, los valores exactos de las columnas (12 decimales) y la marca de datos sinteticos; el
+explicador es una funcion pura (`app/services/anomaly_explanations.py`) y la ruta no registra nada
+del episodio. Contrato, formulas y ejemplo real:
+[docs/api/anomaly-explanations.md](../../docs/api/anomaly-explanations.md). Las pruebas de la ruta
+con SQLite y un doble de la lectura (`tests/test_anomaly_explanation_api.py` y `..._schema.py`)
+corren en CI; las de la lectura y el recorrido completo con CockroachDB real
+(`tests/test_anomaly_episode_snapshot*.py` y `tests/test_anomaly_explanation_cockroach.py`)
+necesitan `JUP086_COCKROACH_TEST_URL` y no corren en CI.

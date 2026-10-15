@@ -1,5 +1,17 @@
 # Demo funcional — JUP-065
 
+## Actualización de PR63 — 15/10/2026
+
+Origen: chat `01a12c49-7488-72f0-9077-1137c5c4f2a6`. Reconciliación con develop
+53b43bb1 desde f27eb7f; índice y CI preservados. Atendidas observaciones de Lucía
+sobre JUP119, entregas A/B, HMAC/migraciones y panel. Tres tests con control
+negativo de invariantes,15 artefactos intactos,34 comandos offline PASS,
+OpenSpec74/74,19 enlaces;3 omisiones de entorno. Véase
+[evidencia](../evidence/JUP-065-validation.md). CI publicada/revalidación pendientes;
+no se acredita ensayo ni pairing. Trello snapshot20261015T181923Z:065 Validación,
+036 Hecho,A integrada con tarjeta aún En revisión,B en curso y035 Bloqueado.
+No extender autorizaciones de evaluación de B a esta tarea.
+
 Actualizado: 2026-10-11. Origen: «JUP-065 — Preparar la demo funcional», chat `01a0f8dc-e719-7161-a17b-d7686751fe0f`.
 [Tarjeta](https://trello.com/c/SZUFo4ol).
 

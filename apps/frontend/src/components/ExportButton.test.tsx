@@ -40,4 +40,59 @@ describe("ExportButton", () => {
     expect(screen.getByText("Exportar CSV")).toBeInTheDocument();
     expect(screen.getByText("Exportar PDF")).toBeInTheDocument();
   });
+
+  it("solo ofrece los formatos pedidos", () => {
+    render(<ExportButton data={[{ columna: "valor" }]} filename="prueba" formats={["csv"]} />);
+    fireEvent.click(screen.getByText("Exportar Resultados"));
+    expect(screen.getByText("Exportar CSV")).toBeInTheDocument();
+    expect(screen.queryByText("Exportar PDF")).toBeNull();
+  });
+});
+
+describe("ExportButton con texto escrito por usuarios", () => {
+  const hostile = { Servicio: "<img src=x onerror=alert(1)>", Motivo: "=HYPERLINK(\"http://x\")", Dias: 0, Nota: "+1", Menos: "-2+3", Arroba: "@SUM(A1)", Importe: "-300.00" };
+
+  it("escapa el HTML del informe PDF", () => {
+    let written = "";
+    const fakeWindow = { document: { write: (html: string) => { written = html; }, close: () => undefined }, print: () => undefined };
+    const original = window.open;
+    window.open = (() => fakeWindow) as unknown as typeof window.open;
+    try {
+      render(<ExportButton data={[hostile]} filename={"<b>informe</b>"} />);
+      fireEvent.click(screen.getByText("Exportar Resultados"));
+      fireEvent.click(screen.getByText("Exportar PDF"));
+    } finally {
+      window.open = original;
+    }
+    expect(written).not.toContain("<img");
+    expect(written).not.toContain("<b>informe</b>");
+    expect(written).toContain("&lt;img src=x onerror=alert(1)&gt;");
+    expect(written).toContain("<td>0</td>");
+  });
+
+  it("neutraliza fórmulas y conserva los ceros en el CSV", async () => {
+    let blob: Blob | undefined;
+    const originalCreate = URL.createObjectURL;
+    URL.createObjectURL = ((value: Blob) => { blob = value; return "blob:x"; }) as typeof URL.createObjectURL;
+    try {
+      render(<ExportButton data={[hostile]} filename="informe" />);
+      fireEvent.click(screen.getByText("Exportar Resultados"));
+      fireEvent.click(screen.getByText("Exportar CSV"));
+    } finally {
+      URL.createObjectURL = originalCreate;
+    }
+    const text = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(reader.error);
+      reader.readAsText(blob as Blob);
+    });
+    const [, row] = text.split("\n");
+    expect(row).toContain("\"'=HYPERLINK(\\\"http://x\\\")\"");
+    expect(row).toContain("\"'+1\"");
+    expect(row).toContain("\"'-2+3\"");
+    expect(row).toContain("\"-300.00\"");
+    expect(row).toContain("\"'@SUM(A1)\"");
+    expect(row).toContain(",\"0\",");
+  });
 });

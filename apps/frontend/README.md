@@ -16,6 +16,8 @@ Aqui vive la parte visual del sistema:
 - chat con el asistente
 - resumen de billing y salud del sistema
 
+La interfaz esta en español. El vocabulario y las excepciones en inglés están en [GLOSARIO.md](GLOSARIO.md).
+
 ## Stack
 
 - `React` 18
@@ -86,28 +88,49 @@ Mapa montado en `src/routes.tsx` (JUP-095). `/login` vive fuera del `Layout`; el
 | --- | --- | --- | --- | --- |
 | `/login` | `LoginPage` | Backend (`POST /auth/login`) | No aplica | Fuera de `SessionGate`; crea la sesión |
 | `/` | `ExecutiveCostDashboard` | Backend (`GET /billing/summary` v2) | No aplica | Costes almacenados: intervalo mensual, desglose, tendencia y comparación del primer/último mes observado con coste no cero por moneda (JUP-055) |
-| `/operational` | `OperationalCostDashboard` | Demostración (`src/data/demo/`) | No | No hace ninguna petición al backend |
-| `/cuts` | `ExecutiveCutDashboard` | Demostración (`src/data/demo/`) | No | No hace ninguna petición al backend |
-| `/anomalies` | `AnomaliesPanel` | Demostración (`src/data/demo/`) | Sí | Aviso visible, periodo de muestra y rótulo en la exportación (JUP-057) |
-| `/recommendations` | `RecommendationsPanel` | Demostración (`src/data/demo/`) | No | No hace ninguna petición al backend |
+| `/anomalies` | `AnomaliesPanel` | Backend (`GET /billing/anomalies/episodes`, `POST /billing/anomalies/detect`, `PATCH /billing/anomalies/episodes/{id}`) | No aplica | Episodios guardados del cliente activo; avisa «Datos sintéticos de demostración» cuando el cliente tiene ingestas sintéticas (JUP-114) |
 | `/ingest` | `IngestPage` | Backend (`POST /jobs/ingest`) | No aplica | Vía `services/api.ts` |
-| `/assistant` | `ConversationsPage` | Backend (`/assistant/conversations`) | No aplica | Vía `services/api.ts` |
-| `/overview-legacy` | `DashboardPage` | Backend (`GET /billing/summary`, `GET /health`) | No aplica | Ruta puente conservada; ver `RF-105-001` en `openspec/findings/backlog.md` |
+| `/assistant` | `ConversationsPage` | Backend (`/assistant/conversations`, y `GET /billing/anomalies/episodes` solo con el modo «Explicar una anomalía») | No aplica | Vía `services/api.ts`; admite `?episode=<id>` para preseleccionar una anomalía (JUP-038) |
+| `/overview-legacy` | `DashboardPage` | Backend (`GET /billing/summary`, `GET /health`) | No aplica | Ruta puente sin entrada de menú (JUP-116); ver `RF-105-001` en `openspec/findings/backlog.md` |
 | `/system-health` | `SystemHealthDashboard` | Backend (`GET /health/status`, `POST /health/provider-check`) | No aplica | Rotula «Datos de ejemplo» por componente cuando su origen es `mock` (JUP-047) |
 
-**Recuento (verificado el 2026-10-09 contra `src/routes.tsx` y los imports de cada pantalla, sobre
-`develop` en `ff2ea6b`):** 9 rutas bajo sesión más `/login`. 5 sirven datos del backend (`/`,
-`/ingest`, `/assistant`, `/overview-legacy`, `/system-health`) y 4 son de demostración (`/operational`,
-`/cuts`, `/anomalies`, `/recommendations`), de las cuales solo `/anomalies` lo indica en la interfaz
-(`RF-104-004`). Este es el único recuento de pantallas del repositorio: el backlog, el mapa de
-carencias de JUP-097 y el spike enlazan aquí en lugar de repetir cifras. Quien añada, retire o
-conecte una pantalla actualiza esta tabla y la fecha.
+**Recuento (verificado el 2026-10-13 contra `src/routes.tsx` y `src/layouts/Layout.tsx`, en la rama
+`feat/JUP-114-anomaly-circuit` sobre `develop` en `0643e1b`):** 6 rutas bajo sesión más `/login`. Las 6
+sirven datos del backend (`/`, `/anomalies`, `/ingest`, `/assistant`, `/overview-legacy`, `/system-health`) y
+ninguna es de demostración. El menú enlaza cinco: `/`, `/anomalies`,
+`/ingest`, `/assistant` y `/system-health`; `/overview-legacy` se conserva sin enlace. Otras tres
+pantallas de demostración (Coste Detallado, Corte Global y Recomendaciones) existen en el código pero no
+están publicadas: ver la sección siguiente. Una dirección que no corresponde a ninguna ruta lleva a `/`.
+Este es el único recuento de pantallas del repositorio: el backlog, el mapa de carencias de JUP-097 y el
+spike enlazan aquí en lugar de repetir cifras. Quien añada, retire o conecte una pantalla actualiza esta
+tabla y la fecha.
+
+### Pantallas no publicadas
+
+JUP-116 las ocultó del MVP sin borrarlas: no tienen ruta ni entrada de menú, pero siguen en `src/pages/`
+con sus datos de demostración en `src/data/demo/` y sus pruebas, que montan el componente directamente
+(por eso siguen pasando aunque la pantalla no sea alcanzable).
+
+| Rótulo | Antigua ruta | Pantalla | Datos |
+| --- | --- | --- | --- |
+| Coste Detallado | `/operational` | `OperationalCostDashboard` | `src/data/demo/operationalCostDashboard.ts` |
+| Corte Global | `/cuts` | `ExecutiveCutDashboard` | `src/data/demo/executiveCutDashboard.ts` |
+| Recomendaciones | `/recommendations` | `RecommendationsPanel` | `src/data/demo/recommendationsPanel.ts` |
+
+Para reactivar una, en `src/routes.tsx` se importa la pantalla y se añade su ruta junto a las demás hijas
+de `Layout`, y en `src/layouts/Layout.tsx` se añade su entrada a `navItems`. Antes hay que rotular sus datos
+como de demostración (`RF-104-004`) y ajustar las pruebas de menú de `Layout.test.tsx` y de rutas ocultas en
+`routes.hidden-screens.test.tsx`. Las capacidades de backend que necesitan para tener datos reales están en
+[`docs/planning/JUP-097-frontend-data-gap-map.md`](../../docs/planning/JUP-097-frontend-data-gap-map.md).
 
 ## Estilos y colores
 
-La aplicacion tiene **una unica paleta**, definida una sola vez en `src/styles/theme.css` (bloque
-`:root`, solo tema oscuro; no hay `.dark` ni `class="dark"` en `index.html`). Decision y motivos en
-[ADR-0012](../../docs/adr/ADR-0012-frontend-color-tokens.md).
+La aplicacion tiene la marca de Economicon en **dos paletas con los mismos tokens**, definidas en
+`src/styles/theme.css`: la clara en `:root` (por defecto) y la oscura en `[data-theme="dark"]`. Un script
+de `index.html` fija ese atributo antes del primer pintado (eleccion guardada o preferencia del sistema)
+y el boton "Tema oscuro" de la cabecera alterna. Decision y motivos en
+[ADR-0012](../../docs/adr/ADR-0012-frontend-color-tokens.md) (enmienda JUP-112); tipografia y logotipos
+en [`ATTRIBUTIONS.md`](ATTRIBUTIONS.md).
 
 **Regla: ninguna pantalla, layout, componente ni dato demo escribe un color literal.** Ni
 hexadecimales (`#1a1f2e`) ni utilidades de la paleta de Tailwind (`text-slate-400`, `bg-red-500/20`):
@@ -118,25 +141,32 @@ se usa la utilidad del token.
 | Fondo de pagina, tarjeta, degradado de tarjeta | `bg-background`, `bg-card`, `from-card to-accent` |
 | Texto principal, secundario, intermedio, tenue | `text-foreground`, `text-muted-foreground`, `text-subtle-foreground`, `text-neutral` |
 | Bordes y separadores | `border-border`, `divide-border` |
-| Marca, foco, acento de navegacion | `bg-primary`, `border-primary`, `text-highlight` |
-| Estados (exito, error, info, aviso, atencion) | `text-success`, `bg-danger-tint/20 text-danger-foreground`, `text-info`, `text-warning`, `bg-attention-tint/20` |
-| Atributos de Recharts (`stroke`, `fill`) y estilos en linea | `var(--chart-axis)`, `var(--chart-2)`, `var(--primary)`, o `chartTooltipStyle` para el tooltip |
+| Boton primario (el violeta es solo de botones) | `bg-primary text-primary-foreground` |
+| Navegacion activa, seleccion y foco | `text-highlight`, `border-highlight`, `outline-highlight` |
+| Cabecera de marca y sus controles | `bg-brand`, `text-brand-foreground` |
+| Ahorro e insights (coral; el texto es siempre casi negro) | `bg-saving text-saving-foreground` |
+| Borde de un campo de formulario | `border-input` |
+| Estados (exito, peligro, info, aviso) | `text-success`, `bg-danger-tint/20 text-danger-foreground`, `text-info`, `text-warning`; relleno suave como maximo al 30 % y siempre con icono o texto |
+| Atributos de Recharts (`stroke`, `fill`) y estilos en linea | `var(--chart-axis)`, `var(--chart-2)`, o `chartTooltipStyle`, `chartTooltipItemStyle` y `chartLegendFormatter` para tooltip y leyenda; nunca `var(--primary)` |
 
 - **Cambiar un color** = editar su valor en `theme.css`; llega a todas las pantallas sin tocarlas.
 - **Anadir un color** = crear un token con nombre de **funcion** (no de color), con consumidor real, en
-  `:root` y en `@theme inline` (`--color-<nombre>`). Un token sin uso hace fallar los tests.
+  `:root`, en `[data-theme="dark"]` y en `@theme inline` (`--color-<nombre>`). Un token sin uso o que
+  solo exista en una paleta hace fallar los tests, y un color de estado debe pasar `theme-contrast.test.ts`.
 - **No construyas clases por interpolacion** (`` `text-${color}-400` ``): Tailwind no las detecta. Usa un
   mapa cerrado de cadenas completas (`Record<string, string>`), como `MetricCard`.
 - **Excepciones**: solo si el tema no puede alcanzar el color (p. ej. el HTML autonomo que `ExportButton`
   abre para imprimir, que no carga `theme.css`). Se declaran una a una, con archivo, valor y motivo, en
   la lista de `src/test/color-tokens.guard.test.ts`.
 - Los primitivos de `src/components/ui/` se conservan tal como los publica shadcn/ui; sus variantes
-  `dark:` funcionan siempre porque `theme.css` declara `@custom-variant dark (&)`.
+  `dark:` aplican solo con el tema oscuro porque `theme.css` declara
+  `@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *))`.
 
-Dos tests estaticos lo hacen cumplir: `color-tokens.guard.test.ts` (ningun color literal fuera de las
-excepciones) y `theme-palette.test.ts` (paleta unica, tokens sin duplicar ni huerfanos, `<html>` sin
-clase de tema). Las atribuciones del codigo de terceros copiado estan en
-[`ATTRIBUTIONS.md`](ATTRIBUTIONS.md).
+Cuatro tests estaticos lo hacen cumplir: `color-tokens.guard.test.ts` (ningun color literal fuera de las
+excepciones), `theme-palette.test.ts` (dos paletas con los mismos tokens, sin duplicar ni huerfanos),
+`theme-contrast.test.ts` (contraste de estados, botones, foco y series en ambos temas) y
+`brand-usage.guard.test.ts` (violeta solo en botones, opacidad maxima de los rellenos, foco visible y
+tooltips). Las atribuciones del codigo de terceros copiado estan en [`ATTRIBUTIONS.md`](ATTRIBUTIONS.md).
 
 ## Como correrlo
 
@@ -226,7 +256,17 @@ pnpm build
 - El panel ejecutivo `/` consume costes almacenados con `hooks/useExecutiveCostKpis.ts`;
   ya no muestra inventario, tendencia ni exportación de demostración. El ahorro potencial sigue
   no disponible porque el contrato no lo calcula.
-- Las otras cuatro pantallas de coste (`/operational`, `/cuts`, `/anomalies`, `/recommendations`)
+- El panel `/anomalies` lee los episodios guardados del cliente activo (JUP-114): detección bajo demanda,
+  detalle con cambio de estado y exportación solo en CSV; los importes se muestran como texto exacto con su moneda.
+  El detalle ofrece el enlace «Explicar en el asistente» (`/assistant?episode=<id>`) solo si el identificador tiene
+  el formato `anomaly-` más 64 hexadecimales en minúscula; el enlace solo navega (JUP-038).
+- El asistente `/assistant` (JUP-038) tiene el modo «Explicar una anomalía» en el redactor, excluyente con «Consultar
+  costes por propiedad»: carga las anomalías del cliente activo, solo ofrece las de identificador válido, envía
+  `anomaly_query` y pinta la respuesta con el bloque de evidencia `AnomalyEvidence`, que valida la forma de la
+  evidencia guardada (`isAnomalyEvidence`) y no calcula nada. El parámetro `?episode=` solo preselecciona: el envío
+  ocurre al pulsar «Enviar» y el parámetro se quita tras un envío correcto. Contrato:
+  [docs/api/anomaly-explanations.md](../../docs/api/anomaly-explanations.md).
+- Las otras pantallas de coste (Coste Detallado, Corte Global y Recomendaciones, sin ruta)
   conservan los datos de demostración estáticos (`src/data/demo/`; recuento en la sección «Rutas»);
   los gaps restantes de `RF-095-002` en `openspec/findings/backlog.md` no se dan por resueltos por
   JUP-055.

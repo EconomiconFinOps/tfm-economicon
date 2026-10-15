@@ -10,12 +10,29 @@ import { useState } from "react";
 // interfaz mas amplia (p.ej. `unknown`) que obligaria a castear en cada uso.
 type ExportRow = Record<string, string | number>;
 
+// Rows may carry text typed by users (for example a closing reason), so the
+// print window gets escaped HTML and spreadsheet formulas are neutralised.
+function escapeHtml(value: unknown): string {
+  return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function csvCell(value: string | number | undefined): string {
+  const text = String(value ?? "");
+  const numeric = /^-?\d+(\.\d+)?$/.test(text);
+  return JSON.stringify(!numeric && /^[=+\-@\t\r]/.test(text) ? "'" + text : text);
+}
+
 interface ExportButtonProps {
   data: ExportRow[];
   filename: string;
+  // Formatos que ofrece el menu; por defecto CSV y PDF.
+  formats?: ExportFormat[];
 }
 
-export function ExportButton({ data, filename }: ExportButtonProps) {
+export type ExportFormat = "csv" | "pdf";
+
+export function ExportButton({ data, filename, formats = ["csv", "pdf"] }: ExportButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const exportToCSV = () => {
@@ -23,7 +40,7 @@ export function ExportButton({ data, filename }: ExportButtonProps) {
     const csvContent = [
       headers.join(','),
       ...data.map((row: ExportRow) =>
-        headers.map(h => JSON.stringify(row[h] || '')).join(',')
+        headers.map(h => csvCell(row[h])).join(',')
       )
     ].join('\n');
 
@@ -39,25 +56,25 @@ export function ExportButton({ data, filename }: ExportButtonProps) {
     const content = `
       <html>
         <head>
-          <title>${filename}</title>
+          <title>${escapeHtml(filename)}</title>
           <style>
             body { font-family: Arial, sans-serif; padding: 20px; }
-            h1 { color: #1e40af; }
+            h1 { color: #2b2359; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: #1e40af; color: white; }
+            th, td { border: 1px solid #d9d5f2; padding: 8px; text-align: left; }
+            th { background-color: #2b2359; color: #fafafc; }
           </style>
         </head>
         <body>
-          <h1>${filename}</h1>
+          <h1>${escapeHtml(filename)}</h1>
           <p>Generado: ${new Date().toLocaleString('es-ES')}</p>
           <table>
             <thead>
-              <tr>${Object.keys(data[0] || {}).map(h => `<th>${h}</th>`).join('')}</tr>
+              <tr>${Object.keys(data[0] || {}).map(h => `<th>${escapeHtml(h)}</th>`).join('')}</tr>
             </thead>
             <tbody>
               ${data.map((row: ExportRow) =>
-                `<tr>${Object.values(row).map(v => `<td>${v}</td>`).join('')}</tr>`
+                `<tr>${Object.values(row).map(v => `<td>${escapeHtml(v)}</td>`).join('')}</tr>`
               ).join('')}
             </tbody>
           </table>
@@ -78,7 +95,7 @@ export function ExportButton({ data, filename }: ExportButtonProps) {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-highlight text-foreground rounded-lg hover:shadow-lg hover:shadow-info-tint/30 transition-all"
+        className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all"
       >
         <Download className="w-4 h-4" />
         Exportar Resultados
@@ -91,20 +108,20 @@ export function ExportButton({ data, filename }: ExportButtonProps) {
             onClick={() => setIsOpen(false)}
           />
           <div className="absolute right-0 mt-2 w-48 bg-card rounded-lg shadow-xl border border-border z-20">
-            <button
+            {formats.includes("csv") && <button
               onClick={exportToCSV}
               className="w-full flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors text-left text-foreground"
             >
               <FileSpreadsheet className="w-4 h-4 text-success" />
               <span>Exportar CSV</span>
-            </button>
-            <button
+            </button>}
+            {formats.includes("pdf") && <button
               onClick={exportToPDF}
               className="w-full flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors text-left border-t border-border text-foreground"
             >
               <FileText className="w-4 h-4 text-danger" />
               <span>Exportar PDF</span>
-            </button>
+            </button>}
           </div>
         </>
       )}

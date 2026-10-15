@@ -70,7 +70,7 @@ async function showPeriod(series: Series, first = "2024-05", last = "2024-08", f
   } });
   restoreSession(tenants[0].id);
   renderApp();
-  await screen.findByRole("heading", { name: "Dashboard Ejecutivo - Coste Global" });
+  await screen.findByRole("heading", { name: "Panel Ejecutivo - Coste Global" });
   act(() => {
     fireEvent.change(screen.getByLabelText("Mes inicial"), { target: { value: first } });
     fireEvent.change(screen.getByLabelText("Mes final"), { target: { value: last } });
@@ -190,7 +190,7 @@ describe("JUP-055 isolated observations with real Recharts", () => {
     mockBackend({ "GET /billing/summary": ({ search }) => jsonResponse(responseFor(search, series)) });
     restoreSession(tenants[0].id);
     renderApp();
-    await screen.findByRole("heading", { name: "Dashboard Ejecutivo - Coste Global" });
+    await screen.findByRole("heading", { name: "Panel Ejecutivo - Coste Global" });
     act(() => {
       fireEvent.change(screen.getByLabelText("Mes inicial"), { target: { value: "2024-05" } });
       fireEvent.change(screen.getByLabelText("Mes final"), { target: { value: "2024-08" } });

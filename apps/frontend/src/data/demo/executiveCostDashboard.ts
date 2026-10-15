@@ -26,6 +26,6 @@ export const serviceData = [
 export const kpiData = [
   { title: "Coste Total Mensual", value: "298.000€", change: "+4.6%", trend: "up", icon: DollarSign, color: "blue" },
   { title: "Coste por Servicio", value: "42%", change: "Compute", trend: "stable", icon: Cloud, color: "green" },
-  { title: "Ahorro Potencial", value: "47.200€", change: "15.8%", trend: "down", icon: TrendingDown, color: "purple" },
+  { title: "Ahorro Potencial", value: "47.200€", change: "15.8%", trend: "down", icon: TrendingDown, color: "saving" },
   { title: "Recursos Activos", value: "1.248", change: "+12", trend: "up", icon: Server, color: "orange" },
 ];

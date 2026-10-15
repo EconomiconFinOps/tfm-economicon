@@ -6,9 +6,11 @@ Estado inicial: **not_run**. Copiar esta plantilla por ejecución, fuera de `gen
 - Presentador, observador y validador: pendiente.
 - Commit de aplicación / imágenes / rama integrada: pendiente.
 - SHA de PR63 usado para preparar / evidencia offline: pendiente.
-- SHAs integrados y dictámenes JUP-035 / JUP-036: pendiente.
+- SHAs integrados y dictámenes A/JUP-122, B/JUP-123 y JUP-036: pendiente.
 - Autorización de ejecución y proveedor; presupuesto si procede: pendiente (esta preparación no autoriza consumo).
 - Paquete de datos: base `de0d62e7c0028f35a81c5087f531d19031a90e81`; hashes en `generado/procedencia.json`.
+- CHAT_ENABLED y autorización de activación; HMAC legible (sin contenido), migración exit0, subred privada y COST_REFERENCE_DATE: pendiente.
+- Ausencia del perfil/carga JUP-119 y recibo status/billing Core/Growth: pendiente.
 - Host, URL frontend/backend, proyecto Compose y dataset: pendiente.
 - Proveedor/modelo chat realmente usado; parámetros de generación: pendiente.
 - Proveedor/modelo/dimensión embeddings; índice, chunking, hash corpus: pendiente.
@@ -16,7 +18,7 @@ Estado inicial: **not_run**. Copiar esta plantilla por ejecución, fuera de `gen
 
 | Comprobación | Resultado | Evidencia / valor observado / duración | Responsable |
 | --- | --- | --- | --- |
-| Puertas JUP-035/036 y autorización del entorno satisfechas | not_run | pendiente | pendiente |
+| Puertas A/JUP-122, B/JUP-123 y JUP-036 y autorización del entorno satisfechas | not_run | pendiente | pendiente |
 | Configuración, servicios y navegador/CORS | not_run | pendiente | pendiente |
 | Primera ingesta: 38 registros, 4 páginas, 0,06 USD | not_run | pendiente | pendiente |
 | Repetición: mismo run_id, sin duplicar | not_run | pendiente | pendiente |

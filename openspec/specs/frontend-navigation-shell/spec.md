@@ -11,14 +11,11 @@ los datos que sirve el backend.
 
 ### Requirement: Cada pantalla es alcanzable por una dirección propia
 
-El frontend SHALL exponer cada una de sus pantallas en una dirección estable y compartible. Navegar
-de una pantalla a otra NO SHALL recargar la aplicación ni descartar el estado de sesión ya
-establecido.
+El frontend SHALL exponer cada una de sus pantallas publicadas en una dirección estable y compartible. Navegar de una pantalla a otra NO SHALL recargar la aplicación ni descartar el estado de sesión ya establecido. Una dirección que no corresponda a ninguna pantalla publicada, incluidas las de pantallas ocultas del MVP, NO SHALL presentar una pantalla de error del enrutador: SHALL llevar a la pantalla inicial.
 
 #### Scenario: Abrir directamente la dirección de una pantalla
 
-- **WHEN** se abre la aplicación directamente en la dirección de una pantalla concreta, con sesión
-  establecida
+- **WHEN** se abre la aplicación directamente en la dirección de una pantalla concreta, con sesión establecida
 - **THEN** se presenta esa pantalla, no la pantalla inicial
 - **AND** el armazón de la aplicación la acompaña
 
@@ -30,8 +27,15 @@ establecido.
 
 #### Scenario: Sin sesión establecida se presenta el acceso
 
-- **WHEN** se abre cualquier dirección de la aplicación sin sesión establecida
+- **WHEN** se abre cualquier dirección de la aplicación sin sesión establecida, publicada o no
 - **THEN** se presenta la pantalla de acceso
+
+#### Scenario: Una dirección no publicada lleva a la pantalla inicial
+
+- **WHEN** se abre, con sesión establecida, la dirección de una pantalla que no está publicada (por ejemplo la de Coste Detallado, Corte Global o Recomendaciones, o una dirección que no existe)
+- **THEN** se presenta la pantalla inicial dentro del armazón
+- **AND** no se presenta ninguna pantalla de error del enrutador
+- **AND** el ámbito de cliente activo sigue siendo el mismo
 
 ### Requirement: Un armazón único conserva identidad y ámbito de cliente
 
@@ -144,15 +148,18 @@ aunque sea JSON válido, SHALL descartarse y tratarse como ausencia de sesión.
 
 ### Requirement: Las pantallas conectadas al backend son alcanzables desde el menú
 
-Cada pantalla que consuma el backend SHALL tener, además de una dirección propia, un enlace visible
-en el menú de navegación. No SHALL depender exclusivamente de que se conozca o escriba su dirección
-para alcanzarse desde una pantalla ya autenticada.
+Cada pantalla publicada que consuma el backend SHALL tener, además de una dirección propia, un enlace visible en el menú de navegación, con la única excepción de la vista heredada del resumen de facturación, que conserva su dirección y NO SHALL tener enlace en el menú. Ninguna otra pantalla conectada al backend SHALL depender exclusivamente de que se conozca o escriba su dirección para alcanzarse desde una pantalla ya autenticada.
 
 #### Scenario: Una pantalla conectada al backend se alcanza haciendo clic en el menú
 
-- **WHEN** se está en cualquier pantalla autenticada y se hace clic en el enlace del menú
-  correspondiente a una pantalla conectada al backend
+- **WHEN** se está en cualquier pantalla autenticada y se hace clic en el enlace del menú correspondiente a una pantalla conectada al backend
 - **THEN** se presenta esa pantalla, sin haber escrito su dirección directamente
+
+#### Scenario: La vista heredada del resumen de facturación se alcanza solo por su dirección
+
+- **WHEN** se abre con sesión establecida la dirección de la vista heredada del resumen de facturación
+- **THEN** se presenta esa pantalla con su armazón
+- **AND** el menú de navegación no contiene ningún enlace a ella
 
 ### Requirement: Los colores de la interfaz proceden solo de los tokens del tema
 
@@ -193,29 +200,65 @@ cambie el color en todas las pantallas que lo consumen sin tocar ninguna de ella
 - **THEN** todas esas pantallas muestran el color nuevo
 - **AND** ningún archivo de pantalla ni de componente cambia
 
-### Requirement: El tema define una única paleta activa
+### Requirement: El armazón presenta la marca de Economicon
 
-El tema SHALL definir una única paleta de colores, activa sin depender de ninguna clase ni atributo
-en el documento. NO SHALL existir una segunda paleta ni un ámbito alternativo sin consumidor.
+El armazón común SHALL mostrar el nombre "Economicon" y el monograma de marca en su cabecera, y NO SHALL mostrar el nombre ni el icono del prototipo anterior ("FinOps AI Platform", "FinOps Control Tower"). La navegación activa SHALL distinguirse con tokens del tema, sin usar el violeta reservado a botones.
 
-#### Scenario: La paleta no depende de un ámbito declarado
+#### Scenario: Cabecera sin identidad antigua
 
-- **WHEN** se carga la aplicación sin ninguna clase de tema en el documento
-- **THEN** pantallas y componentes compartidos se presentan con la paleta de la aplicación
+- **WHEN** se abre cualquier pantalla del armazón
+- **THEN** la cabecera muestra "Economicon" y el monograma
+- **AND** no aparece el texto "FinOps AI Platform" ni el título de pestaña "FinOps Control Tower"
 
-#### Scenario: No hay paleta paralela
+#### Scenario: Elemento de navegación activo
+
+- **WHEN** una ruta está activa en la navegación
+- **THEN** su elemento se distingue del resto con un token del tema distinto del violeta de botones
+- **AND** la distinción no depende solo del color (borde o peso tipográfico)
+
+### Requirement: El tema define una paleta clara y una oscura con los mismos tokens
+
+El tema SHALL definir dos paletas, una clara activa por defecto y una oscura que se activa mediante un atributo del documento, y ambas SHALL declarar exactamente el mismo conjunto de tokens, cada uno con una sola definición por paleta. NO SHALL existir una tercera paleta ni tokens que solo existan en una de ellas, y cada token SHALL tener al menos un consumidor.
+
+#### Scenario: Las dos paletas tienen los mismos tokens
 
 - **WHEN** se inspecciona la definición del tema
-- **THEN** cada token de color tiene una sola definición
-- **AND** no existe un bloque alternativo de tokens para otro tema
+- **THEN** el conjunto de tokens de color de la paleta clara es idéntico al de la oscura
+- **AND** cada token está definido una sola vez en cada paleta
 
-### Requirement: La unificación de colores no altera el aspecto de las pantallas
+#### Scenario: La paleta oscura depende del atributo
 
-La sustitución de colores literales por tokens SHALL conservar el aspecto de cada pantalla: cada
-token SHALL reproducir el valor que sustituye, sin consolidar tonos distintos en uno.
+- **WHEN** el documento no declara el tema oscuro
+- **THEN** pantallas y componentes compartidos se presentan con la paleta clara
 
-#### Scenario: Comparación antes y después
+#### Scenario: Token sin consumidor
 
-- **WHEN** se captura cada pantalla de la aplicación con los mismos datos antes y después de la
-  unificación
-- **THEN** las capturas coinciden, o cada diferencia queda explicada y aceptada una a una
+- **WHEN** un token declarado no lo usa ninguna pantalla, componente ni gráfica
+- **THEN** la batería de pruebas del frontend falla señalando el token
+
+### Requirement: Ninguna pantalla de demostración se publica en el MVP
+
+El frontend NO SHALL publicar, ni con dirección ni con enlace en el menú, ninguna pantalla cuyos datos procedan solo de un origen de demostración, salvo que la propia pantalla declare de forma visible que sus datos son de demostración. Su código y sus datos de demostración PUEDEN conservarse en el repositorio siempre que ninguna dirección ni enlace los presente. Las pantallas de Coste Detallado, Corte Global y Recomendaciones SHALL quedar no publicadas.
+
+#### Scenario: El menú no enlaza pantallas ocultas ni de demostración sin aviso
+
+- **WHEN** se muestra el menú de navegación con sesión establecida
+- **THEN** no contiene ningún enlace a Coste Detallado, Corte Global ni Recomendaciones
+- **AND** cada enlace que contiene lleva a una pantalla que consulta el backend o que declara de forma visible que sus datos son de demostración
+
+#### Scenario: Las pantallas de demostración no tienen dirección
+
+- **WHEN** se enumeran las direcciones publicadas por la aplicación
+- **THEN** ninguna presenta Coste Detallado, Corte Global ni Recomendaciones
+
+#### Scenario: Ocultar no cambia las pantallas con datos reales
+
+- **WHEN** se inspeccionan Coste Global, Ingesta, Asistente y Salud del sistema
+- **THEN** siguen en sus mismas direcciones y con los mismos enlaces del menú
+- **AND** siguen tomando sus datos del backend
+
+#### Scenario: Una pantalla de demostración rotulada puede seguir publicada
+
+- **WHEN** se abre Anomalías mientras sus datos sean de demostración
+- **THEN** la pantalla declara de forma visible que sus datos son de demostración
+- **AND** conserva su dirección y su enlace del menú

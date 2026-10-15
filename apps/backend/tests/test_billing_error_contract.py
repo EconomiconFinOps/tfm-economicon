@@ -109,7 +109,7 @@ def snapshot(api):
 
 def assert_no_side_effects(api, before):
     assert snapshot(api) == before
-    for name in ("create_job", "create_conversation", "append_message"):
+    for name in ("create_job", "create_conversation", "append_pair"):
         api.spies[name].assert_not_called()
     api.queue.publish.assert_not_called()
     api.queue.reserve.assert_not_called()
@@ -198,14 +198,9 @@ def test_tag_coverage_without_dates_uses_current_utc_calendar_month(api, coverag
     assert 28 <= (end - start).days <= 31
 
 
-class FrozenDatetime(datetime):
-    """Reloj congelado: sustituye solo la fuente de tiempo del modulo de rutas."""
-    instant = datetime(2024, 6, 15, tzinfo=timezone.utc)
-
-    @classmethod
-    def now(cls, tz=None):
-        assert tz is timezone.utc, "El periodo por defecto debe calcularse en UTC"
-        return cls.instant.astimezone(tz)
+def freeze_clock(monkeypatch, instant):
+    """Reloj congelado: sustituye solo la fuente de tiempo del servicio de fecha de referencia."""
+    monkeypatch.setattr("app.services.reference_date._utc_now", lambda: instant.astimezone(timezone.utc))
 
 
 @SQLITE
@@ -222,7 +217,7 @@ def test_tag_coverage_default_period_is_exactly_the_current_month(api, coverage_
     # Con el reloj congelado (frontera de tiempo) el periodo por defecto es
     # exactamente [primer dia del mes en curso, primer dia del mes siguiente),
     # incluida la vuelta de año; un mes anterior o un solo dia serian detectados.
-    monkeypatch.setattr("app.api.routes.billing.datetime", type("Frozen", (FrozenDatetime,), {"instant": instant}))
+    freeze_clock(monkeypatch, instant)
     response = call(api, "GET", COVERAGE_PATH, headers=headers())
     assert response.status_code == 200, response.text
     coverage_double.assert_called_once_with("tenant-a", start_date=start, end_date=end)
@@ -231,11 +226,9 @@ def test_tag_coverage_default_period_is_exactly_the_current_month(api, coverage_
 @SQLITE
 def test_tag_coverage_explicit_dates_win_over_current_month(api, coverage_double, monkeypatch):
     # Con fechas explicitas el reloj no interviene: ni siquiera se consulta.
-    class Boom(datetime):
-        @classmethod
-        def now(cls, tz=None):
-            raise AssertionError("El reloj no debe leerse si hay fechas explicitas")
-    monkeypatch.setattr("app.api.routes.billing.datetime", Boom)
+    def boom():
+        raise AssertionError("El reloj no debe leerse si hay fechas explicitas")
+    monkeypatch.setattr("app.services.reference_date._utc_now", boom)
     response = call(api, "GET", COVERAGE_PATH + "?start_date=2023-01-10&end_date=2023-03-05", headers=headers())
     assert response.status_code == 200, response.text
     coverage_double.assert_called_once_with("tenant-a", start_date=date(2023, 1, 10), end_date=date(2023, 3, 5))

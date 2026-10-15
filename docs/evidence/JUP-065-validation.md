@@ -7,6 +7,39 @@ Rama: `docs/JUP-065-functional-demo`, sobre develop
 [Paquete](../demo/JUP-065/README.md) y
 [alcance OpenSpec](../../openspec/changes/archive/2026-10-03-jup-065-functional-demo/proposal.md).
 
+## Actualización tras la revisión complementaria de Lucía — 15/10/2026
+
+Se reconcilia f27eb7f con develop53b43bb1e79b08967cc1b9efdf66669f11e8197c.
+El conflicto del índice conserva las entradas de ambas ramas; CI mantiene todos
+los comandos de develop, las tres comprobaciones de demo y el historial Git.
+No hay cambios propios de producto, configuración o dependencias frente a develop.
+
+Atendidas las observaciones del14/10: JUP-119/demo_data sustituye JUP-106,
+se evita cargar Core/Growth con el perfil demo, se explica status/remove sin
+--tenant y se prefieren volúmenes propios nuevos. Se incorporan HMAC, subred,
+backend-migrate, CHAT_ENABLED y el panel lateral con sus etiquetas actuales.
+Guion, puertas A/JUP-122 y B/JUP-123, preflight y plantilla quedan alineados.
+PR130/A y PR69/JUP-036 integradas; B en curso, sin aceptación. La nueva evaluación
+N3 que registra Trello no se presenta como finalizada ni validada.
+
+Verificación propia offline sobre esta combinación:
+
+- Verificador normal y optimizado:15/15; artefactos sin cambios respecto a f27eb7f.
+- Tres tests de integridad PASS. El nuevo caso regenera ambas copias con un grupo
+  adicional y exige rechazo por invariante. Sustituir require por no-op sólo en
+  memoria hace fallar ese test (ValueError no lanzado); verificador sin cambios.
+- Banco fijado:28 preguntas/7 categorías. Gobernanza completa:34 comandos exit0.
+- OpenSpec estricto:74/74;19 enlaces locales del paquete correctos;diff sin errores.
+- Tres omisiones locales:una de pgvector y dos de CD dependientes de Linux.
+  No se ejecuta runtime, Docker, navegador, proveedor ni ensayo integrado.
+
+Logs locales:materiales/07-evidencias/JUP-065-actualizacion-2026-10-15/ del workspace.
+El corpus fijado no equivale al corpus actual JUP-129: índice/corpus/embeddings
+requieren validación en el entorno final. No se atribuye validez generativa a mock.
+Víctor validó f27eb7f el11/10 y Paris aprobó el13/10; esos dictámenes no acreditan
+este incremento. Pendientes CI del SHA publicado y revalidación incremental de
+Paris/Víctor, pairing y ensayo. Los resultados finales de CI se enlazarán en PR63.
+
 ## Preparación reconciliada — 11/10/2026
 
 Corte nuevo que sustituye el estado de preparación del 10/10, sin convertir las

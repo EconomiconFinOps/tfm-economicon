@@ -18,15 +18,15 @@ describe("ingestion creation", () => {
     const { requests } = mockBackend({ "POST /jobs/ingest": () => pending.promise });
     restoreSession(tenants[1].id);
     renderApp(["/ingest"]);
-    await screen.findByRole("heading", { name: "Create ingestion job" });
+    await screen.findByRole("heading", { name: "Crear trabajo de ingesta" });
 
-    await user.clear(screen.getByLabelText("Source"));
-    await user.type(screen.getByLabelText("Source"), "azure-cost-export");
-    await user.type(screen.getByLabelText("Artifact URI"), "s3://test-billing/september.csv");
-    await user.type(screen.getByLabelText("Text content"), "Compute usage total: 9876 USD.");
-    await user.click(screen.getByRole("button", { name: "Queue ingestion" }));
-    expect(screen.getByRole("button", { name: "Queueing job..." })).toBeDisabled();
-    expect(screen.queryByRole("heading", { name: "Job accepted" })).not.toBeInTheDocument();
+    await user.clear(screen.getByLabelText("Origen"));
+    await user.type(screen.getByLabelText("Origen"), "azure-cost-export");
+    await user.type(screen.getByLabelText("URI del artefacto"), "s3://test-billing/september.csv");
+    await user.type(screen.getByLabelText("Contenido del texto"), "Compute usage total: 9876 USD.");
+    await user.click(screen.getByRole("button", { name: "Encolar ingesta" }));
+    expect(screen.getByRole("button", { name: "Encolando trabajo..." })).toBeDisabled();
+    expect(screen.queryByRole("heading", { name: "Trabajo aceptado" })).not.toBeInTheDocument();
 
     const submitted = requests.find((request) => request.path === "/jobs/ingest");
     expect(submitted).toBeDefined();
@@ -40,7 +40,7 @@ describe("ingestion creation", () => {
     });
 
     await act(async () => pending.resolve(ingestJob, 202));
-    expect(await screen.findByRole("heading", { name: "Job accepted" })).toBeVisible();
+    expect(await screen.findByRole("heading", { name: "Trabajo aceptado" })).toBeVisible();
     expect(screen.getByText(ingestJob.job_id)).toBeVisible();
     expect(screen.getByText(ingestJob.status)).toBeVisible();
     expect(screen.getByText(ingestJob.queue)).toBeVisible();
@@ -59,19 +59,19 @@ describe("ingestion creation", () => {
     });
     restoreSession();
     renderApp(["/ingest"]);
-    await screen.findByRole("heading", { name: "Create ingestion job" });
-    await user.type(screen.getByLabelText("Text content"), "Idle compute instances cost 678 USD.");
-    await user.click(screen.getByRole("button", { name: "Queue ingestion" }));
+    await screen.findByRole("heading", { name: "Crear trabajo de ingesta" });
+    await user.type(screen.getByLabelText("Contenido del texto"), "Idle compute instances cost 678 USD.");
+    await user.click(screen.getByRole("button", { name: "Encolar ingesta" }));
 
     expect(await screen.findByText(/Unable to publish the job into RabbitMQ/)).toBeVisible();
-    expect(screen.getByLabelText("Text content")).toHaveValue("Idle compute instances cost 678 USD.");
-    expect(screen.queryByRole("heading", { name: "Job accepted" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Queue ingestion" })).toBeEnabled();
+    expect(screen.getByLabelText("Contenido del texto")).toHaveValue("Idle compute instances cost 678 USD.");
+    expect(screen.queryByRole("heading", { name: "Trabajo aceptado" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Encolar ingesta" })).toBeEnabled();
     const submitted = requests.find((request) => request.path === "/jobs/ingest");
     expect(submitted?.body).toMatchObject({ artifact_uri: null, tenant_id: tenants[0].id });
 
-    await user.click(screen.getByRole("button", { name: "Queue ingestion" }));
-    expect(await screen.findByRole("heading", { name: "Job accepted" })).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Encolar ingesta" }));
+    expect(await screen.findByRole("heading", { name: "Trabajo aceptado" })).toBeVisible();
     expect(screen.queryByText(/Unable to publish the job into RabbitMQ/)).not.toBeInTheDocument();
   });
 });

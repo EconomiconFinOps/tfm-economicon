@@ -22,6 +22,13 @@ async def lifespan(app: FastAPI):
     try:
         settings = get_settings()
         configure_logging()
+        shared=getattr(app.state,'runtime_resources',None)
+        if shared is not None:
+            app.state.database=shared.database
+            app.state.queue=shared.queue
+            app.state.vector_store=shared.vector_store
+            yield
+            return
         with ExitStack() as resources:
             database = Database(settings.database_url.get_secret_value())
             resources.callback(database.dispose)
@@ -53,3 +60,7 @@ app.add_middleware(MetricsMiddleware)
 
 app.include_router(metrics_router)
 app.include_router(health_router)
+
+# A separate app is served only by the private-IP listener.
+from app.chat import create_chat_app
+chat_app = create_chat_app()

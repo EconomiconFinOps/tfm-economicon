@@ -7,6 +7,7 @@ import re
 from types import SimpleNamespace
 
 import pytest
+from app.db.chat_history import loads
 
 from app.api.routes.assistant import send_message
 from app.schemas.assistant import MessageCreateRequest
@@ -161,6 +162,19 @@ class Database:
         return {"id": "c1", "tenant_id": "t", "user_id": "u", "title": "x",
                 "created_at": "2026-09-01T00:00:00Z", "updated_at": "2026-09-01T00:00:00Z"}
 
+    def assert_conversation_idle(self, **scope):
+        return None
+
+    def prepare_message(self, **kwargs):
+        # Preparation allocates an ID but does not append to visible messages.
+        return {"id": "m-" + kwargs["role"], "created_at": "2026-09-01T00:00:00Z", "metadata": {}, **kwargs}
+
+    def append_pair(self, *, question, assistant):
+        assert question["role"] == "user" and assistant["role"] == "assistant"
+        if hasattr(self, "messages"):
+            self.messages.extend(["user", "assistant"])
+        return question, assistant
+
     def append_message(self, **kwargs):
         return {"id": "m-" + kwargs["role"], "created_at": "2026-09-01T00:00:00Z", "metadata": {}, **kwargs}
 
@@ -197,15 +211,20 @@ def test_route_defaults_keep_four_results_and_no_threshold(monkeypatch):
 
 def test_empty_retrieval_gives_the_no_context_answer_and_no_citations(monkeypatch):
     reply = ask(Store([]), monkeypatch)
-    assert "No he encontrado contexto relevante" in reply.assistant_message.content
-    assert reply.assistant_message.metadata == {"citations": [], "source_citations": []}
-    assert reply.retrieved_context == []
+    assert reply.status_code == 201
+    reply = loads(reply.body)
+    assert "No he encontrado contexto relevante" in reply["assistant_message"]["content"]
+    assert reply["assistant_message"]["metadata"] == {"citations": [], "source_citations": [],
+        "generation": {"question_message_id": reply["user_message"]["id"]}}
+    assert reply["retrieved_context"] == []
 
 
 def test_non_empty_retrieval_cites_the_returned_fragments(monkeypatch):
     chunk = {"tenant_id": "tenant-a", "document_id": "doc-9", "title": "Rules", "chunk_index": 0, "chunk_id": "c-9", "source": "rules", "content": "Umbral del 5 %", "distance": 0.2}
     reply = ask(Store([chunk]), monkeypatch)
-    assert reply.assistant_message.metadata["citations"] == ["c-9"]
-    [citation] = reply.assistant_message.metadata["source_citations"]
+    assert reply.status_code == 201
+    reply = loads(reply.body)
+    assert reply["assistant_message"]["metadata"]["citations"] == ["c-9"]
+    [citation] = reply["assistant_message"]["metadata"]["source_citations"]
     assert citation["evidence_id"] == "c-9" and citation["excerpt"] == chunk["content"]
-    assert [item.chunk_id for item in reply.retrieved_context] == ["c-9"]
+    assert [item["chunk_id"] for item in reply["retrieved_context"]] == ["c-9"]

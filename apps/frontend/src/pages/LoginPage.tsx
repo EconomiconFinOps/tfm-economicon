@@ -1,5 +1,7 @@
 // Accept only validated login responses from the current generation.
 // SessionGate revalidates the persisted session after navigation.
+import logoPrimary from "@/assets/brand/economicon-primary.png";
+import logoInverse from "@/assets/brand/economicon-inverse.png";
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "react-router";
@@ -101,21 +103,26 @@ export function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 text-foreground">
       <section className="w-full max-w-md rounded-lg border border-border bg-card p-8 shadow-xl">
-        <p className="text-sm uppercase tracking-wide text-muted-foreground">Operator login</p>
-        <h1 className="mt-2 text-xl font-bold text-foreground">Access the tenant control tower</h1>
+        <div className="flex items-center gap-3">
+          <img src={logoPrimary} alt="" className="size-12 object-contain dark:hidden" />
+          <img src={logoInverse} alt="" className="hidden size-12 object-contain dark:block" />
+          <span className="font-heading text-2xl font-bold text-highlight">Economicon</span>
+        </div>
+        <p className="mt-6 text-sm uppercase tracking-wide text-muted-foreground">Acceso de operadores</p>
+        <h1 className="mt-2 text-xl font-bold text-foreground">Accede al centro de control de clientes</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          This demo build uses the seeded operator account so the team can validate
-          auth, tenant isolation and assistant flows end-to-end.
+          Esta versión de demostración usa la cuenta de operador precargada para que el equipo
+          valide de extremo a extremo el acceso, el aislamiento entre clientes y los flujos del asistente.
         </p>
 
         <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-1">
             <label className="text-sm text-muted-foreground" htmlFor="login-email">
-              Email
+              Correo electrónico
             </label>
             <input
               id="login-email"
-              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+              className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-highlight"
               type="email"
               value={form.email}
               onChange={(event) =>
@@ -126,11 +133,11 @@ export function LoginPage() {
 
           <div className="flex flex-col gap-1">
             <label className="text-sm text-muted-foreground" htmlFor="login-password">
-              Password
+              Contraseña
             </label>
             <input
               id="login-password"
-              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+              className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-highlight"
               type="password"
               value={form.password}
               onChange={(event) =>
@@ -145,7 +152,7 @@ export function LoginPage() {
             // en cuanto el operador reintenta el acceso, la mutacion deja de
             // estar idle y este aviso desaparece sin ningun efecto extra.
             <p className="text-sm text-warning" role="status">
-              Your session has expired. Sign in again to continue.
+              Tu sesión ha caducado. Inicia sesión de nuevo para continuar.
             </p>
           ) : null}
 
@@ -154,11 +161,11 @@ export function LoginPage() {
           ) : null}
 
           <button
-            className="mt-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/80 disabled:opacity-60"
+            className="mt-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
             type="submit"
             disabled={mutation.isPending}
           >
-            {mutation.isPending ? "Signing in..." : "Sign in"}
+            {mutation.isPending ? "Iniciando sesión..." : "Iniciar sesión"}
           </button>
         </form>
       </section>

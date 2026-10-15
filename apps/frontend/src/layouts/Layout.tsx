@@ -1,17 +1,18 @@
 import { Outlet, NavLink, useOutletContext } from "react-router";
 import {
-  BarChart3,
-  TrendingDown,
   AlertTriangle,
-  Lightbulb,
   DollarSign,
   Activity,
   LogOut,
   Upload,
-  MessageSquare,
-  LayoutDashboard
 } from "lucide-react";
 import type { SessionOutletContext } from "./SessionGate";
+import { AvailableChatPanel } from "../components/chat/ChatAvailability";
+import { ScreenCaptureProvider } from "../components/chat/ScreenCaptureProvider";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { useReferenceDate } from "@/hooks/useReferenceDate";
+import { formatReferenceDate, referenceDay } from "@/lib/referenceDate";
+import logoInverse from "@/assets/brand/economicon-inverse.png";
 
 // TenantScopedOutlet: frontera de remontaje por tenant (reconciliacion con
 // develop, Punto 1 -- aislamiento de estado entre tenants). Se usa como
@@ -20,7 +21,7 @@ import type { SessionOutletContext } from "./SessionGate";
 // formularios/selecciones/resultados de mutacion locales que no deben
 // sobrevivir a un cambio de tenant) -- mismo alcance que `tenantPageKey` en
 // App.jsx original (App.jsx:159), que tampoco envolvia el dashboard ni las
-// pantallas de demostracion. `key={activeTenant?.id}` fuerza a React a
+// pantallas de solo lectura. `key={activeTenant?.id}` fuerza a React a
 // desmontar la pantalla anterior por completo al cambiar de tenant en vez de
 // limpiar campos en un efecto: eso es lo que garantiza que una respuesta
 // tardia de una mutacion iniciada con el tenant anterior (el `onSuccess`/
@@ -32,6 +33,30 @@ export function TenantScopedOutlet() {
   return <Outlet key={ctx.activeTenant?.id ?? "no-tenant"} context={ctx} />;
 }
 
+// Mounted only with a session: the date comes from the backend, never from the browser clock.
+function ReferenceDateNotice({ token }: { token: string }) {
+  const reference = useReferenceDate(token);
+  if (!reference.data) return null;
+  return (
+    <>
+      {reference.data.simulated && (
+        <div className="rounded-lg border border-brand-foreground/60 bg-brand-foreground/10 px-4 py-2 text-sm font-medium text-brand-foreground">
+          Fecha simulada: {formatReferenceDate(reference.data)}
+        </div>
+      )}
+      <div className="hidden rounded-lg border border-brand-foreground/30 px-4 py-2 text-sm text-brand-foreground/80 lg:block">
+        {referenceDay(reference.data).toLocaleDateString('es-ES', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          timeZone: 'UTC'
+        })}
+      </div>
+    </>
+  );
+}
+
 export function Layout() {
   // Contexto defensivo: `Layout` puede montarse sin `SessionGate` por encima
   // (test del grupo 5, ya commiteado, que renderiza <Layout /> dentro de un
@@ -40,47 +65,30 @@ export function Layout() {
   // sobre `undefined`. `Partial<...>` porque, sin el contexto real, ninguno
   // de los campos esta garantizado.
   const ctx = useOutletContext<Partial<SessionOutletContext>>() ?? {};
-  const { tenants, activeTenantId, onTenantChange, user, onLogout } = ctx;
+  const { tenants, activeTenantId, onTenantChange, user, onLogout, token } = ctx;
 
   const navItems = [
     { path: "/", label: "Coste Global", icon: DollarSign },
-    { path: "/operational", label: "Coste Detallado", icon: BarChart3 },
-    { path: "/cuts", label: "Corte Global", icon: TrendingDown },
     { path: "/anomalies", label: "Anomalías", icon: AlertTriangle },
-    { path: "/recommendations", label: "Recomendaciones", icon: Lightbulb },
-  ];
-
-  // Reconciliacion con develop (Punto 5): las tres pantallas conectadas al
-  // backend (ingesta, asistente, resumen puente) existian como rutas
-  // (routes.tsx) pero sin ningun enlace real en el menu -- solo alcanzables
-  // escribiendo la URL a mano. Se listan en un grupo separado, con un
-  // separador visual respecto a las 5 de arriba, para no confundir datos de
-  // demostracion (navItems) con datos reales del backend (backendNavItems).
-  // Etiquetas en ingles porque son las mismas que ya usan estas tres
-  // pantallas (Create ingestion job, Assistant chat...), a diferencia de las
-  // 5 de demostracion (traducidas del origen Figma).
-  const backendNavItems = [
-    { path: "/ingest", label: "Ingestions", icon: Upload },
-    { path: "/assistant", label: "Assistant", icon: MessageSquare },
-    { path: "/overview-legacy", label: "Overview", icon: LayoutDashboard },
+    { path: "/ingest", label: "Ingesta", icon: Upload },
     { path: "/system-health", label: "Salud del sistema", icon: Activity },
   ];
 
   return (
+    <ScreenCaptureProvider token={ctx.token} tenantId={ctx.activeTenant?.id} userId={user?.id}>
     <div className="size-full flex flex-col bg-background">
       {/* Header */}
-      <header className="bg-gradient-to-r from-card to-accent border-b border-border px-6 py-4 shadow-lg">
-        <div className="flex items-center justify-between">
+      <header className="bg-brand px-4 py-4 text-brand-foreground sm:px-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-primary to-highlight shadow-lg shadow-info-tint/30">
-              <Activity className="w-6 h-6 text-foreground" />
-            </div>
+            <img src={logoInverse} alt="" className="size-10 object-contain" />
             <div>
-              <h1 className="font-bold text-foreground">FinOps AI Platform</h1>
-              <p className="text-sm text-muted-foreground">Automatización Inteligente del Ciclo Operativo</p>
+              <h1 className="font-heading text-xl font-bold leading-tight">Economicon</h1>
+              <p className="text-sm text-brand-foreground/75">Control de costes cloud con IA</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <ThemeToggle />
             {/* Selector de ambito de cliente: mismo patron que
                 AppShell.jsx:38-49 (select nativo controlado), adaptado a
                 Tailwind. Solo se renderiza cuando SessionGate provee los tres
@@ -88,8 +96,8 @@ export function Layout() {
                 queda ausente, tal como exige Layout.selector.test.tsx. */}
             {tenants && activeTenantId !== undefined && onTenantChange ? (
               <select
-                aria-label="Ambito de cliente"
-                className="text-sm text-foreground bg-card px-3 py-2 rounded-lg border border-border focus:outline-none focus:border-highlight"
+                aria-label="Ámbito de cliente"
+                className="rounded-lg border border-brand-foreground/30 bg-brand px-3 py-2 text-sm text-brand-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-foreground"
                 value={activeTenantId}
                 onChange={(event) => onTenantChange(event.target.value)}
               >
@@ -104,68 +112,39 @@ export function Layout() {
             {/* Panel de sesion: mismo patron que AppShell.jsx:52-61
                 (identidad + boton de logout), adaptado a Tailwind. */}
             {user && onLogout ? (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground bg-card px-4 py-2 rounded-lg border border-border">
+              <div className="flex items-center gap-2 rounded-lg border border-brand-foreground/30 px-4 py-2 text-sm text-brand-foreground/80">
                 <div className="text-right leading-tight">
-                  <p className="text-foreground font-medium">{user.full_name}</p>
-                  <p className="text-xs text-muted-foreground">{user.email}</p>
+                  <p className="font-medium text-brand-foreground">{user.full_name}</p>
+                  <p className="text-xs text-brand-foreground/75">{user.email}</p>
                 </div>
                 <button
                   type="button"
                   onClick={onLogout}
-                  className="ml-2 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
-                  aria-label="Cerrar sesion"
+                  className="ml-2 rounded-lg p-2 text-brand-foreground/75 hover:bg-brand-foreground/10 hover:text-brand-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-foreground"
+                  aria-label="Cerrar sesión"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
               </div>
             ) : null}
 
-            <div className="text-sm text-muted-foreground bg-card px-4 py-2 rounded-lg border border-border">
-              {new Date().toLocaleDateString('es-ES', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
-            </div>
+            {token ? <ReferenceDateNotice token={token} /> : null}
           </div>
         </div>
       </header>
 
       {/* Navigation */}
-      <nav className="bg-card border-b border-border px-6 shadow-lg">
-        <div className="flex items-center gap-1">
+      <nav className="overflow-x-auto border-b border-border bg-card px-4 sm:px-6">
+        <div className="flex w-max min-w-full items-center gap-1">
           {navItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
               end={item.path === "/"}
               className={({ isActive }) =>
-                `flex items-center gap-2 px-4 py-3 border-b-2 transition-all ${
+                `flex items-center gap-2 whitespace-nowrap px-2 py-3 border-b-2 transition-all ${
                   isActive
-                    ? "border-highlight text-highlight bg-primary/10 shadow-inner"
-                    : "border-transparent text-muted-foreground hover:text-foreground hover:bg-accent"
-                }`
-              }
-            >
-              <item.icon className="w-4 h-4" />
-              <span className="text-sm font-medium">{item.label}</span>
-            </NavLink>
-          ))}
-
-          {/* Separador entre las 5 pantallas de demostracion y las 3
-              conectadas al backend (Punto 5): misma barra de navegacion,
-              distincion visual de que unas sirven datos reales y otras no. */}
-          <div className="mx-2 h-6 w-px bg-muted" aria-hidden="true" />
-
-          {backendNavItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                `flex items-center gap-2 px-4 py-3 border-b-2 transition-all ${
-                  isActive
-                    ? "border-highlight text-highlight bg-primary/10 shadow-inner"
+                    ? "border-highlight bg-accent text-highlight font-semibold"
                     : "border-transparent text-muted-foreground hover:text-foreground hover:bg-accent"
                 }`
               }
@@ -178,14 +157,15 @@ export function Layout() {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto bg-background">
+      <div className="flex min-h-0 flex-1">
+      <main className="min-w-0 flex-1 overflow-auto bg-background">
         {/* Reenvia el mismo contexto hacia las rutas hijas: necesario para
             las siguientes sub-rondas del grupo 6, aunque hoy ningun hijo lo
             consuma todavia.
 
             Reconciliacion con develop (Punto 1): la frontera de remontaje
-            por tenant NO vive aqui (no se aplica a las 5 pantallas de
-            demostracion ni a `DashboardPage`, que no tienen estado local
+            por tenant NO vive aqui (no se aplica a las pantallas de
+            solo lectura ni a `DashboardPage`, que no tienen estado local
             que proteger y solo necesitan que su query se re-dispare con la
             nueva `tenantId`). Vive en `TenantScopedOutlet`, envolviendo
             unicamente `IngestPage`/`ConversationsPage` en routes.tsx --
@@ -199,6 +179,12 @@ export function Layout() {
             cambio real de tenant. */}
         <Outlet context={ctx} />
       </main>
+      {ctx.token && user?.id && ctx.activeTenant?.id && ctx.activeTenantId === ctx.activeTenant.id
+        ? <AvailableChatPanel key={JSON.stringify([ctx.token, user.id, ctx.activeTenant.id])}
+            scope={{ token: ctx.token, tenantId: ctx.activeTenant.id, userId: user.id }} userRole={user.role} />
+        : null}
+      </div>
     </div>
+    </ScreenCaptureProvider>
   );
 }
