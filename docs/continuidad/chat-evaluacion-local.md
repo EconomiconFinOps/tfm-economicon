@@ -43,8 +43,33 @@ exportados. Véase [informe del corte](../validation/JUP-123-7be57c05-partial-N3
 y candidate-7be57c05-partial8-freeze-proof-v1.json en la evidencia externa.
 
 Trello reconciliado con este corte por integración DockerServer: lectura exacta,
-lista intacta, SHAab1901c76e716dbbb803f6439ba304abfb56ffa3081c7f4115bb913f2c4ef331;
-jup123-trello-partial8-update-v1.json. Sin mensajes Discord.
+lista intacta, SHAbce168d1742a0f0131aecfce5389d086a214edde5aaa739f5a87ff4cc63528db;
+jup123-trello-completed-retention-update-v1.json (incluye la corrección local posterior). Sin mensajes Discord.
+
+Corrección posterior sólo de herramientas:4d3f953eb56946cd1b3145243def261dc2dac5ac.
+Ledger.retain_completed_cost y retained_cost distinguen una respuesta completada
+de su consumo desconocido. Conservan0.319952 completos y el estado completed;
+no fabrican un fallo ni un coste0. Se exige paridad/hash de recursos públicos;
+compatibilidad con terminal_failure previa, identidad de operación/conversación
+y rechazo de recibos modificados/coste ya conciliado. Runner y auditor aceptan
+el prefijo documentado sin reintentar la respuesta, sujeto a la misma admisión.
+
+109 pruebas de herramientas PASS, completed-retention-tools-v1.json/log SHA
+484d429564b94bef51dafecce71db3ea9aaa81cb88cc490131578e57583a663f.
+Ensayo offline con proyección permitida de303 filas/5planes:302 filas anteriores
+y todos los importes intactos, completed008 con máximo íntegro y novena reserva
+rechazada. completed-retention-real-rehearsal-v1.json. No se copió un ledger bruto
+ni se escribieron datos del ledger real. Sólo se exportaron campos de control
+contable e IDs sintéticos; el hash de filas originales es
+b4951c8e3b2757408d05a9f8c3eee9d12c44409140b6b7f77c26bcf4fc67d775.
+
+Herramientas4d3 locales, sin transferir/aplicar al candidato7be ni a la campaña
+congelada; su plan365 hashes continúa inmutable. Antes de una eventual continuación
+se debe registrar esta revisión de herramientas por separado, sin cambiar a
+escondidas los ficheros fijados del plan. Última revalidación remota1792025965:
+controlador terminado,8recibos,303 filas, recibo perdido400 y misma cota4.790558402.
+Consulta de margen6USD enviada al liderazgo, pendiente; CAP efectivo sigue5USD.
+Sin inferencias ni renovaciones. Objetivo todavía activo y no completado.
 
 Siguiente paso: recuperar evidencia de coste o decisión explícita de margen,
 conservar reserva y resolver tratamiento de una operación completada con coste

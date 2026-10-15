@@ -22,6 +22,8 @@
 - [ ] 2.7 Completar N3 de7be57c05 y su conciliación.
   - Detenida8/84, ocho respuestas verificadas y siete costes conciliados. Primera final008 EOF/500 sin ID upstream, reserva íntegra0.319952. Snapshot31 hashes y ledger303 filas; sin reenvíos manuales. Cota4.790558402/5USD; siguiente reserva exigiría5.110510402. No iniciar009 ni declarar gratuitas fases desconocidas; resolver conciliación/margen y tratamiento de operación completada con consumo parcial. Juicio local8 conformes/49 requisitos; no aceptación ni N3 completa.
 
+  - Corrección local4d3 de herramientas: retención íntegra para respuestas completadas con consumo desconocido, sin falsear estado;109 pruebas y ensayo de303 filas conformes,302 anteriores/importes intactos y009 aún rechazado con5USD. Sin transferir/aplicar a campaña/ledger real. Plan7be intacto; revisión de herramientas separada antes de continuar. Consulta6USD pendiente, no autorización.
+
 ## 3. Correcciones y entrega
 - [ ] 3.1 Corregir defectos medidos con lógica determinista.
   - Correcciones014/003 medidas en c7 N3:014 conforme3/3,003 completa3/3. Las1470 pruebas Linux/SQL conservan su alcance; no validan calidad por sí solas.

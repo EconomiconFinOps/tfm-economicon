@@ -94,3 +94,22 @@ conservar la reserva y tratar el coste incompleto de una operación finalmente
 completada sin falsear su estado. Después continuar el prefijo desde009. No borrar
 recibos, reiniciar campañas ni cambiar producto durante la medición. Pendientes
 N3/comparación completas, criterios/adjudicación y N5 según alcance/presupuesto.
+
+
+## Corrección local posterior del evaluador
+
+Revisión4d3f953eb56946cd1b3145243def261dc2dac5ac: las herramientas pueden conservar
+el máximo completo de una operación completed con consumo desconocido. El
+comprobante terminal_completed mantiene el estado real y el SHA del recibo;
+no se libera dinero ni se altera la compatibilidad con terminal_failure.
+Los recursos, resultado, historial, dos estados observados e identidad tienen
+que coincidir. Runner/auditor admiten ese registro y mantienen el control de gasto.
+
+109 pruebas de herramientas conformes. Ensayo offline sobre proyección contable
+de303 filas/5 planes:302 filas anteriores y todos los importes intactos;008 sigue
+completed y conserva0.319952, y009 sigue rechazado con máximo5USD. Pruebas externas
+completed-retention-tools-v1.json y completed-retention-real-rehearsal-v1.json.
+No se transfirió/aplicó esta revisión al runtime, ledger real o campaña congelada.
+No atribuir a este código nuevo los recibos recogidos con7be; cualquier continuación
+debe registrar sus herramientas por separado sin cambiar el plan o borrar el prefijo.
+La consulta al liderazgo sobre6USD está pendiente y no cambia el CAP efectivo5USD.
