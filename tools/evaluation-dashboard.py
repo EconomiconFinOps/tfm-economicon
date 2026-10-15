@@ -1788,7 +1788,21 @@ def main(argv=None) -> int:
         # Se serializa ANTES de tocar `--output`: si algo falla no se crea ni se modifica el fichero.
         text = json.dumps(dataset, indent=2, ensure_ascii=True) + "\n"
         if args.output is None:
-            sys.stdout.write(text)
+            # La salida estándar se escribe como bytes UTF-8 por `.buffer`, sin pasar por la capa de texto: en
+            # Windows `sys.stdout.write` traduciría `\n` a `\r\n` y la huella de la salida dejaría de coincidir con
+            # la del fichero de `--output` (bytes con `\n`) y con la de Linux. Es el mismo contrato de
+            # reproducibilidad byte a byte para ambas vías. Alternativa descartada: `reconfigure(newline="\n")`,
+            # que muta el flujo global del proceso y no existe en objetos sustituidos como `io.StringIO`.
+            buffer = getattr(sys.stdout, "buffer", None)
+            if buffer is None:
+                # Flujo sin capa binaria (`io.StringIO`, `redirect_stdout` en procesos que embeben `main`):
+                # no hay traducción de saltos que evitar, así que se escribe el texto tal cual.
+                sys.stdout.write(text)
+            else:
+                # Se vacía antes la capa de texto para no intercalar escrituras pendientes con los bytes.
+                sys.stdout.flush()
+                buffer.write(text.encode("utf-8"))
+                buffer.flush()
         else:
             _write_atomically(args.output, text)
     except (AdapterError, ManifestError) as error:
