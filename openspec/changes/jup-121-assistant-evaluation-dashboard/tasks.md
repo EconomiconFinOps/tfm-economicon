@@ -36,12 +36,12 @@
 
 ## 3. Generación de SQL y carga
 
-- [ ] 3.1 Subcomando `sql` (aunque la validación común deja un alfabeto cerrado, el SQL se genera SIEMPRE con literales escapados, nunca por interpolación directa; `run.retrieval` va como `jsonb`, sin cota de enteros: hallazgos L2 y L4 del QA de 2.6):
+- [x] 3.1 Subcomando `sql` (aunque la validación común deja un alfabeto cerrado, el SQL se genera SIEMPRE con literales escapados, nunca por interpolación directa; `run.retrieval` va como `jsonb`, sin cota de enteros: hallazgos L2 y L4 del QA de 2.6):
   - script transaccional e idempotente con `CREATE SCHEMA/TABLE IF NOT EXISTS`, vaciado e inserción dentro de la misma transacción;
   - `NULL` conservados y escapado seguro de literales;
   - sin credenciales en la salida.
 - [ ] 3.2 Vista `evaluation.config_changes` (cambios de batería, modelo, prompt o corpus entre ejecuciones consecutivas de la misma fuente; sin anotación de prompt cuando no está registrado) y consultas de comparabilidad (series con al menos dos ejecuciones)
-- [ ] 3.3 Subcomando `load`:
+- [ ] 3.3 Subcomando `load` (hallazgos del QA de 3.1: el rol y los permisos van en un script APARTE del de `build_sql`, que no puede contener `GRANT`, `PASSWORD`, `CREATE ROLE` ni `DROP`; se ejecuta después de crear el esquema y en el mismo `psql`; `CREATE ROLE` no tiene `IF NOT EXISTS`, se usa un `DO` que mira `pg_roles` o `ALTER ROLE`; la contraseña se escribe con `sql_literal` con `standard_conforming_strings` activo en esa sesión; se pasan a `psql` bytes UTF-8, con `PGCLIENTENCODING=UTF8` si hace falta; el `TRUNCATE` bloquea brevemente la lectura de Grafana hasta el `COMMIT`):
   - pasa el script al `psql` de `postgres-pgvector` por la entrada estándar con `ON_ERROR_STOP`;
   - crea o actualiza el rol `grafana_evaluation_reader` con `USAGE` y `SELECT` solo sobre `evaluation`;
   - toma la contraseña de `GRAFANA_EVALUATION_DB_PASSWORD` y la envía solo por la entrada estándar;

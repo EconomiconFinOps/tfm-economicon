@@ -150,3 +150,18 @@ Hallazgos trasladados: la tabla de juicio por fila (calibración, benchmark, rec
 Decisiones de contrato: un informe sin filas es un error; la huella se calcula sobre el JSON canónico del documento parseado y no sobre los bytes (el fin de línea cambia con `autocrlf` y los `run_id` derivados deben ser iguales en todas las máquinas); `report_path` solo se registra para informes dentro del repositorio con alfabeto cerrado (una ruta absoluta local puede llevar nombres de usuario); los errores citan la ruta relativa o solo el nombre del fichero.
 
 Hallazgos LOW trasladados: los mensajes de JUP-068 repiten el nombre del fichero (`bad68.json: business-metrics: bad68.json: …`) y la capa de manifiestos cita rutas absolutas en sus errores, código previo de 2.1 que no se cambia; la huella de JUP-068 es la de la entrada, así que un cambio en `business-metrics.mjs` no cambia el `run_id`.
+
+### 3.1 Generación del script SQL y subcomando `sql`
+
+| Fase | Evidencia |
+| --- | --- |
+| Red | `scripts/tests/test_evaluation_sql.py` (116 tests), commit `1c696753`; 0 en verde (`AttributeError` por símbolos ausentes y «invalid choice: 'sql'» en la CLI). Esperados comprobados con una referencia fuera del repositorio, cuyos 34 mutantes morían |
+| Green | `SCHEMA_DDL`, `sql_literal`, `build_sql`, `SqlError` y el subcomando `sql` (parser padre común con `rows`, despacho por `args.command`), commit `ec0c8e56`; 1048/1048 |
+| Mutación | Sección contra su fichero de tests: 217/268 (81,0 %). Supervivientes: prosa y ayuda de `argparse`, ramas cubiertas por otros ficheros (escritura atómica, `required=True` del subparser) y los **prefijos exactos de ruta de los errores de forma** de `build_sql` (clave desconocida en la raíz, `results` que no es lista, `run` mal formado, duplicado de `run_id`). `test_evaluation_sql_shape.py` (15 tests, commit `67b5a380`) mató esos y otros 3 mutantes |
+| QA | `accept`, sin BLOCKING ni MEDIUM. **Ejecutó el script en un PostgreSQL 17 real** (`pgvector/pgvector:pg17`, contenedor desechable y limpiado): carga correcta con 5 ejecuciones y 269 filas; tres cargas seguidas dejan lo mismo; un fallo a mitad de script deja los datos anteriores intactos (hash md5 idéntico); las `CHECK` rechazan un `not_measured` con valor y un `measured` sin valor; la ida y vuelta con `rows` no tiene ninguna diferencia en 3766 celdas (267 floats); cadenas hostiles (`x'); DROP SCHEMA evaluation; --`, saltos de línea, barras invertidas, unicode) se cargan como dato, también con `standard_conforming_strings` desactivado en la base; `\x00` da `SqlError`. Mató 66 de 70 mutantes manuales |
+| Tests del QA | `test_evaluation_sql_literal_gaps.py` (19 tests): subclases hostiles de `int`, `float`, `str` y `list` rechazadas, y el texto literal `\u0000` dentro de `jsonb` no es un NUL (regla de la paridad de barras) |
+| DoD | Lint, type-check y secretos en verde. Regresión: 145 fallos del backend idénticos (`RF-119-004`) |
+
+Esto adelanta la mayor parte de la comprobación manual de la tarea 5.1 (conciliación con PostgreSQL real), que aun así se automatizará como prueba repetible.
+
+Hallazgos LOW trasladados: las dos `CHECK` no tienen nombre (los mensajes de PostgreSQL son `results_check` y `results_check1`; no se cambia para no tocar tests que comparan el DDL exacto); las tablas con `IF NOT EXISTS` no migran bases ya cargadas (documentado en la guía); a la tarea 3.3: el rol y los permisos van en un script aparte y después del esquema, `CREATE ROLE` no tiene `IF NOT EXISTS`, `load` pasa bytes UTF-8 a `psql` y el `TRUNCATE` bloquea brevemente la lectura de Grafana; a la 3.2: `CREATE OR REPLACE VIEW` no puede cambiar las columnas de una vista ya creada, y los paneles deben filtrar `run_at IS NOT NULL`.
