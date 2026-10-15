@@ -40,7 +40,6 @@ sys.modules[SPEC.name] = tool
 SPEC.loader.exec_module(tool)
 
 # Valores literales del contrato (no se leen de la herramienta para poder comparar contra ella).
-READER = "grafana_evaluation_reader"
 PASSWORD_ENV = "GRAFANA_EVALUATION_DB_PASSWORD"
 # Contraseña distintiva: ninguna ventana de cuatro caracteres suya aparece en un texto de error normal.
 PW = "ZQ7#kP!wV9&xJ2"
