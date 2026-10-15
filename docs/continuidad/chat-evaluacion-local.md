@@ -9,6 +9,19 @@ no reinicia gasto, ledger, intentos ni caducidad. B sigue sin publicar.
 
 ### Candidato corregido d2f8a440 / pruebas72a2f767 — 15/10/2026
 
+Bloqueo revalidado15/10 a12:32UTC: ambas claves siguen caducadas10:02UTC;
+no hay extensión aplicada, controlador N3 nuevo ni recibos nuevos. Backend y
+processor72 siguen healthy. Mismo bloqueo de vigencia durante tres turnos
+consecutivos del objetivo; las pruebas, build, activación y preparación de la
+medición ya están terminadas. Se marca el objetivo automático `blocked`, no
+completado, hasta una autorización o cambio externo aplicable. No repetir
+comprobaciones/campañas sin esa novedad. Evidencias externas
+`candidate-72a2f767-validation-gate-1792067546.json` y
+`candidate-7be57c05-expired-accounting-diagnostic-1792067528.json`.
+Misma cota6.134754199/10USD,379 filas y3.201520 retenidos. Si llega la autorización,
+comprobar que su plazo sigue vigente antes de ejecutar el script preparado;
+si ya terminó, no sustituirlo por otro plazo sin autorización.
+
 Encargo vigente: corregir015/003/013 y volver a validar con máximo10USD,
 sin liberar las reservas. Producto congelado
 `d2f8a4405a6e782b8753d48f69fbbe58f19cae89`; corte de pruebas/build
