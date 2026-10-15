@@ -18,7 +18,7 @@ def add_policy(store,document,tenant='tenant-a',provider='mock',body=None,step=4
         c.execute(text('INSERT INTO knowledge_documents VALUES (:id,:id,:tenant,:body,NULL,:body,1,:now,:now)'),
                   {'id':document,'tenant':tenant,'body':body,'now':now})
         for i,left in enumerate(range(0,len(parsed.normalized),step)):
-            p={'id':f'{document}:{i}','doc':document,'index':i,'body':parsed.normalized[left:left+500],'now':now,'provider':provider}
+            p={'id':f'{document}:{i}','doc':document,'index':i,'body':parsed.normalized[left:left+500].strip(),'now':now,'provider':provider}
             c.execute(text('INSERT INTO document_chunks VALUES (:id,:doc,:index,:body,500,:now)'),p)
             c.execute(text("INSERT INTO chunk_embeddings VALUES (:id,:id,'[0,1,0,0,0,0,0,0]'::vector,8,:provider,:now)"),p)
 
