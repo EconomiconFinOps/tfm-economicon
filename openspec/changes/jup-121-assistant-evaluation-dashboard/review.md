@@ -298,3 +298,16 @@ Tras el merge de develop (JUP-122) la regresión de `check-dod.mjs` seguía en r
 1. Se instalaron las dependencias nuevas del workspace (`corepack pnpm install --frozen-lockfile`, que añadía `@assistant-ui/react`) y `tokenizers==0.22.1` en el entorno virtual (está en `apps/backend/requirements.txt`); con ello `lint` y `type-check` pasan.
 2. Fallan 11 pruebas del processor de JUP-035 (`test_chat_gateway_jup035`, `test_chat_resources_jup035`, `test_compose_chat_jup035`, `test_expanded_context_jup035`) por `FileNotFoundError` de `apps/processor/app/agents/prompt_resources/jup035/chat/v2/tokenizer.json`. Ese fichero está en `.gitignore` y se genera con `apps/processor/build_tokenizer.py`; no se ha generado en esta máquina.
 3. `git diff origin/develop --stat -- apps/processor` está vacío y los cambios de este change en `apps/backend` solo son `assistant.py` (8 líneas) y el test nuevo, sin relación con el tokenizador ni con el processor.
+
+## Human Approval
+
+- Change: jup-121-assistant-evaluation-dashboard
+- Approval type: post-review
+- Decision: approved
+- Approver: Victor
+- Date: 2026-10-15
+- Review accepted: yes
+- Checks accepted: yes
+- Documentation synchronized: yes
+- Archive decision: archive
+- Notes: 24/24 tareas completas; `evaluation-dashboard:test` 1623 OK, 29 pruebas de backend nuevas, OpenSpec 74/74, `jup:check` y `jup:cleanup:check` en verde. La validación de extremo a extremo con la pila real encontró y corrigió el defecto de las series de fallos de la sección C (tarea 6.1). Excepción de entorno del DoD: la regresión completa sigue en rojo por 11 pruebas del processor de JUP-035 (falta el `tokenizer.json` generado) y las suites de salud de JUP-047 (RF-119-004), ajenas al change. Hallazgos diferidos en `RF-121-001`. Fuera de este gate: robustez de JUP-071, despliegue en DockerServer, primera CI en GitHub y `Revision JUP-121` / `Validacion JUP-121` en la PR.
