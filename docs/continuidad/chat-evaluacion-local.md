@@ -6,9 +6,55 @@ El usuario amplió el máximo acumulado a **5 USD** («Amplia a5$»). Ese permis
 sustituye el límite de2USD de los cortes históricos inferiores; no reinicia gasto,
 ledger ni caducidad de las claves. No se ha publicado B en GitHub o Discord.
 
+### Corte vigente: técnico conforme, nueva N3 detenida8/84 — 15/10/2026
+
+Aplicación7be57c05, pruebasfba415f2. Cobertura conjunta1747 chat conforme,
+58 omisiones cubiertas con SQL real y216 ejecuciones Cockroach/pgvector conformes;
+dos fallos previos y errores de preparación preservados, sin corrida monolítica
+sin OOM. Frontend1354 PASS. Buildv7 terminó tres imágenes, hashes internos114/
+103/127. B activo saludable con365 hashes/tokenizer comprobados, mismas bases
+y operaciones previas. Sin otros despliegues ni publicaciones B.
+
+Campaña PID1337284/start_ticks62376310 TERMINADA por conciliación incompleta
+de008r1.8 respuestas completadas/verificadas,7 costes conciliados y1 reserva
+íntegra0.319952. El008 necesitó dos intentos automáticos; su primera final terminó
+EOF/error500, con UUID local y sin recibo upstream válido (consulta400). No se
+reenviaron muestras manualmente ni se interpreta spend0 como gratuidad.
+API analítica403, sin clave nueva. Ledger303 filas, ninguna borrada/modificada
+por los diagnósticos. No se intentó009 ni se reinicia el controlador.
+
+Última lectura1792025397: contador2.548894402 +reservas anteriores1.921712
++reserva0080.319952 =4.790558402/5USD. Otra cota0.319952 exigiría5.110510402,
+por encima del máximo. Contador global no es gasto exacto del trabajo. Se
+mantiene todo el importe reservado; ninguna inferencia adicional autorizada
+por esa suma. Claves15/10 08:02UTC, sin renovación.
+
+Revisión provisional8/8 conforme,49 requisitos; comparación parcial c7:
+47 pass→pass y2 uncertain→pass. No demuestra tasa N3 ni cero regresiones del
+conjunto; faltan76 muestras,017/027 en esta versión y adjudicación independiente.
+UI Playwright visible001/006/007/008: escritorio/móvil/recarga con paridad, sin
+errores ni escrituras del asistente; capturas inspeccionadas, sin gasto de UI.
+
+Snapshot parcial privado31 hashes y ledger consistente en DockerServer:
+candidate-7be57c05-partial8-frozen-v1, manifest
+beebcd2e2a307de1e3dee1d10ce28f27c3f6a62951a350b57b7ade288b543e25.
+Pruebas públicas derivadas y notas ligadas a SHA originales, sin logs/credenciales
+exportados. Véase [informe del corte](../validation/JUP-123-7be57c05-partial-N3.md)
+y candidate-7be57c05-partial8-freeze-proof-v1.json en la evidencia externa.
+
+Trello reconciliado con este corte por integración DockerServer: lectura exacta,
+lista intacta, SHAab1901c76e716dbbb803f6439ba304abfb56ffa3081c7f4115bb913f2c4ef331;
+jup123-trello-partial8-update-v1.json. Sin mensajes Discord.
+
+Siguiente paso: recuperar evidencia de coste o decisión explícita de margen,
+conservar reserva y resolver tratamiento de una operación completada con coste
+parcial antes de continuar el mismo prefijo desde009. No cambiar producto o
+banco durante medición. Pendientes N3/comparación completas, criterios humanos,
+adjudicación y N5 según alcance/presupuesto. Objetivo B no completado.
+
 ### Última medición semántica real completa: c7 N3 — 14/10/2026 20:37 UTC
 
-#### Base congelada y verificación técnica — 15/10/2026
+#### Evidencia de base anterior a activación y N3 parcial — 15/10/2026
 
 Producto congelado7be57c059ef740ae5f525d98ebe631271144f1fb, archivo versionado
 SHA256 efe8c644e4fefb9e17fefaa55e3c5e2275c8195dae06ebe2b7923389ec2444ff.
@@ -30,7 +76,7 @@ política que cubren6 de los58 SKIP y14 pruebas del contrato existente, no sumar
 como20 casos adicionales del chat. Recursos propios retirados, runtime B intacto.
 final-pgvector-7be57c05-public-proof.json, SHA256
 48e2fdc47392779000c84808d94a367a599136d5f4284a70f08bb72ada424a54.
-Quedan52 identidades del chat por comprobar con Cockroach y las141 omisiones
+En ese corte quedaban52 identidades del chat por comprobar con Cockroach y las141 omisiones
 nativas del barrido de anomalías (distintas de la colección chat1747).
 
 **SQL nativo original terminado:**v5 recogió196 ejecuciones,194 PASS/2 FAIL,
@@ -86,21 +132,17 @@ no se instaló software ni se usó otro servidor.
 Los errores de sintaxis de invocaciones locales no ejecutaron comandos.
 Los intentos hasta7be conservaron las aserciones. fba modifica únicamente las dos pruebas descritas; B existente y despliegues ajenos siguen intactos.
 
-**Buildv7 en ejecución:**PID1272535/start_ticks62318210,
-final-build-launch-v7.json; backend construido con114 hashes internos verificados y processor en curso en el corte1792024587986. Verificador con SHA fijo comprueba todos los JUnit/logs
-originales, equivalencia de aplicación/build, helpers importados y sustitución
-exacta de los17 nodos SQL y8 offline afectados. Conserva ambos fallos históricos.
-Sólo construye si todos los58 SKIP del chat tienen prueba nativa conforme; ninguna
-omisión se declara aprobada por su ausencia. Fuente de producto7be y revisión de
-pruebas fba se registran separadas. Imágenes secuenciales1024MiB/1CPU y hashes
-internos, sin activación ni inferencia. Buildsv1–v6 no construyeron ninguna imagen. V6 se cerró por los errores de preparación de v8, sin construir.
+**Buildv7 finalizado después:**tres imágenes, backend114/processor103/frontend127
+hashes internos comprobados. Activación propia posterior saludable,365 hashes y
+tokenizer verificados, bases intactas. final-build-launch-v7.json y
+candidate-7be57c05-activation-result-v1.json. Los buildsv1–v6 no construyeron.
 
 Lectura contable renovada1792024359: mismos295 registros y cota4.423039035/5USD
 con1.921712 retenidos; accounting-final-readonly-1792024359.json. Trello actualizado
 por integración DockerServer, SHA08396a1f972c5bd2af49765c195015fd5a06db0cf7d4da21dcc346adb12b8144,
 lectura exacta y lista intacta; jup123-trello-testfix-progress-update-v1.json.
 
-**Nueva N3 preparada, no ejecutada:**84 muestras y365 hashes contrastados contra
+**Plan N3 preparado antes de la ejecución parcial descrita arriba:**84 muestras y365 hashes contrastados contra
 el archivo exacto7be, incluso pin generado. El generador se ejecutó desde3064a68d
 (sólo documentación posterior); no se intercambia un resultado entre commits.
 candidate-7be57c05-n3-plan.json, SHA256
@@ -110,16 +152,12 @@ puertos, volúmenes, secretos y servicios auxiliares anteriores conservados.
 Prueba candidate-7be57c05-compose-preparation-v1.json; su contenido privado
 permanece en DockerServer.
 
-Colector/recuperación transferidos con SHA/sintaxis y modo600; conserva API original
-y sólo deriva con hash exacto de contexto/corpus. Guardas probadas con fixtures
-rechazan build pendiente e imagen anterior antes de leer secretos o gastar.
-Primer arnés local falló antes por ACL de temporales Windows, conservado como
-fallo de entorno. La preparaciónv2 **apunta al buildv2 fallido** y queda bloqueada:
-antes de medir, vincular el operador al build final realmente exitoso y comprobar
-las tres imágenes activas. No ejecutar el comando preparadov2 como si estuviera
-listo. Ver candidate-7be57c05-prepared-adapter-safety-v3.json,
-candidate-7be57c05-prepared-harness-transfer-v2.json y
-candidate-7be57c05-campaign-prepared-v2.json. Sin campaña nueva ni nuevos POST.
+Operadorv7 vinculado al build exitoso y a sus tres imágenes reales antes de
+leer secretos/gastar. Fixtures rechazan build no terminado e imagen anterior;
+aceptan sólo el conjunto correcto hasta el siguiente control simulado.
+candidate-7be57c05-final-adapter-safety-v7.json,
+candidate-7be57c05-campaign-prepared-v7.json y n3-launch-v1 con el mismo prefijo.
+La preparaciónv2 queda histórica y no debe ejecutarse.
 
 Auditoría previa de contabilidad sin escritura:295 filas del ledger/293 operaciones
 SQL sintéticas coincidentes, cuatro prefijos históricos completos y quinto plan
@@ -140,6 +178,8 @@ la variante que pausaba B y copiar logs sin filtrar; ninguna se ejecutó. Altern
 B activo, datos exportados con lista permitida y logs completos privados remotos.
 OpenSpec estricto74/74 conforme tras actualizar proposal/design a la base actual;
 no se modificaron criterios ni se atribuyeron reviews humanas.
+
+## Antecedentes anteriores a la activación y N3 parcial
 
 A avanzó a8ea5a0c4 sobre develop0543c5ee, que incorpora JUP-038/#128. B integra
 ese develop por merge local; resuelve dos conflictos con los bloques ya reconciliados

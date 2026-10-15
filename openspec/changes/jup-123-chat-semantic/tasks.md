@@ -1,13 +1,14 @@
 ## 1. Base y contratos
 - [x] 1.1 Recuperar B y activar JUP-123 en Trello.
 - [x] 1.2 Admitir recibos repetidos y detectar ausencias/duplicados (15 pruebas).
-- [ ] 1.3 Reconciliar A/develop y verificar las superficies afectadas.
+- [x] 1.3 Reconciliar A/develop y verificar las superficies afectadas.
   - Base comprobada A/28ee5b1c sobre develop/c30a7d0; no afirma una actualización posterior de esas ramas. Bloques incorporados en B; herramientas86PASS, tokenizer4PASS, CD55PASS/2SKIP, CI/topología51PASS. Candidato c7e2d561: 70 archivos, 1470 identidades únicas Linux/SQL PASS mediante procesos separados (OOM anteriores conservados); builds reales y 340 hashes de fuente más tokenizer de ambos contenedores verificados. UI001/003/014 en escritorio/móvil y recarga correcta. Aceptación/reviews de A independientes, no trasladadas a B.
   - Reabierto tras leer review oficial de Víctor18:58UTC sobre28ee5b1c: red/IP por slot del CD y UX con chat desactivado pendientes de corregir en A y reconciliar en B. Las pruebas previas no cubrían esos dos defectos; no se modifica c7 durante N3.
   - Consulta posterior: A avanza11f84334 con esos bloques y27 archivos incrementales; reviews siguen solicitando cambios y CI nueva no verificada. Falta incorporar y probar en B; no cerrar por leer el diff.
   - Completado después en B/ab66f90c:20 archivos idénticos a A y clase de capacidades adaptada conservando el esquema B.34 backend/120 frontend/58 CD Linux/40 topología PASS; tipos/lint/build y ambos loaders conformes. Compose real de ambos slots correcto; creación de redes no ejecutada por pool ajeno172.30.0.0/16. No aceptación de A ni despliegue, ni navegador final de B; esos límites siguen explícitos.
   - Reabierto al congelar la regresión: A8ea5a0c4/develop0543c5ee incorporan JUP-038. Merge local de develop con dos resoluciones y cinco adaptaciones de A;39 archivos de aplicación idénticos, semántica B intacta.550 backend PASS/141 omisiones SQL y1354 frontend PASS; tipos/lint/build conformes. Pendientes Linux/SQL del candidato conjunto antes de cerrar de nuevo1.3.
   - Candidato7be: regresión Linux1747 recogida (1689 PASS/58 SKIP,0 FAIL/ERROR), tres OOM previos conservados y resolución por procesos separados, sin cambiar aserciones. Pgvector20 PASS cubre6 omisiones del chat y añade14 contratos existentes, sin doble suma. Cockroachv4 agotó el plazo al preparar el esquema, sin JUnit; v5 terminó194 PASS/2 FAIL sobre196. Ambos fallos conservados. fba415f2 corrige sólo dos pruebas (metadatos generation y ventana de observación de deadline, con nuevas aserciones HTTP); v8 no ejecutó processor por tokenizer ausente, repuesto con SHA fijo sin versionarlo; v9 repite17 nativas PASS y8 offline (2 PASS/6 SKIP). Equivalencia de helpers/aplicación/build y todos los hashes JUnit/log verificados:1747 chat conformes con58 SKIP cubiertos nativamente,216 ejecuciones SQL/pgvector conformes. Fallos originales conservados, producto7be/pruebasfba explícitos. Buildv7 en curso; navegador/coexistencia física mantienen su alcance pendiente. Sin nuevas inferencias ni aceptación; no cerrar1.3 aún.
+  - Cierre técnico propio:1747 chat con toda omisión cubierta en SQL,216 ejecuciones nativas conformes, frontend1354 PASS, tres builds/activación365 hashes y UI001/006/007/008 conformes. Producto7be/pruebasfba separados, fallos previos conservados. No traslada aceptación de A; coexistencia física de slots sigue sin ejecutar por pool ajeno y reviews humanas siguen independientes.
 - [ ] 1.4 Acordar criterios obligatorios y calidad con revisores.
 
 ## 2. Medición
@@ -17,6 +18,9 @@
 - [ ] 2.4 Resolver incertidumbres con adjudicación independiente.
 - [x] 2.5 Recoger N3 del candidato e23e495b:84/84 recibos verificados,78completed/6failed conservados; costes desconocidos con reserva íntegra, no aceptación semántica.
 - [x] 2.6 Recoger y revisar localmente N3 de c7e2d561:84/84 recibos,83 completed/1 failed;70 conformes/7 inciertas/6 fallos de contenido/1 técnico. Snapshot258 hashes; no adjudicación independiente ni aceptación.
+
+- [ ] 2.7 Completar N3 de7be57c05 y su conciliación.
+  - Detenida8/84, ocho respuestas verificadas y siete costes conciliados. Primera final008 EOF/500 sin ID upstream, reserva íntegra0.319952. Snapshot31 hashes y ledger303 filas; sin reenvíos manuales. Cota4.790558402/5USD; siguiente reserva exigiría5.110510402. No iniciar009 ni declarar gratuitas fases desconocidas; resolver conciliación/margen y tratamiento de operación completada con consumo parcial. Juicio local8 conformes/49 requisitos; no aceptación ni N3 completa.
 
 ## 3. Correcciones y entrega
 - [ ] 3.1 Corregir defectos medidos con lógica determinista.

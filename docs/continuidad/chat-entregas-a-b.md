@@ -29,8 +29,7 @@ Recibos `A8ea-anomaly-backend-v1.{xml,log}`, `A8ea-frontend-full-v1.{xml,log}` y
 moviendo sólo sus dos archivos a la carpeta externa; no se repitió la suite.
 Después: regresión B7be Linux1747 recogida (1689 PASS/58 SKIP,0 FAIL/ERROR),
 con tres OOM previos conservados y procesos separados sin cambiar aserciones.
-Pgvector20 PASS cubre6 de esas omisiones; Cockroachv5 terminó196 ensayos con194 PASS/2 FAIL conservados. fba415f2 modifica sólo las dos pruebas; repetición completa17 SQL PASS y8 offline (2 PASS/6 SKIP), producto7be intacto. Verificador confirma1747 chat conformes con todos58 SKIP cubiertos nativamente y216 ejecuciones SQL/pgvector conformes. Helpers importados, aplicación/build y JUnit/log SHA contrastados; no es una corrida monolítica ni se borran los fallos. Buildv7 en curso;
-activación y medición real pendientes. Pruebas e IDs en [evaluación local](chat-evaluacion-local.md).
+Pgvector20 PASS cubre6 de esas omisiones; Cockroachv5 terminó196 ensayos con194 PASS/2 FAIL conservados. fba415f2 modifica sólo las dos pruebas; repetición completa17 SQL PASS y8 offline (2 PASS/6 SKIP), producto7be intacto. Verificador confirma1747 chat conformes con todos58 SKIP cubiertos nativamente y216 ejecuciones SQL/pgvector conformes. Helpers importados, aplicación/build y JUnit/log SHA contrastados; no es una corrida monolítica ni se borran los fallos. Buildv7 completado y B propio activo con365 hashes/tokenizer verificados y bases intactas. UI001/006/007/008 conforme en escritorio/móvil/recarga. N3 detenida8/84 por consumo incompleto de una fase de008, con reserva íntegra: cota4.790558402/5USD; una nueva ejecución exigiría5.110510402. Ocho respuestas/49 requisitos provisionales conformes no validan el conjunto. Pruebas e IDs en [evaluación local](chat-evaluacion-local.md).
 No se ha publicado B ni modificado A desde este trabajo.
 
 ## Corte anterior: cabeza11f84334
