@@ -12,6 +12,21 @@ no reinicia gasto, ledger, intentos ni caducidad. B sigue sin publicar.
 
 ### Resultado congelado — 15/10/2026, 15:55 UTC
 
+**Trabajo posterior autorizado el15/10:** corregir027, revisar020 y medir de nuevo,
+con máximo acumulado10USD y sin liberar reservas. Las mismas dos claves se han
+ampliado24h desde su vencimiento anterior, hasta16/10a18:00París
+(15:59:59.260/.292UTC). Recibo `existing-key-expiry-extension-20261016-1800.json`
+en la carpeta de evidencia establecida; claves, límites, contadores y ledger
+comprobados intactos al ampliar. Lectura17:54UTC: cota7.912911256/10USD,
+incluyendo4.161376USD de máximos retenidos. No equivale a coste real liquidado.
+
+Corrección local en preparación:027 usa un terminal de comparación gasto/volumen
+que calcula cada métrica con su etiqueta;020 añade consejo documental acotado
+con riesgo condicional explícito y validación previa, sin actuar ni garantizar
+ahorro. Primeras231pruebas processor y5backend conformes, aún sin nueva campaña
+ni activación. Las etiquetas antiguas de020 siguen inciertas; no se reescriben.
+El resultado que sigue corresponde al candidato anterior congelado.
+
 **003, 013, 015 y 025 pasan 3/3** en el candidato actual. La N3 original de28casos
 terminó84/84 muestras:83respuestas completadas y1fallida. Revisión local provisional:
 **80 conformes,1fallo de coherencia027:r2,2inciertas020:r1/r3 y1fallo técnico022:r1**.

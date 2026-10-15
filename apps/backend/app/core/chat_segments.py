@@ -89,12 +89,14 @@ def quote_choices(content):
 
 
 def scenario_terminals(catalog):
+    from app.core.chat_unit_cost import required_unit_cost, unit_cost_answer
     from app.core.chat_cost_breakdown import required_cost_breakdown, cost_breakdown_answer
     from app.core.chat_shared_allocation import required_shared_allocation, shared_allocation_answer
     from app.core.chat_weighted_coverage import required_weighted_coverage, weighted_coverage_answer
     from app.core.chat_savings_realization import required_savings_realization, savings_realization_answer
     from app.core.chat_budget_comparison import required_budget_variance, budget_variance_answer
     return [(key, bind(catalog), render) for key, bind, render in (
+        ('unit_cost', required_unit_cost, unit_cost_answer),
         ('cost_breakdown', required_cost_breakdown, cost_breakdown_answer),
         ('shared_allocation', required_shared_allocation, shared_allocation_answer),
         ('weighted_coverage', required_weighted_coverage, weighted_coverage_answer),

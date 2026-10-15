@@ -273,3 +273,32 @@ separado el estado de rightsizing y la demanda estable/inestable/desconocida.
 #### Scenario: La política contiene una excepción no interpretada
 - **WHEN** la sección añade una excepción o cambia el consejo a otra modalidad o acciones
 - **THEN** no se compilan únicamente las frases favorables y se conserva el flujo general
+
+### Requirement: Comparación de coste unitario con etiquetas vinculadas
+El servidor MUST vincular cada variación a su métrica al comparar dos períodos
+hipotéticos completos y comparables con gasto, volumen y definición explícita de
+coste unitario. No infiere comparabilidad, equivalencia de monedas o unidades.
+
+#### Scenario: Sube el gasto y baja el coste por unidad
+- **WHEN** el gasto cambia de1000a1200EUR y el volumen de100a200pedidos
+- **THEN** el coste unitario cambia de10a6EUR/pedido, con variación absoluta−4 y relativa−40%
+- **AND** la variación del gasto200EUR/20% se presenta por separado
+- **AND** el proveedor no puede sustituir las etiquetas ni añadir prosa o métricas ajenas al terminal
+- **AND** streaming y resultado final coinciden, sin acreditar ahorro real ni calidad del servicio
+
+#### Scenario: Volumen o coste inicial nulos
+- **WHEN** hay volumen cero o coste unitario inicial cero
+- **THEN** la división correspondiente se declara indefinida y no se inventa un porcentaje
+- **AND** los resultados redondeados se marcan aproximados y los operandos conservan su precisión
+
+### Requirement: Riesgo explícito y condicional de rightsizing sin validar
+El servidor MUST separar la política literal de su interpretación al aconsejar
+sobre una reducción de VM con CPU media y datos de carga incompletos. Solo compila
+una sección autorizada, completa y reconocida; no ejecuta cambios.
+
+#### Scenario: CPU media aislada sin recomendación ni ahorro medido
+- **WHEN** faltan memoria, I/O, picos y SLA y la política exige validarlos
+- **THEN** el consejo pide esos datos, crecimiento y restricciones, y validación humana antes de actuar
+- **AND** explica el posible impacto en rendimiento, servicio o SLA como riesgo condicional
+- **AND** no afirma una degradación observada, un ahorro garantizado ni que rightsizing siempre signifique reducir
+- **AND** las etiquetas históricas inciertas permanecen pendientes de adjudicación independiente

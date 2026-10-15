@@ -9,11 +9,13 @@ from app.core.chat_expressions import context_quantities
 from app.core.chat_policy_sections import required_policy
 from app.core.chat_documentary_decisions import required_documentary_answer
 from app.core.chat_budget_comparison import required_budget_variance
+from app.core.chat_unit_cost import required_unit_cost
 
 
 @pytest.mark.parametrize('case,headings',[
     ('015',{'Budgets Y Forecast','Conceptos FinOps Basicos'}),
-    ('003',{'Cost Management Y Cost Analysis'}),('013',set())])
+    ('003',{'Cost Management Y Cost Analysis'}),('013',set()),
+    ('020',{'Azure Advisor, Rightsizing Y Commitments'}),('027',set())])
 def test_original_question_uses_complete_actual_corpus_with_positional_provenance(case,headings):
     root=Path(__file__).resolve().parents[3]
     bank=json.loads((root/'docs/validation/JUP-069-questions.json').read_text(encoding='utf-8'))
@@ -41,6 +43,22 @@ def test_original_question_uses_complete_actual_corpus_with_positional_provenanc
     elif case=='003':
         bound=required_documentary_answer(q)
         assert bound is not None and 'Agrupar por servicio.' in bound['public_fields']['answer']
-    else:
+    elif case=='013':
         bound=required_budget_variance(q)
         assert bound is not None and bound['difference']==200 and bound['relative']==20
+    elif case=='020':
+        bound=required_documentary_answer(q)
+        assert bound is not None and bound['topic']=='rightsizing'
+        assert 'riesgo condicional' in bound['public_fields']['answer']
+    else:
+        from app.core.chat_segments import render_response
+        from app.schemas.chat import provider_response_schema, validate_response
+        bound=required_unit_cost(q)
+        assert bound is not None
+        value={'schema_version':'1.0','scope':{'cloud':'azure','data_environment':'simulated','period':None,'subscription_ids':[]},
+               'status':'insufficient_data','answer':{'unit_cost':bound['id']},'evidence':[],'metrics':[],
+               'recommendations':[],'assumptions':[],'limitations':[],'next_actions':[]}
+        assert provider_response_schema(authorized_evidence=records,quantities=q)['properties']['answer']=={'const':value['answer']}
+        public=render_response(value,[],quantities=q)
+        assert validate_response(public,records,expected_period=None,expected_subscriptions=[])==public
+        assert 'coste unitario sobre el primer período = -40 %' in public['answer']

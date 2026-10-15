@@ -161,12 +161,63 @@ def _commitment(catalog, question):
 
 def required_documentary_answer(catalog):
     question = getattr(catalog, 'classification_question', '')
-    bound = _cost_basis(catalog, question) or _commitment(catalog, question) or _investigation(catalog, question)
+    bound = (_cost_basis(catalog, question) or _commitment(catalog, question)
+             or _rightsizing(catalog, question) or _investigation(catalog, question))
     if bound is None or len(bound['public_fields']['answer']) > 4000:
         return None
     bound['id'] = hashlib.sha256(json.dumps({'question': question, 'binding': bound},
         ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
     return bound
+
+
+def _rightsizing(catalog, question):
+    parts = normalized(question).split('\n\n')
+    if len(parts) != 2 or not re.fullmatch(
+            r'¿?(?:reducimos ya el tamano de esta vm para ahorrar'
+            r'|conviene reducir (?:esta|la) vm'
+            r'|podemos hacer rightsizing (?:ahora|ya))[?.]?', parts[0]):
+        return None
+    scenario = re.fullmatch(
+        r'(?:contexto del escenario:\s*)?escenario sintetico: cpu media (?P<cpu>[0-9]{1,3}(?:[.,][0-9]{1,6})?)\s*%, '
+        r'sin datos de memoria, i/o, picos ni sla; coste [0-9]{1,12}(?:[.,][0-9]{1,6})? '
+        r'(?:eur|usd|gbp|chf|cad|aud|jpy)/mes[.] '
+        r'no existe recomendacion validada ni medicion de ahorro[.]?', parts[1])
+    if scenario is None or float(scenario['cpu'].replace(',', '.')) > 100:
+        return None
+    if any(s.get('kind') != 'corpus' for s in getattr(catalog, 'authorized_sources', ())):
+        return None
+    section = _section(catalog, 'Azure Advisor, Rightsizing Y Commitments')
+    if section is None:
+        return None
+    sentences = re.split(r'(?<=[.!?])\s+', section['body'])
+    # A changed policy or an extra exception must be reviewed rather than
+    # silently selecting one convenient sentence from it.
+    expected = [
+        r'Azure Advisor puede ser una fuente de seniales, pero no una orden automatica[.]',
+        r'Antes de aplicar rightsizing hay que validar CPU, memoria, I/O, picos, SLA, crecimiento esperado y restricciones de negocio[.]',
+        r'Un commitment es un compromiso financiero a cambio de descuento, como Reservations o Savings Plans[.]',
+        r'Antes de comprar commitments conviene aplicar rightsizing y confirmar una base de uso estable[.]',
+    ]
+    if len(sentences) != len(expected) or any(not re.fullmatch(pattern, sentence)
+                                                            for pattern, sentence in zip(expected, sentences)):
+        return None
+    chosen = _selections(section, sentences[:2])
+    if chosen is None:
+        return None
+    selected, records = chosen
+    actions = ['Obtener memoria, I/O, picos, SLA, crecimiento esperado y restricciones de negocio; contrastarlos con la CPU media aportada.',
+               'Validar la hipótesis de dimensionamiento y su impacto en rendimiento y servicio antes de actuar, con revisión humana.']
+    answer = ('Escenario hipotético aportado; no verificado financieramente. '
+              'La CPU media aislada no valida reducir la VM: rightsizing es una hipótesis de adecuación de capacidad, '
+              'no equivale siempre a reducir tamaño.\n'
+              'La política documental exige estas comprobaciones:\n'+_quotations(selected, records)
+              +'\nInterpretación para el escenario: al faltar memoria, I/O, picos y SLA, reducir capacidad podría '
+              'degradar el rendimiento o el servicio y comprometer el SLA. Es un riesgo condicional, '
+              'no una degradación observada ni una consecuencia garantizada. Hay que validar antes de actuar. '
+              'No existe una recomendación validada ni una medición de ahorro; no se garantiza ni se cuantifica ahorro. '
+              'No se ejecuta ningún cambio.\n'+'\n'.join(actions))
+    return {'topic': 'rightsizing', 'section': section, 'selections': selected, 'sources': records,
+            'public_fields': {'answer': answer, 'status': 'insufficient_data', 'next_actions': actions}}
 
 
 def _investigation(catalog, question):
