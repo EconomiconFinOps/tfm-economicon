@@ -86,8 +86,8 @@ no se instaló software ni se usó otro servidor.
 Los errores de sintaxis de invocaciones locales no ejecutaron comandos.
 Los intentos hasta7be conservaron las aserciones. fba modifica únicamente las dos pruebas descritas; B existente y despliegues ajenos siguen intactos.
 
-**Buildv6 condicionado, sin construir al último corte:**PID1259827/start_ticks62307469,
-final-build-launch-v6.json. Verificador con SHA fijo comprueba todos los JUnit/logs
+**Buildv7 en ejecución:**PID1272535/start_ticks62318210,
+final-build-launch-v7.json; backend construido con114 hashes internos verificados y processor en curso en el corte1792024587986. Verificador con SHA fijo comprueba todos los JUnit/logs
 originales, equivalencia de aplicación/build, helpers importados y sustitución
 exacta de los17 nodos SQL y8 offline afectados. Conserva ambos fallos históricos.
 Sólo construye si todos los58 SKIP del chat tienen prueba nativa conforme; ninguna
@@ -95,7 +95,12 @@ omisión se declara aprobada por su ausencia. Fuente de producto7be y revisión 
 pruebas fba se registran separadas. Imágenes secuenciales1024MiB/1CPU y hashes
 internos, sin activación ni inferencia. Buildsv1–v6 no construyeron ninguna imagen. V6 se cerró por los errores de preparación de v8, sin construir.
 
-Lectura contable renovada1792024359: mismos295 registros y cota4.423039035/5USD\ncon1.921712 retenidos; accounting-final-readonly-1792024359.json. Trello actualizado\npor integración DockerServer, SHA08396a1f972c5bd2af49765c195015fd5a06db0cf7d4da21dcc346adb12b8144,\nlectura exacta y lista intacta; jup123-trello-testfix-progress-update-v1.json.\n\n**Nueva N3 preparada, no ejecutada:**84 muestras y365 hashes contrastados contra
+Lectura contable renovada1792024359: mismos295 registros y cota4.423039035/5USD
+con1.921712 retenidos; accounting-final-readonly-1792024359.json. Trello actualizado
+por integración DockerServer, SHA08396a1f972c5bd2af49765c195015fd5a06db0cf7d4da21dcc346adb12b8144,
+lectura exacta y lista intacta; jup123-trello-testfix-progress-update-v1.json.
+
+**Nueva N3 preparada, no ejecutada:**84 muestras y365 hashes contrastados contra
 el archivo exacto7be, incluso pin generado. El generador se ejecutó desde3064a68d
 (sólo documentación posterior); no se intercambia un resultado entre commits.
 candidate-7be57c05-n3-plan.json, SHA256
