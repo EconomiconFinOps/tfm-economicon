@@ -115,7 +115,8 @@ def test_explicacion_de_extremo_a_extremo_con_operandos_exactos_de_la_tabla(epis
     assert user["role"] == "user" and user["content"] == QUESTION
     assert user["metadata"] == {"anomaly_query": {"episode_id": episode_id}}
     assert assistant["role"] == "assistant"
-    assert set(assistant["metadata"]) == {"citations", "anomaly_evidence"}
+    assert set(assistant["metadata"]) == {"citations", "anomaly_evidence", "generation"}
+    assert assistant["metadata"]["generation"] == {"question_message_id": user["id"]}
     assert assistant["metadata"]["citations"] == []
     evidence = assistant["metadata"]["anomaly_evidence"]
     # Cifras del episodio (400.00 -> 550.00 el día 8): 150.00 EUR, 37.50 %, 1 día, hasta el día de apertura.
