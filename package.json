@@ -46,6 +46,7 @@
     "retrieval-calibration:test": "python -m unittest discover -s scripts/tests -p test_retrieval_calibration.py",
     "assistant-metrics:test": "python -m unittest discover -s scripts/tests -p test_assistant_metrics.py",
     "assistant-eval:test": "python -m unittest discover -s scripts/tests -p test_assistant_eval.py",
+    "chat-collector:test": "python -m unittest discover -s tools -p test_chat_eval_collect*.py -v",
     "synthetic-demo:test": "python -m unittest discover -s scripts/tests -p test_synthetic_cost_demo.py",
     "demo-dataset:test": "python -m unittest discover -s scripts/tests -p test_demo_dataset.py",
     "demo-data:test": "python -m unittest discover -s scripts/tests -p test_demo_data.py"

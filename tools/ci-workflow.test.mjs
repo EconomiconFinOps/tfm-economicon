@@ -127,6 +127,7 @@ test("retains all existing governance, corpus and gateway validations", () => {
     "retrieval-calibration:test",
     "assistant-metrics:test",
     "assistant-eval:test",
+    "chat-collector:test",
     "synthetic-demo:test",
     "demo-dataset:test",
     "demo-data:test",
