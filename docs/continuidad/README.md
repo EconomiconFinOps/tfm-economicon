@@ -5,10 +5,14 @@ y estado operativo; GitHub conserva código y revisiones; OpenSpec conserva
 requisitos y diseño. Este índice enlaza evidencia, no sustituye esas fuentes.
 Leer la [convención](convencion-compartida.md) y sólo los temas pertinentes.
 Las fechas indican la última actualización documental, no una nueva ejecución de pruebas.
+Actualización15/10: colector extraído y adaptado para071 en PR131abierta,
+revisión solicitada a Lucía (`lmatsan`),
+31tests y compatibilidad con su evaluador comprobados; B no se ha publicado.
+Detalle en evaluación local y en la continuidad propia de la rama del colector.
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
-| [Evaluación local del chat](chat-evaluacion-local.md) | Producto d9b/corte9e2 corrige027/020;287tests Linux y UIr1PASS. N3 detenida50/84:47PASS/3técnicas429,34pendientes; snapshot597filas. Reservas5.761136 íntegras, cota comprobada9.574947/10USD a19:16UTC. Claves hasta16/10a18:00París; seguimiento único a08:00 para023r2. B sin validación completa ni aceptación. | 2026-10-15 |
+| [Evaluación local del chat](chat-evaluacion-local.md) | Máximo20USD autorizado; herramientas locales94PASS, transferencia pendiente. Producto d9b/corte9e2 sin cambios. N3 detenida51/84:47PASS/4técnicas429,33pendientes desde024r2;598filas, reservas6.081088 íntegras. Cota comprobada9.894899USD. Claves hasta16/10a18:00París. Snapshots50/51 conservados; sin aceptación. | 2026-10-15 |
 | [Chat conversacional](chat-conversacional.md) | PR121: focal28 3PASS/4FAIL, JSONB7PASS. Corrección29 de soporte literal visible e interpretación separada en regresión offline; aceptación/batería real pendientes. Gasto0.957927619/2USD. | 2026-10-13 |
 | [División del chat en A/B](chat-entregas-a-b.md) | División aprobada; B d9b/9e2 corregida,50/84 muestras con47PASS/3técnicas429, sin publicar ni aceptar. Ver evaluación local. Base A8ea/develop0543 y reviews/CI conservan su fecha histórica, sin nueva consulta. | 2026-10-15 |
 | [Pantallas de maqueta ocultas del MVP](pantallas-ocultas-mvp.md) | JUP-116: Coste Detallado, Corte Global y Recomendaciones ya no tienen ruta ni menú (se conservan en el código y se reactivan con dos líneas) y Overview sale del menú pero conserva su ruta; una dirección desconocida lleva a `/`. 797 pruebas del frontend y 16 comprobaciones en navegador; mergeado en `develop` el 2026-10-12 (#124). | 2026-10-13 |

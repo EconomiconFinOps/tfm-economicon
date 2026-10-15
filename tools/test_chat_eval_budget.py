@@ -128,11 +128,24 @@ class BudgetTests(unittest.TestCase):
         with patch.object(b, 'CAP', Decimal('5.00')):
             with self.assertRaisesRegex(ValueError, 'Insufficient budget'):
                 b.admit(snapshot, reservations, 'ninth', Decimal('.319952'), 100)
-        self.assertEqual(b.CAP, Decimal('10.00'))
+        self.assertEqual(b.CAP, Decimal('20.00'))
         admitted = b.admit(snapshot, reservations, 'ninth', Decimal('.319952'), 100)
         self.assertEqual({k: admitted[k] for k in reservations}, reservations)
         self.assertEqual(admitted['ninth']['reserved_usd'], '0.319952')
         self.assertEqual(reservations['completed_eof']['reserved_usd'], '.319952')
+
+    def test_cap20_extension_preserves_the_partial51_accounting(self):
+        from unittest.mock import patch
+        reservations = {'all_settled': {'state': 'COST_OBSERVED', 'reserved_usd': '2.813385973'},
+                        'all_unknown': {'state': 'COST_UNKNOWN_RESERVED', 'reserved_usd': '6.081088'}}
+        snapshot = self.covered(reservations, '3.81381063')
+        with patch.object(b, 'CAP', Decimal('10.00')):
+            with self.assertRaisesRegex(ValueError, 'Insufficient budget'):
+                b.admit(snapshot, reservations, '024r2', Decimal('.319952'), 100)
+        admitted = b.admit(snapshot, reservations, '024r2', Decimal('.319952'), 100)
+        self.assertEqual({key: admitted[key] for key in reservations}, reservations)
+        self.assertEqual(admitted['024r2']['reserved_usd'], '0.319952')
+        self.assertEqual(reservations['all_unknown']['reserved_usd'], '6.081088')
 
 
 if __name__ == '__main__':

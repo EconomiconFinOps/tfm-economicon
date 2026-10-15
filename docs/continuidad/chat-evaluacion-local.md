@@ -5,12 +5,97 @@ Origen: [JUP-123 / JUP-035B](https://trello.com/c/TqtcumIN), chat
 
 ## Estado actual y autorización — 15/10/2026
 
+### Máximo acumulado ampliado a20USD — autorización posterior del15/10
+
+El usuario indica «Amplia el gasto a20$». Sustituye el máximo10USD sin reiniciar
+contabilidad, claves, intentos o campañas, y sin liberar reservas. Herramientas
+locales de admisión y planes nuevos actualizadas a20USD:94pruebas offline PASS,
+incluida la admisión del siguiente máximo conservando6.081088USD retenidos.
+Transferencia/activación de estas herramientas separadas todavía pendiente en
+este corte; no se modifica el árbol medido9e2, su plan histórico ni sus imágenes.
+El límite monetario efectivo de OpenRouter leído es25USD, con21.198014901USD
+disponibles; no se ha cambiado ese límite ni se le atribuye la causa del429.
+
+**Estado verificado tras reanudaciónv6:**51/84recibos:47completed conformes y4
+fallos técnicos020r2/021r2/022r2/023r2. Faltan33desde024r2. La última operación,
+`245b22f4-6432-4544-94ec-fca4912f9a16`, tuvo cuatro429 en draft sin uso informado.
+Su máximo0.319952sigue íntegro:598filas,597anteriores y50recibos previos sin
+cambios,45costes observados y6máximos desconocidos. Controladorv6/PID323114,
+start_ticks69272802, terminó; ninguna nueva inferencia tras023r2 en este corte.
+Los cuatro errores recientes vuelven a ser RateLimitError/openrouter/vendor_rate_limit,
+sin campos de presupuesto cumplimentados. El catálogo público devuelve status0
+para deepinfra/fp4 y telemetría reciente nula; no acredita que nuestra cuenta
+pueda generar ni identifica la causa concreta del rechazo.
+
+**Contabilidad19:52UTC:** cota conservadora9.89489863USD, formada por
+máximo(contador3.81381063,histórico0.957927619+settled2.813385973)+6.081088retenidos.
+Otro máximo exigiría10.21485063USD: excedía10, cabe bajo la nueva autorización20
+si la lectura fresca y las demás guardas lo confirman. No es gasto real liquidado.
+Claves mismas, límites0.1/3.5 y vencimiento16/10a18:00París intactos.
+
+Snapshots nuevos, sin reemplazar partial50:
+- Remoto `candidate-9e2a49a2-partial51-cap10-v1`:239ficheros, manifestSHA
+  `ed1aefb773a15a8daf112804f72967b5a44af9a29ef7b23fd6fa4f88e3405e6e`.
+- Local `candidate-9e2a49a2-partial51-review-frozen-v1`:107ficheros, manifestSHA
+  `93936e1206ad9925ff71798e4fcaff8f74e19d283731d0aec9144775be0edb7a`.
+  Juicio provisional47PASS/4técnicas,278requisitos conformes/24no evaluables,
+  comparación parcial271PASS→PASS y1incierto→PASS. Sin aceptación ni N3 completa.
+Los sufijos cap10describen el corte congelado anterior a ampliar; no se reescriben.
+Evidencia adicional: `b-live-quota-readonly-1792093790.json`,
+`b-live-provider-route-1792094186.json`, retención023r2 y contabilidad1792093936.
+
+### Reutilización del colector para JUP-071 — consulta del 15/10/2026
+
+Actualización posterior autorizada: extracción publicada en
+[PR131](https://github.com/EconomiconFinOps/tfm-economicon/pull/131), inicialmente
+borrador y después abierta por instrucción explícita del usuario, con revisión
+solicitada a Lucía (`lmatsan`) y confirmada por GitHub; cabeza5cae4942,
+rama independiente `feat/JUP-123-response-collector` desde develop53b43bb1,
+commit técnico0bd494ba. Sólo tools/pruebas/guía/OpenSpec/CI, sin aplicaciones,
+prompts, bancos o corpus de B.31tests nuevos,110regresión y97gobernanza PASS;
+OpenSpec74/74. Evaluador071/81ceafc6 acepta tres exportaciones29casos tras87fixtures
+y521GET locales;0POST/0inferencias. No es campaña real ni validación humana.
+Guía en `docs/validation/chat-collector.md` de esa rama; continuidad propia
+`docs/continuidad/colector-chat.md`. Trello123/071 enlazados por DockerServer,
+listas/descripciones intactas. CI/reviews pendientes al publicar; solicitar la
+revisión no acredita su emisión. B permanece
+en50/84, sin nuevo gasto, proveedor modificado ni reservas liberadas. La lectura
+actual de develop confirma A integrada por cf821570/#130, sustituyendo aquí la
+suposición histórica de que sólo estaba en una rama. No revalida su despliegue.
+
+Confirmado por lectura local: `tools/chat-eval-collect.py` existe desde
+`b6208ea6`; recoge por GET operaciones terminales, resultado/historial/contexto
+y evidencia, conserva errores y hashes, sin iniciar inferencia. Sus nueve pruebas
+se han ejecutado de nuevo con Python3.12 (`-B -m unittest discover -s tools
+-p test_chat_eval_collect.py`):9PASS. No acredita compatibilidad desplegada con A.
+El corte de A8ea5a0c4 sí contiene los endpoints y metadata utilizados.
+
+La referencia local `origin/test/JUP-071-robustness` contiene16variantes y13
+originales (29casos), herramienta `assistant-robustness.py` y formato de resultados
+propio. Esta referencia no es una consulta actual de GitHub. El colector aislado
+no fija IDs del banco; el planificador/runner de B sí exige el banco original
+de28casos. Por tanto se puede extraer colector, pruebas y guía sin el rediseño
+semántico, pero la ejecución de los29casos y su conexión al scorer071 requieren
+adaptador y comprobación explícitos. No prometer integración directa de todo B.
+El suplemento `chat-eval-retrieval.py` verifica el RAG posterior al contexto
+inicial cuando existe snapshot exacto; copiar sólo el colector no lo resuelve.
+
+La consulta inicial de viabilidad no publicó nada; la publicación posterior
+autorizada se describe arriba. No se ha enviado el mensaje de Discord citado.
+B y la campaña de pago permanecen separadas de la entrega del colector. La
+solicitud anterior de aumentar límite del proveedor no ha cambiado su cuota de
+capacidad: la API expone límites monetarios con saldo disponible y no se ha
+encontrado un ajuste de capacidad para esta cuenta compartida. Fuentes oficiales:
+https://openrouter.ai/docs/api_reference/limits y https://openrouter.ai/pricing.
+Ampliar el máximo del trabajo a20USD no resuelve por sí solo los429; no se ha
+cambiado modelo, proveedor, plan comercial o créditos.
+
 El usuario amplió explícitamente el máximo acumulado a **10 USD** el15/10:
 continuar desde009 usando la corrección contable, sin repetir las ocho muestras
 anteriores ni liberar reservas pendientes. Sustituye los máximos anteriores;
 no reinicia gasto, ledger, intentos ni caducidad. B sigue sin publicar.
 
-### Corte vigente — 15/10/2026, 19:16 UTC
+### Corte anterior50 — 15/10/2026, 19:16 UTC
 
 **027 y 020 corregidos en producto d9b1aae9, corte versionado 9e2a49a2.**
 287 pruebas incrementales Linux PASS/0 FAIL/ERROR/SKIP; módulos compartidos idénticos,

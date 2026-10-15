@@ -10,8 +10,8 @@ import hashlib
 import json
 import re
 
-# User raised the cumulative limit to USD10 on 2026-10-15; prior spend remains.
-CAP = Decimal('10.00')
+# User raised the cumulative limit to USD20 on 2026-10-15; prior spend remains.
+CAP = Decimal('20.00')
 HISTORICAL_FLOOR = Decimal('0.957927619')
 
 
