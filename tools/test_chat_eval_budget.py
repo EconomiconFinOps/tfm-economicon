@@ -99,6 +99,35 @@ class BudgetTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Insufficient budget'):
             b.admit(self.covered(reservations), reservations, 'next', Decimal('.01'), 100)
 
+    def test_completed_unknown_reservation_requires_full_amount_identity_and_receipt(self):
+        import copy, hashlib, json
+        receipt = {'operation': {'operation_id': 'done', 'state': 'completed'},
+                   'collection_state': 'VERIFIED_PUBLIC_SNAPSHOT'}
+        digest = hashlib.sha256(json.dumps(receipt, sort_keys=True, ensure_ascii=False,
+            separators=(',', ':'), allow_nan=False).encode()).hexdigest()
+        reservation = {'state': 'COST_UNKNOWN_RESERVED', 'reserved_usd': '.319952',
+            'maximum_reserved_usd': '.319952', 'terminal_completed': {
+                'operation_id': 'done', 'state': 'completed', 'receipt_sha256': digest}}
+        self.assertTrue(b.retained_cost(reservation, 'done', receipt))
+        for patch in ({'reserved_usd': '0'}, {'reserved_usd': '.01'},
+                      {'state': 'COST_OBSERVED'}, {'terminal_failure': {}}):
+            with self.assertRaises(ValueError):
+                b.retained_cost({**reservation, **patch}, 'done', receipt)
+        for state in ('failed', 'cancelled', 'active'):
+            changed = copy.deepcopy(receipt); changed['operation']['state'] = state
+            with self.assertRaisesRegex(ValueError, 'receipt mismatch'):
+                b.retained_cost(reservation, 'done', changed)
+        with self.assertRaises(ValueError):
+            b.retained_cost(reservation, 'another', receipt)
+
+    def test_real_partial_campaign_numbers_cannot_admit_a_ninth_operation(self):
+        reservations = {'prior': {'state': 'COST_UNKNOWN_RESERVED', 'reserved_usd': '1.921712'},
+                        'completed_eof': {'state': 'COST_UNKNOWN_RESERVED', 'reserved_usd': '.319952'}}
+        snapshot = self.covered(reservations, '2.548894402')
+        with self.assertRaisesRegex(ValueError, 'Insufficient budget'):
+            b.admit(snapshot, reservations, 'ninth', Decimal('.319952'), 100)
+        self.assertEqual(reservations['completed_eof']['reserved_usd'], '.319952')
+
 
 if __name__ == '__main__':
     unittest.main()

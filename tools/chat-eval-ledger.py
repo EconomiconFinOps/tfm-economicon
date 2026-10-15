@@ -110,20 +110,51 @@ class Ledger:
             raise ValueError('Verified durable terminal failure required')
         digest = hashlib.sha256(json.dumps(receipt, sort_keys=True, ensure_ascii=False,
             separators=(',', ':'), allow_nan=False).encode()).hexdigest()
+        self._retain_unknown_cost(request_id, receipt, digest, 'terminal_failure')
+
+    def retain_completed_cost(self, request_id, receipt):
+        """Record a verified completed response while keeping its ENTIRE maximum."""
+        operation = receipt.get('operation', {})
+        checks = receipt.get('verification', {})
+        result = receipt.get('result')
+        resources = receipt.get('resources')
+        if (operation.get('state') != 'completed'
+                or receipt.get('collection_state') != 'VERIFIED_PUBLIC_SNAPSHOT'
+                or any(checks.get(key) is not True for key in
+                       ('input_matches_bank', 'stable_snapshot', 'public_history_parity', 'citation_ids_known'))
+                or not isinstance(result, dict) or not isinstance(result.get('content'), str)
+                or not result['content'].strip()
+                or not isinstance(resources, dict)):
+            raise ValueError('Verified completed public receipt required')
+        if (resources.get('operation') != operation or resources.get('operation_after') != operation
+                or resources.get('result') != result
+                or resources.get('history') != receipt.get('history')
+                or not isinstance(resources.get('history'), dict)):
+            raise ValueError('Completed receipt public snapshot mismatch')
+        resources_digest = hashlib.sha256(json.dumps(receipt['resources'], sort_keys=True,
+            ensure_ascii=False, separators=(',', ':'), allow_nan=False).encode()).hexdigest()
+        if resources_digest != receipt.get('resources_sha256'):
+            raise ValueError('Completed receipt resources mismatch')
+        digest = hashlib.sha256(json.dumps(receipt, sort_keys=True, ensure_ascii=False,
+            separators=(',', ':'), allow_nan=False).encode()).hexdigest()
+        self._retain_unknown_cost(request_id, receipt, digest, 'terminal_completed')
+
+    def _retain_unknown_cost(self, request_id, receipt, digest, proof_key):
+        operation = receipt['operation']
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             row = db.execute('SELECT * FROM attempts WHERE request_id=?', (request_id,)).fetchone()
             if (row is None or row['state'] != 'OBSERVING'
                     or row['operation_id'] != operation.get('operation_id')
                     or receipt.get('conversation_id') != row['conversation_id']):
-                raise ValueError('Failure does not match observed operation')
+                raise ValueError('Terminal receipt does not match observed operation')
             reservation = json.loads(row['reservation'])
             if reservation['state'] != 'RESERVED':
                 raise ValueError('Only an untouched full reservation can be retained')
             reservation.update(state='COST_UNKNOWN_RESERVED',
                 maximum_reserved_usd=reservation['reserved_usd'],
-                terminal_failure={'operation_id': row['operation_id'], 'state': 'failed',
-                                  'receipt_sha256': digest})
+                **{proof_key: {'operation_id': row['operation_id'], 'state': operation['state'],
+                               'receipt_sha256': digest}})
             db.execute('UPDATE attempts SET reservation=? WHERE request_id=?',
                 (json.dumps(reservation), request_id))
 

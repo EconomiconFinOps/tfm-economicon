@@ -64,6 +64,21 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(self.runner().step()['state'], 'COLLECTED_ONE')
         self.assertEqual(self.api.posts, 1)
 
+    def test_completed_unknown_cost_is_not_retried_and_still_blocks_an_over_cap_next_sample(self):
+        self.api.state = 'completed'
+        self.verified['accounting']['cumulative_usd'] = str(ledger_module.budget.CAP - Decimal('.15'))
+        self.runner().step(); self.runner().step()
+        path = next((Path(self.temp.name)/'receipts').glob('*.json'))
+        saved = json.loads(path.read_text(encoding='utf-8'))['results'][0]
+        self.assertEqual(saved['collection_state'], 'VERIFIED_PUBLIC_SNAPSHOT')
+        self.ledger.retain_completed_cost(self.ledger.pending()[0]['request_id'], saved)
+        with self.assertRaisesRegex(ValueError, 'Insufficient budget'):
+            self.runner().step()
+        self.assertEqual(self.api.posts, 1)
+        self.assertEqual(self.api.created, 1)
+        self.assertEqual(len(self.ledger.pending()), 1)
+        self.assertEqual(json.loads(self.ledger.pending()[0]['reservation'])['reserved_usd'], '0.1')
+
     def test_runtime_mismatch_blocks_before_conversation_or_reservation(self):
         self.verified['commit'] = 'other'
         with self.assertRaisesRegex(ValueError, 'Runtime'):
@@ -109,12 +124,16 @@ class FakeAPI:
     def recover_handle(self, cid, rid):
         return 'operation' if rid == self.request_id else None
     def get(self, path):
+        answer = {'id': 'answer', 'role': 'assistant', 'content': 'Synthetic answer',
+                  'metadata': {'response': {'answer': 'Synthetic answer', 'evidence': []}}}
         if path.endswith('/context'):
             return {'manifest': {}}
         if path.endswith('/evidence'):
             return {'items': []}
         if path.endswith('/conversation'):
-            return {'messages': [{'id': 'question', 'role': 'user', 'content': self.content}]}
+            messages = [{'id': 'question', 'role': 'user', 'content': self.content}]
+            return {'messages': messages+[answer] if self.state == 'completed' else messages}
+        if path.endswith('/result') and self.state == 'completed': return answer
         return {'operation_id': 'operation', 'request_id': self.request_id,
                 'question_id': 'question', 'state': self.state}
 

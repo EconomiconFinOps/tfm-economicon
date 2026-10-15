@@ -33,7 +33,7 @@ def campaign_prefix(rows, plans):
         seen[row['plan_hash']].append(row['sample_id'])
         reservation = json.loads(row['reservation'])
         if reservation['state'] == 'COST_UNKNOWN_RESERVED':
-            load('failure_budget', Path(__file__).with_name('chat-eval-budget.py')).retained_failure(reservation, row['operation_id'])
+            load('failure_budget', Path(__file__).with_name('chat-eval-budget.py')).retained_cost(reservation, row['operation_id'])
         elif reservation['state'] != 'COST_OBSERVED':
             raise ValueError('Previous operation cost unresolved')
     for digest, samples in seen.items():

@@ -158,10 +158,11 @@ Registro duradero: `tools/chat-eval-ledger.py` serializa reservas en SQLite con
 BEGIN IMMEDIATE; todas las campañas del límite acumulado usan el mismo fichero.
 Antes del callback de envío confirma DISPATCHING. Tras timeout se recupera la
 operación por lectura usando request_id; nunca se vuelve a enviar automáticamente.
-La reserva permanece mientras el coste sea desconocido. No existe todavía una
-ruta de liquidación contable: no eliminar filas ni abrir otro ledger para eludir
-reservas pendientes. El adaptador de contabilidad debe demostrar cobertura de
-los intentos antes de implementar esa liberación.
+La reserva permanece mientras el coste sea desconocido. La conciliación de coste
+observado exige informes completos de todos los intentos y fases; una respuesta
+final correcta no acredita la facturación del intento anterior. No eliminar
+filas ni abrir otro ledger para eludir reservas pendientes. El adaptador debe
+demostrar esa cobertura antes de sustituir el máximo por un coste observado.
 
 
 Transporte de ejecución: `chat-eval-api.py` crea una conversación y recoge el
@@ -220,3 +221,33 @@ contenedores. Runner rechaza su ausencia antes de reservar o enviar una petició
 Los planes históricos permanecen intactos y conservan su contrato anterior con
 el tokenizer versionado. Esta compatibilidad no permite omitir el artefacto en
 planes nuevos. Las pruebas son offline; no acreditan un runtime nuevo ni gasto.
+
+## Respuesta completada con coste desconocido — 15/10/2026
+
+Un intento puede perder su registro de consumo y una repetición automática
+posterior completar la respuesta. El contenido sigue siendo completed, pero
+su coste no está conciliado. Ledger.retain_completed_cost permite registrar
+ese hecho sin convertirlo en un fallo de contenido y sin reducir un céntimo
+de la reserva original. Es una operación explícita, no una decisión basada
+en spend0, ausencia de ID o silencio del proveedor.
+
+Exige estado completed, pregunta/estado/citas verificados, paridad con historial,
+respuesta pública no vacía, recursos con hash exacto y coincidencia entre esos
+recursos, el resultado y las dos lecturas de la operación. La transacción sólo
+admite una reserva completa aún intacta para la misma conversación/operación.
+Guarda terminal_completed y el hash del recibo; no crea terminal_failure.
+
+retained_cost conserva la compatibilidad con los comprobantes terminal_failure
+anteriores. El auditor de prefijos y Runner aceptan ambas procedencias sólo
+con identidad y máximo completo. La admisión sigue sumando el importe íntegro:
+un estado terminal registrado no autoriza la siguiente llamada si rebasa el
+límite. No se sobreescriben comprobantes de coste ya observados.
+
+109 pruebas offline cubren las herramientas completas. Un ensayo separado con
+la proyección de las303 filas reales conserva302 filas históricas y todos los
+importes, registra completed para008 y rechaza la novena reserva con el máximo
+de5USD. No es una modificación del ledger real ni una conciliación del proveedor.
+Esta corrección local posterior no cambia el plan, candidato o recibos de la
+campaña7be57c05 congelada. Antes de usarla en una continuación hay que registrar
+su versión de herramientas y verificar de nuevo procedencia y admisión; no
+sustituir a escondidas los ficheros que el plan anterior mantiene fijados por hash.

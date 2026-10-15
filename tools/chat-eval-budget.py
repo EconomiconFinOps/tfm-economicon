@@ -154,3 +154,26 @@ def retained_failure(reservation, operation_id, receipt=None):
                 or digest != proof['receipt_sha256']):
             raise ValueError('Retained failure receipt mismatch')
     return True
+
+
+def retained_cost(reservation, operation_id, receipt=None):
+    """Validate an unknown full maximum without confusing success with billing."""
+    if 'terminal_completed' not in reservation:
+        return retained_failure(reservation, operation_id, receipt)
+    proof = reservation['terminal_completed']
+    if (reservation.get('state') != 'COST_UNKNOWN_RESERVED'
+            or 'terminal_failure' in reservation
+            or money(reservation.get('reserved_usd')) <= 0
+            or reservation.get('reserved_usd') != reservation.get('maximum_reserved_usd')
+            or proof.get('state') != 'completed' or proof.get('operation_id') != operation_id
+            or not re.fullmatch('[a-f0-9]{64}', str(proof.get('receipt_sha256', '')))):
+        raise ValueError('Invalid retained completed operation cost')
+    if receipt is not None:
+        digest = hashlib.sha256(json.dumps(receipt, sort_keys=True, ensure_ascii=False,
+            separators=(',', ':'), allow_nan=False).encode()).hexdigest()
+        if (receipt.get('operation', {}).get('state') != 'completed'
+                or receipt.get('operation', {}).get('operation_id') != operation_id
+                or receipt.get('collection_state') != 'VERIFIED_PUBLIC_SNAPSHOT'
+                or digest != proof['receipt_sha256']):
+            raise ValueError('Retained completed receipt mismatch')
+    return True

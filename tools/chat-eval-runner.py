@@ -63,7 +63,7 @@ class Runner:
                 row = rows[sample['sample_id']]
                 reservation = json.loads(row['reservation'])
                 if reservation['state'] == 'COST_UNKNOWN_RESERVED':
-                    module('chat-eval-budget').retained_failure(reservation, row['operation_id'], saved)
+                    module('chat-eval-budget').retained_cost(reservation, row['operation_id'], saved)
                     continue
                 if reservation['state'] != 'COST_OBSERVED':
                     if self.accounting is None:

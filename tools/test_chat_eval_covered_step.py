@@ -57,6 +57,18 @@ class CoverageTests(unittest.TestCase):
         self.rows[-1]['operation_id'] = 'old1'
         with self.assertRaises(ValueError): c.campaign_prefix(self.rows, [self.a, self.b])
 
+    def test_completed_unknown_cost_is_an_ordered_prefix_only_with_full_maximum(self):
+        reservation = {'state': 'COST_UNKNOWN_RESERVED', 'reserved_usd': '.32',
+            'maximum_reserved_usd': '.32', 'terminal_completed': {
+                'operation_id': 'new1', 'state': 'completed', 'receipt_sha256': 'a'*64}}
+        self.rows[-1]['reservation'] = json.dumps(reservation)
+        self.assertEqual(c.campaign_prefix(self.rows, [self.a, self.b]), self.rows)
+        for patch in ({'reserved_usd': '0'}, {'reserved_usd': '.01'},
+                      {'terminal_completed': {'operation_id': 'new1', 'state': 'failed', 'receipt_sha256': 'a'*64}}):
+            self.rows[-1]['reservation'] = json.dumps({**reservation, **patch})
+            with self.assertRaises(ValueError):
+                c.campaign_prefix(self.rows, [self.a, self.b])
+
     def test_duplicate_sample_rejected(self):
         self.rows.append(row(self.b, '001:r1', 'new2'))
         with self.assertRaises(ValueError): c.campaign_prefix(self.rows, [self.a, self.b])
