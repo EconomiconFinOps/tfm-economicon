@@ -1,9 +1,15 @@
 # Ingesta documental
 
-Actualización técnica: 2026-10-16. Etapa experimental de la iniciativa RAG,
-en `feat/rag-ingestion`, desde `53b43bb1e79b08967cc1b9efdf66669f11e8197c`.
-El estado oficial, la formalización JUP y la integración se conservan en las
-fuentes de proyecto; este resumen no acredita aceptación final ni merge.
+Actualización documental: 2026-10-16. La etapa experimental se formaliza como
+[JUP-124](https://trello.com/c/SEkdYIYs), rama
+`feat/JUP-124-advanced-document-ingestion`, con código de referencia
+`688dd7202bc9536f5bd6d4febafa3ee392764df5` y base develop `53b43bb1` ya incluida.
+El [change archivado](../../openspec/changes/archive/2026-10-16-jup-124-advanced-document-ingestion/proposal.md)
+registra retrospectivamente implementación del 15/10 y correcciones del 16/10;
+no inventa un diseño previo ni altera producto. La [matriz de diez criterios](../evidence/JUP-124-validation.md)
+y [ADR-0022 Proposed](../adr/ADR-0022-document-ingestion-artifact-lifecycle.md)
+separan evidencia histórica, ratificación y reviews humanas pendientes.
+Paris aprobó el archivo el 16/10/2026: requisitos promovidos y change archivado en la misma rama. La PR tendrá destino develop; publicación, CI y reviews humanas se registran por separado, sin atribuir merge.
 
 La nueva entrada acepta un archivo MD/TXT UTF-8/PDF/DOCX/DOC por envío, máximo
 20.000.000 bytes. El backend autentica usuario/tenant, reserva una transferencia
