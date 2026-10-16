@@ -429,3 +429,13 @@ Tipo: deuda tecnica. Severidad: Low. Estado: Open. Owner: Equipo Economicon.
   ejecuciones del mismo minuto y tipo darian la misma cabecera de columna en la matriz; el titulo del panel de latencia p95
   se trunca en un panel de un tercio de ancho; GRD-2 por caso se carga y aparecera como filas con el identificador de caso
   crudo en la matriz cuando haya fallos.
+
+## RF-070-001 Latencias de embedding y recuperacion a 0 ms en las ejecuciones de JUP-070
+
+Fecha: 2026-10-16. Origen: JUP-121, [revision de pairing de Lucia en PR #132](https://github.com/EconomiconFinOps/tfm-economicon/pull/132).
+Tipo: calidad de la medicion. Severidad: Low. Estado: Open. Owner: Equipo Economicon. Scope: JUP-070, no JUP-121.
+
+En `docs/evidence/JUP-070-run-1-report.json` y `run-2-report.json`, `LAT-1` registra 0 ms en las etapas `embedding` y
+`retrieval` con n = 28 (comprobado). La ejecucion 2 usa embeddings reales (`litellm`), por lo que 0 ms no parece una
+medicion real. El dashboard lo copia fielmente y lo muestra como «0.0 ms», un cero medido segun su propia regla («no medido
+nunca es 0»). Revisar si el medidor de JUP-070 mide esas etapas o las deja a 0 por defecto.

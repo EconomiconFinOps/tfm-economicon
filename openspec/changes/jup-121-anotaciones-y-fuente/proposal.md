@@ -11,7 +11,12 @@ El comentario de Lucia sobre el encaje de JUP-071 con `rows-v1` señala otro def
 
 - La capa de anotaciones «Cambios de configuración» se aplica también a la evolución de la latencia de la campaña (panel 24).
 - «Estado de los casos por ejecución» solo muestra ejecuciones de JUP-070, como dice su descripción.
+- Orden de lectura de la sección A: resumen, ejecuciones, estado de los casos, matriz, evoluciones, calibración, benchmark, robustez y, al final, las tablas por fila «(detalle)».
+- Títulos de la sección C de 40 caracteres como máximo, para que no se corten en un panel de un tercio de ancho; «tráfico real» y el alcance pasan a la descripción.
+- Cabecera de columna de la matriz con fecha ISO (`AAAA-MM-DD hh:mm`) en lugar de `DD-MM`, que se lee como mes y día.
 - La guía recoge el contrato de clasificación para JUP-071: las proporciones que salen del resultado de un caso son `human`, solo las que decide una regla son `automatic`, y los grupos de JUP-070 no se reutilizan.
+
+Lucia pidió además, en su segunda vuelta sobre `640686e0`, ajustes de lectura que Victor acotó en el chat a cuatro: las tablas «(detalle)» van al final de la sección A y las evoluciones suben justo tras la matriz, los títulos de la sección C no se cortan, y la matriz usa una fecha sin ambigüedad. El resto de sus propuestas (columnas, referencias a tarjetas JUP, descripciones de los ⓘ, calibración y benchmark, sección C sin duplicar el técnico, gráficas) queda para una tarjeta de pulido.
 
 No cambia el contrato `rows-v1`, los adaptadores, el esquema ni el panel de robustez (su lectura se hará en la rama de JUP-071, cuando exista el informe).
 
@@ -36,5 +41,5 @@ No cambia el contrato `rows-v1`, los adaptadores, el esquema ni el panel de robu
 - Date: 2026-10-16
 - Carril: standard
 - Scope reviewed: proposal, design, specs, tasks
-- Scope adjustment approved: Victor aprobó en el chat abrir un change pequeño nuevo, sin reabrir `jup-121-lectura-dashboard` (archivado), que resuelva en la PR #132 la anotación de la latencia pedida por Paris, el filtro por fuente del estado de casos y la regla `human`/`automatic` de la guía; la lectura del panel de robustez y el adaptador de JUP-071 quedan en su rama.
+- Scope adjustment approved: Victor aprobó en el chat ampliar este change con los ajustes 1, 5, 7 y 8 de la segunda vuelta de Lucia (orden de la sección A, títulos de la sección C y fecha de la matriz) y dejar el resto de sus propuestas para una tarjeta de pulido. Antes aprobó abrir un change pequeño nuevo, sin reabrir `jup-121-lectura-dashboard` (archivado), que resuelva en la PR #132 la anotación de la latencia pedida por Paris, el filtro por fuente del estado de casos y la regla `human`/`automatic` de la guía; la lectura del panel de robustez y el adaptador de JUP-071 quedan en su rama.
 - Pendiente fuera de este gate: revalidación de Paris y revisión técnica de Alejandro.

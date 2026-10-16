@@ -30,3 +30,28 @@ La guía DEBE (SHALL) indicar a las fuentes futuras qué filas marcar como juici
 #### Scenario: Grupos de JUP-070
 - **WHEN** una fuente nueva elige sus grupos
 - **THEN** la guía le pide no reutilizar los de las familias de JUP-070
+
+### Requirement: Orden de lectura de la sección A
+La sección A DEBE (SHALL) mostrar el resumen, las ejecuciones, el estado de los casos, la tabla por métrica y ejecución y las evoluciones antes que la calibración, el benchmark y la robustez, y dejar al final las tablas por fila de detalle.
+
+#### Scenario: Evoluciones tras la matriz
+- **WHEN** se lee la sección A de arriba abajo
+- **THEN** las gráficas de evolución están justo detrás de la tabla por métrica y ejecución
+
+#### Scenario: Detalle al final
+- **WHEN** se llega al final de la sección A
+- **THEN** las tablas por fila de exactitud y de latencia están después de la robustez
+
+### Requirement: Títulos de la sección C que no se cortan
+Los paneles de un tercio de ancho de la sección C DEBEN (SHALL) llevar un título de 40 caracteres como máximo y el título de la latencia DEBE (SHALL) conservar «todas las rutas».
+
+#### Scenario: Título de la latencia
+- **WHEN** se lee el título de la latencia p95
+- **THEN** mide 40 caracteres o menos y dice «todas las rutas»
+
+### Requirement: Fecha sin ambigüedad en la tabla por métrica y ejecución
+Las columnas de la tabla por métrica y ejecución DEBEN (SHALL) rotularse con la fecha en formato año-mes-día y hora, igual que el resto de tablas.
+
+#### Scenario: Cabecera de columna
+- **WHEN** se muestra una ejecución del 8 de octubre de 2026 a las 20:13 UTC
+- **THEN** su columna empieza por `2026-10-08 20:13`
