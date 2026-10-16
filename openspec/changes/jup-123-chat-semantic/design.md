@@ -1,5 +1,19 @@
 JUP: JUP-123
 
+## Verificación actual y límites — 16/10/2026
+
+La N3 separada DeepSeek/CoreWeave de a7f9502d/banco1.0.1/corpus54 termina su
+vigencia de admisión en80/84:80respuestas localmente conformes/473comprobaciones,
+con costes observados. Faltan025–028r3; no prueba N3completa ni aceptación humana.
+012,015,017 y020 pasan3/3; las campañas anteriores conservan sus fallos y alcance.
+La elección operativa no demuestra superioridad general ni separa los efectos
+del modelo, proveedor, corpus y cambios del servidor. B conserva el flujo general
+fuera de sus gramáticas acotadas; no se promete corrección semántica universal.
+UI de historial003/012/027 conforme: API, texto/fuentes/fechas, recarga y1280/390px;
+no primer token ni generación en navegador. B anterior sano, temporales parados.
+Criterios y adjudicación pendientes; chat desactivado por defecto. Detalle en
+`docs/validation/JUP-123-local-review.md` y continuidad.
+
 ## Suficiencia de asignación y ausencia de tag — 16/10/2026
 
 El terminal documental compila una consulta conceptual acotada y una declaración

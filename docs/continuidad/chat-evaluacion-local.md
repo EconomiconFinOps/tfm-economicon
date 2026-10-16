@@ -9,6 +9,146 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 16/10/2026
 
+### Corte conservado: 80 de 84 respuestas conformes — 16/10/2026
+
+La N3 separada de DeepSeek V4.1 Flash/CoreWeave FP8 terminó su vigencia de
+admisión en 80/84: todas completed, verificadas, con coste observado y conformes
+en la revisión local provisional. Son 473 comprobaciones: 313 del banco y 160
+de calidad. Faltan exactamente JUP-069-025,026,027,028 de la repetición3.
+No se declara N3 completa ni aceptación humana. 012,015,017 y020 pasan3/3.
+La fuente sigue siendo a7f9502d, banco1.0.1 y plan5f3186da; no se hereda N5de5119.
+
+Controller-v2 PID3585894/start76242235 TERMINADO por corte de seguridad17:50París;
+no relanzarlo. Restauró el B anterior sano, mismos IDs/imágenes, demás servicios
+sin cambios. 024r3 ya se había generado: se recogió por GET/SQL tras el corte y
+se contrastaron todos sus cargos, sin nuevos POST de generación/embeddings.
+Sólo se activó brevemente el backend propio con margen fresco de RAM; processor y
+proxy siguieron parados. Los79recibos y1360asientos previos quedaron idénticos.
+Después volvió a quedar parado; el B anterior permaneció sano durante esa lectura.
+
+Ledger1361/SHAbea760b6a50b30103264d22050f085e634c28436dce05a79ce9b927d1e8a24cf,
+80costes observados, ningún handle pendiente. Primeras26respuestas y prefijo1307
+intactos. Coste nuevo observado0.168834664USD; reservas desconocidas anteriores
+13.99052050USD intactas. Cota de cuenta21.375932853/30USD: conservadora, no factura
+ni atribución exacta al trabajo. Ambas reservas de embeddings0.01USD se mantienen.
+
+UI003/012/027 conforme: texto, fuentes, fechas, historial y recarga;1280/390px sin
+overflow del documento. CeroPOSTgenerativos. Frontend temporal parado y túnel
+propioPID6600 cerrado comprobando identidad. Dos fallos previos del arnés de espera
+del botón y el incidenteSSH recuperado se conservan; no implican cambios de producto.
+
+Solicitud de ampliar sólo la caducidad de las mismas claves hasta HOY19:00París
+PENDIENTE: no respuesta humana al corte, no aplicada ni archivo de permiso creado.
+Vigencia actual hastaHOY18:00, límites4.5/0.1USD; no inferir prórroga del presupuesto.
+Procedimiento preparado: extend-allocation-existing-expiry-1900-prepared-v1.py.
+No hay trabajos pagados vivos. Sin permiso nuevo, no inferencias ni nueva pregunta.
+
+Auditoría allocation-deepseek-n3-partial-audit-v1.json; paquete inmutable de185
+archivos allocation-deepseek-n3-partial-frozen-v1, manifestSHA
+bb42a50daf7f4cd29a083cf4d8ad96bb25a5e35436db920f3f756cde497aaaca.
+No sobrescribirlo al continuar. Handoff vigente allocation-012-handoff-v7.json.
+OpenSpec estricto75PASS en el CLI instalado; pnpm intento previo no ejecuto
+la validacion y rechazo reinstalar dependencias compartidas, sin cambios de producto.
+Con permiso real y vigente: nueva política/continuador externos protegiendo1361 y80
+recibos; empezar sólo por025r3, mismo código/modelo/prompt/banco/ledger, ZDR sin
+fallback. La política antigua de caducidad18:00 y sus hashes no se modifican.
+No repetir suites/builds/UI ya conformes sin cambio nuevo. Criterios y adjudicación
+independientes siguen pendientes; B no publicada, integrada ni aceptada.
+
+Los cortes inferiores son históricos y quedan superados por el anterior.
+
+### SSH recuperado y navegador conforme — 16/10/2026 15:33UTC
+
+IncidenteSSH transitorio conservado en allocation-deepseek-ssh-access-loss-v1.json.
+Se recupero el acceso sin reiniciar ni reenviar nada; mismoPID3585894/ticks76242235.
+Ultimo corte remoto15:32UTC:52completed/52costes observados. Local49revisadas,
+290checksPASS;020r2 verificada por derivacionRAG normal, sin nueva inferencia.
+UI003/012/027PASS: texto, fuentes, fechas, historial/recarga,1280/390px.
+NingunPOSTgenerativo. Frontendpropio parado/tunel6600 exacto cerrado.
+Dos fallos previos del arnesUI por espera del boton conservados; producto intacto.
+
+Se solicito ampliar SOLOcaducidad de las mismas claves deHOY18:00a19:00Paris
+si hace falta acabar; SINRESPUESTA al corte, procedimiento preparado NOejecutado.
+No crear permiso, renovar o prolongar controlador por silencio. Proceso actual
+sigue dentro de vigencia18:00/corte17:50Paris,30USD/reservas intactas.
+Auditoria/paquete full84 preparados pero NOejecutados; N3 no es completa.
+Handoff vigente allocation-012-handoff-v6.json; estado posterior solo por observacion.
+
+### N3 DeepSeek reanudada sin repetir las 26 primeras — 16/10/2026
+
+Semilla54 cargada una sola vez con el segundo permiso; ambas reservas0.01USD
+intactas. GLMparcial4 congelada (2respuestas/2tecnicas429), no es N3completa.
+Productoa7f9502d/banco1.0.1 y corpus nuevo no heredan la N5de5119.
+
+DeepSeekV4.1Flash/CoreWeaveFP8, ZDR sinfallback, temperatura0/razonamientodesactivado:
+la primera ejecucion termino en26completed,26costes observados. Processor512MiB
+OOM provoco parada ANTESde reservar027; fallo y restauracion conservados.
+Mismo contenedor/imagen ahora768MiB, margen completo fresco436MiB>=384.
+Continuador unico PID3585894/start76242235, controllerSHA9c3a85bc, desde027r1:
+plan5f3186da, mismas claves/contadores y30USD; NO repetir26 ni relanzar por timeout.
+Prefijo1307/SHA720de4c900ff601d422ca916a696d2f58eee7036acf736d1b12b40fa0b12bda6
+y26recibos protegidos. Viejo controlador3333099 terminal; no relanzarlo.
+
+Corte15:13UTC:29completed/29costes observados, segunda ronda iniciada.
+Revision local de26:153requisitosPASS;012 separa tags/asignacion sin inventar
+optionalidad deowner;017 limitesestrictos y020riesgocondicional conformes en r1.
+027r1/028r1 ya leidas, etiquetas pendientes al corte. Ninguna aceptacion humana
+o superioridad general; repeticiones restantes, auditoria y UI nuevas pendientes.
+Frontend propio preparado pero parado; no validacion UI nueva aun.
+
+Entorno propio economicon-jup123-ds-a7f9502d, SQLjup123_ds_a7f9502d,
+vectoresjup123_alloc_a7f9502d reutilizados. Proxy compartido sin cambios.
+Backend/processor viejos pausados con permiso humano y restauracion al terminar.
+Reservas desconocidas anteriores13.99052050USD intactas; maxoperacion0.0889632USD.
+Claves existentes4.5/0.1 hastaHOY18:00Paris; no prorroga/nuevasclaves/resets.
+Handoff `allocation-012-handoff-v5.json`; evidencia externa no contiene secretos.
+B local, sinGitHub/Discord/merge/Done; adjudicacion independiente pendiente.
+
+El corte siguiente conserva el estado anterior, no el actual.
+
+### Corpus cargado y N3 alternativa en curso — 16/10/2026
+
+Permisos humanos de segundo envío y pausa/restauración recibidos. Semilla
+`baec863e-4786-40a4-9b21-f5d060456224` confirmada:3documentos/54fragmentos.
+Se conservan tanto el primer intento fallido como las dos reservas0.01USD;
+NO volver a ejecutar semillas. Fuentea7f9502d/banco1.0.1, prompt/contrato intactos.
+
+GLM/DeepInfra se detuvo en4muestras:001r1 y004r1 técnicas porHTTP429,
+002r1/003r1 completadas y revisión local11checksPASS. Todas mantienen sus
+máximos íntegros0.319952USD por intentos sin facturación completa. Campaña parcial
+congelada `allocation-glm-partial4-frozen-v1.json`; nuncaN3completa ni relabelar.
+Controladores3058425/3110888/3163823 terminados; no relanzar. Si algún día se
+retomaGLM sería005r1, separado del nuevo modelo. No hay prueba de caída global.
+
+Dentro del permiso de elegir modelo del pool se prepara DeepSeekV4.1Flash por
+CoreWeave/fp8, ZDR/sinfallback,temp0/reasoningdisabled, en runtime PROPIO
+`economicon-jup123-ds-a7f9502d`, API29857/processor29858/gateway44003.
+Misma fuentea7 e imágenes derivadas verificadas; SQL nueva `jup123_ds_a7f9502d`,
+54vectores reutilizados de `jup123_alloc_a7f9502d`, sin nuevo envío de semilla.
+Proxy compartido sin cambios de ID/imagen/inicio/rutaGLM; proxy propio usaMISMAS
+claves y DBdecontadores, con DISABLE_SCHEMA_UPDATE=true. Sin resets/nuevas claves.
+Preparacionesv1/v2 fallidas preservadas;v2OOM512MiB. Runtimev3 sano con límites
+512/512/768MiB y margen fresco384MiB, no ambos juegos antiguos/nuevos activos.
+Antiguos backend/processorB pausados con permiso; el controlador los restaura.
+Frontend NO arrancado ni validado en este runtime.
+
+NuevaN3DeepSeek84 en curso: PID3333099/start76020386, controllerSHAe2ff5498,
+planSHA5f3186da, políticaSHAca97550b. Al corte3completed/3costes observados;
+no juicio semántico todavía, no aceptación. El launcher tuvo KeyErrorDESPUÉS de
+Popen; se recuperó el proceso exacto porargv/ticks, NO se relanzó. Rootremoto
+`allocation-deepseek-api-v1`; observer `observe-allocation-deepseek-api-v1.py`.
+Exportadores/scorer y procedimientos exactos en `allocation-012-handoff-v4.json`.
+
+Prefijo1281/SHA3e679f6859027616965218c25f762d71f35e2e938f6ee8861702be0682208dcc
+protegido bytea byte. Reservas desconocidas anteriores13.99052050USD intactas;
+operaciónDeepSeek máximo0.0889632USD, sólo nueva contabilidad correspondiente.
+Máximo30USD acumulados; claves4.5/0.1 vencenHOY18:00París, sin prórroga.
+Cota de cuenta conservadora, no factura ni atribución exacta. No repetir N5de5119,
+Sonnet/Sol/DeepSeekhistórica; no atribuirlas a este nuevo corpus/modelo.
+B sigue local, sin publicación/merge/Discord/Done; criterios y adjudicación
+independientes pendientes. Siguiente: observar proceso existente, revisar respuestas
+nuevas contra fuentes reales, auditar cierre y luego UI/historial. No permiso pendiente.
+
 ### Semilla fallida; arnés corregido, nuevo envío pendiente — 16/10/2026
 
 El humano autorizó la pausa/restauración (`call_f2605a9419c44e8cbaab12cd84945b74`).

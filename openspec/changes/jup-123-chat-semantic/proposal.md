@@ -25,12 +25,19 @@ Dependencia: JUP-122, PR https://github.com/EconomiconFinOps/tfm-economicon/pull
 ## Impact
 
 Backend, processor y herramientas de evaluación. B sigue local, sin publicar.
-El usuario autorizó un entorno aislado y aumentó el máximo acumulado a20USD,
-conservando todas las reservas. Claves existentes hasta16/10a18:00París, sin
-renovación automática. N3 de5119 completa:327 requisitos originales conformes;
-012r1 fallo de calidad y023r3 duda pendientes. N5 detenida por presupuesto112/140,
-111conformes/1técnica, sin repetir ese fallo ni liberar máximos. Propuesta21USD no
-autorizada ni activada. Integración local2339 con develop53b43 comprobada en código,
-SQL e imágenes; su corpus nuevo no hereda la medición de5119. Criterios y adjudicación
-independiente pendientes; no aceptación ni reviews simuladas. Detalle y evidencia:
-`docs/validation/JUP-123-local-review.md`.
+El usuario autorizó el entorno aislado, elegir modelo y un máximo acumulado de
+30 USD, conservando todas las reservas. La vigencia actual de las claves acaba
+el 16/10 a las 18:00 de París; la solicitud condicional de 19:00 sigue pendiente.
+La N5 histórica de 5119 terminó con 140 recogidas: 139 completed, un fallo técnico
+y un fallo de calidad en 012; no acredita el corpus o código integrado posteriores.
+La corrección de 012 está en a7f9502d: 213 pruebas Windows y 213 Linux conformes,
+replay de 167 contextos y dos builds estándar. El corpus nuevo de 54 fragmentos
+se cargó tras permisos específicos; ambos máximos de embeddings se conservan.
+GLM parcial4 se congela con dos respuestas y dos fallos técnicos 429. La N3
+separada DeepSeek/CoreWeave se detuvo por caducidad en80/84:80respuestas localmente
+conformes/473comprobaciones y80costes observados. Faltan sólo025–028r3. No es una
+N3completa ni aceptación. La recuperación de024r3 fue por GET/SQL, sin nueva respuesta.
+Navegador003/012/027, fuentes/fechas/historial/recarga y1280/390px conformes, sin
+POSTgenerativos. B anterior restaurado sano y temporales parados.
+Criterios y adjudicación independiente siguen pendientes; no reviews simuladas.
+Evidencia y límites: `docs/validation/JUP-123-local-review.md`.

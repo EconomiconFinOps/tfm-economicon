@@ -15,23 +15,43 @@ descarga pública del tokenizer; frontend127idéntico. Evidencia en
 `allocation-native-final-audit-v1.json`, `allocation-counterfactual-proof-v2.json`
 y `allocation-standard-build-final-audit-v1.json`.
 
-La nueva N3 no se ha ejecutado. Permisos de embeddings y pausa recibidos; el
-intento de semilla falló en el arnés al pasar timeout como cuerpo HTTP, tras
-cabeceras y sin enviar el corpus. No respuesta ni corpus cargado; contadores del
-proveedor idénticos. Corrección de una línea del arnés,6pruebas PASS, sin cambiar
-producto. No se repitió: nuevo intento único consultado y pendiente de permiso.
-Antiguo B restaurado sano, mismos contenedores/imágenes; nuevo entorno parado.
-Ledger1276/prefijo1275 intacto; reserva0.01 retenida,12.70071250USD desconocidos,
-30USD acumulados. No tratar reserva como factura. Handoff vigente
-`allocation-012-handoff-v3.json`; nueva política deberá proteger1276 antes de otra
-reserva0.01 y de adaptar el arnésN3, conservando el intento y evidencia anteriores.
-Criterios/adjudicación independientes pendientes; no aceptación. Procedimiento,
-identidades y payload exacto en [continuidad](../continuidad/chat-evaluacion-local.md).
+Corpus nuevo cargado:3documentos/54fragmentos, un envío exitoso y el fallo
+anterior del arnés preservados; ambas reservas0.01USD intactas. GLMparcial4
+congelada:001/004técnicasHTTP429,002/003completadas y revisiónlocal11checksPASS,
+sus4máximos0.319952USD íntegros. No esN3completa ni factura.
+
+La nueva N3 separada de **DeepSeek V4.1 Flash/CoreWeave FP8** queda en
+**80/84 respuestas, todas conformes en revisión local provisional**: 313 criterios
+del banco y160 de calidad,473en total. Faltan únicamente025–028r3. No se declara
+N3completa ni aceptación. 012,015,017 y020 pasan las tres repeticiones.
+La selección operativa evita los429observados en la parcialGLM; no demuestra
+superioridad general ni separa efectos del modelo, proveedor, corpus y servidor.
+
+El corte de seguridad de las17:50París detuvo el controlador. 024r3, ya generada,
+se recogió por GET/SQL y se concilió sin nuevos POSTgenerativos o embeddings.
+80costes observados, ningún handle sin conciliar. Coste nuevo0.168834664USD;
+reservas desconocidas previas13.99052050USD intactas. Cota conservadora de cuenta
+21.375932853/30USD, no factura ni atribución exacta. Ledger1361/hashbea760b6.
+
+Navegador003/012/027PASS: texto/fuentes/fechas, historial/recarga,1280/390px sin
+overflow. No prueba primer token o streaming en vivo; no generó respuestas.
+El B anterior está restaurado sano. Backend,processor,proxy y frontend temporales
+están parados; el túnel propio se cerró. Fallos del arnés anteriores preservados.
+
+Claves vigentes hastaHOY18:00París; solicitud condicional19:00PENDIENTE y no
+aplicada. Continuar requiere respuesta humana real y una nueva política externa
+que proteja1361asientos/80recibos, empezando sólo por025r3. No repetir80 ni liberar
+reservas. Criterios y adjudicación independiente pendientes; no publicar B.
+Auditoría `allocation-deepseek-n3-partial-audit-v1.json`, paquete inmutable185archivos
+`allocation-deepseek-n3-partial-frozen-v1`, manifestSHA
+`bb42a50daf7f4cd29a083cf4d8ad96bb25a5e35436db920f3f756cde497aaaca`.
+Handoff vigente`allocation-012-handoff-v7.json`; ver
+[continuidad](../continuidad/chat-evaluacion-local.md).
 
 Los cortes siguientes conservan las mediciones de sus commits originales;
 no acreditan el modelo/corpus nuevos de a7f9502d.
 
-Se elige **GLM 5.2/DeepInfra FP4**. DeepSeek V4.1 Flash/CoreWeave FP8 también
+En la comparacion historica previa se eligio **GLM 5.2/DeepInfra FP4**. DeepSeek V4.1 Flash/CoreWeave FP8 también
 completó la comparación N3. La configuración GLM presentó menos defectos
 semánticos; DeepSeek fue más rápido y barato. No se separa el efecto del modelo
 del proveedor ni se declara superioridad estadística.
@@ -77,6 +97,7 @@ manifiestos verificados; no se declara un paquete compartido inexistente.
 | API N3 de5119 | Banco1.0.0; 84 completed, 84snapshots y84 costes conciliados |82 conformes, 1fallida012r1, 1dudosa023r3; 327 requisitos originales conformes |
 | N5 final de5119 |140/140 recogidas:139completed/1failed |138conformes,1fallida012r5,1técnica010r3;542requisitos originalesPASS/3no evaluables;276calidadPASS/2FAIL de un grupo/2no evaluables |
 | Integración2339 | Banco1.0.1/corpus actualizado, código/SQL e imágenes comprobados |HTTP/UI costes off/on conformes en preview retirada, sin generación. Campaña generativa NOT_RUN |
+| API N3 a7f9502d / DeepSeek | Banco1.0.1, corpus54, ZDR/CoreWeaveFP8;80/84 por corte de caducidad |80conformes/473checks,80costes observados; faltan025–028r3. UIhistorial003/012/027 conforme; sin aceptación |
 
 La quinta ronda001–028r5 se completó bajo30USD:28completed,27conformes y1fallida
 de calidad012r5, sin técnicos nuevos. Las112anteriores nunca se repitieron ni
@@ -221,3 +242,34 @@ vistas al momento de exportarlas: una nota temprana sobre reserva pendiente no
 sustituye las disposiciones finales de la auditoría.
 
 Estado y procedimientos en [continuidad](../continuidad/chat-evaluacion-local.md).
+
+
+### N3 DeepSeek reanudada sin repetir las 26 primeras — 16/10/2026
+
+Semilla54 cargada una sola vez con el segundo permiso; ambas reservas0.01USD
+intactas. GLMparcial4 congelada (2respuestas/2tecnicas429), no es N3completa.
+Productoa7f9502d/banco1.0.1 y corpus nuevo no heredan la N5de5119.
+
+DeepSeekV4.1Flash/CoreWeaveFP8, ZDR sinfallback, temperatura0/razonamientodesactivado:
+la primera ejecucion termino en26completed,26costes observados. Processor512MiB
+OOM provoco parada ANTESde reservar027; fallo y restauracion conservados.
+Mismo contenedor/imagen ahora768MiB, margen completo fresco436MiB>=384.
+Continuador unico PID3585894/start76242235, controllerSHA9c3a85bc, desde027r1:
+plan5f3186da, mismas claves/contadores y30USD; NO repetir26 ni relanzar por timeout.
+Prefijo1307/SHA720de4c900ff601d422ca916a696d2f58eee7036acf736d1b12b40fa0b12bda6
+y26recibos protegidos. Viejo controlador3333099 terminal; no relanzarlo.
+
+Corte15:13UTC:29completed/29costes observados, segunda ronda iniciada.
+Revision local de26:153requisitosPASS;012 separa tags/asignacion sin inventar
+optionalidad deowner;017 limitesestrictos y020riesgocondicional conformes en r1.
+027r1/028r1 ya leidas, etiquetas pendientes al corte. Ninguna aceptacion humana
+o superioridad general; repeticiones restantes, auditoria y UI nuevas pendientes.
+Frontend propio preparado pero parado; no validacion UI nueva aun.
+
+Entorno propio economicon-jup123-ds-a7f9502d, SQLjup123_ds_a7f9502d,
+vectoresjup123_alloc_a7f9502d reutilizados. Proxy compartido sin cambios.
+Backend/processor viejos pausados con permiso humano y restauracion al terminar.
+Reservas desconocidas anteriores13.99052050USD intactas; maxoperacion0.0889632USD.
+Claves existentes4.5/0.1 hastaHOY18:00Paris; no prorroga/nuevasclaves/resets.
+Handoff `allocation-012-handoff-v5.json`; evidencia externa no contiene secretos.
+B local, sinGitHub/Discord/merge/Done; adjudicacion independiente pendiente.

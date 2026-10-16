@@ -1,24 +1,25 @@
 ## Estado vigente — 16/10/2026
 
-Corrección012 en a7f9502d:213Windows+213LinuxPASS, replay167contextos y
-paridad;2builds estándarPASS, mismo código/pin. Nueva campaña/corpus pendiente
-del permiso explícito de embeddings requerido por revisión automática, sin envío
-o reserva. No cierra3.1/3.2 ni reetiqueta N3/N5; ver continuidad para procedimientos.
+Corrección012 en a7f9502d:213Windows/213Linux conformes, replay167 y dos builds
+estándar. Corpus nuevo54 cargado tras permisos específicos; dos máximos0.01USD
+conservados. GLMparcial4 congelada:2respuestas/2técnicos429, sin reemplazarlos.
 
-Integración local2339 con develop53b43:192 pruebas backend únicas (29SQL),18frontend,
-95arnés/17evaluador,75OpenSpec; tres imágenes y351 archivos verificados.
-HTTP/UI de costes off/on pasan en preview desechable, escritorio/móvil/recarga;
-panel B disponible sólo on. Preview retirada, cero inferencias; no valida generación.
-N3de5119 completa:327requisitos originalesPASS,012r1fallida/023r3dudosa.
-N5final140recogidas/auditadas:139completed/1failed;138conformes/1fallida012r5/
-1técnica010r3,542requisitos originalesPASS/3no evaluables;276calidadPASS/2FAIL/
-2no evaluables. Quinta ronda28completed sin técnicos nuevos,112anteriores intactas.
-Máximo30USD/cota19.893051732, reservas12.69071250íntegras;1275filas/paquete310archivos.
-No aceptación independiente ni campaña del corpus integrado nuevo. Casillas
-1.4/2.4/3.1–3.3 pendientes:criterios/adjudicación,012 y confirmación de alcance;
-3.4 acredita candidato preparado. La recogidaN5 ya finalizó.
-Ver `docs/validation/JUP-123-local-review.md` y continuidad; los cortes inferiores
-conservan historia y no sustituyen este estado.
+La N3 separada DeepSeek/CoreWeave se detuvo por corte de caducidad en80/84:
+80completed,80costes observados,80respuestas localmente conformes/473comprobaciones.
+Faltan exactamente025–028r3; no N3completa ni aceptación independiente.
+012,015,017,020 pasan3/3. 024r3 ya generada se recogió por GET/SQL, sin repetirla.
+UI003/012/027 conforme: texto/fuentes/fechas, historial/recarga y1280/390px, sin
+POSTgenerativos. B anterior restaurado sano; temporales parados y túnel cerrado.
+
+Ledger1361/hashbea760b6 protegido; coste nuevo0.168834664USD, reservas anteriores
+13.99052050USD intactas, cota conservadora21.375932853/30USD. Claves hastaHOY18:00
+París; solicitud19:00PENDIENTE, no aplicada. Sin permiso no reanudar inferencias.
+Paquete parcial185archivos inmutable; no sobrescribir al continuar desde025r3.
+
+La N5de5119 conserva140recogidas/139completed/un técnico y un fallo de calidad012r5;
+no acredita este código/corpus/modelo. Casillas1.4/2.4/3.1–3.3 conservan alcance
+pendiente: criterios, adjudicación y cierre de medición actual. 3.4es preparación
+local. Informe/continuidad contienen hashes y límites; cortes inferiores históricos.
 
 ## 1. Base y contratos
 - [x] 1.1 Recuperar B y activar JUP-123 en Trello.
