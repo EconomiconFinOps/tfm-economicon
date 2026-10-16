@@ -51,3 +51,9 @@ por el puente autorizado, con lectura exacta y metadatos preservados; registro
 `tfm-model-analysis-trello-update-v1.json` en la evidencia externa. No JUP nueva.
 El registro técnico enlazado conserva los hashes de ambas descripciones y del
 informe. Preparación completada; incorporación y aceptación siguen pendientes.
+
+El humano aprobó el texto exacto y destino del resumen para el equipo. Publicado
+una sola vez en [Economicon/#general](https://discord.com/channels/1477630870541303861/1477630871627370702/1560728370025730078)
+el 16/10/2026 a las 20:57 de París; contenido e identidad verificados en DOM.
+La autorización supera el rechazo automático anterior para ese aviso concreto;
+no autoriza publicaciones adicionales. Incorporación a la memoria aún pendiente.

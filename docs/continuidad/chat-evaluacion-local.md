@@ -33,17 +33,15 @@ claves, reservas, builds o activaciones nuevos. Ver
 Informe externo `B-N3-5119-to-a7-provenance-comparison-v1.json`, SHA
 `4da6964ac124baf635b5f7889d254519d871e0f75cca3519528e7a77eb8a38af`.
 
-Discord: sesión web iniciada por el humano y verificada en Economicon/#general.
-El resumen de `discord-modelos-B-20261016.txt` está pegado en el compositor,
-**NO publicado**. La revisión automática rechazó pulsar Return: exige aprobación
-explícita de texto exacto y canal para compartir los resultados internos.
-Se presentó una única consulta con el texto completo y destino
-`https://discord.com/channels/1477630870541303861/1477630871627370702`;
-PENDIENTE de respuesta al corte. El aviso de sesión anterior queda resuelto.
-No repetir envío, cambiar de canal/token o reducir el texto para sortear el rechazo.
-El bot sigue siendo sólo lectura. Tras respuesta humana válida sobre esa consulta,
-verificar el borrador y publicar sólo ese aviso una vez, comprobando resultado.
-Silencio o la autorización de login no aprueban la consulta nueva del envío.
+Discord: tras el rechazo automático inicial, el humano aprobó el texto completo
+y el canal: «Sí, publicar este texto en ese canal». Se publicó una sola vez el
+16/10/2026 a las 20:57 de París por la sesión web de Alejandro Aguado.
+[Mensaje verificado](https://discord.com/channels/1477630870541303861/1477630871627370702/1560728370025730078).
+El DOM confirma una instancia del contenido aprobado y compositor vacío;
+se capturó la vista del canal. Registro externo `discord-modelos-B-sent-v1.json`.
+El rechazo anterior se conserva como historia, ya superado por esta autorización
+específica. NO volver a enviar este aviso. No autoriza nuevos mensajes; el bot
+sigue siendo sólo lectura. Producto, campañas, contabilidad y servicios intactos.
 
 Análisis y justificación de modelos para el TFM: [memoria-modelos.md](memoria-modelos.md).
 Contribución preparada para JUP-063/JUP-109, sin duplicar tareas. DeepSeek es la
