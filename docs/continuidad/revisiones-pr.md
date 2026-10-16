@@ -32,3 +32,13 @@ develop; diff propio contra develop limpio. CI del nuevo SHA pendiente de
 publicacion. Revision favorable de Paris sobre098c50aa conserva fecha/alcance;
 validacion Victor, pairing y revalidacion de dependencias pendientes. No merge
 a develop, nuevas excepciones, ejecucion generativa ni cambios en dictamenes.
+
+## Actualizacion17/10/2026
+
+Develop ee4e8031 (PR136/JUP071) incorporado sobre e76c4c29 sin conflictos.
+Politica y tests propios intactos; apps/scripts/package/CI iguales a develop.
+Pruebas de politica/workflow/gobernanza, modulo evaluation_scripts y robustez
+correctas; OpenSpec75/75, trazabilidad8 e higiene1710. CI del nuevo SHA pendiente.
+Victor aprobo e76c4c29; Paris comento098c50aa. Los dictamenes conservan su
+alcance original; comprobar su estado tras push y revalidar la nueva combinacion.
+No se modifican dictamenes ni se integra la PR en develop. Pairing pendiente.
