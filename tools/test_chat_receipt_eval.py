@@ -11,11 +11,22 @@ spec.loader.exec_module(ev)
 
 class ReceiptEvaluationTests(unittest.TestCase):
     def setUp(self):
-        self.bank = ev.read(ev.BANK)
-        self.bank_hash = ev.file_hash(ev.BANK)
+        # These are real historical receipts. Their original bank must remain
+        # byte-identical; never relabel them as measurements of today's corpus.
+        historical_bank = ev.ROOT / 'tools/fixtures/chat-eval/JUP-069-questions-1.0.0.json'
+        self.bank = ev.read(historical_bank)
+        self.bank_hash = ev.file_hash(historical_bank)
+        self.assertEqual(self.bank_hash, '0bd8a31792d68ff82c2bb222d42593f139d9596e2d24ad37f77c08d648a9f2e7')
         self.manifest = ev.partition(self.bank, self.bank_hash)
         self.receipt = ev.read(ev.ROOT / 'docs/evidence/jup-035-pr121-full28-20261012.json')
         self.samples = ev.normalize(self.receipt, self.bank, self.bank_hash, 'receipt-a', 'results')
+
+    def test_historical_receipt_cannot_be_misreported_as_current_corpus_measurement(self):
+        current_bank = ev.read(ev.BANK)
+        current_hash = ev.file_hash(ev.BANK)
+        self.assertNotEqual(current_hash, self.bank_hash)
+        with self.assertRaisesRegex(ValueError, 'bank hash'):
+            ev.normalize(self.receipt, current_bank, current_hash, 'wrong-corpus', 'results')
 
     def test_completed_and_old_positive_labels_never_become_pass(self):
         report = ev.score(self.samples, self.bank, {}, self.manifest)

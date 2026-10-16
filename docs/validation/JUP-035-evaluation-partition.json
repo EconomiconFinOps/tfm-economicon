@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "bank_sha256": "0bd8a31792d68ff82c2bb222d42593f139d9596e2d24ad37f77c08d648a9f2e7",
+  "bank_sha256": "15afb8db2605288d90a70761c5a8daf6787809aae13726618fcf05d98181e684",
   "policy": "family-heldout-v1; budgets and recommendations; no tuning on reserve",
   "cases": {
     "JUP-069-001": "calibration",

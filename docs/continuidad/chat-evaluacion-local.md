@@ -157,8 +157,39 @@ omitidas por faltar CockroachDB local, 18 frontend conformes, tipos y build
 conformes, lint sin errores con una advertencia anterior de useLayoutEffect;
 75 items OpenSpec estrictos conformes. Primeros intentos de pruebas fallaron
 por permisos de temporales/esbuild y por PYTHONPATH ausente; corregido el entorno,
-sin cambiar aserciones. SQL real de la versión conjunta sigue pendiente. El
-producto activo de N5 sigue siendo5119 y no cambia por esta copia local.
+sin cambiar aserciones. Reconciliación local congelada en **1f1b20e7e6787c5818aaeb187f093fdc508d96d3**,
+archivo SHA **a2019efb3bd561f5aa5830c99089d4b6271fc1d65834066af2b225abb894403d**.
+SQL real terminado: **29 pruebas únicas conformes**, las14 omitidas más15 de fecha
+de referencia. Cockroach24.1.11 y volumen exclusivos, sin proveedor; hashes y JUnit
+verificados en `period-integration-sql-final-audit-v2.json` y
+`period-integration-sql-collected/v2/`. El intento v1 no arrancó SQL por memoria
+insuficiente y se conserva. V2 serializó SQL y la campaña: cero operaciones activas,
+parada temporal sólo del processor propio y restauración sana del mismo contenedor
+e imagen. Los otros servicios conservaron ID, imagen y hora de arranque; no se
+afirma que la hora de arranque del processor fuese idéntica. Sin despliegues compartidos.
+
+La actualización del corpus hizo fallar16 pruebas antiguas del evaluador por
+procedencia incompatible, antes de puntuar. No se relaja la comprobación de hash:
+se conserva el banco1.0.0 auténtico como fixture de esas pruebas y se añade rechazo
+de atribuir sus recibos al corpus actual. **17 pruebas conformes**, recibos del12/10
+inmutables. Partición actual fija SHA15afb8d; familias iguales, sin reserva ciega.
+
+**N5 de5119 sigue en curso**, separada de esta integración local. Tras66 muestras,
+010r3 terminó en `provider_error` con draft observado y final sin coste informado:
+fallo técnico preservado, no reenviado, con entrada SQL verificada y máximo íntegro
+0.319952 adicional. `period-n5-failed010-full-bound-retained-v1.json`; las1200 filas
+anteriores siguen idénticas. Los dos máximos nuevos suman0.639904; los antiguos
+11.73085650 permanecen íntegros. No llamar coste cero a ninguno.
+
+Continuación actual después de SQL: PID **2549105**, start **71201362**,
+`period-5119e330-n5-v1/resume-v2`, controlador SHA
+`89456bde8866138036aa12ec50329191ab4a177109ce60816597a25abf4e963a`.
+`period-n5-resume-launch-v2.json`: desde011r3, sin repetir las66 anteriores.
+Los dos controladores precedentes están terminados; usar este handle y
+`resume-v2/complete.json`, no relanzar ninguno. Exportador/visor de fallos indica
+que la entrada viene de SQL, no del historial público; checks semánticos no
+evaluables de010r3 quedan sin puntuar, no FAIL ni PASS. El auditor N5 preparado
+admite esas distinciones y exige preservar recibos, reservas y hashes.
 
 Para cubrir N5 se amplió **sólo el máximo de la misma clave processor de 3.5 a
 4.5 USD**, después del cierre N3 y de comprobar margen bajo los 20 USD acumulados.

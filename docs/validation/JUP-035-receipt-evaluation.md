@@ -8,6 +8,17 @@ respuestas técnicamente válidas y requisitos semánticos adjudicados. Un repla
 generación con contexto congelado no acredita API, SQL, historial ni navegador.
 No se convierte una respuesta recogida en PASS por coincidencias de números.
 
+Actualización16/10: develop53b43bb1 incorpora el banco1.0.1 de JUP-120.
+Sus28 casos y109 requisitos son idénticos; cambian los hashes del corpus y la
+versión de procedencia. El planificador y la partición se fijan al nuevo SHA
+`15afb8db2605288d90a70761c5a8daf6787809aae13726618fcf05d98181e684`.
+Un plan1.0.0 se rechaza antes de reservar o enviar contra este checkout. Las
+campañas históricas se leen desde su checkout y sus manifiestos originales;
+no se cambian sus recibos ni se atribuyen a corpus1.0.1.
+La regresión del evaluador conserva el banco1.0.0 byte a byte en
+`tools/fixtures/chat-eval/JUP-069-questions-1.0.0.json`, para leer los recibos
+reales del12/10 sin reetiquetarlos; una prueba impide medirlos como corpus actual.
+
 El adaptador `chat_generation_schema.py` conserva el esquema lógico completo:
 expande constantes exactas y elimina sólo gramáticas inaccesibles. Los validadores
 de respuesta y la unión de modos siguen aplicándose; no hay reparación de JSON,
@@ -73,8 +84,10 @@ La primera prueba detectó un nombre de categoría incorrecto (`budget` frente a
 repeticiones buenas ni se mezcla focal con full28.
 
 Los recibos y sus conclusiones ya eran conocidos en la conversación: esta reserva
-NO es un conjunto ciego nuevo. Sirve para evitar nuevo ajuste a esos casos. Para
-afirmar generalización será necesario un conjunto independiente. No se ha entrenado
+NO es un conjunto ciego nuevo. La política de evitar ajustes a esas familias fue
+posteriormente superada por las correcciones y selección de modelo: sus etiquetas
+se conservan sólo como partición histórica, no como prueba de ausencia de ajuste.
+Para afirmar generalización será necesario un conjunto independiente. No se ha entrenado
 ni calibrado un juez LLM, ni se ha pagado por uno.
 
 ## Uso
