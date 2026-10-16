@@ -1,11 +1,18 @@
-## Estado vigente — 16/10/2026
+## Estado vigente — 17/10/2026
 
-Último corte:74/74conformes/437PASS,66pendientesdesde019r3. V7terminaltimeout,
-SQLpropio fataldiskstallrecuperado yrestauraciónfinal exit0/0activas. Usuario
-apagará/ampliaráDockerServer16GB; no inferencias hasta arranque16GBverificado.
-Ledger1439/SHA557bd7ed yreservasíntegras. Nuevo continuador/cierre necesario;
-C3no cumplido, no marcar3.1–3.3finales. Vercontinuidad vigente; párrafos siguientes
-conservan los cortes anteriores.
+N5 NUEVA140 d965/plan8af94f71/corpus54/DeepSeekCoreWeaveFP8 autorizada. C1/C3
+aceptados, C2dos subagentes.93recogidas:91conformes538PASS,2técnicas008r4/009r4,
+11noevaluables;47sin dispatch desde010r4. No heredar84a7 ni repetir fallos.
+V9/V10terminales/parkingexit0/old6sanos/new3parados. Hardware24032MiB verificado;
+no resizeFS. Ledger1458/prefijos/holds14.16844690íntegros, cota21.909256304/30USD.
+Claves4.5/.1hasta17oct18París; no renovar/ampliar/reset/liberación. RutaCoreWeaveFP8
+status-5/uptime5m0%: V11prepara47 con gate fresco antes delanzar/admitir, sin producto/
+modelo/prompts cambiados ni inferencias mientras no esté disponible.
+3.1–3.3pendientes:138conformes+2técnicas no cumple C1/C3. Cierre6/compare5/package5
+estrictos140completed NOaplican talcual; mantener11noevaluables y cierre honesto.
+Revisiónoffline favorable en su alcance;197JUnit heredadas no nuevas ejecuciones.
+Preparación3.4noaceptación, B local/sinpublicar. Evidencias en continuidad/informe.
+Los párrafos siguientes son cortes históricos, no estados vivos.
 
 Decisión posterior del usuario: C1/C3 aceptados, C2 sustituido por subagentes
 revisor y validador separados. El impedimento humano anterior queda superado;
@@ -102,9 +109,11 @@ externa `B-local-readiness-audit-v1.json`; no nuevas campañas o gasto.
   - N3 finales72 y a545 completas84/84 y congeladas. En a545:80PASS/1FAIL027r2/2inciertas020r1/r3/1técnica022r1 por429;003/013/015/025PASS3/3. Requisitos486PASS/1FAIL/2inciertos/6no evaluables. Frente72:3FAIL→PASS,2inciertos→PASS,1PASS→FAIL y2PASS→inciertos; técnicos aparte. No cumple ausencia de regresiones,3.2 permanece abierta.547filas y252recibos de últimas tres campañas intactos; reservas4.161376 conservadas, cota7.7121919645/10USD. UI003/013/015/025 de historial/recarga conformes, sin nueva inferencia.
   - Comparación c7/e23 registrada:438 pass→pass,7 pass→fail,7 uncertain→uncertain,6 uncertain→pass,2 fail→pass; técnicos aparte. No se cumple ausencia de regresiones; casilla abierta.
 - [ ] 3.3 Confirmar N5 según alcance acordado y presupuesto.
-  - Recogida/auditoría final140/140 completadas16/10 bajo30USD;138PASS/1FAIL012r5/1técnico010r3 conservados, paquete310archivos. No falta recogida: quedan criterio acordado y aceptación, que no se simulan.
+  - Vigente17/10: N5 NUEVA140 de d965 autorizada; mismo plan8af94f71/corpus54/DeepSeekCoreWeaveFP8. V9 continúa faltantes sin repetir, C3abierto hasta140/825juicios/auditoría/aparcado. Criterios C1/C3 ya aceptados y excepción C2 asistida vigente: no falta otra decisión humana de alcance.
+  - Histórico5119:140/140recogidas16/10,138PASS/1FAIL012r5/1técnico010r3,paquete310archivos preservado. Ese cierre no acredita d965 ni sustituye sus muestras pendientes.
 - [x] 3.4 Preparar candidato local con pruebas, evidencias y limitaciones.
-  - Vigente: productoa7f9502d, informeJUP-123-local-review, dos builds estándar y N3 propia84/84 congelada en203archivos, con parcial80/185 preservado. Comparación por requisito implementada y auditada; no se traslada N5de5119 al corpus/modelo nuevo. Criterios, adjudicación, alcanceN5 y aceptación pendientes. El corte2339/paquete112 fue una preparación anterior, no el candidato final medido.
+  - Vigente: productod965e2cd9c0de3cd4b7efaf224841c93a94cd8c8 sobre develop53b43 y A por bloques. Revisión de código asistida y validación separada favorables en su alcance,197identidades nativas por herencia/110variantes/84esquemas69renders/2builds224hashes. InformeJUP-123-local-review identifica la N5 propia en curso, reservas, fallos técnicos históricos y límites de navegador/proveedor. Preparado para revisión local, no aceptación final ni permiso de publicación/merge/activación.
+  - Históricoa7: N3propia84/84/495checks congelada en203archivos, parcial80/185 preservado. No rellena la N5 nueva140 de d965. El corte2339/paquete112 también es anterior; ninguno se presenta como candidato actual.
 
 ## Evidencia de medición — 2026-10-14
 

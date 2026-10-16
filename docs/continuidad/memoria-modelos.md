@@ -1,8 +1,22 @@
 # Memoria: análisis y elección de modelos
 
-Verificado: 2026-10-16. Origen: chat `01a1270c-e332-7462-9c90-706d49ade92c`.
+Verificado: 2026-10-17. Origen: chat `01a1270c-e332-7462-9c90-706d49ade92c`.
 Encargo humano: analizar modelos, justificar el elegido, preparar material para
 la memoria y abrir una JUP sólo si resulta necesaria.
+
+## Actualización de validación — 17/10/2026
+
+La comparación e informe del16/10 siguen congelados; no se reescriben sus cifras.
+El candidato posterior d965 conserva N5 NUEVA140:93recogidas,91conformes538checks,
+2técnicas(008r4:4timeouts;009r4:HTTP404),11noevaluables/47sin despachar. Paquete093
+230archivos/manifest82517598; N3a7 e informecomparativo históricos intactos.
+Catálogo público OpenRouter/CoreWeaveFP8 a16oct23:01UTC:status-5/uptime5m0%,30m16.67%.
+Indisponibilidad externa observada, no causa única del008 ni fallo semántico probado.
+V9/V10terminales/runtimeaparcado; no inferencias hasta disponibilidad fresca. Dos
+máximos0.0889632 íntegros; total desconocido14.16844690USD, no gasto cero.
+C1/C3acordados yC2asistido autorizado; no aceptación138+2como140éxitos. Hardware
+8→24GB/backend512→768MiB impide atribuir latencias sólo almodelo. B local.
+Detalles/proofs en evaluación local; no reescribir comparación congelada.
 
 ## Resultado y razón
 
@@ -38,8 +52,8 @@ No inferencias, claves, reservas o despliegues nuevos. Cota histórica al cierre
 
 Revisión e incorporación por liderazgo de JUP-063 (París) y JUP-109 (Lucía),
 sin atribuir reviews realizadas; ajuste al máximo global de 20 páginas y nueva
-exportación con hashes. Criterios/adjudicación independiente y alcance N5 del
-candidato actual pendientes; no juez calibrado o conjunto ciego. B sigue local.
+exportación con hashes. CriteriosC1/C3 acordados y C2asistido por excepción humana; recogida/cierre de
+N5d965 pendientes. No juez calibrado o conjunto ciego. B sigue local.
 Para cifras de campañas, ver [evaluación local](chat-evaluacion-local.md).
 
 ## Cierre de preparación — 16/10/2026

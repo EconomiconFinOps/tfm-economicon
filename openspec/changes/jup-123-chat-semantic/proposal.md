@@ -24,15 +24,34 @@ Dependencia: JUP-122, PR https://github.com/EconomiconFinOps/tfm-economicon/pull
 
 ## Impact
 
-Backend, processor y evaluación. B sigue local, chat desactivado por defecto.
-La corrección012a7f9502d tiene213Windows/213Linux, replay167 y2builds estándar;
-54fragmentos cargados con permisos específicos. N3DeepSeek/CoreWeave completa:
-84respuestas conformes localmente/495comprobaciones/84costes observados; no
-adjudicación independiente, aceptación o superioridad general. UI003/012/027,
-fuentes/fechas/historial/recarga y1280/390px conformes, sin POSTgenerativos.
-Se continuaron sólo025–028r3 tras el permiso humano24h para las mismas claves,
-hasta17/10a18:00París; límites4.5/0.1/contadores/reservas íntegros, cap30USD.
-B anterior restaurado sano y temporales parados. Corpus/modelo nuevos no heredan
-la N5de5119 ni la parcialGLM; N5actual no ejecutada. Criterios y adjudicación
-siguen pendientes; no reviews simuladas ni publicación. Auditoría/paquete203,
-costes y límites en `docs/validation/JUP-123-local-review.md` y continuidad.
+Backend, processor y evaluación. B sigue local, chat desactivado por defecto;
+ninguna publicación, merge o activación permanente autorizada por la medición.
+
+Candidato actual **d965e2cd9c0de3cd4b7efaf224841c93a94cd8c8**, sobre integración
+53b43/A, tras corregir012 y los defectos de premisas/reglas descubiertos por la
+revisión asistida.197identidades nativas por herencia explícita,110variantes,
+84esquemas/69renders offline y2builds/224hashes conformes; no son197ejecuciones
+nuevas sobre d965 ni una validación de proveedor por replay.
+
+El usuario aceptó C1/C3 y sustituyó C2 por dos subagentes separados. Autorizó una
+N5 NUEVA140 de este candidato, plan8af94f71, banco1.0.1/corpus54/DeepSeekCoreWeaveFP8.
+Corte17/10:93recogidas/91conformes538checks,2técnicas/11noevaluables/47faltantes;
+todavía no N5 completa ni
+criterios finales satisfechos. No se rellena con las84N3a7 ni se atribuye la
+N5GLM5119 a este producto. Históricos/rubricas/rojos técnicos y semánticos intactos.
+
+Las interrupciones por OOM512MiB, diskstallSQL y comparación de orden de montajes
+se conservan; V9/V10pararon porfallos técnicos yrestauraron elentorno. Ruta
+CoreWeaveFP8indisponible en catálogo público; V11prepara47desde010r4 con gate
+fresco antes delanzar/admitir, sin cambiar la combinación medida. Hardware24GB verificado y nuevos3con
+límites768MiB coexisten con antiguos6sanos. No comparación de latencias en entorno
+idéntico. Cap30USD/mismasclaves4.5/.1hasta17oct18París, contadores/holdsíntegros;
+ningún aumento/renovación inferido del hardware o presupuesto acumulado.
+
+UI histórica de a7/2339 y sus límites se conservan en el informe; no hay nueva
+prueba de generación/streaming en navegador de d965. API pública/historial/RAGreal
+se recogen con identidad exacta por operación y pruebas nativas de contrato.
+Dosfallidas no tienen respuesta adjudicable niRAGinventado y no satisfacenC1/C3.
+Auditorfinal6estricto140completed ya noaplica talcual. Quedan47, comparación y
+auditoría honesta con fallos/11noevaluables;138+2noequivale140éxitos; no juez calibrado, test ciego o superioridad general.
+Detalle y pruebas en `docs/validation/JUP-123-local-review.md` y continuidad.

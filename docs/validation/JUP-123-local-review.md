@@ -4,28 +4,54 @@ Verificado el 17/10/2026. Origen: chat
 `01a1270c-e332-7462-9c90-706d49ade92c`.
 **Código preparado para revisión; B no aceptada, publicada ni activada de forma permanente.**
 
-## Corte actual:75/140,24GB y continuaciónV9 — 17/10/2026
+## Corte vigente:93 recogidas; ruta no disponible — 17/10/2026
 
-75/75conformes,443PASS(293banco+150calidad),sinfallos/dudas. Faltan65 desde020r3;
-no repetir75 ni heredar84antiguas. Fuente d965/plan1408af94f71 intactos;C3pendiente.
-Trasaviso humano24GB/500GB se verifican24032MiB, huésped400GiB/root194G25libres;
-no resizeFS. Antiguos6servicios propios recuperados sanos, mismosIDs/imágenes/datos.
+N5 d965/plan8af94f71: **93/140 recogidas:91completed conformes y2failed técnicos**.
+538PASS(356banco+182calidad),11comprobaciones no evaluables;47sin despachar desde010r4.
+008r4:4timeouts;009r4:1provider_error/HTTP404. No son fallos semánticos adjudicados
+ni éxitos. No repetirlas, heredar84a7, inventar respuesta/RAG o borrar reservas.
+Siguiente batchsemántico013, notas/batches sólo por validador.
 
-V8completó019r3 yparó porguardmontajes, parkingexit0. Docker alterna orden de2mounts
-idénticos enlecturasreales; defectodelarnés confirmado, sin inspectexacto delstop.
-Revisor/validador aprueban V9canonicalfullobjs, rechaza cambiosreales yduplicados.
-V9lanzadoUNAvezPID129964/start143341desde020r3; activación/preflight frescos mandan,
-preflightrealPASS y020r3completed/settled(corte76/1441), juicios nuevos pendientes.019r3coste0.002055006observado/RAGexacto,
-ledger1440/SHA210445d5 y75recibos protegidos. No nueva corrección deproducto.
+V9PID129964 yV10PID351043 TERMINADOS, ambos STOPPED_AFTER_NEW_TECHNICAL_FAILURE;
+parkingexit0/new3parados/0activas, old6sanos sin pausarlos. No relanzar controladores.
+Auditoría `B-role-n5-partial093-technical-stop-audit-v1.json`: ledger1458SHA
+`60fdb0d3fbb7b69bc1d534717eaaf06efb41b3dd86aa134f3f69f0ab9e675492`, prefijos y
+93recibos protegidos. Máximos008/0090.0889632cadauno íntegros; desconocidos totales
+14.16844690USD. Cota conservadora21.909256304/30USD, no factura/atribución exacta.
+Mismasclaves4.5/.1hasta17oct18París; no renovar, aumentar, resetear o liberar.
 
-Cierre6/comparación5/paquete5 revisadosAPPROVE(32contrafactuales), aúnNOejecutados.
-Cap30USD/holds13.99052050íntegros; mismasclaves4.5/.1hasta17oct18París, sin
-renovación/reset/aumentos. Cierre6/comparación5/paquete5preparadosNOejecutados:
-componerV5/V7/V8STOPPED+V9terminalreal y140/825juicios, no relabelhistóricos.
-No afirmar latencias bajoentornoidéntico, generalizaciónciega o revisiónoficial.
-Detalles/proofs en[continuidad](../continuidad/chat-evaluacion-local.md).
+Catálogo público OpenRouter/CoreWeaveFP8 a16oct23:01UTC:status-5/uptime5m0% y
+30m16.6667%, proof endpoint1792191713098677374/SHA73848e60. Evidencia externa de
+indisponibilidad; no causa única probada del008 ni defecto semántico delmodelo.
+V11preparación desde010r4 para47: gate público fresco antes del lanzamiento y de
+cada admisión pagada, no durante observación activa. PolíticaSHA db731697 protege
+1458/93/333artefactos. No inferencias mientras ruta no pase; mismo producto/modelo/
+proveedor/prompts/banco/corpus. Hardware24032MiB verificado no es bloqueo actual;
+huésped400GiB/root194G25libres, sin ampliar particiones/LVM/filesystem por inferencia.
 
-Los apartados siguientes conservan cortes históricos; no prueban estados vivos actuales.
+V11 INSTALADO y verificado,18hashes/preparedSHA61d810fd. Revisor vigente
+b5dac013/49contrafactuales y validador6f9170f4/12tests+10compilaciones conformes;
+los2P2delgate y el error temporal de hash de la reproducción roja quedan corregidos
+y preservados en dictámenesv2. Intento de launcher23:07UTC bloqueado ANTESdeintent/
+Popen/runtime: route status-5/uptime5m0%/30m10%. Proof `B-role-n5-v11-wait-proof-v1.json`:
+ledger1458idéntico,0llamadas/0reservas nuevas, sinhandle/controllerdir/intentV11,
+old6+sharedsanos/new3parados. Puede invocarse una primera vez cuando ruta pasegate,
+comprobando antes ausencia de handles/intent; si existen, inspeccionar yno relanzar.
+No garantiza recuperación o éxito a partir de metadatos; admisión fresca obligatoria.
+
+Paquete parcial093230archivos, manifest
+`82517598aaa03d2de879cb480c66f19c33e0a794887e157453e83b4d9cb5bde7`;
+parciales092221/074183/040103 yN3a7203/185 intactos. Dictamen093b9fc5d95.
+Revisión offline `B-assisted-local-readiness-d965-20261017-v1.md`/SHAe0aebd49 favorable
+al alcance:44blobs/32superficies/21módulos; A39históricos=32idénticosA+7idénticosdevelop.
+197JUnit por herencia/110variantes/2builds224hashes, no nuevas ejecuciones d965.
+
+C1/C3 NOcumplidos. Proyección138conformes+2técnicas/814PASS+11noevaluables no es
+140éxitos ni resultado final. Auditorfinal6/compare5/package5 estrictos140completed
+ya NOaplican talcual; conservarlos, no relajar criterios/etiquetas. Quedan47 y cierre
+honesto técnico/comparación/contabilidad. C2asistido autorizado; no nueva validación
+humana por defecto ni reviews oficiales simuladas. B local, sin publicación,
+merge o activación permanente. Los apartados posteriores son cortes históricos.
 
 ## Decisión humana y candidato corregido — 16/10/2026
 
