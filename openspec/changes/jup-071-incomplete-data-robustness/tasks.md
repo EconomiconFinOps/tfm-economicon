@@ -28,6 +28,7 @@
 
 - [x] 4.4 Aceptar en el crudo fragmentos con `distance: null` y una lista opcional `public_evidence`, mostrarlos en la hoja de revisión y exponer `ACCEPTS_UNMEASURED_DISTANCE`, sin aceptar distancias ausentes, textuales, booleanas ni no finitas.
 - [x] 4.5 Añadir el comando `rows` que emite el informe como `rows-v1` (sin texto ni nombres, `null` en lo no medido), con pruebas de forma, estados, denominadores y rutas de salida, y comprobar el resultado con el validador del PR #132 de JUP-121.
+- [x] 4.6 Llevar al informe y a `rows` el hash de prompt que reporta el servidor a través del colector (`prompt_sha256`), solo si todas las muestras comparten uno, marcado como no atestiguado; mezclado o ausente se declara y no se publica como uno.
 
 ## 5. Reconciliación y revisión final de la contribución
 

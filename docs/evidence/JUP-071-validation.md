@@ -48,6 +48,10 @@ Windows, Python 3.14, Node 24.
 
 La herramienta acepta fragmentos con `distance: null` y `public_evidence`, y expone `ACCEPTS_UNMEASURED_DISTANCE`. El comando `rows` emite el informe como `rows-v1`: se generaron `JUP-071-template-fixed-rows.json` y `JUP-071-template-empty-rows.json` y el validador de la cabeza `e4b403d4` del PR #132 de JUP-121 los acepta (código de salida 0). Se añadieron 14 pruebas (105 en total, en verde). Una pasada adversarial independiente (1 HIGH, 4 MEDIUM, 6 LOW) llevó a validar el informe antes de emitir, a marcar las dos tasas como no medidas sin casos evaluados, a copiar proveedor y alias, a dejar nulo el modelo no verificado y a endurecer `public_evidence`; quedan 113 pruebas en verde y los `rows` regenerados siguen aceptados por el validador de #132. Las correcciones no se revisaron de nuevo. Después, la guía del dashboard (cabeza `b6695100` del #132) fijó que la cobertura reducida va como juicio humano y pidió el desglose por tipo de perturbación: ambos se aplicaron, 116 pruebas en verde y los `rows` regenerados siguen aceptados por el validador de esa cabeza. Los nombres de grupo y métrica y qué filas son `human` están pendientes de confirmar con quien mantiene el dashboard.
 
+### 16/10/2026: procedencia del servidor (tarea 4.6)
+
+Con la cabeza `e0a0c41e` del PR #131, el colector copia a `execution.collection.server_reported` la procedencia que reporta el servidor. El informe y `rows` llevan el `prompt_sha256` único como dato no atestiguado, y `mixed` o `absent` si no hay uno. Se comprobó con una fila construida con la forma exacta del colector (no se repitió con un backend real). 121 pruebas en verde.
+
 ## Trazabilidad por criterio de Trello
 
 | Criterio original | Entrega / evidencia | Pendiente |

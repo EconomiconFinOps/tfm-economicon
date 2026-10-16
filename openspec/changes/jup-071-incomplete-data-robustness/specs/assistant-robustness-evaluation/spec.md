@@ -217,7 +217,7 @@ The raw collection format SHALL accept a retrieved fragment whose `distance` is 
 
 ### Requirement: Dashboard rows without text or names
 
-The tool SHALL provide a `rows` command that writes a score report as the `rows-v1` contract of the evaluation dashboard (JUP-121): a run identity taken from the report (identifier, date, commit, suite and its hash, model alias, and a synthetic flag that is true for template runs) and result rows for the case states in total, by baseline or variant and behavior, by category and by perturbation type, for both pass rates, for reduced coverage and for numeric checks. Case pass and fail counts, both rates and reduced coverage SHALL be marked as human judgment, and numeric checks decided by a rule as automatic. Case-state rows SHALL carry a count and a denominator and no value. The report SHALL be validated for consistency (non-negative integer counts that add up, evaluated equal to pass plus fail, rates equal to their quotient, known execution kind) before any row is emitted. Both rates with no evaluated cases SHALL be not measured with a null value, never zero. Provider and alias SHALL travel as the embedding identity, and the generation model SHALL be null unless the model execution is verified, so an unverified live run is not presented as a real one. The rows SHALL NOT contain answer text, reviewer names or notes. Fields no report records (corpus, retrieval and prompt hashes) SHALL be null. Output paths SHALL follow the same limits as the other outputs, with generated `JUP-071-*-rows.json` files allowed in `docs/evidence`.
+The tool SHALL provide a `rows` command that writes a score report as the `rows-v1` contract of the evaluation dashboard (JUP-121): a run identity taken from the report (identifier, date, commit, suite and its hash, model alias, and a synthetic flag that is true for template runs) and result rows for the case states in total, by baseline or variant and behavior, by category and by perturbation type, for both pass rates, for reduced coverage and for numeric checks. Case pass and fail counts, both rates and reduced coverage SHALL be marked as human judgment, and numeric checks decided by a rule as automatic. Case-state rows SHALL carry a count and a denominator and no value. The report SHALL be validated for consistency (non-negative integer counts that add up, evaluated equal to pass plus fail, rates equal to their quotient, known execution kind) before any row is emitted. Both rates with no evaluated cases SHALL be not measured with a null value, never zero. Provider and alias SHALL travel as the embedding identity, and the generation model SHALL be null unless the model execution is verified, so an unverified live run is not presented as a real one. The rows SHALL NOT contain answer text, reviewer names or notes. The prompt hash SHALL be the one the server reported through the collector only when every sample shares a single valid hash, marked as not attested; a mixed or absent hash SHALL be declared in the report and left null in the rows. Fields no report records (corpus and retrieval) SHALL be null. Output paths SHALL follow the same limits as the other outputs, with generated `JUP-071-*-rows.json` files allowed in `docs/evidence`.
 
 #### Scenario: Rows from a report
 - **WHEN** `rows` converts a valid score report
@@ -227,6 +227,11 @@ The tool SHALL provide a `rows` command that writes a score report as the `rows-
 #### Scenario: Rate without evaluated cases
 - **WHEN** the report has no evaluated cases
 - **THEN** the evaluated rate is not measured, with a null value and a zero denominator
+
+#### Scenario: Prompt hash reported by the server
+- **WHEN** every sample of a live collection reports the same prompt hash
+- **THEN** the report states it as server-reported and not attested, and the rows carry it
+- **AND** when the samples disagree or report none, the rows carry no prompt hash
 
 #### Scenario: Inconsistent report
 - **WHEN** counts are negative, do not add up, or a rate does not match its counts

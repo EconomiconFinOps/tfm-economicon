@@ -1454,5 +1454,62 @@ class RowsDashboardGuideTests(unittest.TestCase):
 
 
 
+class ServerProvenanceTests(unittest.TestCase):
+    """The prompt hash reported by the server travels to the report and the dashboard rows, never attested."""
+
+    HASH_A, HASH_B = "a1" * 32, "b2" * 32
+
+    def live_raw(self, reported):
+        raw = raw_fixture()
+        raw["execution"]["kind"] = "live_unverified"
+        config = {"commit": "abc1234", "corpus": "corpus-demo", "provider": "provider-x", "alias": "embed-1",
+                  "retrieval": "top-k-4", "generation": "model-x/mini"}
+        raw["execution"]["configuration"] = config
+        raw["execution"]["configuration_sha256"] = robustness.digest(config)
+        if reported is not None:
+            raw["execution"]["collection"] = {"server_reported": reported}
+        return raw
+
+    def test_a_single_reported_prompt_hash_reaches_report_and_rows(self):
+        raw = self.live_raw([{"sample_id": f"s{n}", "prompt_sha256": self.HASH_A, "attested": False} for n in range(3)])
+        report = scored(raw)
+        self.assertEqual(report["server_reported"], {"prompt_sha256": self.HASH_A, "state": "single", "attested": False})
+        self.assertEqual(robustness.rows_v1(report)["run"]["prompt_sha256"], self.HASH_A)
+
+    def test_mixed_or_missing_hashes_are_not_published_as_one(self):
+        cases = {"mixed": [{"prompt_sha256": self.HASH_A}, {"prompt_sha256": self.HASH_B}],
+                 "partial": [{"prompt_sha256": self.HASH_A}, {"sample_id": "s2"}],
+                 "absent": [{"sample_id": "s1"}], "empty": []}
+        for state, reported in cases.items():
+            report = scored(self.live_raw(reported))
+            with self.subTest(state=state):
+                self.assertIsNone(report["server_reported"]["prompt_sha256"])
+                self.assertEqual(report["server_reported"]["state"], "mixed" if state in ("mixed", "partial") else "absent")
+                self.assertIsNone(robustness.rows_v1(report)["run"]["prompt_sha256"])
+
+    def test_runs_without_collection_data_keep_their_reports_unchanged(self):
+        report = scored()
+        self.assertNotIn("server_reported", report)
+        self.assertIsNone(robustness.rows_v1(report)["run"]["prompt_sha256"])
+
+    def test_malformed_server_provenance_is_rejected(self):
+        bad = ("x", {}, [1], [{"prompt_sha256": "short"}], [{"prompt_sha256": "A" * 64}], [{"prompt_sha256": 5}],
+               [{"prompt_sha256": self.HASH_A, "attested": True}])
+        for reported in bad:
+            with self.subTest(reported=reported), self.assertRaises(robustness.Error):
+                scored(self.live_raw(reported))
+        raw = self.live_raw([])
+        raw["execution"]["collection"] = "x"
+        with self.assertRaises(robustness.Error):
+            scored(raw)
+
+    def test_rows_reject_an_invalid_report_hash(self):
+        report = scored(self.live_raw([{"prompt_sha256": self.HASH_A}]))
+        report["server_reported"]["prompt_sha256"] = "not-a-hash"
+        with self.assertRaises(robustness.Error):
+            robustness.rows_v1(report)
+
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -173,6 +173,7 @@ RUN_INFO_FIELDS = ("commit", "corpus", "provider", "alias", "retrieval", "genera
 RUN_INFO_KEY = re.compile(r"[a-z][a-z0-9_]{0,39}")
 RUN_INFO_SECRET_KEY = re.compile(r"(^|_)(key|token|secret|password|passwd|bearer|auth)(_|$)")
 DECLARED_COMMIT = re.compile(r"[0-9a-f]{7,40}")
+SHA256_HEX = re.compile(r"[0-9a-f]{64}")
 SECRET_SHAPED = re.compile(r"(^|[-./])(sk|pk|xox[a-z]?|gh[pousr]|akia|eyj|key|token|secret|bearer)([-./0-9]|$)|[a-z0-9]{24,}")
 
 
@@ -271,6 +272,28 @@ def utc_time(value):
     return True
 
 
+def server_prompt(execution):
+    """Prompt hash reported by the server through a collector (never attested): the shared hash, or why there is none.
+
+    Returns None when the collection carries no server-reported list.
+    """
+    collection = execution.get("collection")
+    require(collection is None or isinstance(collection, dict), "invalid collection data")
+    reported = (collection or {}).get("server_reported")
+    if reported is None:
+        return None
+    require(isinstance(reported, list) and all(isinstance(x, dict) and x.get("attested", False) is False for x in reported),
+            "invalid server-reported provenance")
+    hashes = [x.get("prompt_sha256") for x in reported]
+    require(all(h is None or (isinstance(h, str) and SHA256_HEX.fullmatch(h)) for h in hashes), "invalid server-reported prompt hash")
+    distinct = set(hashes)
+    if not reported or distinct == {None}:
+        return {"prompt_sha256": None, "state": "absent", "attested": False}
+    if len(distinct) == 1:
+        return {"prompt_sha256": hashes[0], "state": "single", "attested": False}
+    return {"prompt_sha256": None, "state": "mixed", "attested": False}
+
+
 def validate_raw(raw, suite, cases):
     require(isinstance(raw, dict) and raw.get("raw_version") == 1, "invalid raw version")
     execution = raw["execution"]
@@ -283,6 +306,7 @@ def validate_raw(raw, suite, cases):
     for key in ("service_sha256", "configuration_sha256", "harness_sha256"):
         require(re.fullmatch(r"[0-9a-f]{64}", execution[key]), "invalid provenance hash")
     run_header(execution, suite, digest(raw))
+    server_prompt(execution)
     expected = {c["id"]: evaluation.prompt_text(c) for c in cases}
     seen = set()
     require(isinstance(raw.get("cases"), list), "raw cases must be a list")
@@ -405,6 +429,9 @@ def score(suite, cases, raw, judgments, provisional=False):
     for c in suite["cases"]:
         categories.setdefault(c["category"], set()).add(c["id"])
     report["categories"] = {name: counts([e for e in entries if e["case"] in ids]) for name, ids in categories.items()}
+    provenance_reported = server_prompt(execution)
+    if provenance_reported is not None:
+        report["server_reported"] = provenance_reported
     report["assessment_complete"] = not any(e["missing"] or e["reduced_coverage"] or e["outcome"] in ("blocked", "not_run") for e in entries)
     return report
 
@@ -514,13 +541,20 @@ def rows_v1(report):
         checked_counts(c, f"perturbation type {name}")
     require(all(isinstance(c, dict) and isinstance(c.get("checks"), dict) and type(c.get("reduced_coverage")) is bool
                 for c in report["cases"]), "report cases are malformed")
+    reported = report.get("server_reported")
+    if reported is not None:
+        require(isinstance(reported, dict) and reported.get("state") in ("single", "mixed", "absent") and reported.get("attested") is False
+                and (reported.get("prompt_sha256") is None or (isinstance(reported["prompt_sha256"], str)
+                                                              and SHA256_HEX.fullmatch(reported["prompt_sha256"]))),
+                "report server provenance is invalid")
     # The tool never verifies which model ran (JUP-035 does not attest it), so a declared live alias is not published as the
     # model: leaving it null lets the dashboard flag the run as having no verified model instead of presenting it as real.
     model = generation["model_alias"] if report["kind"] == "template_mock" or report.get("model_execution_verified") is True else None
     out_run = {"run_id": run["run_id"], "source": "JUP-071", "run_at": run["date"], "commit": run["commit"],
                "suite": "JUP-071", "suite_version": run["suite_version"], "suite_sha256": report["suite_sha256"],
                "corpus_sha256": None, "embedding_provider": run["provider"], "embedding_alias": run["alias"],
-               "retrieval": None, "generation_model": model, "prompt_sha256": None,
+               "retrieval": None, "generation_model": model,
+               "prompt_sha256": reported["prompt_sha256"] if reported and reported["state"] == "single" else None,
                "synthetic": report["kind"] == "template_mock"}
 
     def row(grp, metric_id, behavior, unit, judgment, status, **fields):
