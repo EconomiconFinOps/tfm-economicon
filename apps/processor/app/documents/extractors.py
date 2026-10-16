@@ -25,7 +25,7 @@ def markdown(data):
             block = {'kind': kind, 'level': int(token.tag[1:]) if kind == 'heading' else token.level,
                      'source_lines': [token.map[0] + 1, token.map[1]] if token.map else None}
             if token.map:
-                block['text'] = '\n'.join(value.splitlines()[token.map[0]:token.map[1]])
+                block['text'] = '\n'.join(value.split('\n')[token.map[0]:token.map[1]])
             if kind == 'code':
                 block['language'] = token.info
             blocks.append(block)

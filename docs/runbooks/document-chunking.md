@@ -47,7 +47,7 @@ Cambiar parámetros sólo afecta ingestas nuevas o reprocesamientos explícitos.
   "token_count":64,
   "chunk_hash":"sha256 del contenido efectivo",
   "chunking_strategy":"structural_recursive",
-  "chunking_version":"1.0.0",
+  "chunking_version":"1.0.1",
   "chunking_fingerprint":"generación reproducible",
   "configuration_fingerprint":"configuración reproducible",
   "tokenizer_id":"biblioteca:encoding:sha256",
@@ -78,7 +78,11 @@ al texto normalizado; no crean ubicaciones del original ni encabezados.
 
 `primary_spans` cubre una sola vez el texto canónico y enlaza posiciones en el
 chunk. `repetitions` marca el rango añadido y su razón/tokens. `fragments` conserva
-grupo, índice 1-based, total, motivo de división y unidad original. Sólo separadores
+grupo, índice 1-based, total, motivo de división y unidad original. Índice y total
+describen los fragmentos realmente persistidos del grupo, incluso cuando se
+omiten piezas interiores sólo blancas. El texto exacto de esas omisiones se
+conserva en la metadata de reconstrucción; no crea huecos en la secuencia ni
+dispensa el rechazo de un fragmento persistido ausente. Sólo separadores
 puramente blancos pueden omitirse de los embeddings; sus rangos exactos quedan
 en `ignored_whitespace_ranges` del manifiesto y el texto padre no se altera.
 
@@ -117,7 +121,7 @@ y autorización de los datos/coste correspondientes.
 Con el recurso preparado, desde `apps/processor`:
 
 ```sh
-python -B -m pytest -q tests/test_chunk_contracts.py tests/test_embedding_tokenization.py tests/test_document_structure.py tests/test_structural_chunker.py tests/test_reprocess_document.py
+python -B -m pytest -q tests/test_chunk_contracts.py tests/test_embedding_tokenization.py tests/test_document_structure.py tests/test_structural_chunker.py tests/test_reprocess_document.py tests/test_markdown_chunking_regressions.py tests/test_chunk_reconstruction.py
 ```
 
 Las nueve fixtures JSON de `tests/fixtures/normalized_documents/` provienen de la
@@ -140,10 +144,10 @@ los requisitos y recurso offline del processor, conservando `--document`,
 `--tenant` y `--base-url`; sus opciones de tamaño son ahora
 `--expected-target-tokens`, `--expected-max-tokens` y `--expected-overlap-ratio`.
 
-El cierre encontró además 12 fallos de fixtures MinIO en `local-doctor.test.mjs`,
-reproducidos sin cambios también sobre el Compose de la base. Ese check no está
-verde y su resolución sigue pendiente fuera de esta implementación. No equivale
-a un fallo de conexión del entorno de pruebas ni a una aceptación del despliegue.
+La base incorpora la corrección de las fixtures MinIO de `local-doctor.test.mjs`.
+Los 59 escenarios del diagnóstico están contrastados en esta rama, incluido su
+consumidor de reglas backend/processor. Eso no acredita un despliegue real ni
+sustituye la aprobación humana final.
 
 La comparación congelada y los recibos técnicos se conservan como artefactos de
 evaluación externos; el corpus sintético se identifica por SHA256
@@ -152,6 +156,39 @@ Repetir recuperación usa sus 46 vectores cacheados y no requiere nuevas llamada
 Ver metodología, resultados y limitaciones en la
 [continuidad](../continuidad/chunking-documental.md). Cualquier nueva inferencia
 requiere datos y presupuesto autorizados; no confundir mocks con medición real.
+
+## Reconstrucción exacta desde chunks
+
+Desde la versión `structural_recursive/1.0.1`, el primer chunk conserva
+`metadata.reconstruction`: longitud y SHA256 del texto normalizado, número total
+de chunks y `omitted_spans` con rango y texto de los separadores blancos omitidos
+de embeddings. No duplica el documento completo ni se añade ese texto al vector.
+Estos datos permiten detectar un último chunk ausente sin consultar el padre.
+
+```python
+from app.embeddings.structural_chunker import reconstruct_normalized_text
+
+normalized_text = reconstruct_normalized_text(chunks)
+```
+
+La función recibe únicamente los chunks; ordena por índice, utiliza substrings
+reales de `content` por `primary_spans`, verifica el contexto repetido y recupera
+los blancos conservados en metadata. Comprueba identidad/generación, hashes,
+rangos, grupos de fragmentos y cobertura completa. No lee el normalizado para
+rellenar huecos. Conjunto vacío, incompleto, duplicado o incoherente provoca un
+`ValueError` explícito; los chunks históricos sin esa metadata siguen siendo
+consultables, pero no se promete su reconstrucción exacta desde chunks solos.
+Se reconstruye el texto normalizado y sus relaciones disponibles, no el binario
+o el layout original de PDF/Word. Esta comprobación forma parte de la validación
+antes de persistir chunks nuevos. No exige reindexación masiva del histórico.
+
+Markdown usa líneas CR/LF/CRLF coherentes con el parser: los separadores Unicode
+del contenido no desplazan rangos. Se preservan recursivamente subsecciones
+H3–H6 que caben en el máximo aunque el padre exceda el presupuesto. Una referencia
+de un checkpoint anterior cuyo bloque no coincide con el texto se declara
+desconocida con `markdown_source_block_not_aligned`, conservando las líneas
+disponibles y el rango canónico correcto; no se inventa un bloque equivalente.
+
 
 ## Límites
 

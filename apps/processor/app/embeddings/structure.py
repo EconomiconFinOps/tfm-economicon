@@ -93,7 +93,10 @@ def _paragraphs(text: str, start=0, end=None) -> list[Unit]:
 
 def _markdown(document):
     text, blocks = document['text'], document.get('blocks', [])
-    lines = text.splitlines(keepends=True)
+    # MarkdownIt maps CR/LF/CRLF lines; Unicode separators remain literal content.
+    lines = re.findall(r'[^\r\n]*(?:\r\n|\r|\n|$)', text)
+    if lines and not lines[-1]:
+        lines.pop()
     offsets = [0]
     for line in lines:
         offsets.append(offsets[-1] + len(line))
@@ -104,7 +107,7 @@ def _markdown(document):
         for index, line in enumerate(lines[1:], 1):
             if line.strip() in {'---', '...'}:
                 front_end = offsets[index + 1]
-                source = ''.join('\n' if char == '\n' else ' ' for char in text[:front_end]) + text[front_end:]
+                source = ''.join(char if char in '\r\n' else ' ' for char in text[:front_end]) + text[front_end:]
                 units.append(Unit(0, front_end, 'mixed'))
                 annotations.append(Annotation(0, front_end, 'frontmatter'))
                 break
@@ -129,6 +132,9 @@ def _markdown(document):
         block_index = block_locations.get((existing_kind, (token.map[0] + 1, token.map[1])))
         ref = f'blocks/{block_index}' if block_index is not None else None
         original = _location(blocks[int(ref.split('/')[1])]) if ref else {}
+        if ref is not None and blocks[block_index].get('text') != text[start:end].replace('\r\n','\n').replace('\r','\n').rstrip('\n'):
+            warnings.append('markdown_source_block_not_aligned')
+            ref = None  # A prior checkpoint may contain the former extractor's wrong block text.
         annotation = Annotation(start, end, kind, ref, original)
         if kind == 'heading':
             annotation.heading_level = int(token.tag[1:])

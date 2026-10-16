@@ -11,6 +11,90 @@ from app.embeddings.structure import structure
 from app.embeddings.tokenization import EmbeddingTokenCounter
 
 
+def reconstruct_normalized_text(chunks):
+    """Recover exact normalized text using only a complete chunk set and its metadata."""
+    try:
+        if not chunks:
+            raise ValueError('No chunks: document completeness cannot be established')
+        if any(type(chunk['chunk_index']) is not int for chunk in chunks):
+            raise ValueError('Invalid chunk order')
+        ordered = sorted(chunks, key=lambda chunk:chunk['chunk_index'])
+        descriptor = ordered[0]['metadata'].get('reconstruction')
+        if not descriptor or type(descriptor.get('schema_version')) is not int or descriptor.get('schema_version') != 1:
+            raise ValueError('Exact reconstruction metadata is unavailable')
+        count, length = descriptor['chunk_count'], descriptor['document_characters']
+        if type(count) is not int or type(length) is not int or count < 1 or length < 1 or count != len(ordered):
+            raise ValueError('Incomplete chunk set or invalid reconstruction size')
+        document_id = ordered[0]['document_id']
+        generation = ordered[0]['metadata']['chunking_fingerprint']
+        primary, repetitions, fragments = [], [], {}
+        for number, chunk in enumerate(ordered):
+            metadata, content = chunk['metadata'], chunk['content']
+            if (chunk['chunk_index'] != number or chunk['document_id'] != document_id
+                    or metadata['chunking_fingerprint'] != generation
+                    or chunk['chunk_id'] != chunk_identity(document_id,generation,number)
+                    or (number and 'reconstruction' in metadata)
+                    or metadata['chunk_hash'] != hashlib.sha256(content.encode('utf-8')).hexdigest()):
+                raise ValueError('Mixed, missing, duplicated or corrupt chunk')
+            output = []
+            for key in ('primary_spans','repetitions'):
+                for span in metadata[key]:
+                    start,end = span['normalized_range']; left,right = span['content_range']
+                    if (any(type(value) is not int for value in (start,end,left,right))
+                            or not 0 <= start < end <= length or not 0 <= left < right <= len(content)
+                            or end-start != right-left):
+                        raise ValueError('Invalid reconstruction span')
+                    value = content[left:right]
+                    output.append((left,right))
+                    (primary if key == 'primary_spans' else repetitions).append((start,end,value))
+            cursor = 0
+            for left,right in sorted(output):
+                if left != cursor:
+                    raise ValueError('Untracked or duplicated chunk substring')
+                cursor = right
+            if cursor != len(content):
+                raise ValueError('Untracked chunk suffix')
+            for fragment in metadata['fragments']:
+                group = fragment['fragment_group_id']
+                signature = (fragment['fragment_count'],tuple(fragment['unit_range']),fragment['block_ref'])
+                bounds = fragment['unit_range']
+                if (len(bounds) != 2 or any(type(value) is not int for value in bounds)
+                        or not 0 <= bounds[0] < bounds[1] <= length):
+                    raise ValueError('Invalid structural fragment range')
+                index = fragment['fragment_index']
+                if (type(signature[0]) is not int or signature[0] < 1 or type(index) is not int
+                        or not 1 <= index <= signature[0]):
+                    raise ValueError('Invalid fragment sequence')
+                previous, indices = fragments.setdefault(group,(signature,set()))
+                if previous != signature or index in indices:
+                    raise ValueError('Incoherent or duplicated fragment metadata')
+                indices.add(index)
+        for (count, _, _), indices in fragments.values():
+            if len(indices) != count:
+                raise ValueError('Incomplete structural fragment group')
+        for span in descriptor['omitted_spans']:
+            start,end = span['normalized_range']; value = span['text']
+            if (type(start) is not int or type(end) is not int or not isinstance(value,str)
+                    or not 0 <= start < end <= length or len(value) != end-start or value.strip()):
+                raise ValueError('Invalid preserved whitespace metadata')
+            primary.append((start,end,value))
+        cursor, values = 0, []
+        for start,end,value in sorted(primary):
+            if start != cursor:
+                raise ValueError('Normalized content is missing or duplicated')
+            values.append(value); cursor = end
+        if cursor != length:
+            raise ValueError('Normalized document suffix is missing')
+        reconstructed = ''.join(values)
+        if hashlib.sha256(reconstructed.encode('utf-8')).hexdigest() != descriptor['document_text_sha256']:
+            raise ValueError('Reconstructed normalized document hash mismatch')
+        if any(reconstructed[start:end] != value for start,end,value in repetitions):
+            raise ValueError('Repeated context does not match its normalized source')
+        return reconstructed
+    except (KeyError,TypeError,IndexError,AttributeError,UnicodeError) as error:
+        raise ValueError('Invalid or unavailable chunk reconstruction metadata') from error
+
+
 @dataclass
 class Piece:
     start: int
@@ -180,6 +264,29 @@ class StructuredChunker:
             groups.append(current)
         return groups
 
+    def _section_pieces(self, section, text, generation, heading_levels):
+        """Preserve fitting child sections before falling back to individual blocks."""
+        left, right = section[0].start, section[-1].end
+        if self._fits(text[left:right], self.config.max_tokens):
+            kinds = {unit.kind for unit in section if text[unit.start:unit.end].strip()}
+            kind = next(iter(kinds)) if len(kinds) == 1 else 'mixed'
+            return [Piece(left, right, kind, section[-1].section_key)]
+        headings = [(index, heading_levels[unit.start]) for index, unit in enumerate(section)
+                    if unit.kind == 'heading' and unit.start in heading_levels]
+        if headings and headings[0][0] == 0:
+            headings = headings[1:]  # Recurse into children, never into this same section.
+        if headings:
+            level = min(value for _, value in headings)
+            boundaries = [index for index, value in headings if value == level]
+            pieces, start = [], 0
+            for end in boundaries + [len(section)]:
+                if start < end:
+                    pieces.extend(self._section_pieces(section[start:end], text, generation, heading_levels))
+                start = end
+            return pieces
+        return [piece for unit in section for piece in self._split_unit(unit, text, generation)]
+
+
     def chunk_document(self, document):
         source = structure(document)
         text = source.text
@@ -188,8 +295,8 @@ class StructuredChunker:
         # Only non-structural trailing whitespace may be omitted from embeddings;
         # its exact range is retained in the manifest and canonical parent text.
         effective_end = len(text)
-        if source.units and source.units[-1].kind == 'paragraph':
-            effective_end = max(source.units[-1].start, len(text.rstrip()))
+        if text.strip() and source.units and source.units[-1].kind == 'paragraph':
+            effective_end = max(len(text.rstrip()), max((unit.end for unit in source.units if unit.kind != 'paragraph'), default=0))
         ignored = [[effective_end, len(text)]] if effective_end < len(text) else []
         clipped = []
         for unit in source.units:
@@ -205,15 +312,10 @@ class StructuredChunker:
                 sections.append([])
             sections[-1].append(unit)
         pieces = []
+        heading_levels = {item.start:item.heading_level for item in source.annotations
+                          if item.kind == 'heading' and type(item.heading_level) is int}
         for section in sections:
-            left, right = section[0].start, section[-1].end
-            if self._fits(text[left:right], self.config.max_tokens):
-                kinds = {unit.kind for unit in section if text[unit.start:unit.end].strip()}
-                kind = next(iter(kinds)) if len(kinds) == 1 else 'mixed'
-                pieces.append(Piece(left, right, kind, section[-1].section_key))
-            else:
-                for unit in section:
-                    pieces.extend(self._split_unit(unit, text, generation))
+            pieces.extend(self._section_pieces(section, text, generation, heading_levels))
         index = AnnotationIndex(source.annotations)
         chunks = []
         previous_group = None
@@ -244,7 +346,7 @@ class StructuredChunker:
                 offset = len(content); content += text[piece.start:piece.end]
                 primary.append({'normalized_range':[piece.start,piece.end],'content_range':[offset,len(content)]})
                 fragments.extend(piece.fragments)
-            if not content.strip() and kinds != {'code'}:
+            if not content.strip() and kinds != {'code'} and text.strip():
                 # A whitespace-only separator can occur between separate sections.
                 ignored.extend(item['normalized_range'] for item in primary)
                 continue
@@ -288,9 +390,26 @@ class StructuredChunker:
             chunk_index = len(chunks)
             chunks.append({'chunk_id':chunk_identity(document['document_id'],generation,chunk_index),
                 'document_id':document['document_id'],'chunk_index':chunk_index,'content':content,'metadata':metadata})
+        # Fragment sequences describe persisted primary pieces. Whitespace-only
+        # groups omitted above remain exact reconstruction data, not missing
+        # chunk fragments; keep completeness checks strict for retained records.
+        fragment_groups = {}
+        for chunk in chunks:
+            for fragment in chunk['metadata']['fragments']:
+                fragment_groups.setdefault(fragment['fragment_group_id'], []).append(fragment)
+        for group in fragment_groups.values():
+            for number, fragment in enumerate(group, start=1):
+                fragment['fragment_index'] = number
+                fragment['fragment_count'] = len(group)
         result = {'chunks':chunks,'manifest':{'schema_version':1,**identity,'fingerprint':generation,
             'position_contract':dict(POSITION_CONTRACT),'ignored_whitespace_ranges':sorted(ignored),
             'chunk_count':len(chunks),'warnings':source.warnings}}
+        if chunks:
+            chunks[0]['metadata']['reconstruction'] = {
+                'schema_version':1, 'document_characters':len(text), 'chunk_count':len(chunks),
+                'document_text_sha256':hashlib.sha256(text.encode('utf-8')).hexdigest(),
+                'omitted_spans':[{'normalized_range':[start,end], 'text':text[start:end]}
+                                 for start,end in sorted(ignored)]}
         self.validate(document, result)
         return result
 
@@ -355,3 +474,6 @@ class StructuredChunker:
             cursor = end
         if cursor != len(text):
             raise ValueError('Primary document suffix is missing')
+
+        if text and reconstruct_normalized_text(result['chunks']) != text:
+            raise ValueError('Chunk-only reconstruction does not match the normalized document')

@@ -250,3 +250,9 @@ Las ingestas nuevas usan estructura del normalizado v1 y tokens reales, con
 procedencia por tramo. Los documentos antiguos siguen consultables. Configuración,
 metadatos, límites, preparación offline y comando de reprocesamiento explícito en
 el [runbook de chunking](../../docs/runbooks/document-chunking.md).
+
+Desde `structural_recursive/1.0.1`, `reconstruct_normalized_text(chunks)` recupera
+el normalizado exacto usando sólo contenido y metadata, rechaza conjuntos
+incompletos/incoherentes y conserva los blancos excluidos de embeddings. Los
+chunks históricos mantienen su búsqueda; no todos permiten reconstrucción exacta
+sin reprocesar. La función no regenera binarios/layouts originales. Ver el runbook.

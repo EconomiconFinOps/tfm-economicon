@@ -8,7 +8,7 @@ Las fechas indican la última actualización documental, no una nueva ejecución
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
-| [Chunking documental](chunking-documental.md) | Etapa experimental: fragmentos por estructura y tokens, metadatos/citas y reprocesamiento explícito. Comparación real exploratoria sin diferencia de Recall; parentesco TXT corregido pendiente de reevaluación; cierre humano y check de base local:doctor pendientes. | 2026-10-16 |
+| [Chunking documental](chunking-documental.md) | Etapa experimental: chunking 1.0.1 con rangos Unicode, subsecciones y reconstrucción exacta; nueve formatos/recuperación legacy contrastados y base de ingesta corregida. Recuento de fragmentos corregido para blancos interiores; reevaluación afectada y aprobación humana pendientes. | 2026-10-16 |
 | [Ingesta documental](ingesta-documental.md) | Etapa experimental: subida privada MinIO y extracción durable; preparación CD, puertos S3 por ranura, rechazo de DOCX corruptos y pruebas de diagnóstico local alineadas con Compose. Rama `feat/rag-ingestion`; sin JUP oficial ni integración en develop. | 2026-10-16 |
 | [Consultas de coste Azure](../evidence/JUP-036-validation.md) | PR69: reconciliación local de `1cf4087f` con develop `a3f514f7` (#129), sin cambios de producto. Corpus1.1.1 conservado; los dos casos SQL pendientes pasan en Cockroach24.1.11. Revisión/validación independientes del nuevo candidato y CI posterior pendientes. | 2026-10-15 |
 | [División del chat en A/B](chat-entregas-a-b.md) | JUP-122: merge local con develop 0543c5ee resuelto y probado, conservando JUP-038 y los arreglos de A; commit/push pendientes del PM. JUP-123 mantiene calidad/evaluacion fuera de esta entrega. | 2026-10-14 |

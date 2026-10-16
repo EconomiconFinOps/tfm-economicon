@@ -6,7 +6,7 @@ import math
 from typing import NotRequired, TypedDict
 
 CHUNKING_STRATEGY = 'structural_recursive'
-CHUNKING_VERSION = '1.0.0'
+CHUNKING_VERSION = '1.0.1'
 POSITION_CONTRACT = {
     'normalized_text': 'unicode_codepoints:0-based:end-exclusive',
     'original_lines': '1-based:inclusive',
@@ -87,6 +87,19 @@ class Fragment(TypedDict):
     unit_range: list[int]
 
 
+class OmittedText(TypedDict):
+    normalized_range: list[int]
+    text: str
+
+
+class ReconstructionMetadata(TypedDict):
+    schema_version: int
+    document_characters: int
+    document_text_sha256: str
+    chunk_count: int
+    omitted_spans: list[OmittedText]
+
+
 class ChunkMetadata(TypedDict):
     content_type: str
     token_count: int
@@ -97,6 +110,7 @@ class ChunkMetadata(TypedDict):
     tokenizer_id: str
     configuration_fingerprint: str
     source_spans: list[SourceSpan]
+    reconstruction: NotRequired[ReconstructionMetadata]
     primary_spans: list[ContentSpan]
     repetitions: list[Repetition]
     fragments: list[Fragment]
