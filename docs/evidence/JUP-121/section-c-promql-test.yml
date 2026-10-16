@@ -1,0 +1,52 @@
+# Prueba de las proporciones de la sección C (promtool test rules, prom/prometheus:v2.55.1).
+# Reproducir: docker run --rm --entrypoint promtool -v "<carpeta>:/t" prom/prometheus:v2.55.1 test rules /t/section-c-promql-test.yml (necesita un rules.yml mínimo en la misma carpeta)
+
+rule_files: [rules.yml]
+evaluation_interval: 1m
+tests:
+  # Con consultas, series de fallos a 0 (tras el arreglo) y una búsqueda vacía de cada 10: debe haber valor.
+  - interval: 1m
+    input_series:
+      - series: 'backend_assistant_queries_total'
+        values: '0+10x10'
+      - series: 'backend_retrieval_empty_total'
+        values: '0+1x10'
+      - series: 'backend_retrieval_failures_total{category="timeout"}'
+        values: '0+0x10'
+      - series: 'backend_retrieval_failures_total{category="vector_store"}'
+        values: '0+0x10'
+    promql_expr_test:
+      - expr: 'sum(rate(backend_retrieval_empty_total[5m])) / (sum(rate(backend_assistant_queries_total[5m])) + sum(rate(backend_retrieval_failures_total[5m])) > 0)'
+        eval_time: 10m
+        exp_samples:
+          - labels: '{}'
+            value: 0.09999999999999999
+      - expr: 'sum(rate(backend_retrieval_failures_total[5m])) / (sum(rate(backend_assistant_queries_total[5m])) + sum(rate(backend_retrieval_failures_total[5m])) > 0)'
+        eval_time: 10m
+        exp_samples:
+          - labels: '{}'
+            value: 0
+  # Sin ninguna consulta (todo a 0): no hay valor, nunca un 0 % inventado.
+  - interval: 1m
+    input_series:
+      - series: 'backend_assistant_queries_total'
+        values: '0+0x10'
+      - series: 'backend_retrieval_empty_total'
+        values: '0+0x10'
+      - series: 'backend_retrieval_failures_total{category="timeout"}'
+        values: '0+0x10'
+    promql_expr_test:
+      - expr: 'sum(rate(backend_retrieval_failures_total[5m])) / (sum(rate(backend_assistant_queries_total[5m])) + sum(rate(backend_retrieval_failures_total[5m])) > 0)'
+        eval_time: 10m
+        exp_samples: []
+  # Sin las series de fallos (comportamiento antiguo): el vector queda vacío aunque haya consultas.
+  - interval: 1m
+    input_series:
+      - series: 'backend_assistant_queries_total'
+        values: '0+10x10'
+      - series: 'backend_retrieval_empty_total'
+        values: '0+1x10'
+    promql_expr_test:
+      - expr: 'sum(rate(backend_retrieval_failures_total[5m])) / (sum(rate(backend_assistant_queries_total[5m])) + sum(rate(backend_retrieval_failures_total[5m])) > 0)'
+        eval_time: 10m
+        exp_samples: []
