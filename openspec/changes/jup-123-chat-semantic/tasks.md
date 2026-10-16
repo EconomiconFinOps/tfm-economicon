@@ -1,8 +1,9 @@
 ## Estado vigente — 16/10/2026
 
-Corrección012 nueva local:209processor+4backendPASS; replay167contextos y
-paridad, sólo012cambia. Sin nueva campaña del modelo/corpus integrado todavía;
-no cierra3.1/3.2 ni reetiqueta N3/N5. Ver continuidad para pruebas y límites.
+Corrección012 en a7f9502d:213Windows+213LinuxPASS, replay167contextos y
+paridad;2builds estándarPASS, mismo código/pin. Nueva campaña/corpus pendiente
+del permiso explícito de embeddings requerido por revisión automática, sin envío
+o reserva. No cierra3.1/3.2 ni reetiqueta N3/N5; ver continuidad para procedimientos.
 
 Integración local2339 con develop53b43:192 pruebas backend únicas (29SQL),18frontend,
 95arnés/17evaluador,75OpenSpec; tres imágenes y351 archivos verificados.

@@ -6,20 +6,25 @@ Verificado el 16/10/2026. Origen: chat
 
 ## Resultado
 
-**Corrección012 posterior a la N5 (local, todavía sin nueva campaña):** el terminal
-documental del servidor separa ausencia del tag, conformidad desconocida de tagging
-y regla explícita suficiente para allocated. No deriva opcionalidad ni prioridad
-de owner de una preferencia sobre su valor.209pruebas processor y4backend pasan;
-incluyen negaciones, contradicciones, otras claves/unidades/nombres y fuentes
-incompletas. El replay167contextos cambia únicamente012; las cinco respuestas
-históricas tienen una decisión hipotética y citas reales, sinRAG se abstiene.
-La primera prueba contra chunks reales detectó la definición partida después de
-«El»; el ajuste conserva la comprobación de sección completa y cita literal.
-Backend/processor coinciden en167contextos y cargan el nuevo manifiesto en56por
-servicio. Evidencia externa `allocation-counterfactual-proof-v2.json`,
-`allocation-resource-parity-v1.json`, `allocation-regression-v5.xml` y
-`allocation-backend-v2.xml`. No se cambia el resultado congelado de012r1/N3 ni
-012r5/N5. No es comprensión general de reglas o validación del corpus integrado.
+La corrección012 está en `a7f9502d6da0e080560f028dfc260f77f729c937`: el servidor
+separa tag ausente, conformidad de tagging y asignación explícita suficiente.
+213pruebas Windows y213Linux PASS;25controles del arnés PASS. Replay167contextos
+con paridad y sólo012cambiada, sin reetiquetar las campañas históricas.
+Dos builds estándar ya PASS(224hashes), mismo código/pin, tras recuperación de la
+descarga pública del tokenizer; frontend127idéntico. Evidencia en
+`allocation-native-final-audit-v1.json`, `allocation-counterfactual-proof-v2.json`
+y `allocation-standard-build-final-audit-v1.json`.
+
+La nueva N3/corpus no se ha ejecutado. La revisión automática exige permiso
+explícito para54fragmentos sintéticos a OpenRouter/openai/text-embedding-3-small;
+solicitud pendiente, no enviados ni reservados. Entorno nuevo preparado/parado;
+antiguo B restaurado sano, mismos datos/contenedores. Fuente presupuestaria20
+intacta y política externa30;1275filas y12.69071250USD de reservas conservadas.
+Criterios/adjudicación independientes pendientes; no aceptación. Procedimiento,
+identidades y payload exacto en [continuidad](../continuidad/chat-evaluacion-local.md).
+
+Los cortes siguientes conservan las mediciones de sus commits originales;
+no acreditan el modelo/corpus nuevos de a7f9502d.
 
 Se elige **GLM 5.2/DeepInfra FP4**. DeepSeek V4.1 Flash/CoreWeave FP8 también
 completó la comparación N3. La configuración GLM presentó menos defectos

@@ -9,30 +9,70 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 16/10/2026
 
-**Corrección012 local posterior a la N5:** el servidor separa presencia del tag,
-conformidad de tagging (desconocida) y suficiencia de la regla de asignación.
-Sólo declara allocated en un escenario completo afirmativo y con la sección
-documental completa, autorizada y citable. Ambigüedad, negación, contradicción o
-evidencia insuficiente no producen un estado concreto. Sin regla global nueva
-en el prompt, identificadores de casos/nombres fijos ni cambios en5119/banco.
-Gramática acotada, no comprensión general ni validación del tenant.
+### Corrección012 posterior a la N5 — 16/10/2026
 
-Verificación offline:209PASS processor y4PASS backend;52pruebas del archivo nuevo.
-Backend/processor idénticos en167contextos (139RAG reales históricos+28sinRAG);
-161esquemas intactos, sólo012cambia (5rondas+sinRAG). Las cinco012históricas se
-resuelven con citas recibidas; sinRAG conserva datos insuficientes. El primer
-replay se abstuvo por una cita partida tras «El»; corregido sin saltarse la
-integridad de sección y con nueva prueba del corte. Un fallo inicial de
-temporalesWindows y expectativas antiguas const del testgateway se conservan;
-se prueba ahora equivalencia y rechazo de variantes del esquema transmitido.
+Candidato local `a7f9502d6da0e080560f028dfc260f77f729c937` en el checkout
+integrado. Separa ausencia del tag, conformidad desconocida y una regla de
+asignación inequívoca declarada. Política completa/autorizada y citas literales;
+negaciones, contradicciones o evidencia incompleta no producen allocated.
+Gramática acotada, no comprensión general ni verificación del tenant. Prompt y
+contrato público intactos; manifiesto actualizado por el compilador nuevo.
 
-Evidencia externa: `allocation-regression-v5.xml`, `allocation-backend-v2.xml`,
-`allocation-counterfactual-proof-v2.json`, `allocation-resource-parity-v1.json`
-(56contextos por servicio cargado en frío) y refresco de manifiesto v2.
-Prompt nuevo `jup-035.chat.v3:abd34d584315a011cd8cfd8666c6d1ce8ebe590319114e51a45be4331e62ab9a`;
-texto del prompt/contrato público conservados. Esto NO es una campaña nueva del
-modelo ni acredita recuperación del corpus nuevo. Preparar commit/plan y entorno
-separados, proteger ahora1275filas y preservar todas las reservas bajo30USD.
+213PASS Windows(209processor+4backend) y213identidades Linux PASS, sin omisiones
+ni herencia;52pruebas del archivo nuevo. Replay offline167contextos(139RAG reales
+históricos+28sinRAG):161esquemas intactos, sólo012cambia; sus cinco contextos se
+resuelven en el replay con regla/citas recibidas, sinRAG se abstiene. No se cambian
+las respuestas ni etiquetas históricas. Paridad backend/processor en167contextos
+y carga en frío en56por servicio. `allocation-native-final-audit-v1.json`,
+`allocation-counterfactual-proof-v2.json`, `allocation-resource-parity-v1.json`.
+
+Dos builds estándar del MISMO commit ya PASS,224hashes verificados, sin cambiar
+código o pin; frontend127sin cambios. `allocation-standard-build-final-audit-v1.json`.
+La primera descarga del tokenizer no cumplió el pin; nueva lectura pública y el
+build posterior sí lo cumplen. Se conservan fallo y anteriores imágenes derivadas;
+no atribuir una activación o campaña a los builds nuevos. Source archive SHA
+`3f71a7ad1930c54f0c1908415d5dcc3bfc9a5f6ff8556f8d2309b05094b229e6`.
+PlanN3 `allocation-a7f9502d-n3-plan-v1.json`,84NOT_RUN, SHA
+`fcc98f62902551820745deaa693e27036137b0e25b0a41f5ed5187b6e62bcc8b`.
+
+Entorno separado preparado y **ahora parado**, bases SQL/vector
+`jup123_alloc_a7f9502d`, cola `processor:jup123-alloc-a7f9502d`, red10.232.123.0/24,
+API29757/processor29758/frontend29760; límites768+768+128MiB. Los contenedores
+preparados conservan imágenes DERIVADAS: las estándar están construidas pero NO
+activadas. Si se eligen las estándar para la campaña, registrar nueva activación
+y actualizar las guardas con identidades reales antes de llamar al proveedor.
+**Antiguos backend/processor B restaurados: mismos contenedores/imágenes, sanos**;
+datos y demás servicios conservados. `allocation-runtime-parked-v1.json`.
+No arrancar ambos juegos sin margen de memoria; no repetir builds/SQL/UI/tests
+ya conformes sin motivo nuevo. Checkout5119/banco1.0.0 intocable para sus recibos.
+
+**Intervención pendiente:** revisión automática rechazó enviar54fragmentos de los
+3documentos sintéticos al modelo de embeddings OpenRouter/openai/text-embedding-3-small:
+exige autorización explícita de payload/destino, además del permiso de validación.
+Solicitud humana presentada y SIN RESPUESTA al cierre. No reenviar la pregunta ni
+interpretar silencio,30USD o este seguimiento como aprobación. Cuerpo al gateway SHA
+`1a375375f5463989bb304250d3e2d4c9c60d54500e437adbf3367d1a8c9ed31e`;
+manifest SHA`5b9b1e0588e6b66097fb0d161ec0810620953fe53b37baec7aa92784e25333b8`.
+**No se ejecutó la petición ni se escribió su reserva**; nuevo corpus sigue vacío.
+
+Arnés preparado, no instalado/ejecutado: `allocation-api-harness-prepared-v1.json`,
+17controles de cobertura/contabilidad y8de semilla PASS. Política externa30
+`allocation-validation-policy-v1.json`, SHA
+`57df5302874fb538ac8b0d27f56595f2b310fa1650025636700b430f4e57ee88`,
+protege1275filas; fuente presupuestaria20 permanece intacta. Semilla propuesta:
+una petición, sin reintentos, reserva0.01USD ANTES del POST; nunca reenviar un
+resultado incierto. Ledger1275/SHA0e861c4 y reservas12.69071250USD íntegros.
+Última cota de cuenta consultada19.998613446/30USD, no factura ni atribución aB.
+Mismas claves processor4.5/backend0.1 hasta16/10a18:00París; no renovación/reset.
+
+Siguiente sólo tras permiso explícito: documentar la respuesta real, reactivar
+recursos propios con guardas de memoria/identidad, preflight fresco y semilla
+única; auditar corpus/ledger y preparar controlador antes de nueva N3. Si caducan
+claves, la aprobación del payload no las renueva. Criterios/adjudicación y nueva
+validación siguen pendientes; B no publicada ni aceptada. Trello preserva lista,
+miembros y fechas; descripción verificada SHA
+`e3bbb4022ff197fb329855f9c23474b31f520ed2de0676e24da7920790da6e53`,16041caracteres.
+Paquetes N5final310/parcial250,560archivos, nuevamente comprobados intactos.
 
 **N5 terminada, auditada y congelada:140/140 muestras**, fuente5119e330,
 banco1.0.0 y GLM5.2/DeepInfraFP4 sin cambios durante las cinco rondas.
