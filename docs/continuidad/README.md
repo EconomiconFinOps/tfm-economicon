@@ -27,13 +27,20 @@ Propuesta C1/C2/C3 para revisores y borrador Discord preparados por petición hu
 no enviados ni acordados. Detalle en evaluación local e informe de revisión.
 Actualización posterior: usuario aceptaC1/C3 y sustituyeC2 por subagente revisor y
 otro validador. Revisión asistida encuentra R1/R2 de premisas booleanas; N5 no
-lanzada, corrección offline en curso. Las84muestras previas se preservan.
+lanzada. Parche d965 revisado/validado focalmente, carga real18PASS y2builds/
+224hashes conformes; fallos anteriores conservados. Oldprocessor restaurado
+sano. Las84muestras a7 se preservan; propuesta140de d965 NO EJECUTADA y cambio
+de alcance autorizado explícitamente. N5 NUEVA140v2/hash8af94f71 EN CURSO,
+controlador1322074/start78104892; no repetir. Arnésv5 revisado/validado,
+preflight vivoPASS. B anterior temporalmente pausado, restauración al terminar.
+Dos dictámenes consolidados favorables con alcances/limitaciones.
+El impedimento humano anterior queda superado.
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
 | [Consultas de coste Azure](../evidence/JUP-036-validation.md) | PR69: reconciliación local de `1cf4087f` con develop `a3f514f7` (#129), sin cambios de producto. Corpus1.1.1 conservado; los dos casos SQL pendientes pasan en Cockroach24.1.11. Revisión/validación independientes del nuevo candidato y CI posterior pendientes. | 2026-10-15 |
 | [Memoria: modelos](memoria-modelos.md) | Análisis de GLM/DeepSeek y parciales Sonnet/Sol; elección operativa DeepSeek para B, ADR-0022 Proposed y propuesta e/g/h fuera de Git. JUP-063/JUP-109 existentes, sin nueva tarjeta ni incorporación al Doc. | 2026-10-16 |
-| [Evaluación local del chat](chat-evaluacion-local.md) | a7f9502d: N3DeepSeek84/84 conformes. Comparador entre bancos implementado,12+17testsPASS;84pares sin regresiones observadas. Apps/contabilidad intactas, B local. Resumen Discord publicado y verificado con aprobación específica; no duplicar. | 2026-10-16 |
+| [Evaluación local del chat](chat-evaluacion-local.md) | d965: N5 nueva140 en curso por autorización explícita, C2 asistido favorable al alcance; N3a7 preservada84/84 conformes. Comparador entre bancos implementado,12+17testsPASS;84pares sin regresiones observadas. Apps/contabilidad intactas, B local. Resumen Discord publicado y verificado con aprobación específica; no duplicar. | 2026-10-16 |
 | [Chat conversacional](chat-conversacional.md) | PR121: focal28 3PASS/4FAIL, JSONB7PASS. Corrección29 de soporte literal visible e interpretación separada en regresión offline; aceptación/batería real pendientes. Gasto0.957927619/2USD. | 2026-10-13 |
 | [División del chat en A/B](chat-entregas-a-b.md) | División aprobada; B d9b/9e2 corregida,50/84 muestras con47PASS/3técnicas429, sin publicar ni aceptar. Ver evaluación local. Base A8ea/develop0543 y reviews/CI conservan su fecha histórica, sin nueva consulta. | 2026-10-15 |
 | [Pantallas de maqueta ocultas del MVP](pantallas-ocultas-mvp.md) | JUP-116: Coste Detallado, Corte Global y Recomendaciones ya no tienen ruta ni menú (se conservan en el código y se reactivan con dos líneas) y Overview sale del menú pero conserva su ruta; una dirección desconocida lleva a `/`. 797 pruebas del frontend y 16 comprobaciones en navegador; mergeado en `develop` el 2026-10-12 (#124). | 2026-10-13 |

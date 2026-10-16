@@ -9,7 +9,123 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 16/10/2026
 
-### Criterios aceptados y revisión asistida iniciada — 16/10/2026
+### N5 nueva autorizada y en marcha — 16/10/2026
+
+El humano confirmó140muestras NUEVAS del producto corregido. Controlador único
+PID1322074/start78104892, SHA
+`b849271f941804720b3357d91cfd15e0bd215590eaffd870f4acdd14b3280bac`,
+remote `role-binding-d965e2cd-api-n5-v1/controller-v5`. Fuente d965e2cd,
+planUTF8v2/hash8af94f71, banco1.0.1/corpus54 yDeepSeek/CoreWeaveFP8 fijos.
+No relanzar por timeout ni sumar las84N3previas. Plan inmutable conserva su
+estado de preparación NOT_RUN; la evidencia de ejecución es el handle real.
+
+Arnés v5 revisado APPROVE (13contrafactuales) y validador14guardas por herencia
+AST/identidad, lecturasUTF8 explícitas. Preparado remoto
+`B-role-n5-api-prepared-v5.json`, SHA
+`1837265eca723520a371e6dd1a888e2bace78830eb6206ae1caecb6bfa9bf23f`.
+Preflight vivoPASS antes de arrancar: corpus/SQL/historia/ruta/precios/hash/claves
+verificados; admisión fresca en cada operación. Ninguna nueva semilla/clave,
+renovación, ampliación de límites o liberación de reservas.
+
+Runtime nuevo `economicon-jup123-rb-d965e2cd`, SQL`jup123_rb_d965e2cd`, vectores
+históricos54reutilizados sin reescribir. API29957/processor29958/proxy44004,
+red10.232.125/24; límites512/768/768MiB y384MiB margen. Backend/processor
+anteriores propios TEMPORALMENTE PAUSADOS conforme permiso humano; el controlador
+restaura mismos IDs/imágenes sanos al terminar. Otros servicios y proxy compartido
+intactos. Setup1308701 ya terminalACTIVE_NO_INFERENCE, no repetir. No afirmar
+que el entorno anterior esté restaurado mientras esta campaña siga activa.
+
+Corte parcial validado: primeras6respuestas001–006r1 conformes/38checksPASS por
+subagente validador, sin heredar etiquetas de a7; no resultado final de140.
+`/root/jup123_validador_cierre` es único escritor de nuevos juicios/batches.
+Vistas/contextos en `role-binding-d965e2cd-api-n5-v1-*`; exports/scorer
+`export-B-role-n5-public-v1.py`, `export-B-role-n5-contexts-v1.py` y
+`review-B-role-n5-v1.py`. Observador `observe-B-role-n5-v1.py --compact` sólo
+lee handles/recibos/ledger y verifica prefijo1365/eb664308. `freeze-B-role-n5-final-v1.py` preparado pero NO ejecutado: exige140/825juicios y restauración real;
+fallos/incertidumbres nunca se convierten en PASS por promedio.
+
+Trello actualizado sólo por puente; descripción SHA
+`56f5a85af0cd64c1eeb07b0e675e8ed37b82f6ca684ce6d4ffad72d1d60e5f67`,
+16214caracteres, historia y metadatos preservados. Automatización existente
+actualizada conservando horario: prevalece nueva autorización y proceso vivo,
+no el viejo bloqueo de criterio humano. B local, sin GitHub/merge/Discord nuevos.
+
+### Parche revisado y builds verificados — 16/10/2026
+
+Producto actual `d965e2cd9c0de3cd4b7efaf224841c93a94cd8c8`. La decisión humana
+C1/C3 aceptados y C2 mediante dos subagentes sigue vigente; las notas antiguas de
+bloqueo por validación humana quedan superadas. No equivale a revisión oficial
+de GitHub, aceptación del producto, publicación o activación permanente.
+
+R1/R2 corregidos en `1670ca2d`: peticiones/datos/reglas completos, sin tomar
+operandos descartados, ignorar calificadores o aceptar importes/monedas
+contradictorios. Revisor APPROVE incremental. Prueba stdlib:7métodos y55variantes
+por servicio (110ejecuciones), streaming processor1/17/8192. Validador confirma
+84catálogos/esquemas Pydantic reales sin cambios y69renders deterministas iguales;
+15entradas con prosa no son nuevas respuestas del proveedor. Evidencias
+`B-assisted-review-final-1670ca2d-20261016-v1.md` y
+`B-assisted-validation-role-binding-20261016-v2.{md,json}`.
+
+Linux1670 conservó3fallos de carga del manifest; sus161pruebas de archivos
+completamente conformes no se repitieron. `6211abc5` reconcilió3versiones y SHA
+del manifest:35pruebas PASS, pero el build backend falló por pin antiguo.
+Revisor detectó ese defecto antes de la activación. `d965e2cd` corrige el pin y
+añade prueba de carga real/metadata/prompt_version:18nativas PASS (17processor,
+1backend), sin fallos/omisiones. Revisión y validación focal separadas conformes
+en `B-assisted-review-manifest-d965e2cd-20261016-v1.md` y
+`B-assisted-validation-bundle-addendum-20261016-v1.{md,json}`. Todos los rojos
+y paquetes intermedios se conservan; no se presentan como primera pasada verde.
+
+Build estándar d965 terminado `BUILT_VERIFIED_NOT_ACTIVATED`: backend
+`db48a61a267031291c28df002f97863c63fd91b2c32d26dc9bd13490ccbf977a`, processor
+`7519dc78818b719c30431a81dbed472b6bb900feac5fadb4bf4dd7ecbed25089`.
+118+106hashes verificados. Sólo se pausó temporalmente el processor anterior
+propio para memoria; mismo contenedor/imagen restaurado sano, demás servicios
+intactos. Controlador1215973/start78004389 terminal, NO relanzar. Paquete
+`role-binding-d965e2cd-standard-build-v1-collected-v1`, manifest SHA
+`44991895da9ef967d0c172cd67e618326b581f589a98fa0092bad48539144175`.
+
+No nuevas inferencias/reservas ni activación. Ledger1365/SHAeb664308 y reservas
+13.99052050USD íntegras; última cota histórica21.448811463/30USD, no factura
+ni lectura viva nueva. Mismas claves hasta17/10a18:00París, sin crear/renovar.
+
+C3 aceptado proponía56adicionales con producto idéntico a a7. Tras corregir
+hallazgos, el humano confirmó explícitamente «Sí, N5 nueva de 140 del candidato
+corregido (recomendado)» (consulta call_59d7375967044a14b981978efbed6738).
+Alcance nuevo autorizado:140muestras de d965, máximo30USD y todas las reservas;
+las84anteriores no se cuentan como medición del código nuevo. PlanUTF8v2
+`B-role-binding-d965e2cd-n5-plan-v2.json`, SHA
+`8af94f711efaa70829e2cdefe03e40671580039a17dd06c66042a3669cb10903`,
+policyv2 SHA`c2e070be927188c5f29301618bc35d71fe9a9471719263b9ee8310012d67c486`.
+Runner.validate_plan real y140contenidos/28casosx5 conformes; primeros84 idénticos
+al contenido de N3 previa, sin heredar sus resultados. Plan sigue NOT_RUN.
+
+C2 consolidado favorable para el alcance: revisor `B-assisted-review-consolidated-d965e2cd-20261016-v1.md` (SHA54dd0e792ac294c62f026f48836e6fa720eebf3e1ec55c725cd57246f46a935a),
+validador `B-assisted-validation-consolidated-20261016-v1.{md,json}` (JSON SHA
+486a0b2570f4b95f23349c8cabc85f1323630bb616cb38dcc2512a456d86d738).
+Unión nativa197 identidades:161processor1670+18backend621+17resourcesd965+
+1loaderd965; herencia explícita por identidad relevante, no197 ejecuciones nuevas
+sobre d965. Los3fallos originales y builds anteriores conservados. No nueva
+N5, aceptación integral o revisión humana/oficial atribuida.
+
+Preparación del arnés nueva preserva sus fallos: planv1mojibake rechazado por
+Runner, rollbackv1 que afirmaba restauración sin probarla, restaurador dependiente
+del backend activo y controllerv3 que restauraba sin adquirir todos los locks.
+Corregidos offline antes de instalar; versión operadora v5 en revisión previa,
+con headroom por clave/cada llamada, rollback con IDs/salud y errores explícitos,
+SQLhelper propio acotado/identificado ante backend parado y exclusión antes de
+restaurar. Sin instalar/activar/sembrar o gastar a este corte. No sobrescribir
+sus versiones rojas o sus hashes; no son fallos medidos del modelo.
+
+Preactivación readonly GET conforme: ledger1365/eb664308 intacto, cota fresca
+21.505618374/30USD (cuenta conservadora, no factura), claves processor
+4.084899409499998/4.5 y backend0.00108254/0.1, vigencia17/10a18:00París.
+Ruta CoreWeave/fp8 y precios0.15/0.65USD/M confirmados; no fue inferencia.
+Archivo `B-role-n5-before-activation-preflight-v1.json`. Repetir admisión fresca
+por operación; no ampliar máximos/renovar/crear claves por inferencia.
+
+### Inicio de esta revisión — historial conservado
+
 
 Respuesta humana: «No nos da tiempo a hacer validaciones humanas, Se aceptan los
 criterios 1 y 3 y sustituye el 2 por un subagente revisor y otro validador».

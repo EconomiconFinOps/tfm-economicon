@@ -3,8 +3,14 @@
 Decisión posterior del usuario: C1/C3 aceptados, C2 sustituido por subagentes
 revisor y validador separados. El impedimento humano anterior queda superado;
 no simular reviews humanas/oficiales. Revisor detecta R1/R2 (premisas numéricas
-descartadas y regla parcial), ambos P1 en a7. Corrección offline pendiente;
-N5actual no lanzada ni gasto nuevo. Un producto corregido no hereda las84N3.
+descartadas y regla parcial), ambos P1 en a7. Corrección d965 revisada por separado:7métodos/110variantes, replay84esquemas y
+69renders,18tests nativos de carga y2builds/224hashes conformes. Fallos previos
+de recursos/build conservados; mismo processor anterior restaurado sano.
+N5 nueva140 en curso, sin repetir muestras antiguas. Un producto corregido no hereda las84N3;
+N5nueva140de d965 autorizada explícitamente, planUTF8v2/hash8af94f71;
+controlador1322074/start78104892 vivo, admisión fresca y prefijo1365 protegido.
+Unión197nativas por identidad/herencia y224hashes de imágenes verificados por
+validador; dictámenes consolidados favorables al alcance, no aceptación final.
 
 Corrección012a7f9502d:213Windows/213Linux, replay167 y2builds estándar conformes.
 N3DeepSeek/CoreWeave de banco1.0.1/corpus54 COMPLETA:84respuestas conformes

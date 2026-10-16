@@ -4,43 +4,42 @@ Verificado el 16/10/2026. Origen: chat
 `01a1270c-e332-7462-9c90-706d49ade92c`.
 **Código preparado para revisión; B no aceptada, publicada ni activada de forma permanente.**
 
-## Decisión humana y revisión asistida posterior — 16/10/2026
+## Decisión humana y candidato corregido — 16/10/2026
 
-El usuario acepta C1 y C3 y sustituye C2 por un subagente revisor y otro validador,
-por falta de plazo para validación humana. Esta excepción permite dictámenes
-asistidos separados; no se atribuye a Víctor o Lucía una revisión que no hicieron,
-ni se publica una aprobación oficial. El impedimento anterior de criterios queda
-superado. El máximo acumulado sigue siendo30USD y todas las reservas permanecen.
+El usuario acepta C1/C3 y sustituye C2 por subagentes revisor y validador
+separados. No quedan pendientes esas decisiones humanas anteriores, ni se
+atribuyen reviews oficiales. La medición N5 nueva sigue pendiente.
 
-El validador asistido contrastó84N3 de a7 y495checks: conformes dentro del banco
-conocido, con84payloads RAG,114citas y44fragmentos distintos comprobados. Ratifica
-FAIL histórico012r1/012r5 y añade FAIL de consistencia a023r3 por pedir conexión
-al tenant; conserva el original incierto. Dictámenes externos
-`B-assisted-validation-N3-20261016-v1.{md,json}`; JSON SHA
-`da0613162312e7a00687325e21103e4bf0fa9c47f4cc7e0fa518f6f17f69f2dc`.
+Revisión asistida detectó fallos reales fuera del banco: operandos negados o
+descartados, condiciones adicionales y parámetros de pregunta ignorados.
+`1670ca2d` los corrige con gramáticas completas, soporte documental y abstención;
+no añade reglas globales al prompt. Revisión incremental APPROVE,7métodos con
+55variantes por servicio y stream processor conforme. Validación independiente:
+84esquemas/catálogos reales iguales y69renders deterministas iguales;15entradas
+requieren prosa del modelo. Ese replay no constituye nueva campaña.
 
-El revisor REQUEST CHANGES encontró R1/R2 fuera del banco conocido: operandos
-negados/descartados y reglas con condiciones adicionales forzaban conclusiones
-numéricas, también en las rutas de cero. Su primer contraste del parche resolvió
-los contraejemplos iniciales pero detectó que aún se ignoraban condiciones del
-primer párrafo. La nueva corrección valida peticiones completas y declaraciones
-de datos/reglas completas; fuentes booleanas requieren ambos límites originales
-de sección y una regla sin calificadores adicionales no soportados. Comparaciones,
-cero y monedas conservan evaluación tipada; la ruta general permanece disponible
-para aclaraciones. No es comprensión general ni una prueba del proveedor.
+Los3fallos de recursos Linux1670 y el build backend fallido621 permanecen
+conservados. Producto final **d965e2cd9c0de3cd4b7efaf224841c93a94cd8c8**
+reconcilia manifest y pin backend, con prueba de carga real/metadata/prompt_version.
+18tests nativos PASS y aprobación focal de ambos subagentes. Dos builds estándar
+terminados,224hashes verificados, sin activación. Mismo processor anterior
+restaurado sano; demás servicios y ledger1365 intactos. Evidencia y hashes en
+[continuidad](../continuidad/chat-evaluacion-local.md#parche-revisado-y-builds-verificados--16102026).
 
-Prueba nueva de biblioteca estándar:6tests,47variantes por servicio y paridad
-de respuesta pública; streaming del processor a1/17/8192caracteres coincide con
-final. Las primeras ejecuciones del arnés fallaron por importar un parser sólo
-existente en processor y por una aclaración de fixture sin basis/next_action;
-se corrigió únicamente el arnés, sin relajar expectativas. Los operadores rojos
-y dictámenes anteriores se preservan. Falta re-revisión de esta versión final,
-replay del banco con esquema real y verificación nativa/build del nuevo producto.
+El validador ratificó las84N3 de a7 y495checks dentro del banco conocido. Ratifica
+FAILhistóricos012r1/012r5 y añade FAILconsistencia023r3 por pedir conexión al
+tenant, preservando la incertidumbre original. No heredar esas84 como medición
+de d965. La propuesta aceptada C3 añadía56manteniendo la combinación; el humano confirmó
+el cambio a140mediciones nuevas del código corregido, con30USD y reservas
+íntegras. PlanUTF8v2/hash8af94f71 ypolicyc2e070be: nuevaN5 EN CURSO, controlador
+1322074/start78104892; no relanzar. Arnésv5 aprobado ypreflight vivoPASS.
 
-N5 NO lanzada y entorno no activado: ledger1365/eb664308 y servicios anteriores
-se conservaron. No sumar las84respuestas de a7 como N5 de un producto distinto.
-La continuación de56muestras propuesta suponía combinación fija; el nuevo código
-necesita un plan con alcance veraz, después de cerrar los hallazgos de revisión.
+Revisión y validación consolidadas favorables en sus alcances; medición nueva
+en curso (primeras6respuestas/38checks conformes, no resultado final). Unión nativa197 por identidad/herencia y224hashes de imágenes
+verificados independientemente; no atribuir N3a7 a d965. B sigue
+local, sin publicación, aceptación, merge o activación permanente. Lo siguiente
+conserva auditorías históricas; sus referencias a falta de criterios humanos o
+identidad del código con a7 ya no describen el estado actual.
 
 ## Auditoría del objetivo local — 16/10/2026
 
