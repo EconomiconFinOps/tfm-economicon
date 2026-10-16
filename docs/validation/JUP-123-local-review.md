@@ -46,6 +46,36 @@ Revisión offline `B-assisted-local-readiness-d965-20261017-v1.md`/SHAe0aebd49 f
 al alcance:44blobs/32superficies/21módulos; A39históricos=32idénticosA+7idénticosdevelop.
 197JUnit por herencia/110variantes/2builds224hashes, no nuevas ejecuciones d965.
 
+### Cierre de colección técnica preparado — 17/10/2026
+
+Se completó el trabajo independiente que quedaba para sustituir el cierre estricto
+inaplicable a dos fallos: `freeze-B-role-n5-collection140-technical-v1.py`,
+`compare-B-role-n3-n5-technical-collection-v1.py` y
+`freeze-B-role-n5-technical-collection-package-v1.py`. Helpercff644e9; auditor46c909a5,
+comparador9b476388, paquete7ce2d9c2. Preparación congelada en
+`B-role-n5-technical-collection-chain-prepared-v1.json`/SHA1e12a53a.
+
+Revisorvigente512a22d1/JSON09054b26 favorable al alcance;22gates/3proyecciones/
+9variantes de fallo/9guardas de paquete. Validador5ecae7f2:13testsPASS con replay de
+93originales, rechazo93antes deSSH por defecto, compilaciones y comparación sólo
+memoria84pares/495PASS→PASS+9sinpar(2técnicas). Los rojos deidentidadqualified/case
+se conservaron y corrigieron; captura/reconstrucción distinguidas. Sóloallowlist
+sumó2dictámenesv2 después, addendumfabfea35, ninguna guarda relajada.
+
+NO ejecutados auditor/comparador exportador/paquete140; no archivos ni respuestas
+140inventados. Exigen140recogidas,138completed y2failed exactas,11unreviewed sólo
+paraellas, SQLdurablefresco y raw/recibos/vistas/RAG/costes ligados. Completadas
+conservan controles estrictos; C1/C3/aceptación quedan en falso. Paquetes093/092 y
+estrictos anteriores intactos. Antes de ejecutar comprobar hashes/140reales,
+notasfinales, V11COLLECTED/parkingexit0 y ausencia de export previo; ante resultado
+SSH incierto leer el artefacto remoto existente, no sobrescribir o relanzar.
+
+Segundo launcherV11 siguió bloqueado antes deintent/Popen por ruta status-5,
+uptime5m0%/30m0% a16oct23:18UTC. Proof `B-role-n5-v11-wait-proof-v2.json`:1458filas
+idénticas/0llamadas/0reservas nuevas/old6+sharedsanos/new3parados. Sin proceso pagado
+vivo; la siguiente acción depende de recuperación real de la misma ruta. No más
+pruebas o documentos repetitivos mientras no haya cambio accionable.
+
 C1/C3 NOcumplidos. Proyección138conformes+2técnicas/814PASS+11noevaluables no es
 140éxitos ni resultado final. Auditorfinal6/compare5/package5 estrictos140completed
 ya NOaplican talcual; conservarlos, no relajar criterios/etiquetas. Quedan47 y cierre

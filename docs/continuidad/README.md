@@ -46,6 +46,9 @@ prepara47 sin cambiarproducto/modelo. Paquete093230archivos/manifest82517598.
 C1/C3sin cumplir; cierre6noaplicable talcual. Hardware24GB verificado.
 V11instalado61d810fd/revisado+validado; launcherWAITsinintent/PID/llamadas/reservas,
 proofv11-wait confirma1458yold6/new3intactos. No hay campaña pagada viva.
+Cierre técnico separado preparado1e12a53a/revisado+validado(13tests), no ejecutado.
+Exige140recogidas/138completed+2failed/11noevaluables; flagsC1/C3/aceptaciónfalsos.
+Nuevo corte23:18UTC sigue0%5m/30m; ledger1458/serviciossin cambios.
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
