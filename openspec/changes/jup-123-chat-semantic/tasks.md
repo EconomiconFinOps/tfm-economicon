@@ -1,7 +1,9 @@
 ## Estado vigente — 16/10/2026
 
 Integración local2339 con develop53b43:192 pruebas backend únicas (29SQL),18frontend,
-95arnés/17evaluador,75OpenSpec; tres imágenes y351 archivos verificados, sin activar.
+95arnés/17evaluador,75OpenSpec; tres imágenes y351 archivos verificados.
+HTTP/UI de costes off/on pasan en preview desechable, escritorio/móvil/recarga;
+panel B disponible sólo on. Preview retirada, cero inferencias; no valida generación.
 N3 del producto5119 completa:327 requisitos originales conformes,1fallo adicional
 de calidad y1duda. N5 parcial112/140:111 conformes/1técnica,433 requisitos originales
 conformes/3no evaluables; faltan las28 muestras de la quinta ronda. Presupuesto20USD

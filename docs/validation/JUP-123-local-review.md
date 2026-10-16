@@ -2,7 +2,7 @@
 
 Verificado el 16/10/2026. Origen: chat
 `01a1270c-e332-7462-9c90-706d49ade92c`.
-**Código preparado para revisión; B no aceptada, publicada ni activada.**
+**Código preparado para revisión; B no aceptada, publicada ni activada de forma permanente.**
 
 ## Resultado
 
@@ -100,6 +100,7 @@ etiquetas semánticas son revisión local del agente con razones y hashes;
 | Herramientas |95 pruebas del arnés y17 del evaluador conformes. |
 | Contratos y repositorio |75 ítems OpenSpec estrictos; corpus, 28 consultas, trazabilidad e higiene comprobados. |
 | Imágenes2339 |Backend118 archivos, processor106, frontend127 verificados por hash en imágenes construidas. **Sin activar**. |
+| HTTP/UI integración2339 |Consulta de costes off/on, escritorio/móvil/recarga, fechas y monedas conformes. Panel B disponible sólo on; no se envió generación. Preview retirada, cero inferencias. |
 | UI/SSE de5119 |002/014 escritorio/móvil/recarga; 9 lecturas SSE terminales; observación de una operación activa019r3 ya prevista, con secuencia y resultado exactos. Sin inferencias adicionales. No TTFT ni render incremental vivo del navegador acreditados. |
 
 Los fallos de preparación se conservan: permisos de temporales/esbuild,
@@ -114,6 +115,21 @@ processor propio con cero operaciones activas y se restauró sano el **mismo
 contenedor e imagen**. Su hora de arranque cambió; los otros servicios no cambiaron.
 Los builds no modificaron ninguna de las1247 filas del ledger ni activaron el
 candidato. No se modificaron despliegues compartidos.
+
+La previsualización2339 usó base y cola propias. El frontend sólo cambia la
+URL pública para sus puertos de prueba;127 archivos de fuente se verificaron.
+Las dos fases comprobaron datos sintéticos contra SQL real:133.33 EUR/9.75 USD,
+corte de fecha, exclusión de datos futuros/ajenos/sin fecha, procedencia,
+desglose y recarga. En1280/390 px no hubo desbordamiento del documento. Fechas
+invertidas no generan POST. El panel B abre y cierra sólo con el flag activo.
+
+No se enviaron generaciones ni se configuraron claves o transporte del modelo;
+esta prueba **no mide el nuevo corpus ni el streaming generativo**. Dos fallos
+del arnés se conservaron y corrigieron sólo en esperas/selectores. La etiqueta
+sintética HTTP del operador sufrió decodificación Windows; no acredita entrada
+UTF-8. Base, cola y contenedores temporales retirados, túnel propio cerrado,
+processor anterior restaurado sano, otros servicios y1247 entradas intactos.
+No hubo activación permanente ni cambios de producto por este recorrido.
 
 ## Contabilidad y continuación
 
@@ -168,6 +184,7 @@ Directorio externo relativo a la raíz del proyecto:
   SHA`a34817a826b8c41a1ebc4d518573d7faf002065c225299e616cc25c6cd903d88`.
 - `period-integration-sql-final-audit-v2.json` y
   `period-integration-build-final-audit-v1.json`.
+- `integration-ui-final-audit-v1.json` y `integration-ui-collected-v1/`: HTTP/UI de costes off/on sin modelo; auditoría SHA`6b6d98a50c49c5ecaf429f9222ec09891be5a2d1727d54d9e69cf09aa165042d`.
 - `period-n5-cap21-continuation-proposal-v1.json`: simulación contable, no permiso.
 
 Los contextos de RAG tardío se reconstruyen con suplementos SQL de hash exacto;

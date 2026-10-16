@@ -14,13 +14,14 @@ conformes,012r1fallo de calidad/023r3duda. N5 detenida por presupuesto112/140:
 111conformes/1técnica,433requisitos conformes/3no evaluables; faltan28r5.
 Todas las reservas intactas; máximo20USD. Propuesta21USD no autorizada/activada.
 Integración local2339 con develop53b43:192backend únicos(29SQL),18frontend,
-95arnés/17evaluador,75OpenSpec y3imágenes verificadas sin activar. No se atribuye
+95arnés/17evaluador,75OpenSpec y3imágenes verificadas. HTTP/UI de costes con flag
+off/on pasan en preview desechable retirada, sin modelo. No se atribuye
 N3/N5al corpus nuevo ni se simula aceptación. Detalle y paquete en el tema.
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
 | [Consultas de coste Azure](../evidence/JUP-036-validation.md) | PR69: reconciliación local de `1cf4087f` con develop `a3f514f7` (#129), sin cambios de producto. Corpus1.1.1 conservado; los dos casos SQL pendientes pasan en Cockroach24.1.11. Revisión/validación independientes del nuevo candidato y CI posterior pendientes. | 2026-10-15 |
-| [Evaluación local del chat](chat-evaluacion-local.md) | GLM elegido. N3 de5119 completa; N5 parcial112/140:111conformes/1técnica,433requisitos conformes/3no evaluables. Presupuesto20USD y reservas intactas;21sólo propuesto. Integración2339 con develop53b43 probada en código/SQL y3imágenes sin activar. Criterios, adjudicación y nueva combinación pendientes; no aceptación ni publicación. | 2026-10-16 |
+| [Evaluación local del chat](chat-evaluacion-local.md) | GLM elegido. N3 de5119 completa; N5 parcial112/140:111conformes/1técnica,433requisitos conformes/3no evaluables. Presupuesto20USD y reservas intactas;21sólo propuesto. Integración2339 con develop53b43 probada en código/SQL e imágenes; HTTP/UI de costes off/on conformes en preview retirada, cero modelo. Criterios, adjudicación y nueva combinación pendientes; no aceptación ni publicación. | 2026-10-16 |
 | [Chat conversacional](chat-conversacional.md) | PR121: focal28 3PASS/4FAIL, JSONB7PASS. Corrección29 de soporte literal visible e interpretación separada en regresión offline; aceptación/batería real pendientes. Gasto0.957927619/2USD. | 2026-10-13 |
 | [División del chat en A/B](chat-entregas-a-b.md) | División aprobada; B d9b/9e2 corregida,50/84 muestras con47PASS/3técnicas429, sin publicar ni aceptar. Ver evaluación local. Base A8ea/develop0543 y reviews/CI conservan su fecha histórica, sin nueva consulta. | 2026-10-15 |
 | [Pantallas de maqueta ocultas del MVP](pantallas-ocultas-mvp.md) | JUP-116: Coste Detallado, Corte Global y Recomendaciones ya no tienen ruta ni menú (se conservan en el código y se reactivan con dos líneas) y Overview sale del menú pero conserva su ruta; una dirección desconocida lleva a `/`. 797 pruebas del frontend y 16 comprobaciones en navegador; mergeado en `develop` el 2026-10-12 (#124). | 2026-10-13 |

@@ -198,7 +198,29 @@ processor propio y restauración sana del mismo contenedor/imagen; su hora de
 arranque cambió, los otros servicios no.1247filas idénticas y cero inferencias.
 Archivo2339 SHA3b065878c73eb74f9927466121a1ae0fcb24e7cea33c22920c008c596ea71703.
 
-**No hay API/UI ni campaña del nuevo corpus acreditadas.** Plan
+**HTTP/UI de integración2339 comprobados sin modelo**, 16/10/2026.
+Previsualización desechable con base `jup123_ui_2339_v1` y cola propias;
+backend2339 y frontend de la misma fuente,127archivos verificados, API29757/UI29760.
+Ambas fases `CHAT_ENABLED=false/true` pasan por HTTP y navegador. Se verificaron
+133.33EUR y9.75USD separados, fechas/corte10/10, exclusión de un registro sin fecha,
+ausencia de datos futuros/de otro cliente,2días observados, desglose e historial
+tras recarga, rechazo de fechas invertidas antes de POST y presentación a1280/390px
+sin desbordamiento horizontal del documento. Panel B abre/cierra con el flag activo;
+no aparece desactivado. Sin errores de navegador ni solicitudes generativas.
+No se sometió una generación: no hay claves de modelo ni transporte privado;
+no acredita respuestas del nuevo corpus, streaming vivo o aceptación.
+
+`integration-ui-final-audit-v1.json`, SHA`6b6d98a50c49c5ecaf429f9222ec09891be5a2d1727d54d9e69cf09aa165042d`,
+y `integration-ui-collected-v1/` conservan prueba y controlador ejecutado.
+Arnés v1/v2 falló por sincronización/selector; v3 pasa sin cambios de producto.
+La etiqueta sintética del operador HTTP sufrió decodificación Windows; no se
+presenta como prueba de entrada UTF-8. Las fuentes de las imágenes se verificaron
+independientemente. Base/cola/contenedores de preview retirados; túnel propio cerrado.
+Processor anterior restaurado sano con mismo contenedor/imagen; otros servicios
+intactos.1247filas del ledger con el mismo SHA; cero inferencias/gasto nuevo.
+No activación permanente ni modificación de despliegues compartidos.
+
+**Campaña del nuevo corpus aún no ejecutada.** Plan
 `integration-2339cce8-n3-plan-v1.json` NOT_RUN84preparadas, no ejecutadas.
 Main jup035-local conserva5119/banco1.0.0 para posible continuación: no moverlo
 al corpus nuevo haciendo que sus revisiones lean otra procedencia.
