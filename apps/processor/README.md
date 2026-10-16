@@ -178,8 +178,10 @@ RabbitMQ, CockroachDB y pgvector reales, en [JUP-113](../../docs/evidence/JUP-11
 - `EMBEDDING_PROVIDER`
 - `EMBEDDING_DIMENSION`
 - `EMBEDDING_MODEL`
-- `EMBEDDING_CHUNK_SIZE`
-- `EMBEDDING_CHUNK_OVERLAP`
+- `EMBEDDING_CHUNK_TARGET_TOKENS` (600)
+- `EMBEDDING_CHUNK_MAX_TOKENS` (800, incluye repetición)
+- `EMBEDDING_CHUNK_OVERLAP_RATIO` (0.1 del objetivo)
+- `EMBEDDING_TOKENIZER_FILE` (recurso externo preparado y verificado; runtime offline)
 - `LLM_PROVIDER`
 - `LLM_MODEL`
 - `AI_EXECUTION_MODE`
@@ -241,3 +243,10 @@ python -m pytest tests
   [`docs/architecture/azure-cost-normalization.md`](../../docs/architecture/azure-cost-normalization.md).
 - `docs/api/azure-cost-ingestion-client.md` describe configuración, errores,
   observabilidad y límites del cliente sin requerir un tenant Azure.
+
+## Fragmentación documental
+
+Las ingestas nuevas usan estructura del normalizado v1 y tokens reales, con
+procedencia por tramo. Los documentos antiguos siguen consultables. Configuración,
+metadatos, límites, preparación offline y comando de reprocesamiento explícito en
+el [runbook de chunking](../../docs/runbooks/document-chunking.md).

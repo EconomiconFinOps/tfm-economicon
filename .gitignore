@@ -1,6 +1,7 @@
 node_modules/
 .secrets/
 apps/processor/app/agents/prompt_resources/jup035/chat/v2/tokenizer.json
+*.tiktoken
 .pnpm-store/
 dist/
 build/

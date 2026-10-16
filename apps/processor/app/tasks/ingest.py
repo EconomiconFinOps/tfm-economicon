@@ -158,9 +158,13 @@ class IngestTask:
                 "text_content": document["text"] if document is not None else payload["text_content"],
                 "metadata": payload.get("metadata", {}),
             }
+            if document is not None:
+                pipeline_input['normalized_document'] = document
             if self.documents is not None:
                 self.documents.assert_owned(stored, payload)
             result = self.pipeline.run(pipeline_input)
+            # This execution-only input already lives in the extraction checkpoint.
+            result = {key:value for key,value in result.items() if key != 'normalized_document'}
             if self.documents is not None:
                 self.documents.assert_owned(stored, payload)
             completion_scope = scope

@@ -1,0 +1,3 @@
+# Linux/CPython3.12 embedding-tokenizer additions; other closure remains in existing locks.
+regex==2026.9.29 --hash=sha256:39ab5894d971f9ac68baa6eca5c50387db579cfcacf36ae8df3feceb1815e6d0
+tiktoken==0.14.0 --hash=sha256:7896eea257fe497a2b7134474d909156c6744ce8da35bce88011a960e008aa0d

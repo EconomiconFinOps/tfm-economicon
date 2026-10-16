@@ -44,6 +44,12 @@ def retrieval(monkeypatch):
                 connection.execute(text("INSERT INTO knowledge_documents VALUES (:id, :id, :tenant, :content, NULL, :content, 1, :now, :now)"), params)
                 connection.execute(text("INSERT INTO document_chunks VALUES (:id, :id, 0, :content, 20, :now)"), params)
                 connection.execute(text("INSERT INTO chunk_embeddings VALUES (:id, :id, CAST(:vector AS vector), 8, 'mock', :now)"), params)
+        # Exercise the additive upgrade over already populated legacy rows.
+        metadata_spec = importlib.util.spec_from_file_location('chunking_metadata_schema', path.with_name('003_chunking_metadata.py'))
+        metadata_module = importlib.util.module_from_spec(metadata_spec)
+        metadata_spec.loader.exec_module(metadata_module)
+        with store.engine.begin() as connection:
+            metadata_module.upgrade(connection)
         yield store
     finally:
         if store is not None:

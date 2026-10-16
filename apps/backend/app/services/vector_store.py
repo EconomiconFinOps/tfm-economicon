@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.pool import NullPool
 
 from app.core.runtime_secrets import StartupError
-from app.services.citations import DocumentCitations
+from app.services.citations import DocumentCitations, structured_location
 
 MAX_TOP_K = 20
 logger = structlog.get_logger("vector_store")
@@ -73,7 +73,7 @@ class PgVectorQueryStore:
             rows = connection.execute(
                 text(
                     f"""
-                    SELECT chunk_id, document_id, tenant_id, chunk_index, source, content, distance
+                    SELECT chunk_id, document_id, tenant_id, chunk_index, source, content, distance, metadata
                     FROM (
                         SELECT
                             dc.id AS chunk_id,
@@ -82,6 +82,7 @@ class PgVectorQueryStore:
                             dc.chunk_index AS chunk_index,
                             kd.source AS source,
                             dc.content AS content,
+                            dc.metadata AS metadata,
                             (ce.embedding <=> CAST(:query_embedding AS vector)) AS distance
                         FROM knowledge_documents kd
                         JOIN document_chunks dc ON dc.document_id = kd.id
@@ -103,20 +104,29 @@ class PgVectorQueryStore:
             timeout()
             documents = connection.execute(
                 text("""
-                    SELECT id, text_content FROM knowledge_documents
+                    SELECT id, text_content, metadata FROM knowledge_documents
                     WHERE tenant_id = :tenant_id AND id IN :document_ids
                 """).bindparams(bindparam("document_ids", expanding=True)),
                 {"tenant_id": tenant_id, "document_ids": list({row.document_id for row in rows})},
             )
-            locations = {row.id: DocumentCitations(row.text_content) for row in documents}
+            documents = {row.id:row for row in documents}
+            locations = {key:DocumentCitations(row.text_content) for key,row in documents.items()}
+            def location(row):
+                if row.metadata:
+                    return structured_location(row.metadata, documents[row.document_id].metadata,
+                                               documents[row.document_id].text_content)
+                return {'section':locations[row.document_id].section(row.content)}
             return [
                 {
                     "chunk_id": row.chunk_id,
                     "document_id": row.document_id,
                     "tenant_id": row.tenant_id,
-                    "title": locations[row.document_id].title or row.source.strip(),
+                    "title": documents[row.document_id].metadata.get("title") or (
+                        None if documents[row.document_id].metadata.get('chunking') else locations[row.document_id].title
+                    ) or row.source.strip(),
                     "chunk_index": row.chunk_index,
-                    "section": locations[row.document_id].section(row.content),
+                    **location(row),
+                    **({'chunk_metadata':row.metadata} if row.metadata else {}),
                     "source": row.source,
                     "content": row.content,
                     "distance": float(row.distance),
