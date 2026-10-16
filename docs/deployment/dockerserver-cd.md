@@ -25,7 +25,7 @@ No ejecutar código de PR en un runner con acceso al Docker compartido.
    actual de `develop` y del repositorio canónico. Un fallo, cancelación,
    PR, fork, SHA antiguo o cambio de rama durante el fetch no despliega.
 4. Obtiene ese SHA por Git, crea una release inmutable, construye las imágenes
-   en DockerServer y arranca nueve servicios con `up --wait`.
+   en DockerServer y arranca los servicios del Compose general con `up --wait`.
 5. Verifica salud, login demo, ingesta del simulador, totales de facturación
    y job RabbitMQ completado. Solo entonces escribe `state.json` y detiene
    la release anterior. La ejecución GitHub acredita **elegibilidad**;
@@ -76,7 +76,23 @@ no se sustituye silenciosamente. La cuenta Docker sigue siendo de confianza.
 Se niega a sobrescribir configuración/secretos existentes. No copiar esos
 archivos al repositorio ni imprimir `compose config` en evidencias: contiene
 secretos. Antes de activar, verificar `Linger=yes` y que los puertos
-19252–19262 y 19352–19362 estén libres. Otras bases se eligen en `init`.
+19252–19263 y 19352–19363 estén libres. Otras bases se eligen en `init`.
+
+MinIO usa el último puerto de cada ranura (base + 11): `19263` en A y
+`19363` en B con la base inicial. `init` genera credenciales independientes
+de administrador y de servicio, bucket `document-ingestion` y región `us-east-1`.
+Al preparar una nueva release en una raíz anterior, el agente añade sólo los
+valores documentales ausentes a `secrets.json`, sin rotar ni sobrescribir los
+existentes. No volver a ejecutar `init` sobre esa raíz. Hay que actualizar el
+agente instalado como se indica arriba: el timer no actualiza su propio código.
+Las releases ya preparadas siguen siendo inmutables.
+
+Backend y processor acceden internamente a `http://minio:9000`. La URL firmada
+para el navegador usa `http://127.0.0.1:PUERTO_MINIO` de su ranura; los orígenes
+CORS son exactamente los del frontend de esa misma ranura (`127.0.0.1` y
+`localhost`). El bucket y sus credenciales persistidos se reutilizan; los
+volúmenes siguen separados por release. Los nuevos puertos no sustituyen los
+anteriores ni requieren detener la release activa antes de probar el candidato.
 
 `prepare` asigna a la red interna de chat una subred distinta por slot:
 `172.30.35.0/24` con processor `172.30.35.3` en A, y `172.30.36.0/24`
@@ -97,11 +113,12 @@ El puerto de frontend/API está en `state.json`: alterna entre slots A/B.
 Para el slot A:
 
 ```sh
-ssh -N -L 19260:127.0.0.1:19260 -L 19257:127.0.0.1:19257 DockerServer
+ssh -N -L 19260:127.0.0.1:19260 -L 19257:127.0.0.1:19257 -L 19263:127.0.0.1:19263 DockerServer
 # Navegar a http://127.0.0.1:19260
 ```
 
-Para B, sustituir por `19360` y `19357`. No hay proxy estable ni promesa de
+Para B, sustituir por `19360`, `19357` y `19363`. El túnel S3 es necesario para
+la subida directa desde el navegador. No hay proxy estable ni promesa de
 cero interrupciones. La contraseña demo se consulta localmente en el archivo
 privado; nunca se coloca en README, PR o Trello.
 
@@ -235,6 +252,16 @@ no se ha establecido su causa. Las regresiones Linux son el control principal
 del agente; un fallo Windows no debe omitirse ni atribuirse a Docker sin evidencia.
 
 ## Ensayo aislado sin integración
+
+La regresión de preparación contra el Compose vigente se ejecuta localmente
+con Docker disponible, sin arrancar releases ni consumir modelos:
+
+```sh
+CD_COMPOSE_INTEGRATION=true python3 -m unittest discover -s tools/cd -p test_deploy.py -v
+```
+
+Comprueba dos configuraciones renderizadas, sus puertos, URL de subida y CORS;
+no acredita por sí sola un despliegue ni el relevo de contenedores en ejecución.
 
 ```sh
 python3 tools/cd/deploy.py --root /home/danteadmin/economicon-cd-validation init --port-base 19452

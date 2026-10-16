@@ -4,6 +4,8 @@ import hashlib
 from importlib import import_module
 import io
 import json
+import struct
+import zipfile
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -110,6 +112,33 @@ def test_confirmation_is_idempotent_and_staging_cannot_replace_final(service):
     assert 'text_content' not in service.queue.messages[0]['payload']
     assert service.status(row['id'],'alpha','one')['job_status']=='queued'
     assert begin(service)['id']!=row['id']  # Confirm releases only that user's transfer slot.
+
+
+@pytest.mark.parametrize('compression', [zipfile.ZIP_DEFLATED, zipfile.ZIP_BZIP2, zipfile.ZIP_LZMA])
+def test_corrupt_docx_compression_is_rejected_without_publishing(service, compression):
+    stream = io.BytesIO()
+    with zipfile.ZipFile(stream, 'w', compression=compression) as archive:
+        archive.writestr('[Content_Types].xml', b'wordprocessingml.document.main+xml')
+        archive.writestr('word/document.xml',
+                         b'<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>')
+    raw = bytearray(stream.getvalue())
+    offset = 30 + struct.unpack_from('<H', raw, 26)[0] + struct.unpack_from('<H', raw, 28)[0]
+    if compression == zipfile.ZIP_DEFLATED:
+        raw[offset] |= 6  # Reserved DEFLATE block type, retaining the ZIP headers.
+    elif compression == zipfile.ZIP_BZIP2:
+        raw[offset] = 0  # Invalid BZip2 signature.
+    else:
+        raw[offset + 4] = 255  # Invalid LZMA filter properties.
+    row = begin(service, raw=bytes(raw), filename='corrupt.docx')
+    with pytest.raises(UploadError, match='invalid_docx_document') as caught:
+        service.confirm(row['id'], 'alpha', 'one')
+    assert caught.value.status == 422
+    assert service.status(row['id'], 'alpha', 'one')['job_id'] is None
+    assert service.queue.messages == []
+    assert row['final_key'] not in service.storage.objects
+    with service.engine.connect() as connection:
+        assert connection.execute(text('SELECT count(*) FROM jobs')).scalar_one() == 0
+    service.cancel(row['id'], 'alpha', 'one')
 
 
 def test_dedup_is_explicit_tenant_scoped_and_force_reprocess_supported(service):
