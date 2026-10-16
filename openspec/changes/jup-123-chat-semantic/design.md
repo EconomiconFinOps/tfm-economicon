@@ -1,5 +1,9 @@
 JUP: JUP-123
 
+Decisión de modelo documentada en [ADR-0022](../../../docs/adr/ADR-0022-chat-model-selection.md)
+(Proposed): DeepSeek V4.1 Flash/CoreWeave FP8 para el candidato local; no sustituye
+ADR-0002 ni activa B. Análisis para memoria trazado a JUP-063/JUP-109.
+
 ## Verificación actual y límites — 16/10/2026
 
 N3 separada de a7f9502d/banco1.0.1/corpus54, DeepSeek/CoreWeave:84completed,

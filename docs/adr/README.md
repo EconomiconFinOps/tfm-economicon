@@ -124,3 +124,9 @@ Local implementation details, small refactors and documentation-only changes wit
 | Record | Status | Date |
 | --- | --- | --- |
 | [ADR-0013: Tagged cost coverage](ADR-0013-tagged-cost-coverage.md) | Accepted for MVP; user-authorized delivery exception and assisted review documented in JUP-017 evidence | 2026-10-10 |
+
+## Selección del modelo del candidato local B
+
+| Registro | Estado | Fecha |
+| --- | --- | --- |
+| [ADR-0022: selección de modelo para B](ADR-0022-chat-model-selection.md) | Proposed; elección local DeepSeek V4.1 Flash/CoreWeave FP8, sin sustituir ADR-0002 o cambiar el gateway compartido | 2026-10-16 |

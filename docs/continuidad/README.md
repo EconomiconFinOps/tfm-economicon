@@ -18,6 +18,7 @@ Paquete203archivos/handoffv8; parcial80 y campañas históricas preservadas.
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
 | [Consultas de coste Azure](../evidence/JUP-036-validation.md) | PR69: reconciliación local de `1cf4087f` con develop `a3f514f7` (#129), sin cambios de producto. Corpus1.1.1 conservado; los dos casos SQL pendientes pasan en Cockroach24.1.11. Revisión/validación independientes del nuevo candidato y CI posterior pendientes. | 2026-10-15 |
+| [Memoria: modelos](memoria-modelos.md) | Análisis de GLM/DeepSeek y parciales Sonnet/Sol; elección operativa DeepSeek para B, ADR-0022 Proposed y propuesta e/g/h fuera de Git. JUP-063/JUP-109 existentes, sin nueva tarjeta ni incorporación al Doc. | 2026-10-16 |
 | [Evaluación local del chat](chat-evaluacion-local.md) | a7f9502d:213Windows+213Linux/2builds; N3DeepSeek84/84 conformes,495checks/84costes. Claves17/10a18:00París sin resets; UI conforme, B restaurado,21.4488/30USD/reservas intactas. Sin aceptación/publicación. | 2026-10-16 |
 | [Chat conversacional](chat-conversacional.md) | PR121: focal28 3PASS/4FAIL, JSONB7PASS. Corrección29 de soporte literal visible e interpretación separada en regresión offline; aceptación/batería real pendientes. Gasto0.957927619/2USD. | 2026-10-13 |
 | [División del chat en A/B](chat-entregas-a-b.md) | División aprobada; B d9b/9e2 corregida,50/84 muestras con47PASS/3técnicas429, sin publicar ni aceptar. Ver evaluación local. Base A8ea/develop0543 y reviews/CI conservan su fecha histórica, sin nueva consulta. | 2026-10-15 |

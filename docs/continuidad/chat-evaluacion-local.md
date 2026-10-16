@@ -9,6 +9,11 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 16/10/2026
 
+Análisis y justificación de modelos para el TFM: [memoria-modelos.md](memoria-modelos.md).
+Contribución preparada para JUP-063/JUP-109, sin duplicar tareas. DeepSeek es la
+elección local vigente; la ventaja histórica de calidad de GLM y sus fallos se
+conservan. No se modifica la memoria compartida o el modelo del gateway común.
+
 ### N3 completa; claves ampliadas 24 horas — 16/10/2026
 
 Respuesta humana real: «Amplia las claves 24 horas». Se amplió únicamente la
