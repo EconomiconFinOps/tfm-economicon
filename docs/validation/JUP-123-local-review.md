@@ -15,11 +15,16 @@ descarga pública del tokenizer; frontend127idéntico. Evidencia en
 `allocation-native-final-audit-v1.json`, `allocation-counterfactual-proof-v2.json`
 y `allocation-standard-build-final-audit-v1.json`.
 
-La nueva N3/corpus no se ha ejecutado. La revisión automática exige permiso
-explícito para54fragmentos sintéticos a OpenRouter/openai/text-embedding-3-small;
-solicitud pendiente, no enviados ni reservados. Entorno nuevo preparado/parado;
-antiguo B restaurado sano, mismos datos/contenedores. Fuente presupuestaria20
-intacta y política externa30;1275filas y12.69071250USD de reservas conservadas.
+La nueva N3 no se ha ejecutado. Permisos de embeddings y pausa recibidos; el
+intento de semilla falló en el arnés al pasar timeout como cuerpo HTTP, tras
+cabeceras y sin enviar el corpus. No respuesta ni corpus cargado; contadores del
+proveedor idénticos. Corrección de una línea del arnés,6pruebas PASS, sin cambiar
+producto. No se repitió: nuevo intento único consultado y pendiente de permiso.
+Antiguo B restaurado sano, mismos contenedores/imágenes; nuevo entorno parado.
+Ledger1276/prefijo1275 intacto; reserva0.01 retenida,12.70071250USD desconocidos,
+30USD acumulados. No tratar reserva como factura. Handoff vigente
+`allocation-012-handoff-v3.json`; nueva política deberá proteger1276 antes de otra
+reserva0.01 y de adaptar el arnésN3, conservando el intento y evidencia anteriores.
 Criterios/adjudicación independientes pendientes; no aceptación. Procedimiento,
 identidades y payload exacto en [continuidad](../continuidad/chat-evaluacion-local.md).
 

@@ -9,6 +9,53 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 16/10/2026
 
+### Semilla fallida; arnés corregido, nuevo envío pendiente — 16/10/2026
+
+El humano autorizó la pausa/restauración (`call_f2605a9419c44e8cbaab12cd84945b74`).
+Se reactivaron los contenedores DERIVADOS exactos, sin cambiar imágenes/datos.
+El intento único de semilla PID2884330/start75596562 terminó con TypeError:
+`original.open(request,timeout)` pasó90.0 como cuerpo de urllib, en vez de timeout.
+Se enviaron cabeceras, sin cuerpo del corpus; no respuesta ni corpus cargado.
+Contadores proveedor idénticos antes/después. Corrección sólo del arnés a
+`timeout=timeout`,6pruebas offline PASS, producto intacto. No se reenvió el POST.
+
+Se conserva íntegra la reserva0.01USD, request `adcab9d6-83e2-4a41-92c7-ff7ed1ff275c`,
+con estado original `EXTERNAL_SEED_DISPATCHING`/`COST_UNKNOWN_RESERVED`.
+Ledger1276/SHA`4b4f41a3704c7f7d1a18f46ee7f6a2501e0a88a8958637d99f145ef5ad4e3cb5`;
+prefijo1275/hash0e861c4 intacto. Reservas desconocidas12.70071250USD, no factura
+ni liberación; máximo30USD. Corpus y chat nuevos0filas. Antiguo B RESTAURADO sano,
+mismos contenedores/imágenes; demás servicios sin cambios, nuevo entorno parado.
+Claves hasta hoy18:00París, sin prórroga. Nueva N3 sigue NOT_RUN.
+
+Se preguntó UNA VEZ si autoriza otro intento único, mismo payload/destino, otra
+reserva0.01USD conservando la anterior; pendiente. No repetir pregunta ni deducir
+permiso del silencio. Handoff vigente `allocation-012-handoff-v3.json`;
+`allocation-failed-seed-collected-v1.json` y `allocation-failed-seed-park-audit-v1.json`.
+La exportación local se guardó bien; sólo su impresión inicial falló por cp1252,
+sin repetición del trabajo remoto. `allocation-seed-installed-v2.py` demuestra la
+corrección de una línea, pero NO es un continuador listo: guarda1275 lo rechazaría.
+Un nuevo intento necesita política/identidad propias protegiendo1276 y luego N3
+adaptada a la segunda semilla; conservar los originales, no alterar historial.
+Trello actualizado por puente, SHAe4bc7bf8,16088caracteres, metadatos intactos.
+
+Los cortes siguientes son históricos; no reemplazan este estado.
+
+### Corte anterior: permiso de embeddings recibido; pausa entonces pendiente — 16/10/2026
+
+El humano respondió «Sí, autorizo este envío de embeddings» a la pregunta
+`call_24868e3f710e4e9992e7d832b25b888b`. Permiso real registrado localmente y en
+DockerServer para body1a375375/manifest5b9b, una petición,30USD y reserva0.01.
+**No se ha enviado ni reservado.** Una nueva revisión automática rechazó la
+reactivación antes de ejecutar el comando: pausar el backend y processor del
+entorno anterior B contradice la restricción previa de no interrumpir servicios.
+Se solicitó permiso específico para esa pausa temporal y restauración; pendiente.
+No reenviar la pregunta ni buscar una vía indirecta. No cambió ningún servicio.
+Lectura fresca:1275filas/hash0e861c4 intactos, antiguo B sano, nuevo parado y sin
+handles de semilla. Claves vencen hoy18:00París; ningún permiso recibido amplía
+vigencia. Handoff vigente `allocation-012-handoff-v2.json`; se conserva v1 como
+corte anterior, y `allocation-reactivation-review-stop-v1.json` registra el rechazo.
+
+
 ### Corrección012 posterior a la N5 — 16/10/2026
 
 Candidato local `a7f9502d6da0e080560f028dfc260f77f729c937` en el checkout
@@ -49,7 +96,7 @@ ya conformes sin motivo nuevo. Checkout5119/banco1.0.0 intocable para sus recibo
 **Intervención pendiente:** revisión automática rechazó enviar54fragmentos de los
 3documentos sintéticos al modelo de embeddings OpenRouter/openai/text-embedding-3-small:
 exige autorización explícita de payload/destino, además del permiso de validación.
-Solicitud humana presentada y SIN RESPUESTA al cierre. No reenviar la pregunta ni
+Solicitud originalmente pendiente; APROBADA por el humano más tarde (ver corte superior). No reenviar la pregunta ni
 interpretar silencio,30USD o este seguimiento como aprobación. Cuerpo al gateway SHA
 `1a375375f5463989bb304250d3e2d4c9c60d54500e437adbf3367d1a8c9ed31e`;
 manifest SHA`5b9b1e0588e6b66097fb0d161ec0810620953fe53b37baec7aa92784e25333b8`.
