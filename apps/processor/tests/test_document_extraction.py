@@ -130,14 +130,22 @@ def test_page_limit_is_enforced(monkeypatch):
         extract_local(pdf_bytes(pages=2),'pdf')
 
 
-def test_linux_sandbox_denies_network_and_unrelated_files(tmp_path):
+def test_linux_sandbox_denies_network_and_unrelated_files(tmp_path, monkeypatch):
     allowed=tmp_path/'allowed'
     allowed.mkdir()
     outside=tmp_path/'outside'
     outside.write_text('synthetic inaccessible sentinel')
-    code='''import os,socket,sys
+    code='''import os,socket,sys,sysconfig
 from app.documents.extraction_sandbox import restrict
+runtime_file=os.path.join(sysconfig.get_path('stdlib'),'encodings','utf_8_sig.py')
 restrict(sys.argv[1],memory_mb=512,seconds=10,output_bytes=1000000)
+assert open(runtime_file,'rb').read()
+try:
+    open(runtime_file,'r+b').close()
+except PermissionError:
+    pass
+else:
+    raise AssertionError('runtime write allowed')
 try:
     socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 except PermissionError:
@@ -153,6 +161,10 @@ else:
 open(os.path.join(sys.argv[1],'own-data'),'w').write('allowed')
 print('sandbox-pass')
 '''
-    result=subprocess.run([sys.executable,'-B','-c',code,str(allowed),str(outside)],capture_output=True,timeout=20)
+    # pytest's per-test cwd is temporary; the child cannot inherit sys.path.
+    monkeypatch.delenv('PYTHONPATH', raising=False)
+    environment={**os.environ, 'PYTHONPATH': str(Path(__file__).resolve().parents[1])}
+    result=subprocess.run([sys.executable,'-B','-c',code,str(allowed),str(outside)],
+                          env=environment,capture_output=True,timeout=20)
     assert result.returncode==0, result.stderr.decode()
     assert result.stdout.strip()==b'sandbox-pass'

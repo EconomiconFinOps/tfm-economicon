@@ -8,6 +8,7 @@ import errno
 import os
 from pathlib import Path
 import resource
+import sysconfig
 
 
 def restrict(directory, *, memory_mb, seconds, output_bytes):
@@ -37,8 +38,12 @@ def restrict(directory, *, memory_mb, seconds, output_bytes):
     try:
         readonly = 1 | (1 << 2) | (1 << 3)  # execute, read-file, read-directory
         paths = {str(Path(directory).resolve()): access}
+        # Hosted and virtualenv Python libraries may live outside /usr. Permit
+        # only their installation directories, not the prefix or caller sys.path.
+        runtime_paths = tuple(sysconfig.get_path(name) for name in ('stdlib', 'platstdlib', 'purelib', 'platlib'))
         for value in ('/usr', '/lib', '/lib64', '/etc/fonts', '/etc/libreoffice', '/etc/ld.so.cache', '/etc/passwd',
-                      '/etc/group', '/etc/nsswitch.conf', '/etc/localtime', '/etc/os-release', '/proc/self'):
+                      '/etc/group', '/etc/nsswitch.conf', '/etc/localtime', '/etc/os-release', '/proc/self',
+                      *runtime_paths):
             if Path(value).exists():
                 paths[str(Path(value).resolve())] = readonly
         paths['/dev/null'] = (1 << 1) | (1 << 2)

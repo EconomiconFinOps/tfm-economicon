@@ -164,6 +164,12 @@ libseccomp: restringe lectura/escritura al temporal y a recursos de ejecución d
 sólo lectura; deniega sockets de Internet y operaciones de privilegio. Si no
 está disponible falla cerrado como problema de entorno; no cae a ejecución libre.
 
+La biblioteca estándar y los paquetes de Python se habilitan en sólo lectura
+mediante sus rutas de instalación `sysconfig` (`stdlib`, `platstdlib`, `purelib`
+y `platlib`). Esto permite el runtime de CI bajo `/opt` y entornos virtuales sin
+abrir el prefijo completo, `/opt`, el directorio del proyecto o el `sys.path`
+heredado. El extractor sigue sin recibir secretos del servicio.
+
 LibreOffice recibe un directorio IPC propio. Se deniega la prueba heredada de
 `access(...,W_OK)` para que use ese directorio: Landlock no media `access(2)` y
 LibreOffice, de otro modo, escogería `/tmp` global. Los permisos efectivos siguen
