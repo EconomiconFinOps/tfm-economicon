@@ -16,7 +16,9 @@ Todas las reservas intactas; máximo20USD. Propuesta21USD no autorizada/activada
 Integración local2339 con develop53b43:192backend únicos(29SQL),18frontend,
 95arnés/17evaluador,75OpenSpec y3imágenes verificadas. HTTP/UI de costes con flag
 off/on pasan en preview desechable retirada, sin modelo. No se atribuye
-N3/N5al corpus nuevo ni se simula aceptación. Detalle y paquete en el tema.
+N3/N5al corpus nuevo ni se simula aceptación. Comparación offline:10/28casos
+con fragmentos cambiados; los18restantes no acreditan una búsqueda nueva.
+Detalle y paquete en el tema.
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |

@@ -131,6 +131,14 @@ UTF-8. Base, cola y contenedores temporales retirados, túnel propio cerrado,
 processor anterior restaurado sano, otros servicios y1247 entradas intactos.
 No hubo activación permanente ni cambios de producto por este recorrido.
 
+La comparación offline del corpus reproduce1018 fragmentos históricos de111
+contextos:914 conservan texto/índice,100 cambian texto y4 cambian frontera.
+Afecta a003/006/007/013/014/016/017/018/023/028. Los18casos restantes conservan
+el texto observado, **no prueban una nueva búsqueda o generación**. El chunker
+500/50 y las definiciones de los28casos/109requisitos son iguales; el banco no
+incorpora casos de los nuevos estados/impacto acumulado/navegación de anomalías.
+No se invalidan los resultados históricos ni se atribuyen al corpus nuevo.
+
 ## Contabilidad y continuación
 
 Máximo autorizado vigente: **20 USD acumulados**, sin liberar reservas.
@@ -185,6 +193,7 @@ Directorio externo relativo a la raíz del proyecto:
 - `period-integration-sql-final-audit-v2.json` y
   `period-integration-build-final-audit-v1.json`.
 - `integration-ui-final-audit-v1.json` y `integration-ui-collected-v1/`: HTTP/UI de costes off/on sin modelo; auditoría SHA`6b6d98a50c49c5ecaf429f9222ec09891be5a2d1727d54d9e69cf09aa165042d`.
+- `integration-corpus-impact-v1.{json,md}`: comparación offline y alcance pendiente; JSON SHA`43f60ff5b4905e39d30f730873e98bbb3de5bb08c946e428013b34ad9f7dd191`.
 - `period-n5-cap21-continuation-proposal-v1.json`: simulación contable, no permiso.
 
 Los contextos de RAG tardío se reconstruyen con suplementos SQL de hash exacto;

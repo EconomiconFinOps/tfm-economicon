@@ -220,6 +220,19 @@ Processor anterior restaurado sano con mismo contenedor/imagen; otros servicios
 intactos.1247filas del ledger con el mismo SHA; cero inferencias/gasto nuevo.
 No activación permanente ni modificación de despliegues compartidos.
 
+**Impacto del corpus comprobado offline**, sin búsqueda ni modelo:
+`integration-corpus-impact-v1.json` (SHA`43f60ff5b4905e39d30f730873e98bbb3de5bb08c946e428013b34ad9f7dd191`) y su tabla `.md`.
+Los111contextos N5 completados se verificaron contra el manifest inmutable;
+1018apariciones de fragmentos reproducen exactamente la fuente histórica con el
+chunker real500/50. En el corpus integrado914conservan texto/índice,100ya no
+conservan el texto completo y4conservan texto pero cambian frontera. Afectan a
+10casos: 003, 006, 007, 013, 014, 016, 017, 018, 023, 028. Los18restantes conservan los fragmentos observados,
+no una búsqueda nueva: no se demuestra ranking, metadatos, prompt o generación
+equivalentes. No se reasignan ni se invalidan los recibos históricos por esta
+comparación. Los28casos/109requisitos siguen idénticos; el banco no añade cobertura
+de los nuevos estados, impacto acumulado o navegación de anomalías. Esto precisa
+el alcance pendiente, sin crear un criterio nuevo o atribuir aceptación ajena a B.
+
 **Campaña del nuevo corpus aún no ejecutada.** Plan
 `integration-2339cce8-n3-plan-v1.json` NOT_RUN84preparadas, no ejecutadas.
 Main jup035-local conserva5119/banco1.0.0 para posible continuación: no moverlo
