@@ -36,6 +36,7 @@
 - [x] 5.3 Corregir los hallazgos de 5.2 con ciclo RGR y barrido del mismo patrón, y repetir una revisión dirigida sobre lo cambiado: la pasada 5 dio `accept` con 2 MEDIUM y 3 LOW, que se corrigieron o se registraron. Esos arreglos finales no pasaron por otra revisión.
 - [x] 5.4 Actualizar `review.md`, la evidencia y la continuidad con el resultado de la revisión final.
 - [x] 5.5 Someter las tareas 4.4 a 4.6 a dos pasadas adversariales automatizadas (la 6, `changes-required` con 1 HIGH, 4 MEDIUM y 6 LOW, y la 7, `accept` con 2 MEDIUM y 3 LOW) y a una auditoría de coherencia documental (`changes-required` con 3 HIGH, 8 MEDIUM y 7 LOW), y corregirlas o registrarlas. Ninguna sustituye a la `Revision JUP-071` de una persona.
+- [x] 5.6 Atender las notas no bloqueantes de la revisión del PR #136: pruebas para los comportamientos de la capa de informe que ningún test cubría (parejas, evaluación incompleta con casos bloqueados, cobertura reducida y filas numéricas), documentación sin el estado anterior a la publicación, orden de merge con el colector y cómo re-fijar la batería.
 
 ## 6. Verificación pendiente fuera de la línea base offline
 

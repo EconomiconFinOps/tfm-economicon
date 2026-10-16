@@ -4,7 +4,7 @@
 
 ## Estado actual (16/10/2026)
 
-El trabajo vive en la rama local `feat/JUP-071-incomplete-data-robustness`, sobre `develop`, sin publicar. Parte de la contribución de Alejandro Aguado (PR #90 draft, commit técnico `d98d18d`, cerrado sin integrar el 10/10), recuperada con sus commits y su autoría.
+El trabajo está integrado en `develop` por el PR #136 (fusionado el 2026-10-16 con squash, que conserva a Alejandro Aguado como coautor). Parte de la contribución de Alejandro Aguado (PR #90 draft, commit técnico `d98d18d`, cerrado sin integrar el 10/10), recuperada con sus commits y su autoría.
 
 Se añaden 16 variantes con 13 referencias JUP-069 (29 casos), un runner que reutiliza JUP-070 y dos ejecuciones del servicio de plantilla real. El JSON de la batería fija los hashes del banco original, la metodología y las fuentes del corpus. Se prueban owner ausente, null y vacío, valores desconocidos, reglas contradictorias, reparto compartido, denominadores, periodos, monedas y unidades, ingesta parcial y acceso inexistente. Tres variantes `answer` impiden considerar acertada una abstención universal.
 
@@ -39,7 +39,7 @@ Windows, Python 3.14, Node 24.
 | Comprobación | Resultado |
 | --- | --- |
 | `python tools/assistant-robustness.py validate` | 16 variantes / 29 casos; hashes válidos |
-| `corepack pnpm assistant-robustness:test` | 123 pruebas OK |
+| `corepack pnpm assistant-robustness:test` | 128 pruebas OK (123 hasta el PR #136 y 5 de la capa de informe después) |
 | Pruebas de JUP-070 y de métricas de JUP-067 | 110 y 103 OK |
 | `node --test tools/ci-workflow.test.mjs` | 14 OK (con las dependencias del repositorio principal enlazadas temporalmente) |
 | `corepack pnpm openspec:validate`, `jup:check` del change y `jup:cleanup:check` | 74/74, OK, OK |
@@ -59,8 +59,8 @@ Con la cabeza `e0a0c41e` del PR #131, el colector copia a `execution.collection.
 | Resultado funcional verificable | Runner ejecutable, 29 casos emparejados, informes de plantilla y [protocolo](../validation/JUP-071-robustness.md) | Medición con un modelo real |
 | Pruebas necesarias añadidas y en verde | `scripts/tests/test_assistant_robustness.py`, validación de la batería y las comprobaciones de arriba | CI al publicar y validación independiente |
 | Documentación y decisiones actualizadas | Protocolo, OpenSpec activo, esta evidencia y la continuidad | Cambios de procedencia cuando haya una medición real |
-| Pull request revisado y vinculado | Sin PR: la rama no está publicada y el PR #90 se cerró sin integrar | Publicación, revisión humana e integración, sin suplantar roles |
-| Validación funcional y evidencia enlazadas | Informes sanitizados reproducibles y las verificaciones anteriores | Lucía valida los criterios; no se le atribuye ninguna ejecución |
+| Pull request revisado y vinculado | PR #136, fusionado el 2026-10-16: revisión de Víctor (aprobada sobre `5105d44a`) y validación de Paris (comentario sobre `8b02ab7e`). El PR #90 se cerró sin integrar | Ambas revisiones son del instrumento y la línea base offline, no de la tarjeta completa; falta todo el grupo 6 |
+| Validación funcional y evidencia enlazadas | Informes sanitizados reproducibles y las verificaciones anteriores | La validación del instrumento la publicó Paris en el PR #136; no se atribuye ninguna ejecución a quien no la hizo |
 
 ## Historial de verificación
 

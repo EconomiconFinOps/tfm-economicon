@@ -24,7 +24,7 @@ Las "pasadas adversariales" y la auditoría de trazabilidad que se recogen aquí
 Estado del 2026-10-16, Windows, Python 3.14:
 
 - `python tools/assistant-robustness.py validate`: 16 variantes, 29 casos, hashes válidos.
-- `corepack pnpm assistant-robustness:test`: 123 pruebas OK.
+- `corepack pnpm assistant-robustness:test`: 128 pruebas OK (123 al fusionar el PR #136 y 5 añadidas después para la capa de informe).
 - Pruebas de JUP-070 (110) y de métricas de JUP-067 (103): OK.
 - `node --test tools/ci-workflow.test.mjs`: 14 OK (con las dependencias del repositorio principal enlazadas temporalmente, porque el directorio de trabajo no tenía `node_modules`).
 - `corepack pnpm openspec:validate` (74/74), `corepack pnpm jup:check -- --change jup-071-incomplete-data-robustness` y `corepack pnpm jup:cleanup:check`: OK.

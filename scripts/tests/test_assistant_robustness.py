@@ -1524,5 +1524,63 @@ class ServerProvenanceTests(unittest.TestCase):
 
 
 
+class ReportingLayerCoverageTests(unittest.TestCase):
+    """Behaviours of the reporting layer that no other test fails on if they are broken (review note of PR #136)."""
+
+    @staticmethod
+    def one_reviewer(judgments, case_id, keys=None):
+        for key, values in judgments["cases"][case_id].items():
+            if keys is None or key in keys:
+                judgments["cases"][case_id][key] = values[:1]
+
+    def test_pairs_keep_the_baseline_as_before_and_the_variant_as_after(self):
+        raw = raw_fixture()
+        judgments = judgments_fixture(raw)
+        point = next(iter(robustness.human_checks(BY_ID["JUP-069-012"])))
+        judgments["cases"]["JUP-069-012"][point] = [{"reviewer": "fixture-person-a", "result": "fail"}]
+        report = scored(raw, judgments)
+        pair = next(p for p in report["pairs"] if p["perturbation"] == "JUP-071-001")
+        self.assertEqual((pair["baseline"], pair["before"], pair["after"]), ("JUP-069-012", "fail", "pass"))
+
+    def test_a_blocked_case_keeps_the_assessment_incomplete(self):
+        raw = raw_fixture()
+        self.assertTrue(scored(raw)["assessment_complete"])
+        raw["cases"][0]["failure_category"] = "timeout"
+        raw["cases"][0]["answer"] = ""
+        report = scored(raw, judgments_fixture(raw))
+        self.assertEqual(report["totals"]["blocked"], 1)
+        self.assertFalse(report["assessment_complete"])
+
+    def test_reduced_coverage_flags_a_case_when_any_point_has_one_reviewer(self):
+        raw = raw_fixture()
+        judgments = judgments_fixture(raw)
+        point = next(iter(robustness.human_checks(BY_ID["JUP-071-001"])))
+        self.one_reviewer(judgments, "JUP-071-001", {point})
+        report = scored(raw, judgments, provisional=True)
+        self.assertEqual([c["case"] for c in report["cases"] if c["reduced_coverage"]], ["JUP-071-001"])
+
+    def test_reduced_coverage_does_not_flag_a_standard_case_judged_by_one_person(self):
+        cases = copy.deepcopy(CASES)
+        next(c for c in cases if c["id"] == "JUP-071-001")["risk"] = "standard"
+        raw = raw_fixture()
+        judgments = judgments_fixture(raw)
+        self.one_reviewer(judgments, "JUP-071-001")
+        report = robustness.score(SUITE, cases, raw, judgments, True)
+        self.assertFalse(entry(report, "JUP-071-001")["reduced_coverage"])
+        self.assertEqual(entry(report, "JUP-071-001")["outcome"], "pass")
+
+    def test_numeric_rows_are_automatic_and_count_each_state(self):
+        raw = raw_fixture()
+        raw["cases"] = [dict(r, answer="Sin cifras.") if r["case"] == "JUP-071-002" else r for r in raw["cases"]]
+        report = scored(raw, judgments_fixture(raw))
+        checks = [v for c in report["cases"] for k, v in c["checks"].items() if k.startswith("numbers-")]
+        self.assertIn("fail", checks)
+        self.assertIn("pass", checks)
+        rows = {r["status"]: r for r in robustness.rows_v1(report)["results"] if r["metric_id"] == "numeric_checks"}
+        self.assertEqual({k: (r["count"], r["denominator"], r["judgment"]) for k, r in rows.items()},
+                         {"pass": (checks.count("pass"), len(checks), "automatic"),
+                          "fail": (checks.count("fail"), len(checks), "automatic")})
+
+
 if __name__ == "__main__":
     unittest.main()

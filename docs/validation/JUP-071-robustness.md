@@ -87,6 +87,10 @@ python tools/assistant-robustness.py compare ../evaluacion-jup071/report-1.json 
 
 `generative_robustness_accepted` permanece falso en todos los informes de esta versión. Para una conclusión generativa faltan contraste de JUP-035 integrado, evidencia del commit/modelo/prompt desplegado, tres recogidas reales iguales y los juicios independientes. Entonces el equipo debe revisar explícitamente el contrato de procedencia y la interpretación de resultados; no editar el booleano a mano. La presente entrega completa el instrumento y su evaluación local acotada. No declara la tarjeta aceptada, las revisiones humanas hechas ni robustez generativa.
 
+## Re-fijar la batería cuando cambia un fichero que referencia
+
+La batería (`JUP-071-robustness-cases.json`) fija el hash del banco de JUP-069 (`baseline`), de la metodología de JUP-070 (`methodology`) y de cada fuente del corpus (`sources`), y la herramienta fija el hash de `apps/backend/app/services/assistant.py` (`TEMPLATE_SHA256`) porque la ejecución offline usa el servicio real. Si un PR cambia uno de esos ficheros, `assistant-robustness:validate` y la CI («OpenSpec») fallan hasta re-fijar. Pasos: comprobar que las preguntas, las reglas y las cifras de las variantes siguen vigentes con el contenido nuevo; actualizar el hash correspondiente con el resumen que calcula la herramienta (`file_digest`, que no depende de los finales de línea); subir `suite_version` solo si cambia una regla de una variante; regenerar los informes de plantilla y sus `rows` de `docs/evidence/` y anotar la regeneración en el registro de la evidencia.
+
 ## Historial de cambios tras las revisiones (registro histórico)
 
 Es un registro cronológico: donde una regla se repita con otro detalle, manda la más reciente (por ejemplo, los valores declarados que se describen en «Descripción de la ejecución con el colector de JUP-123») y la spec del change.
