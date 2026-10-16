@@ -19,3 +19,16 @@ roles automáticamente ni aceptación generativa,ni autoriza merge de PR63.
 
 Próximo:publicar PR separada,comprobar CI y solicitar ambos dictámenes,conservar
 la tarjeta sin cerrar. No tocar JUP-100 cerrado ni asignaciones de PR63.
+
+## Reconciliacion con develop — 2026-10-16
+
+Se incorpora develop 22f0e2f3 (JUP-121/PR132) sobre 098c50aa. Unico conflicto:
+el indice; conservadas ambas filas. Todos los cambios disjuntos de ambas ramas
+contrastados con Git, sin diferencias. Politica, fixture y pruebas propios intactos;
+CI entrante conservada, incluido evaluation-dashboard:test y timeout de20min.
+Pruebas propias:63 politica,14 gobernanza,14 workflow; OpenSpec74/74,
+trazabilidad7 e higiene1692 correctas. Dos avisos de whitespace proceden de
+develop; diff propio contra develop limpio. CI del nuevo SHA pendiente de
+publicacion. Revision favorable de Paris sobre098c50aa conserva fecha/alcance;
+validacion Victor, pairing y revalidacion de dependencias pendientes. No merge
+a develop, nuevas excepciones, ejecucion generativa ni cambios en dictamenes.

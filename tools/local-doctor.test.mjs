@@ -20,6 +20,7 @@ const SECRETS = {
   RABBITMQ_ERLANG_COOKIE: "SENTINELCOOKIEVALUE",
   POSTGRES_PASSWORD: "SENTINEL-pg@pass:%y",
   GRAFANA_ADMIN_PASSWORD: "SENTINEL-grafana",
+  GRAFANA_EVALUATION_DB_PASSWORD: "SENTINEL-grafana-evaluation",
 };
 const enc = encodeURIComponent;
 const VALID = {
@@ -98,7 +99,8 @@ test("parses dotenv lines the way Compose does", () => {
 test("reads required variables and published ports from the Compose file", () => {
   const contract = readComposeContract(composeText);
   assert.deepEqual(contract.required, [
-    "AUTH_SECRET_KEY", "CHAT_HMAC_FILE", "DATABASE_URL", "GRAFANA_ADMIN_PASSWORD", "POSTGRES_PASSWORD",
+    "AUTH_SECRET_KEY", "CHAT_HMAC_FILE", "DATABASE_URL", "GRAFANA_ADMIN_PASSWORD", "GRAFANA_EVALUATION_DB_PASSWORD",
+    "POSTGRES_PASSWORD",
     "RABBITMQ_DEFAULT_PASS", "RABBITMQ_DEFAULT_USER", "RABBITMQ_ERLANG_COOKIE",
     "RABBITMQ_URL", "VECTOR_DATABASE_URL",
   ]);
@@ -244,6 +246,17 @@ test("the process environment wins over .env, also when it is empty", async () =
   const emptied = await doctor(dotenv(VALID), { env: { GRAFANA_ADMIN_PASSWORD: "" } });
   assert.equal(emptied.code, 1);
   assert.match(emptied.text, /GRAFANA_ADMIN_PASSWORD/);
+
+  // JUP-121: la contraseña del rol de lectura de Grafana es obligatoria, ausente o vacía.
+  const evaluationEmptied = await doctor(dotenv(VALID), { env: { GRAFANA_EVALUATION_DB_PASSWORD: "" } });
+  assert.equal(evaluationEmptied.code, 1);
+  assert.match(evaluationEmptied.text, /GRAFANA_EVALUATION_DB_PASSWORD/);
+  assertNoSecrets(evaluationEmptied.text);
+
+  const { GRAFANA_EVALUATION_DB_PASSWORD: _omitted, ...withoutEvaluation } = VALID;
+  const evaluationMissing = await doctor(dotenv(withoutEvaluation));
+  assert.equal(evaluationMissing.code, 1);
+  assert.match(evaluationMissing.text, /GRAFANA_EVALUATION_DB_PASSWORD/);
 });
 
 function listen(host) {

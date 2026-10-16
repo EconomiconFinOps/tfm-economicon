@@ -40,6 +40,14 @@ logger = structlog.get_logger("assistant")
 RETRIEVAL_UNAVAILABLE = "The assistant cannot retrieve context right now. Try again later."
 FAILURE_CATEGORIES = frozenset(PROVIDER_ERROR_CATEGORIES) | {"vector_store"}
 
+# Un contador con etiqueta no expone ninguna serie hasta el primer fallo, y Prometheus
+# devolvería un vector vacío en sum(rate(...)): las proporciones del dashboard de
+# evaluación saldrían en "Sin datos" aunque ya haya consultas. Crear los hijos a 0 al
+# importar el módulo (con .labels(), nunca .inc()) es la práctica estándar y no inventa
+# categorías: se recorre exactamente el conjunto cerrado que ya normaliza el registro de fallos.
+for _categoria in sorted(FAILURE_CATEGORIES):
+    retrieval_failures_total.labels(category=_categoria)
+
 
 @router.get("/conversations", response_model=ConversationCollection)
 def list_conversations(
