@@ -13,6 +13,7 @@
 - [ ] 3.2 Resumen de la última campaña (D4)
 - [ ] 3.3 Etiquetas: «Tipo de ejecución», columna de resultado fuera cuando todo está medido y variantes traducidas en las tablas de detalle (D5)
 - [ ] 3.4 Panel de evolución de la latencia de la campaña (D8)
+- [ ] 3.5 Ajustes visuales hallados al validar con Grafana real (D10): altura de la matriz y de las tablas de ejecuciones y de estado, zona horaria UTC en todo el dashboard, cabecera «Tipo de ejecución» sin cortar y variantes de la sección B en español
 
 ## 4. Sección B y textos
 
