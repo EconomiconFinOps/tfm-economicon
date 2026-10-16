@@ -39,10 +39,10 @@ Windows, Python 3.14, Node 24.
 | Comprobación | Resultado |
 | --- | --- |
 | `python tools/assistant-robustness.py validate` | 16 variantes / 29 casos; hashes válidos |
-| `corepack pnpm assistant-robustness:test` | 128 pruebas OK (123 hasta el PR #136 y 5 de la capa de informe después) |
+| `corepack pnpm assistant-robustness:test` | 130 pruebas OK (123 hasta el PR #136 y 7 de la capa de informe después) |
 | Pruebas de JUP-070 y de métricas de JUP-067 | 110 y 103 OK |
 | `node --test tools/ci-workflow.test.mjs` | 14 OK (con las dependencias del repositorio principal enlazadas temporalmente) |
-| `corepack pnpm openspec:validate`, `jup:check` del change y `jup:cleanup:check` | 74/74, OK, OK |
+| `corepack pnpm openspec:validate`, `jup:check` del change y `jup:cleanup:check` | 74/74 (75/75 tras integrar el change de JUP-121), OK, OK |
 
 ### 16/10/2026: distancia no medida y contrato del dashboard (tareas 4.4 y 4.5)
 
@@ -50,14 +50,14 @@ La herramienta acepta fragmentos con `distance: null` y `public_evidence`, y exp
 
 ### 16/10/2026: procedencia del servidor (tarea 4.6)
 
-Con la cabeza `e0a0c41e` del PR #131, el colector copia a `execution.collection.server_reported` la procedencia que reporta el servidor. El informe y `rows` llevan el `prompt_sha256` único como dato no atestiguado, y `mixed` o `absent` si no hay uno. Se comprobó con una fila construida con la forma exacta del colector (no se repitió con un backend real). 123 pruebas en verde (el conjunto actual).
+Con la cabeza `e0a0c41e` del PR #131, el colector copia a `execution.collection.server_reported` la procedencia que reporta el servidor. El informe y `rows` llevan el `prompt_sha256` único como dato no atestiguado, y `mixed` o `absent` si no hay uno. Se comprobó con una fila construida con la forma exacta del colector (no se repitió con un backend real). 123 pruebas en verde en ese momento.
 
 ## Trazabilidad por criterio de Trello
 
 | Criterio original | Entrega / evidencia | Pendiente |
 | --- | --- | --- |
 | Resultado funcional verificable | Runner ejecutable, 29 casos emparejados, informes de plantilla y [protocolo](../validation/JUP-071-robustness.md) | Medición con un modelo real |
-| Pruebas necesarias añadidas y en verde | `scripts/tests/test_assistant_robustness.py`, validación de la batería y las comprobaciones de arriba | CI al publicar y validación independiente |
+| Pruebas necesarias añadidas y en verde | `scripts/tests/test_assistant_robustness.py`, validación de la batería y las comprobaciones de arriba | CI del PR #136 en verde, revisión de Víctor y validación de Paris del instrumento; falta la validación de la tarjeta completa |
 | Documentación y decisiones actualizadas | Protocolo, OpenSpec activo, esta evidencia y la continuidad | Cambios de procedencia cuando haya una medición real |
 | Pull request revisado y vinculado | PR #136, fusionado el 2026-10-16: revisión de Víctor (aprobada sobre `5105d44a`) y validación de Paris (comentario sobre `8b02ab7e`). El PR #90 se cerró sin integrar | Ambas revisiones son del instrumento y la línea base offline, no de la tarjeta completa; falta todo el grupo 6 |
 | Validación funcional y evidencia enlazadas | Informes sanitizados reproducibles y las verificaciones anteriores | La validación del instrumento la publicó Paris en el PR #136; no se atribuye ninguna ejecución a quien no la hizo |
@@ -108,4 +108,4 @@ La rama pasó siete pasadas adversariales automatizadas y dos auditorías de coh
 
 La separación `template_mock`/`live_unverified` es deliberada: el endpoint no atestigua generación y el informe no distingue una plantilla servida por HTTP de un runtime desconocido más que por lo que declara el operador. La evaluación semántica sigue dependiendo de personas; las comprobaciones numéricas son las de JUP-070 con sus limitaciones documentadas (solo se mira la etiqueta anterior a la cifra: un `fail` numérico se revisa a mano antes de atribuirlo al asistente). No se afirma cobertura completa de ambigüedad, relevancia de retrieval, latencia ni ausencia de alucinación.
 
-Siguiente paso: revisión y validación humanas; acordar con quien lidera JUP-123 cómo se puntúan las respuestas con citas del chat real; con el chat activado con un modelo, un presupuesto acordado y juicios humanos, tres campañas iguales con el colector de JUP-123. El cierre requiere además un PR revisado e integrado y la evidencia enlazada por quien lidera.
+Siguiente paso: revisión y validación humanas; acordar con quien lidera JUP-123 cómo se puntúan las respuestas con citas del chat real; con el chat activado con un modelo, un presupuesto acordado y juicios humanos, tres campañas iguales con el colector de JUP-123. El PR #136 ya integró el instrumento; el cierre de la tarjeta requiere además lo anterior y la evidencia enlazada por quien lidera.
