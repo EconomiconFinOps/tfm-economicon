@@ -75,7 +75,7 @@ def test_unknown_or_manipulated_rule_operand_or_operator_rejected():
 
 
 def test_document_rule_propagates_exact_source_and_identical_user_rule_needs_no_artificial_cite():
-    document='# Policy\n## Changes\nrelative_delta >20 % AND absolute_delta >12 EUR/day'
+    document='# Policy\n## Changes\nrelative_delta >20 % AND absolute_delta >12 EUR/day\n## Next\nOther policy.'
     question='¿Se cumple la regla?\n\nBaseline 80 EUR/día; observado 96 EUR/día.'
     q=catalog(question,document)
     result=render_response(response(q),[],quantities=q)

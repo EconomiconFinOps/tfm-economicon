@@ -1,5 +1,11 @@
 ## Estado vigente — 16/10/2026
 
+Decisión posterior del usuario: C1/C3 aceptados, C2 sustituido por subagentes
+revisor y validador separados. El impedimento humano anterior queda superado;
+no simular reviews humanas/oficiales. Revisor detecta R1/R2 (premisas numéricas
+descartadas y regla parcial), ambos P1 en a7. Corrección offline pendiente;
+N5actual no lanzada ni gasto nuevo. Un producto corregido no hereda las84N3.
+
 Corrección012a7f9502d:213Windows/213Linux, replay167 y2builds estándar conformes.
 N3DeepSeek/CoreWeave de banco1.0.1/corpus54 COMPLETA:84respuestas conformes
 localmente,495checks(327banco/168calidad),84costes observados0.176265160USD.
@@ -32,13 +38,15 @@ externa `B-local-readiness-audit-v1.json`; no nuevas campañas o gasto.
   - Reabierto al congelar la regresión: A8ea5a0c4/develop0543c5ee incorporan JUP-038. Merge local de develop con dos resoluciones y cinco adaptaciones de A;39 archivos de aplicación idénticos, semántica B intacta.550 backend PASS/141 omisiones SQL y1354 frontend PASS; tipos/lint/build conformes. Pendientes Linux/SQL del candidato conjunto antes de cerrar de nuevo1.3.
   - Candidato7be: regresión Linux1747 recogida (1689 PASS/58 SKIP,0 FAIL/ERROR), tres OOM previos conservados y resolución por procesos separados, sin cambiar aserciones. Pgvector20 PASS cubre6 omisiones del chat y añade14 contratos existentes, sin doble suma. Cockroachv4 agotó el plazo al preparar el esquema, sin JUnit; v5 terminó194 PASS/2 FAIL sobre196. Ambos fallos conservados. fba415f2 corrige sólo dos pruebas (metadatos generation y ventana de observación de deadline, con nuevas aserciones HTTP); v8 no ejecutó processor por tokenizer ausente, repuesto con SHA fijo sin versionarlo; v9 repite17 nativas PASS y8 offline (2 PASS/6 SKIP). Equivalencia de helpers/aplicación/build y todos los hashes JUnit/log verificados:1747 chat conformes con58 SKIP cubiertos nativamente,216 ejecuciones SQL/pgvector conformes. Fallos originales conservados, producto7be/pruebasfba explícitos. Buildv7 en curso; navegador/coexistencia física mantienen su alcance pendiente. Sin nuevas inferencias ni aceptación; no cerrar1.3 aún.
   - Cierre técnico propio:1747 chat con toda omisión cubierta en SQL,216 ejecuciones nativas conformes, frontend1354 PASS, tres builds/activación365 hashes y UI001/006/007/008 conformes. Producto7be/pruebasfba separados, fallos previos conservados. No traslada aceptación de A; coexistencia física de slots sigue sin ejecutar por pool ajeno y reviews humanas siguen independientes.
-- [ ] 1.4 Acordar criterios obligatorios y calidad con revisores.
+- [x] 1.4 Acordar criterios obligatorios y calidad con revisores.
+  - Usuario acepta C1/C3 y establece excepción C2: dos subagentes separados, sin validación humana por plazo. Acepta criterios/alcance, no el producto ni una review oficial.
 
 ## 2. Medición
 - [x] 2.1 Implementar colector del API, procedencia y reserva de coste.
 - [x] 2.2 Verificar entorno aislado y contabilidad viva para la baseline a817382b.
 - [x] 2.3 Congelar y recoger baseline N3 completa (84/84, con 7 fallos preservados).
-- [ ] 2.4 Resolver incertidumbres con adjudicación independiente.
+- [x] 2.4 Resolver incertidumbres con adjudicación independiente.
+  - Excepción humana explícita: validador subagente separado; ratifica FAIL012históricos y añade FAIL de consistencia023r3, conservando el original incierto. N3a7:84/84 y495checks conformes en contraste asistido; no humano, test ciego o aceptación del nuevo código. Informes externos B-assisted-validation-N3-20261016-v1.
 
 - [x] 2.5 Recoger N3 del candidato e23e495b:84/84 recibos verificados,78completed/6failed conservados; costes desconocidos con reserva íntegra, no aceptación semántica.
 - [x] 2.6 Recoger y revisar localmente N3 de c7e2d561:84/84 recibos,83 completed/1 failed;70 conformes/7 inciertas/6 fallos de contenido/1 técnico. Snapshot258 hashes; no adjudicación independiente ni aceptación.

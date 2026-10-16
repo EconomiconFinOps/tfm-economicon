@@ -20,6 +20,57 @@ def normalized(value):
     return ''.join(c for c in unicodedata.normalize('NFKD', value.casefold()) if not unicodedata.combining(c))
 
 
+def scenario_clauses(text):
+    """Yield complete statements; decimal points are not statement separators."""
+    return [part.strip() for part in re.split(r'[;\n]+|\.(?=\s|$)', text) if part.strip()]
+
+
+def scenario_request(question, kind):
+    """Recognize a complete supported request before setting aside its text."""
+    request = normalized(question.split('\n\n', 1)[0]).strip()
+    if len(request) > 500:
+        return False
+    patterns = {
+        'boolean': (r'(?:se (?:cumple|activa) (?:la|esta) regla'
+                    r'|(?:este|el) salto de (?:gasto|coste) es una anomalia candidata segun la regla(?: mvp)?'
+                    r'|(?:un|el) aumento de -?\d+(?:[.,]\d+)?\s+[a-z€£$¥]{1,8}/(?:dia|day|hora|hour|mes|month) activa la regla'
+                    r'|(?:evalua|comprueba) si se cumple la regla'
+                    r'|does (?:the|this) rule (?:trigger|hold))'),
+        'zero_change': (r'(?:que porcentaje (?:aumento|ha aumentado|incremento|ha incrementado) el (?:gasto|coste)'
+                        r'(?: de (?:este|un) recurso nuevo)?'
+                        r'|(?:cual es|calcula|indica) (?:la )?(?:variacion|cambio) relativ[oa] del (?:gasto|coste)'
+                        r'|what percentage did (?:the )?cost increase)'),
+        'zero_percentage': (r'(?:que porcentaje del coste elegible queda (?:sin asignar|no asignado)'
+                            r'|cual es el porcentaje (?:de )?unallocated'
+                            r'|what percentage of (?:the )?eligible cost is unallocated)'),
+    }
+    return bool(re.fullmatch(r'¿?' + patterns[kind] + r'[?.]?', request))
+
+
+def explicit_quantity_roles(question, pattern, *, extra_clause=None):
+    """Bind complete declarations, never numeric substrings in qualified prose.
+
+    The optional scenario prefix contains only the declared scope label. Every
+    remaining clause must be a complete role/value/unit declaration or belong
+    to the caller's closed grammar. Unsupported qualifications retain the
+    general clarification path; this is not a natural-language truth extractor.
+    """
+    body = question.split('\n\n', 1)[-1].strip()
+    body = re.sub(r'(?i)^Contexto del escenario:\s*', '', body)
+    scope = (r'(?i:Escenario(?: sintético| hipotético)?|Scenario(?: synthetic| hypothetical)?)'
+             r'(?:\s+[A-Za-z0-9_-]+,\s+[A-Z][A-Za-z0-9_-]*(?:\s+[A-Z][A-Za-z0-9_-]*){0,4})?:\s*')
+    body = re.sub('^' + scope, '', body)
+    matches = []
+    for clause in scenario_clauses(body):
+        pieces = re.split(r'\s+(?:y|and)\s+', clause, flags=re.I)
+        roles = [pattern.fullmatch(piece) for piece in pieces]
+        if all(roles):
+            matches.extend(roles)
+        elif extra_clause is None or not extra_clause(clause):
+            return []
+    return matches if len(matches) == 2 else []
+
+
 def classification_request(question):
     """Conservative lexical routing of the current request, never retrieved text.
 
@@ -346,6 +397,8 @@ def required_zero_percentage(catalog):
     """
     from app.core.chat_expressions import canonical_decimal, normalized_unit
     question = getattr(catalog, 'classification_question', '')
+    if not scenario_request(question, 'zero_percentage'):
+        return None
     request = normalized(question.split('\n\n', 1)[0])
     if not re.fullmatch(r'[¿]?[^?!.;\n]+[?!.]?', request):
         return None
@@ -373,15 +426,13 @@ def required_zero_percentage(catalog):
     if not source_ids:
         return None
     pattern = re.compile(r'\b(total elegible|coste total elegible|total eligible cost|eligible cost|unallocated)\s*[:=]?\s*(-?\d+(?:[.,]\d+)?)\s*(EUR|USD|GBP|JPY|CHF|CAD|AUD|CNY|INR)\b', re.I)
-    matches = list(pattern.finditer(question))
+    matches = explicit_quantity_roles(question, pattern)
     if len(matches) != 2:
         return None
     users = {key: entry for key, entry in catalog.items()
              if any(p.get('kind') == 'user' for p in entry.get('provenance', []))}
     roles = {}
     for match in matches:
-        if re.search(r'\b(?:no|non|not|sin)\s*$', normalized(question[:match.start()])):
-            return None
         role = 'numerator' if normalized(match[1]) == 'unallocated' else 'denominator'
         if role in roles:
             return None

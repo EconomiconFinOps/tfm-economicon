@@ -25,6 +25,9 @@ Objetivo marcado `blocked` tras tres turnos del mismo impedimento de cierre;
 retomar sólo ante decisiones nuevas o evidencia accionable. No presupuesto agotado.
 Propuesta C1/C2/C3 para revisores y borrador Discord preparados por petición humana;
 no enviados ni acordados. Detalle en evaluación local e informe de revisión.
+Actualización posterior: usuario aceptaC1/C3 y sustituyeC2 por subagente revisor y
+otro validador. Revisión asistida encuentra R1/R2 de premisas booleanas; N5 no
+lanzada, corrección offline en curso. Las84muestras previas se preservan.
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |

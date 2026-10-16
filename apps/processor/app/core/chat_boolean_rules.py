@@ -3,7 +3,7 @@ import hashlib
 import json
 import re
 from decimal import Decimal
-from app.core.chat_rules import normalized, validate_provenance
+from app.core.chat_rules import normalized, validate_provenance, explicit_quantity_roles, scenario_clauses, scenario_request
 
 _NUMBER = r"-?\d+(?:[.,]\d+)?"
 _UNIT = r"(?:%|[A-Za-z€£$¥]{1,8}(?:/(?:día|dia|day|hora|hour|mes|month))?)(?![\w/])"
@@ -13,14 +13,15 @@ _RULE = re.compile(_CONDITION + r"\s+(AND|OR|Y|O)\s+" + _CONDITION, re.I)
 _ROLE = re.compile(r"\b(baseline|base|observado|observada|observed|current)\b(?:\s+(?:diario|diaria|daily))?(?:\s+el\s+\d{4}-\d{2}-\d{2})?\s*[:=]?\s*("+_NUMBER+r")\s*("+_UNIT+r")", re.I)
 
 
-def _parse(text):
+def _parse(text, *, complete=False):
     from app.core.chat_expressions import normalized_unit, canonical_decimal
-    result=[]
-    for match in _RULE.finditer(text):
-        prefix=re.split(r'[.;!?\n]',text[:match.start()])[-1]
-        if re.search(r'\b(?:no|not|never|nunca|sin)\b',prefix,re.I):continue
-        if (re.match(r'\s+(?:AND|OR|Y|O)\b',text[match.end():],re.I)
-                or re.search(r'\b(?:AND|OR|Y|O|not|no|sin)\s*$',text[:match.start()],re.I)):
+    result=[]; offset=0
+    for clause in scenario_clauses(text):
+        start=text.index(clause, offset); offset=start+len(clause)
+        literal = re.sub(r'(?i)^\s*(?:(?:regla(?:\s+MVP)?|aplicar|rule)\s*:?\s*)?', '', clause)
+        match = _RULE.fullmatch(literal)
+        if match is None:
+            if complete:return []
             continue
         groups=match.groups(); conditions=[]
         for metric,operator,value,unit in (groups[:4],groups[5:]):
@@ -30,9 +31,12 @@ def _parse(text):
             try:value=canonical_decimal(value)
             except ValueError:break
             conditions.append({'metric':metric,'relation':{'=':'eq','==':'eq','>':'gt','<':'lt','>=':'gte','<=':'lte','≥':'gte','≤':'lte'}[operator],'value':value,'unit':unit})
-        if len(conditions)!=2 or {c['metric'] for c in conditions}!={'relative_change','difference'}:continue
+        if len(conditions)!=2 or {c['metric'] for c in conditions}!={'relative_change','difference'}:
+            if complete:return []
+            continue
         conditions.sort(key=lambda item:item['metric'])
-        result.append({'conditions':conditions,'combinator':'AND' if groups[4].upper() in ('AND','Y') else 'OR','literal':match.group(),'start':match.start(),'end':match.end()})
+        left=start+len(clause)-len(literal)
+        result.append({'conditions':conditions,'combinator':'AND' if groups[4].upper() in ('AND','Y') else 'OR','literal':match.group(),'start':left,'end':left+len(literal)})
     return result
 
 
@@ -45,13 +49,20 @@ def boolean_catalog(question,sources,catalog):
     the terminal rather than selecting a convenient rule.
     """
     from app.core.chat_expressions import normalized_unit, canonical_decimal
+    if not boolean_request(question):
+        return []
     candidates=[]
     for rule in _parse(question):candidates.append({**rule,'origin':'user','source_ids':[]})
-    for source in sources:
-        for span in validate_provenance(source):
-            text=source['content'][span['start']:span['end']]
-            for rule in _parse(text):
-                candidates.append({**rule,'origin':'corpus','source_ids':[source['id']]})
+    from app.core.chat_policy_sections import complete_sections
+    headings={span['section'] for source in sources for span in validate_provenance(source)
+              if span['section'] and re.fullmatch(
+                  r'(?:Changes|Cambios|Rules?|Reglas?(?: MVP)?(?: de anomal[ií]as)?|Anomalies|Anomal[ií]as(?: de coste)?)',
+                  span['section'], re.I)}
+    for heading in headings:
+        for section in complete_sections(sources, heading):
+            for rule in _parse(section['body'], complete=True):
+                candidates.append({**rule,'origin':'corpus',
+                    'source_ids':[source['id'] for source in section['sources']]})
     grouped={}
     for candidate in candidates:
         identity=json.dumps([candidate['conditions'],candidate['combinator']],sort_keys=True)
@@ -61,7 +72,8 @@ def boolean_catalog(question,sources,catalog):
         # citation to duplicate it. Identical corpus overlaps retain one source.
     if len(grouped)!=1:return []
     roles={'baseline':set(),'current':set()}
-    for match in _ROLE.finditer(question):
+    matches = explicit_quantity_roles(question, _ROLE, extra_clause=lambda clause: bool(_parse(clause, complete=True)))
+    for match in matches:
         role='baseline' if match[1].casefold() in ('baseline','base') else 'current'
         try:value=canonical_decimal(match[2])
         except ValueError:continue
@@ -82,8 +94,7 @@ def boolean_catalog(question,sources,catalog):
 
 
 def boolean_request(question):
-    request=normalized(question.split('\n\n',1)[0])
-    return bool(re.search(r'\b(?:activa|cumple|anomalia candidata|candidata|trigger|satisfies)\b',request)) and not re.search(r'\b(?:sin|no eval|significa|define|what is)\b',request)
+    return scenario_request(question, 'boolean')
 
 
 def boolean_definition(rules):
@@ -147,6 +158,8 @@ def required_zero_change(catalog):
     """
     from app.core.chat_expressions import normalized_unit, canonical_decimal
     question = getattr(catalog, 'classification_question', '')
+    if not scenario_request(question, 'zero_change'):
+        return None
     request = normalized(question.split('\n\n', 1)[0])
     if getattr(catalog, 'boolean_requested', False) or getattr(catalog, 'classification_requested', False):
         return None
@@ -159,7 +172,8 @@ def required_zero_change(catalog):
         return None
     users = {key: entry for key, entry in catalog.items()
              if any(p.get('kind') == 'user' for p in entry.get('provenance', []))}
-    matches = list(_ROLE.finditer(question))
+    matches = explicit_quantity_roles(question, _ROLE,
+        extra_clause=lambda clause: normalized(clause) in ('sin historial previo', 'no hay historial previo'))
     if len(matches) != 2:
         return None
     roles = {}

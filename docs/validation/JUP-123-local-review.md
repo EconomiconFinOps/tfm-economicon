@@ -4,6 +4,44 @@ Verificado el 16/10/2026. Origen: chat
 `01a1270c-e332-7462-9c90-706d49ade92c`.
 **Código preparado para revisión; B no aceptada, publicada ni activada de forma permanente.**
 
+## Decisión humana y revisión asistida posterior — 16/10/2026
+
+El usuario acepta C1 y C3 y sustituye C2 por un subagente revisor y otro validador,
+por falta de plazo para validación humana. Esta excepción permite dictámenes
+asistidos separados; no se atribuye a Víctor o Lucía una revisión que no hicieron,
+ni se publica una aprobación oficial. El impedimento anterior de criterios queda
+superado. El máximo acumulado sigue siendo30USD y todas las reservas permanecen.
+
+El validador asistido contrastó84N3 de a7 y495checks: conformes dentro del banco
+conocido, con84payloads RAG,114citas y44fragmentos distintos comprobados. Ratifica
+FAIL histórico012r1/012r5 y añade FAIL de consistencia a023r3 por pedir conexión
+al tenant; conserva el original incierto. Dictámenes externos
+`B-assisted-validation-N3-20261016-v1.{md,json}`; JSON SHA
+`da0613162312e7a00687325e21103e4bf0fa9c47f4cc7e0fa518f6f17f69f2dc`.
+
+El revisor REQUEST CHANGES encontró R1/R2 fuera del banco conocido: operandos
+negados/descartados y reglas con condiciones adicionales forzaban conclusiones
+numéricas, también en las rutas de cero. Su primer contraste del parche resolvió
+los contraejemplos iniciales pero detectó que aún se ignoraban condiciones del
+primer párrafo. La nueva corrección valida peticiones completas y declaraciones
+de datos/reglas completas; fuentes booleanas requieren ambos límites originales
+de sección y una regla sin calificadores adicionales no soportados. Comparaciones,
+cero y monedas conservan evaluación tipada; la ruta general permanece disponible
+para aclaraciones. No es comprensión general ni una prueba del proveedor.
+
+Prueba nueva de biblioteca estándar:6tests,47variantes por servicio y paridad
+de respuesta pública; streaming del processor a1/17/8192caracteres coincide con
+final. Las primeras ejecuciones del arnés fallaron por importar un parser sólo
+existente en processor y por una aclaración de fixture sin basis/next_action;
+se corrigió únicamente el arnés, sin relajar expectativas. Los operadores rojos
+y dictámenes anteriores se preservan. Falta re-revisión de esta versión final,
+replay del banco con esquema real y verificación nativa/build del nuevo producto.
+
+N5 NO lanzada y entorno no activado: ledger1365/eb664308 y servicios anteriores
+se conservaron. No sumar las84respuestas de a7 como N5 de un producto distinto.
+La continuación de56muestras propuesta suponía combinación fija; el nuevo código
+necesita un plan con alcance veraz, después de cerrar los hallazgos de revisión.
+
 ## Auditoría del objetivo local — 16/10/2026
 
 La comprobación offline actual verificó los 203 archivos del paquete N3 final y

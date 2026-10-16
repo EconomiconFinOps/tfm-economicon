@@ -9,6 +9,30 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 16/10/2026
 
+### Criterios aceptados y revisión asistida iniciada — 16/10/2026
+
+Respuesta humana: «No nos da tiempo a hacer validaciones humanas, Se aceptan los
+criterios 1 y 3 y sustituye el 2 por un subagente revisor y otro validador».
+C1 y C3 quedan aceptados por el usuario: requisitos originales, cero fallos
+bloqueantes, editoriales menores separados y N5 de28casos con combinación fija,
+30USD y todas las reservas. C2 se sustituye por dos dictámenes asistidos separados,
+sin atribuir revisión humana u oficial de GitHub. No autoriza publicar B, merge,
+activación permanente o un mensaje Discord nuevo. El bloqueo anterior por falta
+de decisión queda superado por esa respuesta, aunque el goal tool siga stale.
+
+Subagentes `/root/jup123_revisor_cierre` y `/root/jup123_validador_cierre` iniciados.
+Revisor REQUEST CHANGES sobre a7: R1 vincula operandos negados/descartados; R2 toma
+una subregla numérica e ignora condiciones adicionales. Reproducción offline con
+5contraejemplos por servicio y3controles, paridad backend/processor. Dictamen
+`B-assisted-review-20261016-v1.md`; originales y operador externos preservados.
+Validador contrasta84N3 e históricos012/023, informe pendiente al corte.
+
+No se lanzóN5 ni se activó el entorno: lectura remota confirma1365filas/eb664308,
+temporales parados y B anterior sano. Antes de gasto se corrigen R1/R2. Un cambio
+de producto exige revisar el plan: NO sumar las84mediciones de a7 como N5 de una
+fuente corregida. Se preservan todas las muestras, costes y reservas. Ninguna
+autorización de presupuesto o esta excepción permite falsear esa homogeneidad.
+
 Petición humana posterior: preparar resumen concreto de decisiones para revisores
 y borrador Discord. Añadida propuesta C1/C2/C3 en
 [informe local](../validation/JUP-123-local-review.md#decisiones-concretas-para-los-revisores--propuesta-del-16102026):

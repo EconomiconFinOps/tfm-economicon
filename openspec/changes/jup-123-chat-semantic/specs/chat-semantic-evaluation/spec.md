@@ -1,5 +1,26 @@
 ## ADDED Requirements
 
+### Requirement: Premisas numéricas y reglas consumidas como declaraciones completas
+Los terminales de umbrales y denominador cero MUST validar la petición completa
+y los roles de cantidades mediante una gramática explícita. La mera mención de
+un número no establece una premisa aplicable. No se descartan condiciones del
+primer párrafo, calificadores de datos, excepciones o condiciones de reglas.
+
+#### Scenario: Una cantidad o regla tiene una calificación no soportada
+- **WHEN** la petición o el escenario contiene una cantidad negada, descartada, alternativa, incierta, o una regla con una condición adicional no soportada
+- **THEN** el servidor no fuerza una conclusión tipada sobre esa premisa como si fuera conocida
+- **AND** mantiene una ruta de aclaración sin atribuirle garantías generales de comprensión del lenguaje o calidad del proveedor
+
+#### Scenario: Una regla booleana procede de un documento
+- **WHEN** se pretende compilar una regla documental para un escenario hipotético
+- **THEN** se acreditan ambos límites originales de su sección y se consume su declaración completa dentro de la gramática admitida
+- **AND** una regla truncada o condicionada no se sustituye por la subcadena de sus comparadores numéricos
+
+#### Scenario: Los datos y la regla admitidos son completos
+- **WHEN** la petición, baseline, observado y regla se declaran inequívocamente en la gramática soportada
+- **THEN** se conservan unidades, comparadores estrictos y premisas trivaluadas de división por cero, con paridad entre streaming y final
+- **AND** backend y processor aplican la misma vinculación
+
 ### Requirement: Separar presencia de tags y suficiencia de asignación
 El servidor MUST distinguir ausencia de una clave, conformidad con tagging y
 suficiencia de información para asignar el coste. Una preferencia del tipo de
