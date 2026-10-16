@@ -508,6 +508,10 @@ def rows_v1(report):
     for name, c in report["categories"].items():
         require(isinstance(name, str), "invalid category")
         checked_counts(c, f"category {name}")
+    require(isinstance(report.get("perturbations"), dict) and report["perturbations"], "report has no perturbation types")
+    for name, c in report["perturbations"].items():
+        require(isinstance(name, str), "invalid perturbation type")
+        checked_counts(c, f"perturbation type {name}")
     require(all(isinstance(c, dict) and isinstance(c.get("checks"), dict) and type(c.get("reduced_coverage")) is bool
                 for c in report["cases"]), "report cases are malformed")
     # The tool never verifies which model ran (JUP-035 does not attest it), so a declared live alias is not published as the
@@ -542,7 +546,9 @@ def rows_v1(report):
                                numerator=totals["pass"], denominator=denominator))
         else:
             results.append(row("rates", metric, "all", "tasa", "human", "not_measured", denominator=denominator))
-    results.append(row("review", "reduced_coverage", "all", "recuento", "automatic", "measured",
+    for name, c in report["perturbations"].items():
+        results += case_rows("perturbation_type", name, c)
+    results.append(row("review", "reduced_coverage", "all", "recuento", "human", "measured",
                        value=sum(1 for c in report["cases"] if c["reduced_coverage"])))
     checks = [v for c in report["cases"] for k, v in c["checks"].items() if k.startswith("numbers-")]
     require(all(v in HUMAN_STATES for v in checks), "numeric checks must be pass or fail")

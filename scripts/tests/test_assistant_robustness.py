@@ -1429,5 +1429,30 @@ class RowsReviewTests(unittest.TestCase):
             self.assertIn(needle, text)
 
 
+class RowsDashboardGuideTests(unittest.TestCase):
+    """The dashboard guide (JUP-121) classifies review marks as human and reads perturbation types."""
+
+    def test_reduced_coverage_is_a_human_mark(self):
+        rows = robustness.rows_v1(scored())["results"]
+        row = next(r for r in rows if r["metric_id"] == "reduced_coverage")
+        self.assertEqual(row["judgment"], "human")
+
+    def test_every_perturbation_type_has_its_case_states(self):
+        report = scored()
+        rows = robustness.rows_v1(report)["results"]
+        for name, counts in report["perturbations"].items():
+            states = {r["status"]: r for r in rows if (r["grp"], r["behavior"]) == ("perturbation_type", name)}
+            with self.subTest(type=name):
+                self.assertEqual(set(states), set(robustness.OUTCOMES))
+                self.assertEqual(sum(r["count"] for r in states.values()), counts["total"])
+
+    def test_malformed_perturbation_counts_are_rejected(self):
+        report = scored()
+        report["perturbations"][next(iter(report["perturbations"]))]["total"] += 1
+        with self.assertRaises(robustness.Error):
+            robustness.rows_v1(report)
+
+
+
 if __name__ == "__main__":
     unittest.main()
