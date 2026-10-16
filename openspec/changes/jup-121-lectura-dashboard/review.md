@@ -52,3 +52,16 @@ Veredicto `accept`, sin hallazgos BLOCKING. Ejecutó por su cuenta la suite comp
 - Dos ejecuciones del mismo minuto y tipo darían la misma cabecera de columna en la matriz.
 - El título «Latencia p95 del backend (todas las rutas, tráfico real)» se trunca en un panel de un tercio de ancho (el texto completo está en la descripción).
 - La expresión de la tasa de error ya no es idéntica a la del dashboard técnico (JUP-043), que no se toca.
+
+## Human Approval
+
+- Change: jup-121-lectura-dashboard
+- Approval type: post-review
+- Decision: approved
+- Approver: Victor
+- Date: 2026-10-16
+- Review accepted: yes
+- Checks accepted: yes
+- Documentation synchronized: yes
+- Archive decision: archive
+- Notes: 11/11 tareas; evaluation-dashboard:test 1801 OK; QA independiente accept sin BLOCKING; mutación 98,0 % con 7 equivalentes. Excepción de entorno del DoD: la regresión completa sigue en rojo por las pruebas del processor de JUP-035 (falta tokenizer.json generado), ajenas al change. Pruebas congeladas actualizadas con parches aplicados por el usuario. Hallazgos diferidos en RF-121-001. Pendiente fuera de este gate: revalidación de Paris y revisión técnica de Alejandro; JUP-071 sigue sin informe.
