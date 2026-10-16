@@ -25,16 +25,18 @@ Objetivo marcado `blocked` tras tres turnos del mismo impedimento de cierre;
 retomar sólo ante decisiones nuevas o evidencia accionable. No presupuesto agotado.
 Propuesta C1/C2/C3 para revisores y borrador Discord preparados por petición humana;
 no enviados ni acordados. Detalle en evaluación local e informe de revisión.
-Actualización posterior: usuario aceptaC1/C3 y sustituyeC2 por subagente revisor y
-otro validador. Revisión asistida encuentra R1/R2 de premisas booleanas; N5 no
-lanzada. Parche d965 revisado/validado focalmente, carga real18PASS y2builds/
-224hashes conformes; fallos anteriores conservados. Oldprocessor restaurado
-sano. Las84muestras a7 se preservan; propuesta140de d965 NO EJECUTADA y cambio
-de alcance autorizado explícitamente. N5 NUEVA140v2/hash8af94f71 EN CURSO,
-controlador1322074/start78104892; no repetir. Arnésv5 revisado/validado,
-preflight vivoPASS. B anterior temporalmente pausado, restauración al terminar.
-Dos dictámenes consolidados favorables con alcances/limitaciones.
-El impedimento humano anterior queda superado.
+Estado posterior vigente16/10: C1/C3 aceptados y C2 sustituido por subagentes
+separados. Producto d965 revisado,197identidades nativas por herencia,110variantes,
+84esquemas/69renders offline y2builds/224hashes conformes; rojos preservados.
+N5 nueva140 autorizada. V5 terminó por OOM backend tras40/234checks conformes,
+B anterior restaurado sano y paquete parcial103archivos/manifestf9290ccf congelado.
+V7 continúa sólo100faltantes desde013r2, PID1601495/start78342579, mismos IDs/
+imágenes/plan/modelo; backend768MiB y margen384, segmentos operacionales explícitos.
+Preflight realPASS/primera continuación completa(corte41/140). V6 no se lanzó
+por discrepancia LF/CRLF de preparación, preservada y corregida por bytes.
+B antiguo backend/processor temporalmente pausados, restauración v7 al terminar.
+Cap30/reservas y límites4.5/.1/vigencia17oct18París intactos. Cierre v4 preparado,
+NO ejecutado; no N5 completa ni aceptación. Antiguo impedimento humano superado.
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |

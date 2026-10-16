@@ -8,7 +8,10 @@ descartadas y regla parcial), ambos P1 en a7. Corrección d965 revisada por sepa
 de recursos/build conservados; mismo processor anterior restaurado sano.
 N5 nueva140 en curso, sin repetir muestras antiguas. Un producto corregido no hereda las84N3;
 N5nueva140de d965 autorizada explícitamente, planUTF8v2/hash8af94f71;
-controlador1322074/start78104892 vivo, admisión fresca y prefijo1365 protegido.
+v5 terminó por OOM de backend tras40 conformes/234checksPASS, corte congelado.
+Continuador v7PID1601495/start78342579 desde013r2, sin repetir40; prefijo1405
+protegido, mismo producto/modelo/prompts y backend768MiB con margen384.
+Preflight realPASS y primera continuación completa; N5 aún incompleta.
 Unión197nativas por identidad/herencia y224hashes de imágenes verificados por
 validador; dictámenes consolidados favorables al alcance, no aceptación final.
 

@@ -8,7 +8,7 @@ Verificado el 16/10/2026. Origen: chat
 
 El usuario acepta C1/C3 y sustituye C2 por subagentes revisor y validador
 separados. No quedan pendientes esas decisiones humanas anteriores, ni se
-atribuyen reviews oficiales. La medición N5 nueva sigue pendiente.
+atribuyen reviews oficiales. La N5 nueva está en curso; no hay todavía resultado final de140.
 
 Revisión asistida detectó fallos reales fuera del banco: operandos negados o
 descartados, condiciones adicionales y parámetros de pregunta ignorados.
@@ -22,8 +22,9 @@ Los3fallos de recursos Linux1670 y el build backend fallido621 permanecen
 conservados. Producto final **d965e2cd9c0de3cd4b7efaf224841c93a94cd8c8**
 reconcilia manifest y pin backend, con prueba de carga real/metadata/prompt_version.
 18tests nativos PASS y aprobación focal de ambos subagentes. Dos builds estándar
-terminados,224hashes verificados, sin activación. Mismo processor anterior
-restaurado sano; demás servicios y ledger1365 intactos. Evidencia y hashes en
+terminados y224hashes verificados en el corte previo a la activación. La
+restauración posterior al OOM fue conforme; el entorno anterior vuelve a estar
+temporalmente pausado durante la continuación v7 descrita a continuación. Evidencia y hashes en
 [continuidad](../continuidad/chat-evaluacion-local.md#parche-revisado-y-builds-verificados--16102026).
 
 El validador ratificó las84N3 de a7 y495checks dentro del banco conocido. Ratifica
@@ -32,14 +33,27 @@ tenant, preservando la incertidumbre original. No heredar esas84 como medición
 de d965. La propuesta aceptada C3 añadía56manteniendo la combinación; el humano confirmó
 el cambio a140mediciones nuevas del código corregido, con30USD y reservas
 íntegras. PlanUTF8v2/hash8af94f71 ypolicyc2e070be: nuevaN5 EN CURSO, controlador
-1322074/start78104892; no relanzar. Arnésv5 aprobado ypreflight vivoPASS.
+v5PID1322074/start78104892 terminó tras40 respuestas por OOM del backend de
+pruebas. Las40 pasan234checks,31identidades leídas y9repeticiones exactas dentro
+de esta N5; quedan preservadas en paquete parcial103archivos/manifestf9290ccf.
+Ninguna respuesta antigua a7 rellena el plan corregido.
 
-Revisión y validación consolidadas favorables en sus alcances; medición nueva
-en curso (primeras6respuestas/38checks conformes, no resultado final). Unión nativa197 por identidad/herencia y224hashes de imágenes
-verificados independientemente; no atribuir N3a7 a d965. B sigue
-local, sin publicación, aceptación, merge o activación permanente. Lo siguiente
-conserva auditorías históricas; sus referencias a falta de criterios humanos o
-identidad del código con a7 ya no describen el estado actual.
+Continuación **v7PID1601495/start78342579**: mismo código/modelo/prompts y
+contenedores; sólo backend512→768MiB, margen384y2699MiB disponibles antes de
+arrancar. No latencias bajo entorno idéntico ni afirmación de OOM resuelto para
+toda carga. Preflight realPASS y013r2 primera continuación completada: corte41/140,
+prefijo1405/SHA641c9b88 protegido y todas las reservas intactas. Instalaciónv6
+abortada por CRLF/LF, JSON idéntico y sin llamadas; evidencia conservada. Revisor y
+validador separados aprobaron v7. Observador `observe-B-role-n5-v7.py --compact`;
+no relanzar ni repetir. B anterior backend/processor temporalmente pausados y
+restauración al terminar obligatoria con pruebas nuevas, sin modificar las v5.
+
+Revisión y validación consolidadas favorables en sus alcances;197identidades
+nativas por herencia y224hashes de imágenes verificados. N5 pendiente de llegar
+a140 y825juicios. Cierre nuevo auditorv4/comparadorv3/paquetev3 preparado, no
+ejecutado; compone ambos segmentos y exige restauración real. B local, sin
+publicación, aceptación, merge o activación permanente. Las auditorías históricas
+siguientes conservan su fecha y no reabren el antiguo impedimento humano.
 
 ## Auditoría del objetivo local — 16/10/2026
 

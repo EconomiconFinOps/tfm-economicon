@@ -9,46 +9,76 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 16/10/2026
 
-### N5 nueva autorizada y en marcha — 16/10/2026
+### N5 en curso; continuación tras OOM — 16/10/2026
 
-El humano confirmó140muestras NUEVAS del producto corregido. Controlador único
-PID1322074/start78104892, SHA
-`b849271f941804720b3357d91cfd15e0bd215590eaffd870f4acdd14b3280bac`,
-remote `role-binding-d965e2cd-api-n5-v1/controller-v5`. Fuente d965e2cd,
-planUTF8v2/hash8af94f71, banco1.0.1/corpus54 yDeepSeek/CoreWeaveFP8 fijos.
-No relanzar por timeout ni sumar las84N3previas. Plan inmutable conserva su
-estado de preparación NOT_RUN; la evidencia de ejecución es el handle real.
+El humano confirmó **140 muestras nuevas** de d965e2cd. C1/C3 aceptados y C2
+sustituido por dos subagentes separados; no falta una decisión humana anterior.
+No publicar B ni simular aprobación oficial. Fuente, plan UTF8v2/hash8af94f71,
+banco1.0.1/corpus54, DeepSeek/CoreWeaveFP8/ZDR sin fallback y prompts intactos.
+Plan inmutable NOT_RUN describe preparación; los handles prueban ejecución.
 
-Arnés v5 revisado APPROVE (13contrafactuales) y validador14guardas por herencia
-AST/identidad, lecturasUTF8 explícitas. Preparado remoto
-`B-role-n5-api-prepared-v5.json`, SHA
-`1837265eca723520a371e6dd1a888e2bace78830eb6206ae1caecb6bfa9bf23f`.
-Preflight vivoPASS antes de arrancar: corpus/SQL/historia/ruta/precios/hash/claves
-verificados; admisión fresca en cada operación. Ninguna nueva semilla/clave,
-renovación, ampliación de límites o liberación de reservas.
+**Continuador vivo v7 PID1601495/start78342579**, controller SHA68ea07b5,
+`role-binding-d965e2cd-api-n5-v1/controller-v7`. Instalado/preparado v7 SHA
+`2afa1f80bb7efbd9b8cedb3ce1009074178f3460c9e6f02708564d1dbd01decc`.
+Observador correcto `observe-B-role-n5-v7.py --compact`. No relanzar v5/v6/v7
+por timeout ni repetir muestras. V6 no se lanzó.
 
-Runtime nuevo `economicon-jup123-rb-d965e2cd`, SQL`jup123_rb_d965e2cd`, vectores
-históricos54reutilizados sin reescribir. API29957/processor29958/proxy44004,
-red10.232.125/24; límites512/768/768MiB y384MiB margen. Backend/processor
-anteriores propios TEMPORALMENTE PAUSADOS conforme permiso humano; el controlador
-restaura mismos IDs/imágenes sanos al terminar. Otros servicios y proxy compartido
-intactos. Setup1308701 ya terminalACTIVE_NO_INFERENCE, no repetir. No afirmar
-que el entorno anterior esté restaurado mientras esta campaña siga activa.
+V5 terminó STOPPEDstep123phase2 tras40 respuestas; el backend fue OOMKilled/137
+al mismo instante. Processor/gateway no OOM. Restauración v5 exit0 comprobó
+cero operaciones activas y restauró el B antiguo sano con mismos IDs/imágenes.
+Las40 están conformes:234PASS(154banco+80calidad), sin fallos/dudas;31identidades
+leídas y9 carries exactos dentro de esta campaña, sin etiquetas históricas.
+Dictamen `B-assisted-validation-role-n5-partial040-20261016-v1.json`/SHA9cd3d4a7.
+Paquete parcial103archivos, manifestSHAf9290ccf. N5 aún incompleta, no aceptación.
 
-Corte parcial validado: primeras6respuestas001–006r1 conformes/38checksPASS por
-subagente validador, sin heredar etiquetas de a7; no resultado final de140.
-`/root/jup123_validador_cierre` es único escritor de nuevos juicios/batches.
-Vistas/contextos en `role-binding-d965e2cd-api-n5-v1-*`; exports/scorer
-`export-B-role-n5-public-v1.py`, `export-B-role-n5-contexts-v1.py` y
-`review-B-role-n5-v1.py`. Observador `observe-B-role-n5-v1.py --compact` sólo
-lee handles/recibos/ledger y verifica prefijo1365/eb664308. `freeze-B-role-n5-final-v1.py` preparado pero NO ejecutado: exige140/825juicios y restauración real;
-fallos/incertidumbres nunca se convierten en PASS por promedio.
+Antes de reactivar se congelaron1405filas/SHA641c9b88 y139artefactos reales:
+40recibos/raw/costes, terminales y OOM. V7 preserva ese prefijo y todos los holds.
+La instalación v6 rechazó diferencia CRLF(local12707177)/LF(remotoa3a33cc6),
+JSON idéntico. Ninguna llamada o activación en ese intento; scripts instalados y
+parcial040 conservados. `B-role-n5-resume-newline-reconciliation-v7.json` registra
+la corrección de serialización binaria LF; policyv7 SHAd696a9b7. No ocultar el
+rechazo de preparación ni atribuirlo al modelo.
 
-Trello actualizado sólo por puente; descripción SHA
-`56f5a85af0cd64c1eeb07b0e675e8ed37b82f6ca684ce6d4ffad72d1d60e5f67`,
-16214caracteres, historia y metadatos preservados. Automatización existente
-actualizada conservando horario: prevalece nueva autorización y proceso vivo,
-no el viejo bloqueo de criterio humano. B local, sin GitHub/merge/Discord nuevos.
+Revisor APPROVE v7 en `B-role-n5-resume-review-v7.md`/SHA469a7214 y validador
+separado `B-assisted-validation-n5-resume-v7-20261016-v2.json`/SHA5a132525:
+15contrafactuales de review y18de validación con herencia explícita; no repetir
+suites. Activación real y preflight vivo PASS; primera continuación013r2
+completa/verificada/coste observado, corte41recibos/1406filas. Esa muestra nueva
+no hereda por estar completed su juicio semántico.
+
+Runtime mismo `economicon-jup123-rb-d965e2cd`, mismos tres IDs/imágenes, SQL
+`jup123_rb_d965e2cd`, vectores54reutilizados sin semilla. Sólo backend512→768MiB;
+processor/gateway siguen768, total2304, margen mínimo384 comprobado por fase.
+Disponibles2699MiB antes de arrancar; memoria efectiva verificada. Muestra41
+inicia segmento operacional distinto: no comparar latencias como entorno idéntico.
+No demuestra por sí solo resuelto todo OOM. API29957/processor29958/proxy44004.
+Antiguos backend/processor propios TEMPORALMENTE PAUSADOS con permiso vigente;
+v7 debe restaurar mismos IDs/imágenes sanos al terminar y escribir pruebas NUEVAS
+`runtime-restored-v7.json`/`controller-v7/restoration-status.json`, sin pisar v5.
+Otros servicios/proxy compartido conservados. No activación permanente.
+
+Máximo30USD y reservas históricas13.99052050USD intactas; mismas claves4.5/0.1
+hasta17/10a18:00París. Admisión fresca y margen individual antes de cada operación;
+no aumentar/renovar/crear claves, resetear o liberar reservas por inferencia.
+Cuenta/cotas no son factura ni atribución exacta a B.
+
+Validador `/root/jup123_validador_cierre` es único escritor de notas/batches;
+siguiente batch008 tras el corte40. Exports/scorer `export-B-role-n5-public-v1.py`,
+`export-B-role-n5-contexts-v1.py`, `review-B-role-n5-v1.py`; no labels de a7.
+024r1 seis criterios PASS por ambos roles, sólo editorialP2 sin cifra/cambio;
+`B-role-n5-independent-adjudication-024-r1-v1.md`/SHA501f5a24. No excepción para
+conversiones/restas de monedas futuras sin soporte. Históricos012/023 conservados.
+
+Cierre v3 preparado/revisado quedó superado operacionalmente: exigía v5COLLECTED.
+**Nuevos** `freeze-B-role-n5-final-v4.py`, `compare-B-role-n3-n5-v3.py` y
+`freeze-B-role-n5-package-v3.py` PREPARADOS/NO EJECUTADOS, revisión focal pendiente.
+Componen v5STOPPED+v7COLLECTED,40preservadas y140nuevas totales,825juicios y
+restauración real. Mantienen proyección exacta de recibos/contextos y no promedian
+fallos/incertidumbres. No ejecutar versiones anteriores ni declarar N5 por40.
+
+Trello último corte previo vía puente: SHA56f5a85a/16214chars; leer antes de
+mutar, preservar historia/concurrencia/metadatos/límite16384. B local, sin nuevas
+publicaciones GitHub/merge/Discord. Handoffv1 quedó histórico tras esta reanudación.
 
 ### Parche revisado y builds verificados — 16/10/2026
 
