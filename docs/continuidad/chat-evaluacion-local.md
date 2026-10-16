@@ -9,6 +9,21 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 17/10/2026
 
+### Objetivo bloqueado por disponibilidad externa — 17/10/2026
+
+Estado del objetivo confirmado `blocked` tras tres turnos consecutivos con la
+misma ruta no disponible; no es el antiguo bloqueo presupuestario ni una pausa.
+Verificación16oct23:21UTC:CoreWeave/fp8status-5/uptime5m0%/30m0%, proof71e6a4e7.
+Observador actual confirma sinhandleV11,93recibos(91completed/2failed),1458filas,
+91costes observados/2máximos retenidos y ningún proceso pagado vivo. Cadena técnica
+preparada1e12a53a intacta, producto idéntico d965,47sin despachar; no criterio final
+cumplido ni trabajo independiente pendiente. Auditoría de bloqueo
+`B-role-n5-provider-blocked-goal-audit-v1.json` conserva los tres cortes y el alcance.
+Seguimiento existente permanece activo para recuperación significativa, sin
+inferencias/renovación de claves/campañas nuevas mientras falte disponibilidad.
+Próxima010r4 con mismas guardas y30USD; claves sólo hasta17oct18París. No nuevas
+preguntas ni documentación repetitiva ante estado idéntico. B local/noaceptada.
+
 ## Corte vigente:93 recogidas; ruta no disponible — 17/10/2026
 
 N5 d965/plan8af94f71: **93/140 recogidas:91completed conformes y2failed técnicos**.

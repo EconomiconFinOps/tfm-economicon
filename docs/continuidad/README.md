@@ -49,6 +49,9 @@ proofv11-wait confirma1458yold6/new3intactos. No hay campaña pagada viva.
 Cierre técnico separado preparado1e12a53a/revisado+validado(13tests), no ejecutado.
 Exige140recogidas/138completed+2failed/11noevaluables; flagsC1/C3/aceptaciónfalsos.
 Nuevo corte23:18UTC sigue0%5m/30m; ledger1458/serviciossin cambios.
+Objetivo `blocked` confirmado tras3turnos del mismo proveedor; corte23:21UTC0%5m/30m,
+93recibos/1458filas/sinhandleV11. Auditoría provider-blocked-goal-v1. Seguimiento
+activo para recuperación, sin nuevas inferencias ni repetir preparación ya conforme.
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
