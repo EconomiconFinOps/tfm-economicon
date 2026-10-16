@@ -273,8 +273,9 @@ test("ignores pending draft reviews", () => {
   assert.ok(errors.some((e) => e.includes("Validacion JUP-100")));
 });
 
-test("still counts dismissed titled reviews", () => {
-  assert.deepEqual(checkReviews({ ...PR, reviews: [revision(), validacion("Iber1to", "DISMISSED")] }), []);
+test("dismissed titled reviews do not supply a required role", () => {
+  assert.ok(checkReviews({ ...PR, reviews: [revision(), validacion("Iber1to", "DISMISSED")] })
+    .some((error) => error.includes("Validacion JUP-100")));
 });
 
 test("blocks while a reviewer's latest decisive review requests changes", () => {
@@ -294,7 +295,9 @@ test("a later comment does not clear a request for changes", () => {
 
 test("a dismissed request for changes no longer blocks", () => {
   const reviews = [revision("Victorh1397", "DISMISSED"), validacion()];
-  assert.deepEqual(checkReviews({ ...PR, reviews }), []);
+  const errors = checkReviews({ ...PR, reviews });
+  assert.ok(errors.some((error) => error.includes("Revision JUP-100")));
+  assert.ok(!errors.some((error) => /cambios pedidos/.test(error)));
 });
 
 test("an approval dismissed by a push does not revive an older request for changes", () => {
@@ -497,4 +500,41 @@ test("the --reviews command shows its errors as annotations in GitHub Actions", 
   assert.equal(inActions.status, 1);
   assert.match(inActions.stdout, /^::error title=JUP reviews::Falta GITHUB_TOKEN.*CONTRIBUTING\.md#review-and-validation-flow$/m);
   assert.doesNotMatch(local.stdout, /::error/);
+});
+
+
+test("PR63: a dismissed validation and complementary review do not invent an exception", () => {
+  const reviews = [validacion("helper", "DISMISSED"), revision("reviewer"),
+    validacion("validator"), revision("helper")];
+  assert.deepEqual(checkReviews({ ...PR, reviews }), []);
+});
+
+test("a dismissed latest title does not revive the person's older title", () => {
+  const reviews = [revision(), validacion(), validacion("Iber1to", "DISMISSED")];
+  assert.ok(checkReviews({ ...PR, reviews }).some((error) => error.includes("Validacion JUP-100")));
+});
+
+test("a new title after dismissal restores that role", () => {
+  const reviews = [revision(), validacion("Iber1to", "DISMISSED"), validacion()];
+  assert.deepEqual(checkReviews({ ...PR, reviews }), []);
+});
+
+test("complementary outstanding change requests still block the official pair", () => {
+  const reviews = [revision(), validacion(), review("helper", "CHANGES_REQUESTED", "Defecto"),
+    review("helper", "COMMENTED", "Sigue pendiente")];
+  assert.ok(checkReviews({ ...PR, reviews }).some((error) => error.includes("helper")));
+});
+
+
+test("PR63 recorded title/state metadata no longer demands an invented exception", () => {
+  const input = JSON.parse(fs.readFileSync(new URL("./fixtures/pr-reviews/pr63-20261016.json", import.meta.url), "utf8"));
+  assert.equal(input.reviews.length, 18);
+  assert.deepEqual(checkReviews(input), []);
+});
+
+test("latest title selection uses date, normalized login and review kind", () => {
+  const oldValidation = validacion("IBER1TO");
+  const dismissed = review("iber1to", "DISMISSED", "Validación JUP-100");
+  const errors = checkReviews({ ...PR, reviews: [dismissed, revision(), oldValidation] });
+  assert.ok(errors.some((error) => error.includes("Validacion JUP-100")));
 });

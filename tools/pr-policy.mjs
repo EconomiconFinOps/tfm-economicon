@@ -122,10 +122,18 @@ export function checkReviews({ title = "", body = "", author = "", reviews = [] 
   const errors = [];
   const authors = {};
   for (const kind of REVIEW_KINDS) {
+    // Preserve history for change-request resolution below; a dismissed title
+    // cannot supply a role or revive an older title from the same person.
+    const latestTitled = new Map();
+    for (const item of published) {
+      if (kind.pattern.exec((item.body ?? "").normalize("NFC").trimStart())?.[1] === id) {
+        latestTitled.set(item.user.toLocaleLowerCase("en"), item);
+      }
+    }
     authors[kind.key] = new Set(
-      published
-        .filter(({ body: text = "" }) => kind.pattern.exec(text.normalize("NFC").trimStart())?.[1] === id)
-        .map(({ user }) => user.toLocaleLowerCase("en")),
+      [...latestTitled]
+        .filter(([, item]) => item.state !== "DISMISSED")
+        .map(([user]) => user),
     );
     if (authors[kind.key].size === 0) {
       errors.push(

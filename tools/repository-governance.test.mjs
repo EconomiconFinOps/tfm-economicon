@@ -148,3 +148,13 @@ test("lists in the branch-protection guide exactly the required checks of the ru
     .parameters.required_status_checks.map(({ context }) => context);
   assert.deepEqual(listed, required);
 });
+
+
+test("documents latest-title counting without erasing change-request history", () => {
+  const flow = section(contributing, "## Review and validation flow");
+  for (const pattern of [/latest published title counts/, /dismissed latest title supplies no role/,
+    /does not revive an older title/, /complete published history/, /assigned reviewer\/validator/]) {
+    assert.match(flow, pattern);
+  }
+  assert.match(agents(), /latest published title/);
+});

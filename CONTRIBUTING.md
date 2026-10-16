@@ -43,7 +43,7 @@ from Trello.
 
 ## Rotating roles
 
-Process version: 2026-09-30 (JUP-100)
+Process version: 2026-10-16 (JUP-126)
 
 Every Trello card assigns four different people to four roles. The same names go in the Participacion section of the pull request, and they must reflect who actually does each role. The only accepted overlap is the same person in PR review and validation under the declared exception (see the flow below); the `JUP policy` check then requires three different people instead of four.
 
@@ -91,7 +91,11 @@ If someone other than the assigned person takes over a role (for example, whoeve
 5. Neither the reviewer nor the validator pushes commits to the branch: a push dismisses the existing approvals. "Commit suggestion" counts as a push. "Update branch" does not: anyone may use it, it keeps the approvals, and point 7 applies. This has only been observed with the default merge variant; "Update with rebase" rewrites the branch's commits and has not been checked, so use the merge variant. Findings outside the scope of the pull request are requested from the leader in the review text.
 6. Whoever addresses requested changes or decides to merge reads every source of feedback: all the reviews, the conversation comments and the inline comments on the diff, not only the latest review.
 7. Anyone may merge once the pull request has both titled reviews and nothing pending. If "Update branch" brings changes to files or behaviour the pull request depends on, a revalidation of what is affected is requested before merging. Rows added to shared registries such as `openspec/findings/backlog.md` do not count.
-8. The required check `JUP reviews` blocks the merge until both titled reviews exist, neither from the author, without pending requests for changes, and with the exception line when the same person published both. It supports the process; it is not a security control, and it does not judge the content of the reviews. It runs the code of the pull request itself, so reviewers pay special attention to changes in `tools/pr-policy.mjs` and `.github/workflows/`, which can alter the checks.
+8. The required check `JUP reviews` blocks the merge until both titled reviews count under the latest-title rule, neither from the author, without pending requests for changes, and with the exception line when the same person supplies both counting titles. It supports the process; it is not a security control, and it does not judge the content of the reviews. It runs the code of the pull request itself, so reviewers pay special attention to changes in `tools/pr-policy.mjs` and `.github/workflows/`, which can alter the checks.
+   For each person and review kind (`Revision` / `Validacion`) for the card, only the latest published title counts. A dismissed latest title supplies no role and does not revive an older title of that kind from the same person. Dismissed titles do not cause a same-person overlap. The complete published history still resolves requests for changes, including dismissals; a Comment still does not lift a Request changes. Reviews on older commits may count if their latest title is not dismissed, but this does not prove current-SHA acceptance, assigned identities or review contents. A green check never replaces the assigned reviewer/validator or the revalidation required by point 7.
+
+   JUP-126 changes the title-counting semantics of JUP-100; it does not grant an exception or authorize dismissal of any review. This process revision is proposed in the governance PR and takes effect only after its review and authorized integration.
+
 9. The Trello columns follow the earliest stage still pending, and only the leader moves the card (the same person who merges and updates Trello). The card does not move on its own and nobody else moves it:
    - **40 — En revisión:** from opening the pull request (not a draft, CI green, review and validation requested) until `Revision JUP-XXX` is satisfied, that is, published as a Comment or an Approve with no requested changes pending.
    - **50 — Validación:** the review is satisfied and `Validacion JUP-XXX` is still pending, or both are satisfied and the pull request is not merged yet.
