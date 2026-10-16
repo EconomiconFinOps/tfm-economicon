@@ -191,3 +191,11 @@ rama `docs/JUP-065-functional-demo`. Implementación inicial `d9b7c6a`;
 la solicitud de revisión/validación y el CI del último head se consultan en la PR.
 Solicitar a `ParisArcos` revisión técnica y a `Victorh1397` validación offline de
 preparación. Los resultados locales son nuevos; no hay aceptación humana registrada.
+
+### Compatibilidad de tests CI tras la reconciliacion
+
+La CI38966722271 de6c2183cc detecto dos fallos en test_evaluation_scripts.py:
+la lista exacta heredada de JUP-121 no incluia los tres comandos demo. Se
+incorporan a la expectativa, manteniendo comparacion estricta, orden y todos
+los controles; no se elimina ningun test.16tests focales y18workflow PASS.
+Nuevo SHA y CI sustituyen ese candidato; pendiente revalidacion independiente.
