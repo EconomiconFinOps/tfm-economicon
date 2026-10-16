@@ -41,3 +41,16 @@ Veredicto `accept`, sin hallazgos BLOCKING. Verificó por su cuenta: la tabla re
 - «Consultas al asistente por minuto» repite «consultas/min» en la leyenda si hay dos series (instancias) por la falta de `sum()` de la consulta heredada.
 - La lectura del panel «Robustez (JUP-071)» (nombres y traducciones) queda para la rama de JUP-071.
 - Propuestas de Lucia dejadas para una tarjeta de pulido: columnas repetidas (2), referencias JUP en el texto visible (3), descripciones de los ⓘ (4), calibración y benchmark en español (6), sección C sin duplicar el técnico (9) y gráficas para la sección B y la calibración (10). Cambian muchos títulos, descripciones y columnas que las pruebas fijan.
+
+## Human Approval
+
+- Change: jup-121-anotaciones-y-fuente
+- Approval type: post-review
+- Decision: approved
+- Approver: Victor
+- Date: 2026-10-16
+- Review accepted: yes
+- Checks accepted: yes
+- Documentation synchronized: yes
+- Archive decision: archive
+- Notes: 7/7 tareas; evaluation-dashboard:test 1846 OK; Red con 17 y 28 pruebas nuevas; mutación sobre referencias (19 y 21 mutantes muertos), sobre las pruebas parcheadas (11 muertos) y QA independiente accept con 25 mutantes manuales muertos; validado en Grafana 11.3.0 real. Pruebas congeladas actualizadas con tres parches aplicados por el usuario. Excepción de entorno del DoD: la regresión completa sigue en rojo por las pruebas del processor de JUP-035 (falta tokenizer.json generado), ajenas al change. Pendiente fuera de este gate: revalidación de Paris y revisión técnica de Alejandro; propuestas de pulido de Lucia (2, 3, 4, 6, 9 y 10) para una tarjeta aparte; lectura del panel de robustez en la rama de JUP-071.
