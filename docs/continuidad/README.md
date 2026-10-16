@@ -10,6 +10,8 @@ revisión solicitada a Lucía (`lmatsan`),
 31tests y compatibilidad con su evaluador comprobados; B no se ha publicado.
 Detalle en evaluación local y en la continuidad propia de la rama del colector.
 Actualización16/10: GLM elegido. N3de5119 completa con012r1fallida/023r3dudosa.
+Corrección012 posterior:213pruebas focalesPASS y replay167contextos con paridad,
+sólo012cambia; falta validación del nuevo candidato/modelo/corpus. Sin gasto nuevo.
 N5final140/140:138conformes/1fallida012r5/1técnica010r3;542requisitos originales
 PASS/3no evaluables. Quinta ronda28completadas sin técnicos nuevos; controlador
 terminado. Auditoría y paquete310archivos congelados, paquete112intacto.

@@ -19,6 +19,14 @@ from app.services.citations import DocumentCitations
      'Escenario sintético: migración prevista el próximo mes, demanda futura desconocida '
      'y rightsizing pendiente. No se aportan precios ni términos de contratación.',
      ('conviene aplicar','No se concluye que la base de uso sea estable','Riesgo condicional'),'insufficient_data'),
+    ('¿Un recurso sin owner es necesariamente coste no asignado?',
+     'Escenario sintético: falta el tag owner, pero una regla documentada asigna '
+     'inequívocamente el recurso al equipo operaciones mediante billinggroup.',
+     ('corresponde allocated','No se ha evaluado si la clave owner es obligatoria','responsable conocido'),'ok'),
+    ('¿Un recurso sin owner es necesariamente coste no asignado?',
+     'Escenario sintético: falta el tag owner, pero una regla documentada no asigna '
+     'inequívocamente el recurso al equipo operaciones mediante billinggroup.',
+     ('No se establece allocated','información suficiente','No se ha evaluado si la clave owner es obligatoria'),'insufficient_data'),
 ])
 def test_full_original_corpus_preserves_qualification_and_unknown_premises(question,context,expected,status):
     root=Path(__file__).resolve().parents[3]

@@ -1,5 +1,22 @@
 ## ADDED Requirements
 
+### Requirement: Separar presencia de tags y suficiencia de asignación
+El servidor MUST distinguir ausencia de una clave, conformidad con tagging y
+suficiencia de información para asignar el coste. Una preferencia del tipo de
+valor de owner no establece obligatoriedad, opcionalidad o prioridad de la clave.
+
+#### Scenario: Regla explícita suficiente en un escenario declarado
+- **WHEN** una consulta conceptual reconocida pregunta si la ausencia de un tag implica coste no asignado y el escenario completo declara una regla documentada que asigna inequívocamente a una unidad responsable mediante otra clave
+- **AND** la sección autorizada completa reconoce allocated como responsable conocido, sin excepciones ni contradicciones dentro de la política admitida
+- **THEN** el servidor liga la conclusión hipotética allocated a esa entrada y a las fuentes recibidas, sin afirmar cumplimiento de tagging ni verificación del tenant
+- **AND** la respuesta, las citas y los auxiliares están fijados por el servidor y el proveedor no puede añadir una preferencia normativa
+
+#### Scenario: Regla negada, ambigua o evidencia incompleta
+- **WHEN** la consulta conceptual es reconocida pero la regla es desconocida, negada, condicional o contradictoria, o falta una política completa compatible y citable
+- **THEN** el servidor no asigna un estado al recurso concreto y pide la información pendiente
+- **AND** no convierte la ausencia de una etiqueta en unallocated ni inventa una cita
+- **AND** la garantía se limita a la gramática reconocida; no se declara comprensión general ni validación del modelo por pruebas offline
+
 ### Requirement: Compatibilidad con activación y aislamiento de A
 La entrega semántica MUST conservar los controles de disponibilidad de A:
 capacidad autenticada por tenant con booleano efectivo y Cache-Control no-store,

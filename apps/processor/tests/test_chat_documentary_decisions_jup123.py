@@ -179,6 +179,10 @@ def test_gateway_final_uses_documentary_terminal_and_projects_used_sources(monke
     async def exercise():return [r async for r in gateway(context,time.time()+60,tool_result=retrieve)]
     records=asyncio.run(exercise())
     assert len(requests)==2 and records[-1]['type']=='candidate'
-    assert requests[-1]['response_format']['json_schema']['schema']['properties']['answer']=={'const':value['answer']}
+    from jsonschema import Draft202012Validator
+    validator=Draft202012Validator(requests[-1]['response_format']['json_schema']['schema'])
+    validator.validate(value)
+    assert list(validator.iter_errors({**value,'answer':{'documentary_answer':'foreign'}}))
+    assert list(validator.iter_errors({**value,'answer':{**value['answer'],'extra':'claim'}}))
     assert ''.join(r['text'] for r in records if r['type']=='delta')==records[-1]['result']['answer']
     assert records[-1]['result']['evidence']

@@ -1,5 +1,9 @@
 ## Estado vigente — 16/10/2026
 
+Corrección012 nueva local:209processor+4backendPASS; replay167contextos y
+paridad, sólo012cambia. Sin nueva campaña del modelo/corpus integrado todavía;
+no cierra3.1/3.2 ni reetiqueta N3/N5. Ver continuidad para pruebas y límites.
+
 Integración local2339 con develop53b43:192 pruebas backend únicas (29SQL),18frontend,
 95arnés/17evaluador,75OpenSpec; tres imágenes y351 archivos verificados.
 HTTP/UI de costes off/on pasan en preview desechable, escritorio/móvil/recarga;

@@ -161,13 +161,100 @@ def _commitment(catalog, question):
 
 def required_documentary_answer(catalog):
     question = getattr(catalog, 'classification_question', '')
-    bound = (_cost_basis(catalog, question) or _commitment(catalog, question)
+    bound = (_allocation(catalog, question) or _cost_basis(catalog, question) or _commitment(catalog, question)
              or _rightsizing(catalog, question) or _investigation(catalog, question))
     if bound is None or len(bound['public_fields']['answer']) > 4000:
         return None
     bound['id'] = hashlib.sha256(json.dumps({'question': question, 'binding': bound},
         ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
     return bound
+
+
+def _allocation(catalog, question):
+    """Separate tag presence, policy compliance and allocation sufficiency.
+
+    Only a closed, affirmative user scenario establishes a hypothetical mapping.
+    A missing/negated/ambiguous mapping is unknown, never unallocated by default.
+    Unknown source policy cannot establish even the documentary classification.
+    This is not a general natural-language rule extractor or a tenant lookup.
+    """
+    parts = question.split('\n\n')
+    key = r'[a-z][a-z0-9_-]{0,39}'
+    request = re.fullmatch(
+        rf'¿?(?:un|este) recurso sin (?:el tag |la etiqueta )?(?P<tag>{key}) '
+        r'es (?:necesariamente|siempre) (?:coste no asignado|unallocated)[?.]?',
+        normalized(parts[0]))
+    if request is None:
+        return None
+    tag = request['tag']
+    # Reserved words cannot stand for a tag or mapping key in this grammar.
+    reserved = {'no', 'sin', 'ninguno', 'nadie', 'desconocido', 'ninguna', 'null'}
+    if tag in reserved:
+        return None
+    scenario = None
+    if len(parts) == 2:
+        # A quoted multiword name is an opaque identifier; unquoted prose,
+        # conjunctions, appended conditions and instructions are not names.
+        name = r'(?:[a-z0-9][a-z0-9_-]{0,59}|`[a-z0-9][a-z0-9 _-]{0,59}`)'
+        scenario = re.fullmatch(
+            rf'(?:contexto del escenario:\s*)?(?:escenario sintetico:\s*)?'
+            rf'(?:falta el tag|falta la etiqueta|no existe el tag) (?P<tag>{key}), '
+            r'pero una regla documentada asigna inequivocamente (?:el|este) recurso '
+            rf'(?P<unit>al equipo|a la aplicacion|al cost center|a la unidad responsable) (?P<name>{name}) '
+            rf'(?:mediante|a traves de) (?P<via>{key})[.]?', normalized(parts[1]))
+    mapped = bool(scenario and scenario['tag'] == tag and scenario['via'] != tag
+                  and scenario['via'] not in reserved and scenario['name'].strip('`') not in reserved
+                  and not any(s.get('kind') != 'corpus' for s in getattr(catalog, 'authorized_sources', ())))
+    section = _section(catalog, 'Coste No Asignado Y Coste Compartido')
+    selected, records = [], []
+    if section is not None:
+        # Recognize the WHOLE supported policy, including shared/excluded;
+        # accepting only a matching allocated bullet could drop an exception.
+        grammar = (
+            r'El (?P<definition>coste no asignado es coste que no puede asociarse con informacion suficiente '
+            r'a un owner, aplicacion, cost center u otra unidad responsable[.]) '
+            r'No debe confundirse con coste compartido[.] '
+            r'Un coste puede ser compartido y estar identificado; unallocated significa que falta informacion suficiente[.] '
+            r'Estados recomendados: (?P<allocated>- `allocated`: responsable conocido;) '
+            r'- `shared`: coste compartido conocido; - `unallocated`: sin informacion suficiente; '
+            r'- `excluded`: excluido por regla documentada[.]')
+        policy = re.fullmatch(grammar, section['body'])
+        chosen = _selections(section, [policy['definition'], policy['allocated']]) if policy else None
+        if chosen is not None:
+            selected, records = chosen
+    policy_known = bool(selected)
+    allocated = mapped and policy_known
+    answer = ('La presencia de una etiqueta, el cumplimiento de la política de tagging y la capacidad '
+              'de asignar un coste son cuestiones distintas. No se ha evaluado si la clave ' + tag
+              + ' es obligatoria ni si cumple la política de etiquetado.\n')
+    if policy_known:
+        answer += ('No necesariamente: la definición documental se refiere a información suficiente '
+                   'para identificar al responsable, no sólo a la presencia de esa etiqueta.\n'
+                   + _quotations(selected, records))
+    else:
+        answer += ('No se dispone de una sección documental completa, inequívoca y compatible '
+                   'para establecer el estado de asignación.\n')
+    actions = []
+    if allocated:
+        answer += ('Escenario hipotético aportado (declaración del usuario): «' + parts[1] + '»\n'
+                   'Bajo esas premisas, corresponde allocated '
+                   '(responsable conocido). Es una conclusión sobre el escenario declarado, '
+                   'sin verificación del recurso, del tenant ni de la ejecución de la regla.\n')
+    else:
+        answer += ('No se establece allocated, shared, excluded ni unallocated para el recurso concreto: '
+                   'la ausencia de la etiqueta no demuestra por sí sola falta de información suficiente, '
+                   'y no se ha establecido una regla inequívoca aplicable a este escenario.\n')
+        actions = ['Aportar la política completa y la regla aplicable que identifique inequívocamente al responsable; '
+                   'aclarar condiciones, contradicciones o alternativas pendientes.']
+    answer += ('Una preferencia sobre el tipo de valor de owner (equipo o persona) no establece '
+               'que la clave sea opcional, obligatoria o preferida frente a otros mecanismos de asignación.')
+    return {'topic': 'allocation_sufficiency', 'section': section, 'selections': selected, 'sources': records,
+            'premises': {'tag_absent': True if scenario and scenario['tag'] == tag else None,
+                         'tag_compliance': None, 'documentary_policy': policy_known,
+                         'declared_unambiguous_mapping': True if mapped else None},
+            'allocation': 'allocated' if allocated else None,
+            'public_fields': {'answer': answer, 'status': 'ok' if allocated else 'insufficient_data',
+                              'next_actions': actions}}
 
 
 def _rightsizing(catalog, question):

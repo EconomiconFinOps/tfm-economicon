@@ -9,6 +9,31 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 16/10/2026
 
+**Corrección012 local posterior a la N5:** el servidor separa presencia del tag,
+conformidad de tagging (desconocida) y suficiencia de la regla de asignación.
+Sólo declara allocated en un escenario completo afirmativo y con la sección
+documental completa, autorizada y citable. Ambigüedad, negación, contradicción o
+evidencia insuficiente no producen un estado concreto. Sin regla global nueva
+en el prompt, identificadores de casos/nombres fijos ni cambios en5119/banco.
+Gramática acotada, no comprensión general ni validación del tenant.
+
+Verificación offline:209PASS processor y4PASS backend;52pruebas del archivo nuevo.
+Backend/processor idénticos en167contextos (139RAG reales históricos+28sinRAG);
+161esquemas intactos, sólo012cambia (5rondas+sinRAG). Las cinco012históricas se
+resuelven con citas recibidas; sinRAG conserva datos insuficientes. El primer
+replay se abstuvo por una cita partida tras «El»; corregido sin saltarse la
+integridad de sección y con nueva prueba del corte. Un fallo inicial de
+temporalesWindows y expectativas antiguas const del testgateway se conservan;
+se prueba ahora equivalencia y rechazo de variantes del esquema transmitido.
+
+Evidencia externa: `allocation-regression-v5.xml`, `allocation-backend-v2.xml`,
+`allocation-counterfactual-proof-v2.json`, `allocation-resource-parity-v1.json`
+(56contextos por servicio cargado en frío) y refresco de manifiesto v2.
+Prompt nuevo `jup-035.chat.v3:abd34d584315a011cd8cfd8666c6d1ce8ebe590319114e51a45be4331e62ab9a`;
+texto del prompt/contrato público conservados. Esto NO es una campaña nueva del
+modelo ni acredita recuperación del corpus nuevo. Preparar commit/plan y entorno
+separados, proteger ahora1275filas y preservar todas las reservas bajo30USD.
+
 **N5 terminada, auditada y congelada:140/140 muestras**, fuente5119e330,
 banco1.0.0 y GLM5.2/DeepInfraFP4 sin cambios durante las cinco rondas.
 139operaciones completed/1failed técnico010r3;140snapshots verificados.

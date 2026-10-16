@@ -6,6 +6,21 @@ Verificado el 16/10/2026. Origen: chat
 
 ## Resultado
 
+**Corrección012 posterior a la N5 (local, todavía sin nueva campaña):** el terminal
+documental del servidor separa ausencia del tag, conformidad desconocida de tagging
+y regla explícita suficiente para allocated. No deriva opcionalidad ni prioridad
+de owner de una preferencia sobre su valor.209pruebas processor y4backend pasan;
+incluyen negaciones, contradicciones, otras claves/unidades/nombres y fuentes
+incompletas. El replay167contextos cambia únicamente012; las cinco respuestas
+históricas tienen una decisión hipotética y citas reales, sinRAG se abstiene.
+La primera prueba contra chunks reales detectó la definición partida después de
+«El»; el ajuste conserva la comprobación de sección completa y cita literal.
+Backend/processor coinciden en167contextos y cargan el nuevo manifiesto en56por
+servicio. Evidencia externa `allocation-counterfactual-proof-v2.json`,
+`allocation-resource-parity-v1.json`, `allocation-regression-v5.xml` y
+`allocation-backend-v2.xml`. No se cambia el resultado congelado de012r1/N3 ni
+012r5/N5. No es comprensión general de reglas o validación del corpus integrado.
+
 Se elige **GLM 5.2/DeepInfra FP4**. DeepSeek V4.1 Flash/CoreWeave FP8 también
 completó la comparación N3. La configuración GLM presentó menos defectos
 semánticos; DeepSeek fue más rápido y barato. No se separa el efecto del modelo

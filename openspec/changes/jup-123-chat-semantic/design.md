@@ -1,5 +1,28 @@
 JUP: JUP-123
 
+## Suficiencia de asignación y ausencia de tag — 16/10/2026
+
+El terminal documental compila una consulta conceptual acotada y una declaración
+afirmativa completa de asignación por una regla documentada. Mantiene separadas
+la ausencia declarada del tag, la conformidad desconocida de tagging y la
+asignación hipotética. No consulta recursos ni configura allocation. Una sección
+completa con procedencia debe reconocer la definición y todos sus estados, sin
+añadidos desconocidos; selecciona pasajes literales presentes en chunks recibidos.
+La definición puede cruzar el corte antes de «coste no asignado»: la sección se
+reconstruye con todos sus offsets, pero no se inventa una cita concatenada.
+
+Negaciones, condiciones, nombres alternativos, claves contradictorias, datos
+financieros o falta de evidencia suficiente no producen allocated. La consulta
+conceptual reconocida queda en un terminal de datos insuficientes, sin inferir
+unallocated de un tag ausente. Preguntas fuera de gramática conservan el flujo
+general, sin las garantías de este compilador. No se detecta contradicción
+semántica arbitraria entre documentos ni se infiere una política nueva.
+
+El proveedor sólo puede devolver el identificador ligado al contenido y fuentes;
+streaming y final usan el mismo renderizado. Contrato público y prompt intactos;
+el manifiesto sí cambia para identificar el compilador. Las mediciones de5119 se
+mantienen congeladas y no acreditan esta corrección ni el corpus integrado.
+
 ## Context
 
 B preserva el flujo que ya recupera documentación en servidor y genera draft/final
