@@ -5,6 +5,8 @@ el [colector reutilizable](chat-collector.md), independiente de la entrega semá
 
 Para medir tiempo ahorrado, cobertura de gasto asignado y ahorro potencial,
 consultar el [instrumento funcional JUP-068](JUP-068-business-metrics.md).
+Para ver los resultados de las evaluaciones en Grafana y regenerarlos,
+consultar el [dashboard de resultados JUP-121](evaluation-dashboard.md).
 
 [Tarjeta](https://trello.com/c/Qi5uwxgW) · [Preguntas y respuestas esperadas](JUP-069-questions.json) · [Evidencia técnica](../evidence/JUP-069-validation.md)
 

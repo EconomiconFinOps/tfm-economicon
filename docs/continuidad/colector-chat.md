@@ -17,9 +17,28 @@ el fallo del run de push se conserva como finding intermitente fuera de alcance.
 Develop avanza a `22f0e2f3` (#132); tres conflictos aditivos en CI, package.json
 e índice de continuidad impiden integrar. El revisor pide conservar ambos
 scripts de pruebas, ambas invocaciones CI, las dos filas y timeout de 20 minutos.
-Se prepara esa reconciliación sobre la rama del autor. Su aprobación corresponde
-a e0a0c41e: el push descarta la aprobación y requiere revisión de la fusión,
-además de revalidar el delta que corresponda. No hay autorización de merge.
+Reconciliación realizada sobre la rama del autor: CI conserva ambos comandos y
+timeout de 20 minutos; package conserva los cinco scripts y el índice ambas filas.
+Tres pruebas de snapshot del dashboard fallaron al incorporar el comando nuevo;
+se actualizan los esperados exactos de comandos y orden en
+`scripts/tests/test_evaluation_scripts.py`, manteniendo las comprobaciones.
+
+Verificación local del árbol reconciliado: colector 48 PASS, scripts del dashboard
+16 PASS (subconjunto de su batería), dashboard completo 1436 PASS/208 SKIP de
+1644 pruebas, Node CI/local-doctor 71 PASS, OpenSpec 75/75 y trazabilidad/higiene
+conformes (1697 archivos antes de añadir esta evidencia). Se usa exclusivamente
+el contexto local desktop-linux, cuyo daemon no está disponible; las omisiones
+son explícitas y no se arranca DockerServer. No se repite IA ni gasto.
+Colector idéntico a e0a0c41e; aplicaciones y herramienta del dashboard idénticas
+a develop 22f0e2f3. Diff propio sin errores de whitespace ni conflictos.
+Dos enlaces del índice ya carecen de destino en develop (métricas funcionales
+y cobertura de etiquetado); se conservan como hallazgo heredado, sin inventar
+resúmenes. Las dos filas de esta reconciliación apuntan a archivos existentes.
+
+Su aprobación corresponde a e0a0c41e: el push descarta la aprobación y requiere
+revisión de la fusión, además de revalidar el delta que corresponda. La nueva CI
+se comprobará por SHA; la verde anterior no se atribuye al árbol reconciliado.
+No hay autorización de merge.
 
 ## Contrato del colector solicitado en PR #131 — corte anterior del 16/10/2026
 

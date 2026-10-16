@@ -6,6 +6,35 @@ Base: `develop/53b43bb1e79b08967cc1b9efdf66669f11e8197c`.
 Rama: `feat/JUP-123-response-collector`. Extracción autorizada por el usuario;
 no representa aceptación de B ni validación humana independiente.
 
+## Reconciliación tras aprobación — 16/10/2026
+
+[Víctor aprueba e0a0c41e](https://github.com/EconomiconFinOps/tfm-economicon/pull/131#pullrequestreview-5553358426)
+y [Lucía revalida esa cabeza](https://github.com/EconomiconFinOps/tfm-economicon/pull/131#pullrequestreview-5552441528)
+con operaciones/corpus reales. CI de PR `38871005264` completa SUCCESS. Son
+dictámenes sobre e0a0c41e, no sobre la fusión posterior con develop `22f0e2f3`.
+
+La fusión conserva ambas invocaciones de pruebas en CI, el timeout de 20 minutos,
+los scripts de ambas entregas y las dos filas de continuidad. Sus tres conflictos
+eran aditivos. Tres aserciones de snapshot en `test_evaluation_scripts.py`
+reproducen el fallo por el comando del colector añadido; se actualizan los
+literales y el orden esperado conservando la comprobación exacta de integridad.
+No cambia el código aprobado del colector, ni el dashboard o apps de develop.
+
+Comprobaciones locales del árbol reconciliado:
+
+- `python -B -m unittest discover -s tools -p 'test_chat_eval_collect*.py'`: 48 PASS.
+- `python -B -m unittest discover -s scripts/tests -p test_evaluation_scripts.py`:
+  16 PASS, tras reproducir los tres fallos de integración; subconjunto de la batería siguiente.
+- `python -B -m unittest discover -s scripts/tests -p 'test_evaluation_*.py'`:
+  1644 pruebas, 1436 PASS y 208 SKIP. Se fija el contexto local desktop-linux,
+  sin daemon disponible; no se toca el contexto remoto ni se atribuyen integraciones omitidas.
+- `node --test tools/ci-workflow.test.mjs tools/local-doctor.test.mjs`: 71 PASS.
+- OpenSpec estricto 75/75; trazabilidad e higiene conformes; diff propio contra
+  develop sin whitespace nuevo ni marcadores de conflicto.
+
+Revisión incremental y revalidación tras el push pendientes según las reviews.
+CI del nuevo SHA pendiente; sin inferencias nuevas ni cambios a JUP-071/B.
+
 ## Contrato solicitado por Lucía — 16/10/2026
 
 Origen: «Implementa los cambios que nos piden en PR131».
