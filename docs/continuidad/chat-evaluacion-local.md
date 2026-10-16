@@ -20,6 +20,12 @@ Política externa `period-n5-resume-prepared-v4.json`, SHA de política
 `fda1c54dbac9914a737a8670688b30506e433088420ed50cff8891f1f574611f`. Fuente/plan/modelo/prompts intactos; wrappers de admisión
 y ledger aplican30USD, seis guardas y preflight sin inferencias conformes.
 Controlador803686/start73577006 verificado vivo; `resume-v4`, no relanzar.
+Corte08:00UTC:130/140recibos,128conformes/1fallo012r5/1técnico heredado010r3.
+012r5 reconoce allocated, pero convierte preferencia del valor equipo/persona
+en preferencia del mecanismo owner;2checks de calidad fallan en un único grupo,
+con el mismo criterio que N3. Banco original conforme para esa respuesta.
+Batch15 conservado; no se cambia producto a mitad de campaña. Seguimiento
+programado a10:10París para terminar recogida/revisión/auditoría, sin repetir112.
 Primera001r5recogida/conciliada y002r5en curso en el corte07:48UTC.
 Contadores frescos previos: cota19.893051732USD/siguiente20.213003732USD;
 son cotas conservadoras, no factura ni atribución exacta. Reservas desconocidas
