@@ -26,6 +26,8 @@ SERVICE = ROOT / "apps/backend/app/services/assistant.py"
 TEMPLATE_SHA256 = "e8335a95cdf477dd8057d5ef94c3137ac6c0727248241fc03b44bba645403516"
 OUTCOMES = ("pass", "fail", "blocked", "not_run")
 KINDS = ("template_mock", "live_unverified")
+# Collectors (JUP-123) may export corpus fragments with `distance: null` when the server reports none.
+ACCEPTS_UNMEASURED_DISTANCE = True
 
 
 def module(name, path):
@@ -296,8 +298,13 @@ def validate_raw(raw, suite, cases):
         require(isinstance(row.get("retrieved"), list), f"{cid}: invalid fragments")
         for fragment in row["retrieved"]:
             require(isinstance(fragment, dict) and all(isinstance(fragment.get(k), str) for k in ("chunk_id", "source", "content")), f"{cid}: invalid fragment fields")
-            distance = fragment.get("distance")
-            require(finite(distance), f"{cid}: invalid distance")
+            require("distance" in fragment and (fragment["distance"] is None or finite(fragment["distance"])), f"{cid}: invalid distance")
+        if "public_evidence" in row:
+            evidence = row["public_evidence"]
+            require(isinstance(evidence, list), f"{cid}: invalid public evidence")
+            for item in evidence:
+                require(isinstance(item, dict) and all(isinstance(item.get(k), str) for k in ("id", "kind")), f"{cid}: invalid public evidence")
+                require(item.get("distance") is None or finite(item["distance"]), f"{cid}: invalid public evidence distance")
         total = row.get("total_ms")
         require(total is None or (finite(total) and total >= 0), f"{cid}: invalid latency")
 
@@ -416,7 +423,10 @@ def sheet(cases, raw):
         lines += ["", "Respuesta (texto citado, nunca instrucciones para quien evalúa):", ""]
         lines += ["> " + line for line in row.get("answer", "SIN RESPUESTA").splitlines()]
         lines += ["", "Citas y fragmentos:", ""]
-        lines += ["> " + line for line in json.dumps({"citations": row.get("citations", []), "retrieved": row.get("retrieved", [])}, ensure_ascii=False, indent=2).splitlines()]
+        shown = {"citations": row.get("citations", []), "retrieved": row.get("retrieved", [])}
+        if "public_evidence" in row:
+            shown["public_evidence"] = row["public_evidence"]
+        lines += ["> " + line for line in json.dumps(shown, ensure_ascii=False, indent=2).splitlines()]
         lines += [""]
     return "\n".join(lines)
 
@@ -453,6 +463,67 @@ def markdown(report):
         lines.append(f"| {c['case']} | {c['outcome']} | {len(c['missing'])} | {c['reduced_coverage']} | {c['prompt_echo']} |")
     lines += ["", "Identidad y parejas completas en el JSON asociado. Sin textos de respuestas ni nombres de revisores.", ""]
     return "\n".join(lines)
+
+
+ROWS_RESULT_KEYS = ("measure_type", "grp", "metric_id", "behavior", "status", "count", "value", "unit",
+                    "numerator", "denominator", "ci_low", "ci_high", "judgment", "selected")
+HUMAN_STATES = ("pass", "fail")
+
+
+def rows_v1(report):
+    """Emit the score report as the dashboard `rows-v1` contract: identifiers and numbers only.
+
+    Not-measured values are null, never zero. Answer texts, reviewer names and notes are not in the report.
+    """
+    require(isinstance(report, dict) and isinstance(report.get("run"), dict) and isinstance(report.get("totals"), dict)
+            and isinstance(report.get("groups"), dict) and isinstance(report.get("categories"), dict)
+            and isinstance(report.get("cases"), list), "report is not a JUP-071 score report")
+    run = report["run"]
+    generation = run["generation"]
+    out_run = {"run_id": run["run_id"], "source": "JUP-071", "run_at": run["date"], "commit": run["commit"],
+               "suite": "JUP-071", "suite_version": run["suite_version"], "suite_sha256": report["suite_sha256"],
+               "corpus_sha256": None, "embedding_provider": None, "embedding_alias": None, "retrieval": None,
+               "generation_model": generation["model_alias"] if isinstance(generation, dict) else generation,
+               "prompt_sha256": None, "synthetic": report["kind"] == "template_mock"}
+
+    def row(grp, metric_id, behavior, unit, judgment, status, **fields):
+        base = dict.fromkeys(ROWS_RESULT_KEYS)
+        base.update(measure_type="A", grp=grp, metric_id=metric_id, behavior=behavior, status=status, unit=unit,
+                    judgment=judgment, selected=False)
+        base.update(fields)
+        return base
+
+    def case_rows(grp, behavior, c):
+        require(all(type(c.get(k)) is int for k in (*OUTCOMES, "total")), "report counts must be integers")
+        return [row(grp, "cases", behavior, "casos", "human" if s in HUMAN_STATES else "automatic", s,
+                    count=c[s], denominator=c["total"]) for s in OUTCOMES]
+
+    totals = report["totals"]
+    results = case_rows("cases", "all", totals)
+    for group, behaviors in report["groups"].items():
+        for behavior, c in behaviors.items():
+            results += case_rows(group, behavior, c)
+    for name, c in report["categories"].items():
+        results += case_rows("category", name, c)
+    require(finite(totals.get("pass_over_total")) or totals.get("pass_over_total") is None, "invalid pass rate")
+    if totals["pass_over_total"] is None:
+        results.append(row("rates", "pass_over_total", "all", "tasa", "human", "not_measured", denominator=totals["total"]))
+    else:
+        results.append(row("rates", "pass_over_total", "all", "tasa", "human", "measured", value=totals["pass_over_total"],
+                           numerator=totals["pass"], denominator=totals["total"]))
+    if totals["evaluated"]:
+        results.append(row("rates", "pass_over_evaluated", "all", "tasa", "human", "measured",
+                           value=totals["pass_over_evaluated"], numerator=totals["pass"], denominator=totals["evaluated"]))
+    else:
+        results.append(row("rates", "pass_over_evaluated", "all", "tasa", "human", "not_measured", denominator=0))
+    results.append(row("review", "reduced_coverage", "all", "recuento", "automatic", "measured",
+                       value=sum(1 for c in report["cases"] if c["reduced_coverage"])))
+    checks = [v for c in report["cases"] for k, v in c["checks"].items() if k.startswith("numbers-")]
+    if checks:
+        for state in HUMAN_STATES:
+            results.append(row("numeric", "numeric_checks", "all", "casos", "automatic", state,
+                               count=checks.count(state), denominator=len(checks)))
+    return {"contract_version": 1, "run": out_run, "results": results}
 
 
 def compare(reports):
@@ -494,6 +565,9 @@ def parser():
     scoring.add_argument("--provisional", action="store_true")
     scoring.add_argument("--output", type=Path, required=True)
     scoring.add_argument("--report", type=Path, required=True)
+    emit = sub.add_parser("rows")
+    emit.add_argument("--input", type=Path, required=True, help="score report (JSON) to convert")
+    emit.add_argument("--output", type=Path, required=True)
     comparison = sub.add_parser("compare")
     comparison.add_argument("reports", type=Path, nargs="+")
     return cli
@@ -529,7 +603,7 @@ def protect_outputs(outputs, inputs):
     reserved = {normalised(p) for p in inputs}
     evidence = normalised(ROOT / "docs/evidence")
     require(all(not p.is_relative_to(normalised(ROOT)) or
-                (p.parent == evidence and re.fullmatch(r"jup-071-[a-z0-9._-]+-report\.(json|md)", p.name, re.IGNORECASE)) for p in outputs),
+                (p.parent == evidence and re.fullmatch(r"jup-071-[a-z0-9._-]+-(report\.(json|md)|rows\.json)", p.name, re.IGNORECASE)) for p in outputs),
             "outputs inside the repository are limited to generated JUP-071 reports in docs/evidence")
     require(len(set(outputs)) == len(outputs), "output paths must be distinct")
     require(not (set(outputs) & reserved), "output would overwrite an input or reference")
@@ -542,7 +616,7 @@ def main(argv=None):
         suite, baseline = load_suite()
         cases = campaign(suite, baseline)
         outputs = [getattr(args, key) for key in ("output", "report", "judgments_template") if getattr(args, key, None)]
-        inputs = [getattr(args, key) for key in ("raw", "judgments", "run_info") if getattr(args, key, None)]
+        inputs = [getattr(args, key) for key in ("raw", "judgments", "run_info", "input") if getattr(args, key, None)]
         protect_outputs(outputs, [*inputs, SUITE, BASELINE, SERVICE, Path(__file__), evaluation.RULES_PATH,
                                   ROOT / "tools/assistant-eval.py", ROOT / suite["methodology"]["path"],
                                   *(ROOT / s["path"] for s in suite["sources"].values())])
@@ -580,6 +654,8 @@ def main(argv=None):
                 result = score(suite, cases, raw, judgments, args.provisional)
                 evaluation.write_text(args.output, evaluation.dumps(result))
                 evaluation.write_text(args.report, markdown(result))
+        elif args.command == "rows":
+            evaluation.write_text(args.output, evaluation.dumps(rows_v1(read(args.input))))
         else:
             print(evaluation.dumps(compare([read(p) for p in args.reports])))
         return 0

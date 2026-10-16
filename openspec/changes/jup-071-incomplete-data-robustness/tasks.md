@@ -26,6 +26,9 @@
 - [x] 4.2 Probar que el bloque es obligatorio y válido, que dos ejecuciones se distinguen y que regenerar el informe con el bloque no cambia ningún resultado. Regenerar los informes de plantilla de `docs/evidence/`.
 - [x] 4.3 Aceptar en el bloque `run` la descripción de seis cadenas del colector de JUP-123 (commit declarado de 7 a 40 hexadecimales y `generation` como cadena), con pruebas de lo que sigue rechazándose, y comprobar la cadena completa contra un backend real con el chat activado y modelo simulado.
 
+- [x] 4.4 Aceptar en el crudo fragmentos con `distance: null` y una lista opcional `public_evidence`, mostrarlos en la hoja de revisión y exponer `ACCEPTS_UNMEASURED_DISTANCE`, sin aceptar distancias ausentes, textuales, booleanas ni no finitas.
+- [x] 4.5 Añadir el comando `rows` que emite el informe como `rows-v1` (sin texto ni nombres, `null` en lo no medido), con pruebas de forma, estados, denominadores y rutas de salida, y comprobar el resultado con el validador del PR #132 de JUP-121.
+
 ## 5. Reconciliación y revisión final de la contribución
 
 - [x] 5.1 Reescribir propuesta, spec y diseño para describir el comportamiento del código (alias y rivales, validación estricta, cobertura reducida, categorías, rutas de salida, metadatos declarados, cabecera de ejecución). La revisión de trazabilidad de 5.2 demostró que esa primera reconciliación contenía afirmaciones sin contrastar, que se corrigen en 5.3.
@@ -40,4 +43,4 @@
 - [ ] 6.3 Realizar las tres mediciones finales con idéntica batería/configuración y conservarlas todas, con revisión semántica y limitaciones por ejecución.
 - [ ] 6.4 Obtener revisión y validación independientes de la contribución, vincular la evidencia a la tarjeta por la integración autorizada y archivar el cambio sólo cuando corresponda a su cierre real.
 - [ ] 6.5 Disponer de quien genere las respuestas del chat generativo y consuma el colector de JUP-123 (`/generations`) y acordar con quien lidera B el reparto del presupuesto de inferencia antes de cualquier campaña con modelo.
-- [ ] 6.6 Acordar con quien lidera JUP-123 cómo se puntúan las respuestas del chat real cuya evidencia de corpus no trae distancia: su colector bloquea hoy esas filas para el evaluador de JUP-070 y su documentación asigna a este change adaptar el evaluador para consumir `public_evidence` sin inventar distancias. Hasta resolverlo, ninguna campaña real podrá puntuar respuestas con citas.
+- [ ] 6.6 Acordar con quien lidera JUP-123 cómo se puntúan las respuestas del chat real cuya evidencia de corpus no trae distancia: su colector bloquea hoy esas filas para el evaluador de JUP-070 y su documentación asigna a este change adaptar el evaluador para consumir `public_evidence` sin inventar distancias. Este change ya acepta la distancia nula y `public_evidence` (4.4); falta que el colector lo adopte detectando `ACCEPTS_UNMEASURED_DISTANCE` y acordar con su responsable el resto del contrato (`structured`, procedencia del servidor). Hasta entonces, ninguna campaña real podrá puntuar respuestas con citas.

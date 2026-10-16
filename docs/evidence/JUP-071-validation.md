@@ -44,6 +44,10 @@ Windows, Python 3.14, Node 24.
 | `node --test tools/ci-workflow.test.mjs` | 14 OK (con las dependencias del repositorio principal enlazadas temporalmente) |
 | `corepack pnpm openspec:validate`, `jup:check` del change y `jup:cleanup:check` | 74/74, OK, OK |
 
+### 16/10/2026: distancia no medida y contrato del dashboard (tareas 4.4 y 4.5)
+
+La herramienta acepta fragmentos con `distance: null` y `public_evidence`, y expone `ACCEPTS_UNMEASURED_DISTANCE`. El comando `rows` emite el informe como `rows-v1`: se generaron `JUP-071-template-fixed-rows.json` y `JUP-071-template-empty-rows.json` y el validador de la cabeza `e4b403d4` del PR #132 de JUP-121 los acepta (código de salida 0). Se añadieron 14 pruebas (105 en total, en verde). Estos cambios no pasaron por una revisión adversarial independiente. Los nombres de grupo y métrica y qué filas son `human` están pendientes de confirmar con quien mantiene el dashboard.
+
 ## Trazabilidad por criterio de Trello
 
 | Criterio original | Entrega / evidencia | Pendiente |

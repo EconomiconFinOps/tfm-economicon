@@ -18,6 +18,7 @@ Actualizado el 2026-10-16. [Tarjeta](https://trello.com/c/H0woDubz), ID `69da46a
 - **2026-10-14.** JUP-035 se divide: #130 (JUP-122, entrega A) y JUP-123 (entrega B, calidad semántica). Se detecta que el chat generativo no usa `/messages`.
 - **2026-10-15.** `develop` integra #130 y otros cambios; la rama se actualiza con un merge y se actualizan las referencias de la batería al banco de JUP-069 `1.0.1`.
 - **2026-10-16.** Prueba del colector de JUP-123 con nuestra herramienta; la cabecera `run` acepta su descripción de seis cadenas. Reconciliación de propuesta, spec y diseño, revisión adversarial cuarta y auditoría de trazabilidad.
+- **2026-10-16 (tarde).** Propuesta de contrato publicada en #131 (distancia no medida, procedencia del servidor) y consulta a quien mantiene el dashboard en #132. En la rama: aceptación de `distance: null` y `public_evidence` y comando `rows` para `rows-v1` (tareas 4.4 y 4.5). Pendiente: respuesta de ambos, que el colector detecte `ACCEPTS_UNMEASURED_DISTANCE` y añadir los informes al manifiesto del dashboard.
 
 ## Siguiente paso concreto
 

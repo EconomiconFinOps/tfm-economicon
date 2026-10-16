@@ -199,6 +199,39 @@ Each versionable report SHALL carry a unique run identifier derived from the raw
 - **WHEN** a report is regenerated from the same raw material and judgments with the header present
 - **THEN** every outcome, count and denominator equals the previous report's
 
+### Requirement: Evidence without a measured distance is kept as unmeasured
+
+The raw collection format SHALL accept a retrieved fragment whose `distance` is explicitly null, meaning the server reported no distance, and SHALL still reject a fragment whose distance is missing, textual, boolean or not finite. A case MAY carry a `public_evidence` list of objects with textual `id` and `kind` and a null or finite `distance`; the review sheet SHALL show it with the citations and fragments. A null distance SHALL NOT be converted to a number and SHALL NOT affect any outcome. The tool SHALL expose `ACCEPTS_UNMEASURED_DISTANCE` as true so a collector can detect that it may export such evidence instead of blocking the row.
+
+#### Scenario: Fragment with a null distance
+- **WHEN** a raw collection contains a retrieved fragment with `distance: null`
+- **THEN** it validates, is scored like any other case and appears in the review sheet with `"distance": null`
+
+#### Scenario: Missing or invalid distance
+- **WHEN** a fragment omits `distance` or gives it as a string, a boolean or a non-finite number
+- **THEN** the collection is rejected with a controlled error
+
+#### Scenario: Malformed public evidence
+- **WHEN** `public_evidence` is not a list of objects with textual `id` and `kind`, or carries an invalid distance
+- **THEN** the collection is rejected
+
+### Requirement: Dashboard rows without text or names
+
+The tool SHALL provide a `rows` command that writes a score report as the `rows-v1` contract of the evaluation dashboard (JUP-121): a run identity taken from the report (identifier, date, commit, suite and its hash, model alias, and a synthetic flag that is true for template runs) and result rows for the case states in total, by baseline or variant and behavior, and by category, for both pass rates, for reduced coverage and for numeric checks. Case-state rows SHALL carry a count and a denominator and no value. A rate with no evaluated cases SHALL be not measured with a null value, never zero. The rows SHALL NOT contain answer text, reviewer names or notes. Fields no report records (corpus, retrieval and prompt hashes) SHALL be null. Output paths SHALL follow the same limits as the other outputs, with generated `JUP-071-*-rows.json` files allowed in `docs/evidence`.
+
+#### Scenario: Rows from a report
+- **WHEN** `rows` converts a valid score report
+- **THEN** the run identity matches the report and the case-state rows add up to the total of cases
+- **AND** the rows contain no answer text, reviewer name or judgment note
+
+#### Scenario: Rate without evaluated cases
+- **WHEN** the report has no evaluated cases
+- **THEN** the evaluated rate is not measured, with a null value and a zero denominator
+
+#### Scenario: Unsafe input or output
+- **WHEN** the report is malformed or missing, or the output would overwrite the input or sits inside the repository outside the generated names
+- **THEN** the command fails with a controlled error and writes nothing
+
 ### Requirement: Reproducible evidence with a real-model verification boundary
 
 Evidence SHALL identify the execution date, application commit, suite version and digest, relevant source versions, runtime configuration and evidence level. Final evaluation of a generative system SHALL require three independent collections with the same suite and configuration and the required human judgments; all repetitions SHALL be preserved, and a repeated export of the same collection SHALL NOT count as an independent execution. Evidence SHALL distinguish technical instrument checks, template or mock results and verified model runs. When JUP-035 generation is not verified, the generative evaluation SHALL remain explicitly pending.

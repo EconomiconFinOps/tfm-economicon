@@ -121,6 +121,10 @@ Pasada automatizada sobre el diff `136eeaec..8f8f71fd`, con mutación manual de 
 
 Los arreglos de ADV-1 a ADV-4 se hicieron con RED previo y no se sometieron a otra pasada.
 
+## Cambios posteriores a la pasada 5 (2026-10-16)
+
+Se añadieron las tareas 4.4 (distancia no medida y `public_evidence`) y 4.5 (comando `rows` para el contrato `rows-v1`), con 14 pruebas rojas primero y verdes después. No han pasado por una pasada adversarial independiente ni por una persona; deben incluirse en la `Revision JUP-071`.
+
 ## Pattern sweep
 
 - Cifras sin alias y cifras no pedidas: las variantes de cumplimiento eran las únicas con dos cifras o sin alias; JUP-071-010 tiene una cifra y se resuelve por la etiqueta «julio».

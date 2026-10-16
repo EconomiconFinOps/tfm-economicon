@@ -1188,5 +1188,148 @@ class CliAndTransportTests(unittest.TestCase):
             self.assertNotIn("FIXTURE-PASSWORD", stdout + stderr + json.dumps(raw))
 
 
+class UnmeasuredDistanceTests(unittest.TestCase):
+    """S1: evidence without a measured distance is kept as such, never as a zero."""
+
+    FRAGMENT = {"chunk_id": "f1", "source": "docs/x.md", "content": "texto", "distance": None}
+
+    def test_the_tool_declares_that_it_accepts_unmeasured_distance(self):
+        self.assertIs(robustness.ACCEPTS_UNMEASURED_DISTANCE, True)
+
+    def test_null_distance_is_valid_and_scores_like_any_other_row(self):
+        raw = raw_fixture()
+        raw["cases"][0]["retrieved"] = [dict(self.FRAGMENT)]
+        report = scored(raw)
+        self.assertEqual(report["totals"]["total"], 29)
+
+    def test_a_missing_or_invalid_distance_is_still_rejected(self):
+        for fragment in ({k: v for k, v in self.FRAGMENT.items() if k != "distance"},
+                         {**self.FRAGMENT, "distance": "0.1"}, {**self.FRAGMENT, "distance": True},
+                         {**self.FRAGMENT, "distance": float("nan")}):
+            raw = raw_fixture()
+            raw["cases"][0]["retrieved"] = [fragment]
+            with self.subTest(fragment=fragment), self.assertRaises(robustness.Error):
+                scored(raw)
+
+    def test_public_evidence_is_optional_and_validated(self):
+        good = [{"id": "e1", "kind": "corpus", "source": "docs/x.md", "content": "texto", "distance": None}]
+        raw = raw_fixture()
+        raw["cases"][0]["public_evidence"] = good
+        self.assertEqual(scored(raw)["totals"]["total"], 29)
+        for bad in ("e1", {}, ["e1"], [{"kind": "corpus"}], [{"id": 1, "kind": "corpus"}],
+                    [{"id": "e1", "kind": "corpus", "distance": "0.1"}],
+                    [{"id": "e1", "kind": "corpus", "distance": float("inf")}]):
+            raw = raw_fixture()
+            raw["cases"][0]["public_evidence"] = bad
+            with self.subTest(bad=bad), self.assertRaises(robustness.Error):
+                scored(raw)
+
+    def test_review_sheet_shows_public_evidence_and_unmeasured_distance(self):
+        raw = raw_fixture()
+        raw["cases"][0]["retrieved"] = [dict(self.FRAGMENT)]
+        raw["cases"][0]["public_evidence"] = [{"id": "e1", "kind": "corpus", "source": "docs/x.md", "content": "EVIDENCIA-VISIBLE", "distance": None}]
+        text = robustness.sheet(CASES, raw)
+        self.assertIn("EVIDENCIA-VISIBLE", text)
+        self.assertIn('"distance": null', text)
+        plain = robustness.sheet(CASES, raw_fixture())
+        self.assertNotIn("public_evidence", plain)
+
+
+class RowsContractTests(unittest.TestCase):
+    """S2: the score report can be emitted as the dashboard's rows-v1 contract."""
+
+    RESULT_KEYS = ("measure_type", "grp", "metric_id", "behavior", "status", "count", "value", "unit",
+                   "numerator", "denominator", "ci_low", "ci_high", "judgment", "selected")
+    RUN_KEYS = ("run_id", "source", "run_at", "commit", "suite", "suite_version", "suite_sha256", "corpus_sha256",
+                "embedding_provider", "embedding_alias", "retrieval", "generation_model", "prompt_sha256", "synthetic")
+
+    def rows(self, raw=None, judgments=None):
+        return robustness.rows_v1(scored(raw, judgments))
+
+    def test_shape_and_run_identity(self):
+        document = self.rows()
+        self.assertEqual(document["contract_version"], 1)
+        self.assertEqual(tuple(document["run"]), self.RUN_KEYS)
+        report = scored()
+        run = document["run"]
+        self.assertEqual((run["run_id"], run["source"], run["suite"], run["synthetic"]),
+                         (report["run"]["run_id"], "JUP-071", "JUP-071", True))
+        self.assertEqual((run["run_at"], run["commit"], run["suite_sha256"]),
+                         (report["run"]["date"], report["run"]["commit"], report["suite_sha256"]))
+        self.assertIsNone(run["prompt_sha256"])
+        for row in document["results"]:
+            self.assertEqual(tuple(row), self.RESULT_KEYS)
+
+    def test_case_states_carry_counts_and_never_a_value(self):
+        document = self.rows()
+        total = [r for r in document["results"] if (r["grp"], r["behavior"]) == ("cases", "all")]
+        self.assertEqual({r["status"] for r in total}, set(robustness.OUTCOMES))
+        self.assertEqual(sum(r["count"] for r in total), 29)
+        for row in total:
+            self.assertIsNone(row["value"])
+            self.assertEqual(row["denominator"], 29)
+            self.assertEqual(row["judgment"], "human" if row["status"] in ("pass", "fail") else "automatic")
+
+    def test_unmeasured_rate_is_null_not_zero(self):
+        empty = robustness.score(SUITE, CASES, raw_fixture(), robustness.empty_judgments(raw_fixture()))
+        document = robustness.rows_v1(empty)
+        rate = next(r for r in document["results"] if r["metric_id"] == "pass_over_evaluated")
+        if empty["totals"]["evaluated"] == 0:
+            self.assertEqual((rate["status"], rate["value"], rate["denominator"]), ("not_measured", None, 0))
+        total = next(r for r in document["results"] if r["metric_id"] == "pass_over_total")
+        self.assertEqual(total["status"], "measured")
+        self.assertEqual(total["numerator"], empty["totals"]["pass"])
+        self.assertEqual(total["denominator"], 29)
+
+    def test_every_group_behavior_and_category_is_present(self):
+        document = self.rows()
+        seen = {(r["grp"], r["behavior"]) for r in document["results"]}
+        for group in ("baseline", "perturbation"):
+            for behavior in ("answer", "clarify", "abstain"):
+                self.assertIn((group, behavior), seen)
+        for category in scored()["categories"]:
+            self.assertIn(("category", category), seen)
+
+    def test_no_text_names_or_free_values_leak_into_the_rows(self):
+        raw = raw_fixture()
+        judgments = judgments_fixture(raw)
+        text = json.dumps(self.rows(raw, judgments), ensure_ascii=False)
+        for forbidden in ("fixture-person-a", "UNIT TEST ONLY", "Texto sintético", "apellido"):
+            self.assertNotIn(forbidden, text)
+
+    def test_live_runs_are_not_marked_synthetic(self):
+        report = scored()
+        report["kind"] = "live_unverified"
+        self.assertFalse(robustness.rows_v1(report)["run"]["synthetic"])
+
+    def test_malformed_reports_are_rejected(self):
+        for mutate in (lambda r: r.pop("run"), lambda r: r.pop("totals"), lambda r: r["totals"].update(total="x"),
+                       lambda r: r.update(groups=[])):
+            report = scored()
+            mutate(report)
+            with self.assertRaises(robustness.Error):
+                robustness.rows_v1(report)
+
+    def test_cli_writes_rows_next_to_the_report_and_refuses_unsafe_paths(self):
+        with tempfile.TemporaryDirectory() as folder:
+            base = Path(folder)
+            report_path, output = base / "report.json", base / "rows.json"
+            report_path.write_text(json.dumps(scored()), encoding="utf-8")
+            status, _, stderr = cli(["rows", "--input", report_path, "--output", output])
+            self.assertEqual(status, 0, stderr)
+            self.assertEqual(json.loads(output.read_text(encoding="utf-8"))["contract_version"], 1)
+            status, _, _ = cli(["rows", "--input", report_path, "--output", report_path])
+            self.assertEqual(status, 2)
+            status, _, _ = cli(["rows", "--input", report_path, "--output", ROOT / "docs/evidence/notes.json"])
+            self.assertEqual(status, 2)
+            status, _, _ = cli(["rows", "--input", base / "missing.json", "--output", base / "other.json"])
+            self.assertEqual(status, 2)
+
+    def test_repository_rows_name_is_limited_to_generated_evidence(self):
+        robustness.protect_outputs([ROOT / "docs/evidence/jup-071-template-fixed-rows.json"], [])
+        with self.assertRaises(robustness.Error):
+            robustness.protect_outputs([ROOT / "docs/evidence/other-rows.json"], [])
+
+
 if __name__ == "__main__":
     unittest.main()
