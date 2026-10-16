@@ -21,6 +21,8 @@ del texto y canal; mensaje1560728370025730078 verificado. No volver a enviarlo.
 Auditoría local posterior:388archivos congelados,213identidades JUnit, builds y
 entradas de comparación conformes; corregida tabla obsoleta80/84 del informe.
 Preparación técnica completa, criterios/adjudicación/alcanceN5 actual pendientes.
+Objetivo marcado `blocked` tras tres turnos del mismo impedimento de cierre;
+retomar sólo ante decisiones nuevas o evidencia accionable. No presupuesto agotado.
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |

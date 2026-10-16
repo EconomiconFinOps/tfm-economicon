@@ -9,6 +9,17 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 16/10/2026
 
+Estado del objetivo: **blocked**, confirmado por la herramienta tras tres turnos
+consecutivos con el mismo impedimento de cierre: acuerdo de criterios,
+adjudicación independiente y alcance N5 actual. La última comprobación deja
+HEAD5af37b25 limpio y Trello con descripción71f1180c/actividad17:52:20UTC sin
+cambio; la ventana de100acciones no aporta un acuerdo nuevo para B. El turno
+anterior sólo confirmó estado, sin progreso ni proceso vivo en espera.
+No es un bloqueo presupuestario: sigue vigente el máximo humano30USD. No se
+declara completado o pausado; candidato y evidencias preservados. Retomar ante
+una decisión humana o cambio externo accionable; no repetir campañas, preguntas
+pendientes o comprobaciones mientras nada cambie. El aviso Discord ya se envió.
+
 ### Auditoría del objetivo local — 16/10/2026
 
 Preparación técnica contrastada con artefactos originales:388archivos de los
