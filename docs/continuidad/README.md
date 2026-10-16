@@ -13,6 +13,8 @@ Actualización16/10: GLM elegido. N3 de5119 completa:327 requisitos originales
 conformes,012r1fallo de calidad/023r3duda. N5 detenida por presupuesto112/140:
 111conformes/1técnica,433requisitos conformes/3no evaluables; faltan28r5.
 Todas las reservas intactas; máximo20USD. Propuesta21USD no autorizada/activada.
+Continuación automática bloqueada tras3auditorías; sin proceso pagado vivo.
+Falta decisión presupuestaria y siguen pendientes criterios/adjudicación.
 Integración local2339 con develop53b43:192backend únicos(29SQL),18frontend,
 95arnés/17evaluador,75OpenSpec y3imágenes verificadas. HTTP/UI de costes con flag
 off/on pasan en preview desechable retirada, sin modelo. No se atribuye

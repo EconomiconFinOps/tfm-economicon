@@ -9,6 +9,14 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 16/10/2026
 
+La continuación automática queda bloqueada tras tres auditorías consecutivas
+sin avance: falta decisión presupuestaria (20USD vigente,21sólo propuesto) y
+siguen pendientes los criterios/adjudicación indicados. No hay proceso pagado
+vivo ni trabajo independiente útil pendiente identificado. Se conservan112muestras,
+1247entradas y todas las reservas; no se declara B completada. Auditoría externa
+`goal-impasse-audit-v1.json`. Retomar sólo ante una respuesta humana o cambio
+externo que permita completar el alcance; no repetir la pregunta ni las campañas.
+
 **Modelo elegido para continuar: GLM 5.2 / DeepInfra FP4**, temperatura 0 y
 reasoning desactivado, ZDR y sin fallback. No es aceptación de la versión medida.
 La comparación congelada terminó: GLM **82 conformes provisionales y 2 fallidas**;
