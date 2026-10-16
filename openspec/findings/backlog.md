@@ -430,7 +430,7 @@ Tipo: deuda tecnica. Severidad: Low. Estado: Open. Owner: Equipo Economicon.
   se trunca en un panel de un tercio de ancho; GRD-2 por caso se carga y aparecera como filas con el identificador de caso
   crudo en la matriz cuando haya fallos.
 
-## RF-070-001 Latencias de embedding y recuperacion a 0 ms en las ejecuciones de JUP-070
+## RF-070-012 Latencias de embedding y recuperacion a 0 ms en las ejecuciones de JUP-070
 
 Fecha: 2026-10-16. Origen: JUP-121, [revision de pairing de Lucia en PR #132](https://github.com/EconomiconFinOps/tfm-economicon/pull/132).
 Tipo: calidad de la medicion. Severidad: Low. Estado: Open. Owner: Equipo Economicon. Scope: JUP-070, no JUP-121.

@@ -1,3 +1,13 @@
+## MODIFIED Requirements
+
+### Requirement: Latencia del backend rotulada con su alcance
+El panel de latencia p95 de la sección C DEBE (SHALL) indicar en su título que agrega todas las rutas y en su descripción que son las rutas del backend y que no es la latencia de las consultas al asistente.
+
+#### Scenario: Lectura del panel
+- **WHEN** se lee el título del panel de latencia de la sección C
+- **THEN** dice «todas las rutas»
+- **AND** su descripción dice que son las rutas del backend y que no es la latencia de las consultas al asistente
+
 ## ADDED Requirements
 
 ### Requirement: Anotaciones de cambio de configuración en todas las evoluciones
