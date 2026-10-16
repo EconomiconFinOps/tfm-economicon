@@ -3,6 +3,7 @@ import hashlib
 import json
 import re
 from decimal import Decimal
+from fractions import Fraction
 from app.core.chat_rules import normalized, validate_provenance, explicit_quantity_roles, scenario_clauses, scenario_request
 
 _NUMBER = r"-?\d+(?:[.,]\d+)?"
@@ -88,6 +89,24 @@ def boolean_catalog(question,sources,catalog):
     candidate=next(iter(grouped.values()))
     absolute=next(c for c in candidate['conditions'] if c['metric']=='difference')
     if catalog[baseline]['unit']!=catalog[current]['unit'] or catalog[current]['unit']!=absolute['unit']:return []
+    # A number in the request is another premise, not decoration to discard.
+    # Reject a contradictory amount/unit rather than answering the subsequent
+    # scenario as though it were the question actually asked.
+    request=question.split('\n\n',1)[0].strip()
+    stated=re.search(r'\b(?:aumento|incremento)(?:\s+exacto)?\s+(?:de|del)\s+('
+                     +_NUMBER+r')\s*('+_UNIT+r')\s+activa la regla',request,re.I)
+    if stated:
+        unit=normalized_unit(stated[2]);number=Fraction(canonical_decimal(stated[1]))
+        base=Fraction(catalog[baseline]['value']);current_value=Fraction(catalog[current]['value'])
+        delta=current_value-base
+        if number < 0:return []
+        if unit=='%':
+            if base==0:return []
+            # Exact cross multiplication avoids rounding a declared percentage
+            # into an apparently matching operand.
+            if number*base != delta*100:return []
+        elif unit!=catalog[current]['unit'] or number!=delta:
+            return []
     identity=next(iter(grouped))
     return [{**candidate,'id':'boolean:'+hashlib.sha256(identity.encode()).hexdigest()[:24],
              'baseline':baseline,'current':current}]

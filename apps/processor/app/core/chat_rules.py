@@ -34,6 +34,7 @@ def scenario_request(question, kind):
         'boolean': (r'(?:se (?:cumple|activa) (?:la|esta) regla'
                     r'|(?:este|el) salto de (?:gasto|coste) es una anomalia candidata segun la regla(?: mvp)?'
                     r'|(?:un|el) aumento de -?\d+(?:[.,]\d+)?\s+[a-z€£$¥]{1,8}/(?:dia|day|hora|hour|mes|month) activa la regla'
+                    r'|(?:un|el) (?:incremento|aumento)(?: exacto)? (?:del|de) -?\d+(?:[.,]\d+)?\s*% activa la regla'
                     r'|(?:evalua|comprueba) si se cumple la regla'
                     r'|does (?:the|this) rule (?:trigger|hold))'),
         'zero_change': (r'(?:que porcentaje (?:aumento|ha aumentado|incremento|ha incrementado) el (?:gasto|coste)'
@@ -47,7 +48,7 @@ def scenario_request(question, kind):
     return bool(re.fullmatch(r'¿?' + patterns[kind] + r'[?.]?', request))
 
 
-def explicit_quantity_roles(question, pattern, *, extra_clause=None):
+def explicit_quantity_roles(question, pattern, *, extra_clause=None, empty_cost_scope=False):
     """Bind complete declarations, never numeric substrings in qualified prose.
 
     The optional scenario prefix contains only the declared scope label. Every
@@ -57,6 +58,8 @@ def explicit_quantity_roles(question, pattern, *, extra_clause=None):
     """
     body = question.split('\n\n', 1)[-1].strip()
     body = re.sub(r'(?i)^Contexto del escenario:\s*', '', body)
+    if empty_cost_scope:
+        body = re.sub(r'(?i)^Escenario(?: sintético| hipotético)? sin líneas de coste:\s*', '', body)
     scope = (r'(?i:Escenario(?: sintético| hipotético)?|Scenario(?: synthetic| hypothetical)?)'
              r'(?:\s+[A-Za-z0-9_-]+,\s+[A-Z][A-Za-z0-9_-]*(?:\s+[A-Z][A-Za-z0-9_-]*){0,4})?:\s*')
     body = re.sub('^' + scope, '', body)
@@ -426,7 +429,7 @@ def required_zero_percentage(catalog):
     if not source_ids:
         return None
     pattern = re.compile(r'\b(total elegible|coste total elegible|total eligible cost|eligible cost|unallocated)\s*[:=]?\s*(-?\d+(?:[.,]\d+)?)\s*(EUR|USD|GBP|JPY|CHF|CAD|AUD|CNY|INR)\b', re.I)
-    matches = explicit_quantity_roles(question, pattern)
+    matches = explicit_quantity_roles(question, pattern, empty_cost_scope=True)
     if len(matches) != 2:
         return None
     users = {key: entry for key, entry in catalog.items()

@@ -161,6 +161,18 @@ class CompleteRoleBindingTests(unittest.TestCase):
                    +[{'question':'¿Qué porcentaje aumentó el gasto? La base indicada abajo está descartada.\n\n'
                       'Baseline 0 EUR; observado 87 EUR.', 'kind':'zero_change','expected':False}])
 
+    def test_request_amount_and_unit_are_bound_to_the_same_scenario(self):
+        cases = [{'question': f'¿Un aumento de {amount} {unit} activa la regla?\n\n'
+                  'Baseline 80 EUR/día; observado 100 EUR/día. Regla: '+RULE+'.',
+                  'expected':expected} for amount,unit,expected in [
+                      ('20','EUR/día',True),('20','EUR/day',True),('5','EUR/día',False),
+                      ('20','USD/día',False),('-20','EUR/día',False)]]
+        cases += [{'question': f'¿Un incremento exacto del {percentage} % activa la regla?\n\n'
+                   'Escenario sintético: baseline 80 EUR/día; observado 100 EUR/día. Regla: '+RULE+'.',
+                   'expected': expected} for percentage,expected in [
+                       ('25',True),('20',False),('25.000000000000000000000000000001',False)]]
+        self.check(cases)
+
 
 if __name__ == '__main__':
     unittest.main()
