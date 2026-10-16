@@ -1,3 +1,17 @@
+## Estado vigente — 16/10/2026
+
+Integración local2339 con develop53b43:192 pruebas backend únicas (29SQL),18frontend,
+95arnés/17evaluador,75OpenSpec; tres imágenes y351 archivos verificados, sin activar.
+N3 del producto5119 completa:327 requisitos originales conformes,1fallo adicional
+de calidad y1duda. N5 parcial112/140:111 conformes/1técnica,433 requisitos originales
+conformes/3no evaluables; faltan las28 muestras de la quinta ronda. Presupuesto20USD
+con todas las reservas: siguiente cobertura20.003486838 al cierre,20.061808785 en
+lectura posterior. No N5 completa, aceptación ni medición del corpus nuevo.
+Las casillas1.4/2.4/3.1–3.3 siguen pendientes por esos límites;3.4 acredita preparar
+un candidato revisable con limitaciones, no cerrar la tarjeta.
+Ver `docs/validation/JUP-123-local-review.md` y continuidad; los cortes inferiores
+conservan historia y no sustituyen este estado.
+
 ## 1. Base y contratos
 - [x] 1.1 Recuperar B y activar JUP-123 en Trello.
 - [x] 1.2 Admitir recibos repetidos y detectar ausencias/duplicados (15 pruebas).
@@ -51,7 +65,8 @@
   - N3 finales72 y a545 completas84/84 y congeladas. En a545:80PASS/1FAIL027r2/2inciertas020r1/r3/1técnica022r1 por429;003/013/015/025PASS3/3. Requisitos486PASS/1FAIL/2inciertos/6no evaluables. Frente72:3FAIL→PASS,2inciertos→PASS,1PASS→FAIL y2PASS→inciertos; técnicos aparte. No cumple ausencia de regresiones,3.2 permanece abierta.547filas y252recibos de últimas tres campañas intactos; reservas4.161376 conservadas, cota7.7121919645/10USD. UI003/013/015/025 de historial/recarga conformes, sin nueva inferencia.
   - Comparación c7/e23 registrada:438 pass→pass,7 pass→fail,7 uncertain→uncertain,6 uncertain→pass,2 fail→pass; técnicos aparte. No se cumple ausencia de regresiones; casilla abierta.
 - [ ] 3.3 Confirmar N5 según alcance acordado y presupuesto.
-- [ ] 3.4 Preparar candidato local con pruebas, evidencias y limitaciones.
+- [x] 3.4 Preparar candidato local con pruebas, evidencias y limitaciones.
+  - Integración2339, informeJUP-123-local-review, tres imágenes sin activar y paquete112 inmutable de250archivos. No se traslada N3/N5de5119 al corpus nuevo. Revisiones, incertidumbres, confirmaciónN5 y aceptación permanecen pendientes.
 
 ## Evidencia de medición — 2026-10-14
 

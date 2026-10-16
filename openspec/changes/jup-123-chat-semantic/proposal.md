@@ -24,11 +24,13 @@ Dependencia: JUP-122, PR https://github.com/EconomiconFinOps/tfm-economicon/pull
 
 ## Impact
 
-Backend, processor y herramientas de evaluación. B se conserva sin publicar en
-GitHub; el usuario autorizó un entorno aislado en DockerServer y amplió el máximo
-acumulado a10USD el15/10, conservando todas las reservas pendientes. La baseline
-y las campañas N3 de e23,c7,7be,72 y a545 están recogidas.003/013/015/025 pasan3/3
-en producto30596942/cortea54582fb, pero quedan un fallo de coherencia027, dos
-incertidumbres020 y un fallo técnico429: B no aceptada. Las mismas claves tienen
-vigencia autorizada hasta15/10 a18:00París, sin renovación posterior. N5 y criterios
-del equipo siguen pendientes: no se inventa un porcentaje aprobado ni se reemplazan reviews.
+Backend, processor y herramientas de evaluación. B sigue local, sin publicar.
+El usuario autorizó un entorno aislado y aumentó el máximo acumulado a20USD,
+conservando todas las reservas. Claves existentes hasta16/10a18:00París, sin
+renovación automática. N3 de5119 completa:327 requisitos originales conformes;
+012r1 fallo de calidad y023r3 duda pendientes. N5 detenida por presupuesto112/140,
+111conformes/1técnica, sin repetir ese fallo ni liberar máximos. Propuesta21USD no
+autorizada ni activada. Integración local2339 con develop53b43 comprobada en código,
+SQL e imágenes; su corpus nuevo no hereda la medición de5119. Criterios y adjudicación
+independiente pendientes; no aceptación ni reviews simuladas. Detalle y evidencia:
+`docs/validation/JUP-123-local-review.md`.

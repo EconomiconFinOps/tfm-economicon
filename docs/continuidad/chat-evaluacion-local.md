@@ -109,87 +109,104 @@ Al cierre: **1135 filas**, prefijo original de 1051 intacto y reservas antiguas
 **11.73085650 USD** íntegras. Cota **18.212276993/20 USD**, no factura.
 Ledger N3 SHA `dba497b32b13188d2b6fc93159589d091ed373e42b39a495c6cd1f3c9dc4af84`.
 
-**N5 real iniciada, misma versión y parámetros**, 140 muestras completas previstas,
-no un reenvío de N3. Directorio remoto `period-5119e330-n5-v1`, PID **2157888**,
-start **70883426**, controlador SHA
-`98517a795ad21f8dce9d9d2f0c002a312c67dbdefad3a1110b2993ece9a92752`;
-plan SHA `8c8517a5e1ec4a528db7e5f4c362b99f78fa5a3fb27c63d20712aeeedb4127a5`.
-`observe-period-n5-v1.py` sólo observa ese proceso. Exportar con
-`export-period-n5-public-v1.py` y `export-period-n5-contexts-v1.py`; después
-`review-period-n5-v1.py`. Juicios nuevos en `period-n5-v1-manual-judgments.json`,
-con lotes explícitos y `append-period-n5-review-v1.py`. Sólo se arrastran juicios
-de respuesta completa y contexto autorizado idénticos; no hay juez LLM calibrado.
-Al corte de continuación: 44 respuestas recogidas y revisadas conformes. El
-controlador original terminó en step209/phase2 al conciliar 016r2: respuesta
-completada con dos intentos, el primero sin coste informado. **No es un fallo
-semántico ni coste cero.** Se conserva el máximo íntegro **0.319952 USD** mediante
-`retain_completed_cost`; 1178 filas anteriores intactas y las 44 muestras no se
-reenvían. Pruebas `period-n5-cost-diagnostic-v1.json` y
-`period-n5-016-full-bound-retained-v1.json`. Nuevo ledger SHA
-`d4cad8a992d4f9f512411a24a0901df4a19c47eebe7c4f7a5aa2d2b725046065`.
+**N5 detenida y congelada por presupuesto:112/140 muestras**, candidato5119,
+cuatro rondas y28 ausentes (001–028r5). **111 conformes y1fallo técnico**;
+433 requisitos originales conformes/3no evaluables;222checks de calidad conformes/
+2no evaluables. No N5 completa ni aceptación.109costes conciliados suman
+0.511401845USD;3 máximos desconocidos íntegros suman0.959856USD. Prefijo1135intacto,
+1247filas totales SHA72328e57bd9137af50d803bd4d6692b26f032df14c3470eb6053280acce1188f.
 
-**Continuación del mismo plan**, no campaña nueva: PID **2409620**, start
-**71084922**, `period-5119e330-n5-v1/resume-v1`, controlador SHA
-`4590d26049999cfac403e25ab0c027851384c1d150ebc426ee44194f6f680889`.
-`resume-launch-v1.json` y `period-n5-resume-launch-v1.json`. Preflight fresco
-sin inferencias conforme antes de continuar desde017r2. El observador ya usa este
-handle; no relanzar el original ni el continuador. El cierre esperado es
-`resume-v1/complete.json`. Auditoría final preparada para retenciones íntegras;
-no exigir 140 costes observados ni fingir liquidación de intentos desconocidos.
+Auditoría `period-api-n5-budget-stop-audit-v1.json`, SHA
+30557789c152f64369446950e4376caf72780f965059e8d575c968235220d04f.
+Verifica recibos originales/derivados, fuentes, RAG/SQL/historial, costes o máximos,
+y rechazo fresco de la siguiente reserva sin despacharla. Cota al cierre
+19.683534838USD; siguiente cobertura20.003486838USD >20. Conserva todos los máximos
+anteriores11.73085650 y nuevos0.959856:12.69071250USD desconocidos, no factura.
+Lectura posterior sin nuevas inferencias:19.741856785USD y siguiente20.061808785USD,
+mismo ledger. No atribuir esa variación de cuenta a un consumidor concreto.
 
-Paquete local de revisión en
-[`JUP-123-5119e330-local-review.md`](../validation/JUP-123-5119e330-local-review.md).
-GitHub develop comprobado16/10: **53b43bb1e79b08967cc1b9efdf66669f11e8197c**;
-A/cf821570 coincide en apps/tools con8ea5a0c4. JUP-036 y JUP-120 son posteriores
-a la base0543 del producto medido. Previsualización de merge guardada en
-`period-develop-merge-preview-v1.txt`. Reconciliación preparada en checkout propio
-`../tfm-economicon-jup123-integration`, rama `fix/JUP-123-develop-integration`:
-36 conflictos resueltos usando igualdad contra A; sólo assistant.py y su esquema
-toman los cambios de JUP-036 y se preservan las dos actualizaciones del índice.
-`period-develop-local-resolution-proof-v1.json` comprueba que no cambia ninguna
-otra aplicación. Los 28 casos del banco son idénticos; JUP-120 cambia versión y
-hashes de sus fuentes. Se actualiza el pin del arnés, con prueba de rechazo de un
-plan antiguo antes de reservar o enviar. Las campañas históricas conservan sus
-checkouts y hashes, sin reetiquetar el corpus anterior como el nuevo.
+Paquete local inmutable `period-n5-budget112-frozen-v1/`,250archivos, manifest SHA
+`a34817a826b8c41a1ebc4d518573d7faf002065c225299e616cc25c6cd903d88`.
+Congela auditoría,112vistas,111contextos, juicios y pruebas. Algunas vistas conservan
+una nota de reserva pendiente al momento de exportarlas; la disposición contable
+final está en la auditoría, no en esa nota temprana. Originales remotos intactos.
 
-En este checkout: 95 pruebas del arnés conformes, 163 backend conformes/14 SQL
-omitidas por faltar CockroachDB local, 18 frontend conformes, tipos y build
-conformes, lint sin errores con una advertencia anterior de useLayoutEffect;
-75 items OpenSpec estrictos conformes. Primeros intentos de pruebas fallaron
-por permisos de temporales/esbuild y por PYTHONPATH ausente; corregido el entorno,
-sin cambiar aserciones. Reconciliación local congelada en **1f1b20e7e6787c5818aaeb187f093fdc508d96d3**,
-archivo SHA **a2019efb3bd561f5aa5830c99089d4b6271fc1d65834066af2b225abb894403d**.
-SQL real terminado: **29 pruebas únicas conformes**, las14 omitidas más15 de fecha
-de referencia. Cockroach24.1.11 y volumen exclusivos, sin proveedor; hashes y JUnit
-verificados en `period-integration-sql-final-audit-v2.json` y
-`period-integration-sql-collected/v2/`. El intento v1 no arrancó SQL por memoria
-insuficiente y se conserva. V2 serializó SQL y la campaña: cero operaciones activas,
-parada temporal sólo del processor propio y restauración sana del mismo contenedor
-e imagen. Los otros servicios conservaron ID, imagen y hora de arranque; no se
-afirma que la hora de arranque del processor fuese idéntica. Sin despliegues compartidos.
+Comparación con N3: `paired-n3-7bded583c52288f43ab3165080c4485017293951eda11edca62e646e8f8690c3.json`:
+487PASS→PASS,2FAIL→PASS y1incierto→PASS;324PASS→PASS originales, técnico aparte,
+28muestras adicionales sin par. Mismo candidato: no prueba mejora causal ni borra
+012r1fallida/023r3dudosa de N3. No regresiones originales observadas entre respuestas
+evaluables; no equivale a evaluar ausencias o aceptar. No juezLLM calibrado ni
+adjudicación independiente. Partición histórica ya usada para selección/correcciones,
+no generalización ciega. Banco/prompt/producto no cambiaron durante N3/N5.
 
-La actualización del corpus hizo fallar16 pruebas antiguas del evaluador por
-procedencia incompatible, antes de puntuar. No se relaja la comprobación de hash:
-se conserva el banco1.0.0 auténtico como fixture de esas pruebas y se añade rechazo
-de atribuir sus recibos al corpus actual. **17 pruebas conformes**, recibos del12/10
-inmutables. Partición actual fija SHA15afb8d; familias iguales, sin reserva ciega.
+Retenciones:016r2completed y027r3completed tras intentos incompletos;010r3failed.
+Cada operación conserva0.319952USD. Scripts de retención y lanzamiento ya aplicados,
+no reejecutarlos. `period-n5-016-full-bound-retained-v1.json`,
+`period-n5-failed010-full-bound-retained-v1.json`,
+`period-n5-027-full-bound-retained-v1.json`. Controladores original/v1/v2/v3 terminados.
+Último PID2645352/start71279410, `resume-v3/complete.json` STOPPED step126/phase2.
+**No relanzar ni reenviar las112 muestras.** Próxima001r5, sólo tras autorización
+presupuestaria nueva y admisión fresca; prefijo1247 debe quedar congelado.
 
-**N5 de5119 sigue en curso**, separada de esta integración local. Tras66 muestras,
-010r3 terminó en `provider_error` con draft observado y final sin coste informado:
-fallo técnico preservado, no reenviado, con entrada SQL verificada y máximo íntegro
-0.319952 adicional. `period-n5-failed010-full-bound-retained-v1.json`; las1200 filas
-anteriores siguen idénticas. Los dos máximos nuevos suman0.639904; los antiguos
-11.73085650 permanecen íntegros. No llamar coste cero a ninguno.
+Diagnóstico `period-n5-transport-diagnostics-v2.json`:010r3HTTP520 en transport;
+027r3EOF en envelope antes de recuperarse. No identifican definitivamente el
+servicio causante ni prueban razonamiento incorrecto. Para016 no hay diagnóstico
+estructural equivalente, no inventar causa. El extractor v1 no encontró eventos
+por el envoltorio de logging; v2 lo decodifica sin contenido, URLs o credenciales.
 
-Continuación actual después de SQL: PID **2549105**, start **71201362**,
-`period-5119e330-n5-v1/resume-v2`, controlador SHA
-`89456bde8866138036aa12ec50329191ab4a177109ce60816597a25abf4e963a`.
-`period-n5-resume-launch-v2.json`: desde011r3, sin repetir las66 anteriores.
-Los dos controladores precedentes están terminados; usar este handle y
-`resume-v2/complete.json`, no relanzar ninguno. Exportador/visor de fallos indica
-que la entrada viene de SQL, no del historial público; checks semánticos no
-evaluables de010r3 quedan sin puntuar, no FAIL ni PASS. El auditor N5 preparado
-admite esas distinciones y exige preservar recibos, reservas y hashes.
+`period-n5-cap21-continuation-proposal-v1.json` es una **propuesta no autorizada ni
+activada**, con ensayo puro en memoria:20rechaza la siguiente y21la admitiría,
+sin claves, límites efectivos, fuente, prompts o ledger modificados. Consulta al
+usuario pendiente para21USD; silencio u opción preseleccionada no autorizan.
+No garantiza completar28si hay más costes desconocidos. Máximo vigente sigue20.
+
+**Integración local2339 con develop53b43**, GitHub comprobado otra vez el16/10:
+checkout `tfm-economicon-jup123-integration`, rama `fix/JUP-123-develop-integration`.
+Merge1f1b20e7e6787c5818aaeb187f093fdc508d96d3 conserva B e incorpora JUP-036/JUP-120;
+A apps/tools idéntica a8ea5a0c4 ya integrada.36conflictos resueltos por igualdad
+contra A; dos ficheros incorporan036 y el índice conserva ambos temas.
+`period-develop-local-resolution-proof-v1.json`. En2339cce805ef387a0ea826ec267a1ae79fae7792
+no cambian aplicaciones respecto a1f1: herramientas, fixture histórico y docs.
+
+163backend localesPASS y14SQLomitidas al principio; cubiertas en29SQL realesPASS
+(14+15de fecha),192identidades backend únicas.18frontendPASS, tipos/build conformes,
+lint0errores/1advertencia anterior;95arnésPASS/17evaluadorPASS;75OpenSpec estrictos,
+corpus/banco/trazabilidad/higiene conformes. Primeros intentos por permisos/
+PYTHONPATH/memoria o procedencia del banco se conservan; sin relajar aserciones.
+Banco1.0.1 sólo cambia versión y hashes de fuentes, no28casos/109requisitos.
+Pin15afb8db2605288d90a70761c5a8daf6787809aae13726618fcf05d98181e684; se rechaza
+un plan antiguo antes de reservar/despachar. El banco1.0.0 auténtico queda como
+fixture para los recibos12/10, que no se reetiquetan. Primera ejecución16errores
+por procedencia incompatible conservada; después17PASS, no relajación de hash.
+
+SQL `period-integration-sql-final-audit-v2.json` y `period-integration-sql-collected/v2/`:
+Cockroach24.1.11/volumen exclusivos,29pruebas únicas y todos los JUnit/hashes
+verificados. V1 no arrancó por memoria; v2 serializó con cero operaciones activas,
+parada temporal sólo del processor propio y restauración del mismo contenedor/
+imagen sano. Otros servicios conservaron ID/imagen/arranque. Sin proveedor ni
+despliegues compartidos. No se presenta como nueva suite histórica completa.
+
+Tres builds2339 terminados y verificados **sin activar**, evidencia
+`period-integration-build-final-audit-v1.json`, SHA
+87039e888654d543e2f995bb789a7cf8562aa6d4f212d2a898633f8277302602.
+Backend118/processor106/frontend127 archivos verificados por hash. Imágenes:
+backend8af31280ddbcbdb881b4163b96ab1e46cd296f4454019c029097af7a68face29,
+processor012901a444335842910fc863f8039c55f3e957052ab4d580825dbde209d335fd,
+frontend860140fa2ecc55ea14fe2f401633cd3680871fb22f8b618917fc85286524a78b.
+ControllerPID2727323/start71343285 terminó; no relanzar. Parada temporal del
+processor propio y restauración sana del mismo contenedor/imagen; su hora de
+arranque cambió, los otros servicios no.1247filas idénticas y cero inferencias.
+Archivo2339 SHA3b065878c73eb74f9927466121a1ae0fcb24e7cea33c22920c008c596ea71703.
+
+**No hay API/UI ni campaña del nuevo corpus acreditadas.** Plan
+`integration-2339cce8-n3-plan-v1.json` NOT_RUN84preparadas, no ejecutadas.
+Main jup035-local conserva5119/banco1.0.0 para posible continuación: no moverlo
+al corpus nuevo haciendo que sus revisiones lean otra procedencia.
+El candidato integrado está en
+[`JUP-123-local-review.md`](../validation/JUP-123-local-review.md).
+B no publicada/aceptada, Trello noDone; criterios, adjudicación y confirmaciónN5
+siguen pendientes. ColectorPR131 independiente; no trasladar reviews/CI de A o
+del colector a B ni afirmar CI nueva verde. No Discord enviado.
 
 Para cubrir N5 se amplió **sólo el máximo de la misma clave processor de 3.5 a
 4.5 USD**, después del cierre N3 y de comprobar margen bajo los 20 USD acumulados.
