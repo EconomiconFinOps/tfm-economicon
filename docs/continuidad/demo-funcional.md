@@ -1,5 +1,20 @@
 # Demo funcional — JUP-065
 
+## Reconciliacion con develop — 2026-10-16
+
+Se incorpora22f0e2f3 (JUP-121/PR132) sobre6a498a40. Unico conflicto en
+el indice:ambas filas conservadas. CI combina historial completo y tres comandos
+de demo con evaluation-dashboard:test y timeout20min de develop. Todos los
+cambios disjuntos contrastados con Git; paquete, scripts y guion intactos.
+Propio:15/15 artefactos en modo normal/optimizado,3tests de integridad,
+28consultas/7categorias,88tests de workflow/politica/gobernanza,OpenSpec75/75,
+trazabilidad7 e higiene1716 correctos; diff propio contra develop limpio.
+CI del nuevo SHA pendiente de publicacion. Paris reviso favorablemente6a498a40;
+Victor valido39baec24 con mock. No se trasladan como nuevos dictamenes.
+La base introduce series de fallos en backend y datasource/dashboard Grafana;
+revalidar dependencias afectadas antes de integrar. No se ejecuto stack, Grafana,
+modelo ni ensayo. PR135 sigue separada; gate historico, pairing y ensayo pendientes.
+
 ## Comentario de Lucía del15/10 — respuesta preparada16/10/2026
 
 Comentario6200382477 distinto de la review del14/10. Se explicita elección:
