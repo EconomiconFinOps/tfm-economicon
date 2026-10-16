@@ -6,7 +6,22 @@ adaptarlo para JUP-071 y publicar PR independiente; chat
 Tarjetas: [JUP-123](https://trello.com/c/TqtcumIN),
 [JUP-071](https://trello.com/c/H0woDubz).
 
-## Contrato del colector solicitado en PR #131 — 16/10/2026
+## Aprobación y actualización con develop — 16/10/2026
+
+Origen: «Han aprobado la revision». Confirmado en GitHub: [Víctor aprueba](https://github.com/EconomiconFinOps/tfm-economicon/pull/131#pullrequestreview-5553358426)
+`e0a0c41e` y levanta su solicitud de cambios. [Lucía revalida](https://github.com/EconomiconFinOps/tfm-economicon/pull/131#pullrequestreview-5552441528)
+esa misma cabeza con IA/corpus reales; sus límites y autoría permanecen en la review.
+La CI de PR `38871005264` terminó SUCCESS en todos los jobs, incluido backend;
+el fallo del run de push se conserva como finding intermitente fuera de alcance.
+
+Develop avanza a `22f0e2f3` (#132); tres conflictos aditivos en CI, package.json
+e índice de continuidad impiden integrar. El revisor pide conservar ambos
+scripts de pruebas, ambas invocaciones CI, las dos filas y timeout de 20 minutos.
+Se prepara esa reconciliación sobre la rama del autor. Su aprobación corresponde
+a e0a0c41e: el push descarta la aprobación y requiere revisión de la fusión,
+además de revalidar el delta que corresponda. No hay autorización de merge.
+
+## Contrato del colector solicitado en PR #131 — corte anterior del 16/10/2026
 
 Origen: «Implementa los cambios que nos piden en PR131»; identificador del chat
 no disponible. Base de corrección `af8388d0`.
@@ -31,8 +46,27 @@ Integración offline final: 87 fixtures, 521 GET, herramientas originales confor
 exportación conjunta idéntica a las individuales y recibos v1 compatibles.
 Recibo externo `JUP-123-collector/integration-10dd5cef/summary.json`, reproducible
 con `materiales/07-evidencias/JUP-123-collector/integration-contract-20261016.py`
-desde el espacio Economicon. Publicación del nuevo candidato en curso; no se da por integrada
-ni aceptada B. Gasto incremental 0; no mensajes a Discord.
+desde el espacio Economicon.
+
+Publicado y comprobado en GitHub `e0a0c41ee30b44a354d0612f417c89ccd243aa06`;
+descripción de PR actualizada con contrato, dependencias y pruebas. El primer
+formato de la descripción no respetaba los campos exactos de ID/roles del
+checker; corregido y comprobado localmente y en GitHub (JUP policy SUCCESS).
+SQL nativo [38870655687](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38870655687) SUCCESS.
+CI del mismo SHA [38870649367](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38870649367):
+frontend, tipos, processor, Azure y OpenSpec SUCCESS; backend repite exactamente
+los seis fallos de salud heredados (401 frente a 400/403), con 2212 PASS y
+293 SKIP. Log externo `JUP-123-collector/ci-e0a0c41e-failed.log`.
+No hay delta en apps frente a `53b43bb1`. No se cambian esas pruebas ajenas.
+La ejecución PR posterior a corregir el cuerpo
+[38871005264](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38871005264)
+ya tiene JUP policy/OpenSpec/frontend/Azure SUCCESS y conserva backend/processor
+en curso al corte; no se presenta como CI completa verde.
+
+PR OPEN/CHANGES_REQUESTED. Siguientes pasos: aprobación de Víctor y actualización
+de la validación de Lucía sobre esta cabeza, tratamiento del finding de salud y
+adaptación de la capacidad en JUP-071 por su responsable. Esta entrega está
+implementada; no se integra ni acepta B. Gasto incremental 0; no mensajes a Discord.
 
 ## Corte anterior: corrección y diagnóstico de CI
 
