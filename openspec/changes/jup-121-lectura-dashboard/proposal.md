@@ -35,3 +35,15 @@ No cambia el contrato `rows-v1`, los adaptadores, el esquema SQL, el rol de Graf
 - Pruebas del dashboard en `scripts/tests/` (nuevas, más un parche a las congeladas que dependen de columnas o textos que cambian).
 - `docs/validation/evaluation-dashboard.md`, `docs/evidence/JUP-121-validation.md` y la spec `assistant-evaluation-dashboard`.
 - Sin cambios en `tools/evaluation-dashboard.py`, en el esquema `evaluation` ni en el backend.
+
+## Human Approval
+
+- Change: jup-121-lectura-dashboard
+- Approval type: pre-code
+- Decision: approved
+- Approver: Victor
+- Date: 2026-10-15
+- Carril: standard
+- Scope reviewed: proposal, design, specs, tasks
+- Scope adjustment approved: se atienden la validación de Paris y el comentario de pairing de Lucia en la PR #132 dentro de la misma rama y con la misma tarjeta JUP-121, en un change propio porque `jup-121-assistant-evaluation-dashboard` ya está archivado. Alcance completo de las sugerencias de Lucia. El cambio de `tools/local-doctor.test.mjs` pedido por Paris se entrega como parche que aplica el usuario.
+- Pendiente fuera de este gate: `Revision JUP-121` y `Validacion JUP-121` sobre el candidato corregido.
