@@ -1,5 +1,16 @@
 # Demo funcional — JUP-065
 
+## Comentario de Lucía del15/10 — respuesta preparada16/10/2026
+
+Comentario6200382477 distinto de la review del14/10. Se explicita elección:
+JUP065 muestra junio2024 y COST_REFERENCE_DATE vacío;JUP107/119 con fecha
+2026-10-30 requiere ensayo,proyecto,volúmenes y registro separados. No unificarlos
+sin recalcular referencias. Guion ampliado9min incorpora JUP036 después de2:45;
+tramo obligatorio en ensayo técnico aunque presentación corta7min. Reservas no
+acumulativas;PlanB de costes sólo parcial,no sustituye aceptación generativa.
+Propuesta de anomalías/ownership/etiquetado/salud/observabilidad/CI-CD pendiente
+de ampliación acordada,no implementada ni validada. No merge ni Discord.
+
 ## Actualización de PR63 — 15/10/2026
 
 Origen: chat `01a12c49-7488-72f0-9077-1137c5c4f2a6`. Reconciliación con develop

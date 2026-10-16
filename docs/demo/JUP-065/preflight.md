@@ -8,6 +8,13 @@ Aplicar primero las [puertas de entrada del ensayo integrado](ensayo-integrado.m
 
 ## 1. Fijar la ejecución
 
+Elegir el ensayo JUP-065 de la [decisión de datos/alcance](README.md): muestra junio de 2024,Core cargado,Growth vacío,
+perfil demo apagado y `COST_REFERENCE_DATE=` vacío. JUP-107/119 con fecha simulada
+30/10/2026 requiere otro proyecto,volúmenes y registro;no alternar ambos datasets
+dentro de esta instancia. Registrar variante de presentación:7 min o 9 min con
+[tramo JUP-036](guion.md).
+
+
 Responsable de preparación: liderazgo/pairing de JUP-065. Validador: Víctor según Trello; su ejecución de f27eb7f con mock del 11/10 es histórica y no valida este nuevo entorno. Usar una instancia desechable dedicada, nunca los volúmenes de otro trabajo. Registrar SHA de aplicación, SHA del paquete, imágenes, URLs y nombre Compose en `registro-ensayo.md`. El commit de preparación no implica que el MVP completo esté integrado.
 
 La aplicación integrada elegida debe tener las correcciones necesarias para modelo real, retrieval y citas. Consultar su README y configuración vigente: este paquete no crea secretos ni cambia el despliegue. Proveer por canal seguro las variables de BD, RabbitMQ, sesión y gateway; para seed demo establecer `DEMO_SEED_ENABLED=true` y una `DEMO_PASSWORD` externa no heredada. La cuenta creada es `operator@example.com`, con tenants `tenant-core` y `tenant-growth`.
@@ -105,7 +112,7 @@ Puede retirar episodios derivados cuando no quedan otros costes en el tenant;
 no es un reset limitado a Growth. Conserva ingestas ajenas a las definiciones de
 demo, incluida la muestra original: contrastar después billing de ambos tenants
 con las expectativas de este paquete. No borrar datos de otros trabajos.
-Registrar `COST_REFERENCE_DATE` efectivo (vacío usa la fecha real); seleccionar
+Registrar `COST_REFERENCE_DATE` vacío para esta ejecución (usa la fecha real); seleccionar
 junio de 2024 explícitamente aunque JUP-119 cambie el periodo inicial de la UI.
 No usar `open_ingestions` para inferir jobs pendientes; comprobar cada job por SQL.
 

@@ -16,9 +16,27 @@ Audiencia: tutor/equipo. Mensaje: «Economicon permite consultar una muestra de 
 
 Con `CHAT_ENABLED=false` el panel está oculto: los tramos 3:15–6:15 quedan `blocked`, no se sustituyen por la ruta estructurada `/assistant`. Tras recarga, abrir el panel y «Historial» para recuperar la conversación y su cita. La integración de A no autoriza activar el chat antes de aceptar B.
 
+## Tramo JUP-036 — versión ampliada de 9 minutos
+
+Usar la misma instancia y muestra JUP-065,con `COST_REFERENCE_DATE=` vacío y
+fechas explícitas. Insertar este bloque tras 2:45;desplazar dos minutos los tramos
+posteriores:corpus 4:45–5:15,generación 5:15–6:30,cita 6:30–7:15,pregunta de aclaración 7:15–8:15,
+cierre 8:15–9:00. No añadir además la reserva de dos minutos.
+
+| Tiempo ampliado | Acción | Resultado esperado |
+| --- | --- | --- |
+| 2:45–3:30 | Core,en `/assistant`,crear conversación;activar «Consultar gasto Azure». «Ámbito Azure»:Suscripción;«Suscripción (opcional)»: `64e355d7-997c-491d-b0c1-8414dccfcf42`;«Valor exacto (opcional)» vacío. «Inicio UTC (incluido)»:2024-06-01;«Fin UTC (excluido)»:2024-06-20. Escribir «¿Cuánto hemos gastado en esta suscripción en este periodo?» y Enviar. | Selección explícita;respuesta estructurada con 0,06 USD y 38 registros y periodo correcto. No atribuir interpretación de lenguaje natural ni generación LLM. |
+| 3:30–4:00 | Abrir evidencia de costes y recargar la conversación. | Importe,ámbito,periodo e ingestas trazables;comparar con billing. El conteo visible no demuestra factura mensual completa. |
+| 4:00–4:45 | Cambiar a Growth,crear conversación y repetir selección/fechas;volver a Core. | Ausencia de datos,no gasto cero;conservar ambas evidencias. |
+
+Es el mismo caso del paso7 del ensayo integrado. Es obligatorio comprobarlo en
+el ensayo técnico,aunque se elija presentar sólo el guion corto. Sus comprobaciones
+no requieren activar el panel generativo. Contrato:[JUP-036](../../api/azure-cost-questions.md).
+Los datos y fecha de JUP-107/119 pertenecen a otro ensayo,como explica el README.
+
 ## Reserva y ampliación
 
-Si hay dos minutos extra, usar JUP-069-001 en conversación nueva: leer «escenario sintético» antes de pegar el contexto. Esperados: total 1.000 EUR, VM 600 EUR, cuota 60 %, tolerancia 0,01 EUR/puntos porcentuales. No conecta ni carga esos datos en el dashboard. JUP-069-023 y 025 comprueban abstención ante tenant real inaccesible y orden de apagado; conservar el texto y la rúbrica originales.
+Como alternativa al bloque JUP-036 en una presentación ampliada,no acumulativa, usar JUP-069-001 en conversación nueva: leer «escenario sintético» antes de pegar el contexto. Esperados: total 1.000 EUR, VM 600 EUR, cuota 60 %, tolerancia 0,01 EUR/puntos porcentuales. No conecta ni carga esos datos en el dashboard. JUP-069-023 y 025 comprueban abstención ante tenant real inaccesible y orden de apagado; conservar el texto y la rúbrica originales.
 
 ## Plan ante fallos
 

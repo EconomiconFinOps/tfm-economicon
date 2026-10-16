@@ -43,7 +43,7 @@ No rellenar la plantilla canónica ni aceptar el ensayo por analogía con otro.
 6. Ejecutar reservas 001/023/025 en conversaciones nuevas durante preflight:
    1.000 EUR/600 EUR/60 % son sintéticos; no mostrarlos como billing. Verificar
    abstención ante tenant ajeno y orden de apagado sin ejecutar acciones.
-7. JUP-036 está integrada; ejecutar el tramo separado en la ruta `/assistant`,
+7. Ejecutar el [tramo JUP-036 del guion ampliado](guion.md), también en el ensayo técnico del guion corto. JUP-036 está integrada; ejecutar el tramo separado en la ruta `/assistant`,
    modo de costes Azure (no el panel generativo): Core, suscripción
    `64e355d7-997c-491d-b0c1-8414dccfcf42`, intervalo explícito
    `[2024-06-01, 2024-06-20)`, tipo ActualCost, moneda USD. Usar el contrato y

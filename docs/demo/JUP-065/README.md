@@ -60,6 +60,33 @@ Antes del ensayo: integrar y validar base vectorial, embeddings/retrieval, model
 
 El cierre de JUP-065 requiere un ensayo completo registrado, reproducido por otra persona, fallos resueltos o limitaciones aceptadas, evidencias enlazadas y revisión/validación según Trello. La preparación presente satisface el trabajo adelantable pedido, sin declarar completada la tarjeta.
 
+## Elección de datos y alcance de presentación — 16/10/2026
+
+Para JUP-065 se presenta la muestra fija de junio de 2024: Core con 38 registros y
+0,06 USD,Growth vacío,perfil demo desactivado y `COST_REFERENCE_DATE=` vacío
+(fecha real;las consultas usan fechas explícitas). Mantener esa configuración
+única durante toda esta ejecución y anotarla antes de empezar.
+
+JUP-107/119 es **otro ensayo**, con proyecto/volúmenes/registro independientes,
+perfil demo y `COST_REFERENCE_DATE=2026-10-30`. Sus episodios de anomalías y datos
+sintéticos/desplazados no se mezclan con los resultados de esta muestra. Si se
+presentan ambos en una sesión, anunciar el cambio de ensayo,entorno,dataset y
+fecha;no presentarlos como un único recorrido continuo. El ensayo seleccionado
+para este paquete es JUP-065;JUP-107/119 no se ejecuta ni valida aquí.
+
+El guion principal dura 7 minutos;la versión ampliada de 9 minutos incorpora el
+tramo estructurado JUP-036 documentado en el guion. Elegir y registrar la variante.
+Las reservas de prompts se prueban en preflight y no añaden otros 2 minutos a la
+versión de 9 minutos. Una presentación parcial de costes/JUP-036 puede mostrarse
+con ese nombre cuando B no esté aceptada;no satisface el ensayo generativo.
+
+La propuesta de Lucía de cubrir anomalías/explicación,JUP-037,etiquetado,salud,
+observabilidad y CI/CD queda pendiente de acordar como ampliación de la demo
+completa/defensa. No se incorpora ni se afirma validada en este paquete. Para
+anomalías deberá usarse el ensayo separado JUP-107/119 o rediseñarse y verificarse
+un único dataset con nuevas referencias antes de unificarlo. No incluir en esta
+preparación presupuestos,detección periódica ni pantallas ocultas.
+
 ## Revisión de esta entrega
 
 Esta PR cubre únicamente la preparación reproducible. Paris revisa el guion, alcance y código auxiliar; Victor reproduce las comprobaciones offline y valida la preparación. Víctor validó `f27eb7f` el 11/10 con runtime/mock y Paris lo aprobó el 13/10. La nueva combinación requiere revalidación de lo afectado, y el pairing de Lucía sigue pendiente de acreditar. No se requiere levantar el MVP para validar esta fase; su ensayo completo conserva el registro `not_run`.

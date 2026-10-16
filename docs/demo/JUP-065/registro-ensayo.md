@@ -11,6 +11,7 @@ Estado inicial: **not_run**. Copiar esta plantilla por ejecución, fuera de `gen
 - Paquete de datos: base `de0d62e7c0028f35a81c5087f531d19031a90e81`; hashes en `generado/procedencia.json`.
 - CHAT_ENABLED y autorización de activación; HMAC legible (sin contenido), migración exit0, subred privada y COST_REFERENCE_DATE: pendiente.
 - Ausencia del perfil/carga JUP-119 y recibo status/billing Core/Growth: pendiente.
+- Ensayo seleccionado:JUP-065 muestra junio de 2024;variante 7 min/9 min con JUP-036:pendiente. JUP-107/119 requiere registro y entorno separados.
 - Host, URL frontend/backend, proyecto Compose y dataset: pendiente.
 - Proveedor/modelo chat realmente usado; parámetros de generación: pendiente.
 - Proveedor/modelo/dimensión embeddings; índice, chunking, hash corpus: pendiente.
