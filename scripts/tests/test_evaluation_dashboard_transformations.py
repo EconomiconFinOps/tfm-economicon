@@ -71,6 +71,16 @@ def evolucion() -> list:
     return [("a5", S._unico("a5")), ("a6", S._unico("a6"))]
 
 
+def evoluciones_con_cadena() -> list:
+    """`[(clave, panel)]` de los tres paneles que llevan la cadena: las dos evoluciones de arriba y la de la latencia.
+
+    `jup-121-lectura-dashboard` (D8) añade una tercera evolución, la de la latencia de la campaña, con la misma
+    cadena. `evolucion()` se deja como estaba (las pruebas de la cadena exacta son de calidad: unidad `percentunit`);
+    esta lista solo se usa para el ALCANCE de la cadena.
+    """
+    return evolucion() + [("a_evolucion_latencia", S._unico("a_evolucion_latencia"))]
+
+
 def _ids(panel) -> list:
     return [t.get("id") for t in panel.get("transformations", [])]
 
@@ -186,10 +196,10 @@ class AjustesQueLaCadenaNecesitaTests(unittest.TestCase):
 
 
 class AlcanceDeLaCadenaTests(unittest.TestCase):
-    """La cadena es solo de las dos evoluciones: las tablas y las señales en vivo no deben heredarla."""
+    """La cadena es solo de las tres evoluciones: las tablas y las señales en vivo no deben heredarla."""
 
     def _otros_paneles(self):
-        propios = {id(p) for _, p in evolucion()}
+        propios = {id(p) for _, p in evoluciones_con_cadena()}
         return [p for p in S.paneles() if id(p) not in propios]
 
     def test_hay_otros_paneles_que_comprobar(self):
@@ -236,15 +246,20 @@ class AlcanceDeLaCadenaTests(unittest.TestCase):
                 self.assertNotIn("partitionByValues", texto)
                 self.assertNotIn("prepareTimeSeries", texto)
 
-    def test_la_cadena_solo_aparece_en_los_dos_paneles_de_evolucion(self):
-        # Vista global: en todo el fichero la cadena aparece exactamente dos veces cada paso (A5 y A6).
+    def test_la_cadena_solo_aparece_en_los_tres_paneles_de_evolucion(self):
+        # Vista global: en todo el fichero la cadena aparece exactamente tres veces cada paso (A5, A6 y la evolución
+        # de la latencia de la campaña, D8 de `jup-121-lectura-dashboard`).
         texto = json.dumps(S.dashboard())
-        self.assertEqual(texto.count("partitionByValues"), 2)
-        self.assertEqual(texto.count("prepareTimeSeries"), 2)
+        self.assertEqual(texto.count("partitionByValues"), 3)
+        self.assertEqual(texto.count("prepareTimeSeries"), 3)
 
-    def test_las_evoluciones_son_los_dos_unicos_paneles_con_transformaciones(self):
+    def test_los_paneles_con_transformaciones_son_las_tres_evoluciones_y_la_matriz(self):
+        # La matriz de resultados por métrica y ejecución (`groupingToMatrix` + `organize`) es el único panel con
+        # transformaciones que no es una evolución; ninguna otra tabla ni señal en vivo las lleva.
         con = [p["title"] for p in S.paneles() if p.get("transformations")]
-        self.assertEqual(sorted(con), sorted(p["title"] for _, p in evolucion()))
+        esperados = [p["title"] for _, p in evoluciones_con_cadena()] + [S._unico("a_matriz")["title"]]
+        self.assertEqual(sorted(con), sorted(esperados))
+        self.assertEqual(_ids(S._unico("a_matriz")), ["groupingToMatrix", "organize"])
 
 
 if __name__ == "__main__":

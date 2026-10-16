@@ -179,13 +179,28 @@ def _nombra(sql, *nombres) -> bool:
 
 
 def clasificar(panel):
-    """Clave `a1`..`a9` del panel de la sección A según lo que consulta, o `None` (el texto es `a0` aparte).
+    """Clave `a1`..`a9` (o de lectura: `a_matriz`, `a_resumen`, `a_evolucion_latencia`) del panel de la sección A según
+    lo que consulta, o `None` (el texto es `a0` aparte).
 
     Las reglas se evalúan en orden y son excluyentes: así un panel solo cuenta para una pieza y un panel de más (o uno
     de menos) se nota. Es la fuente única que usa también `test_evaluation_dashboard_queries.py`.
     """
     sql = _plano(sql_de(panel))
     tipo = panel.get("type")
+    # Piezas de lectura de `jup-121-lectura-dashboard`. Van ANTES de las originales porque comparten con ellas lo que
+    # las originales miran: la matriz nombra las seis familias entre comillas (como el detalle de latencia, `a4`, y los
+    # de calidad, `a3`), el resumen consulta `evaluation.runs` y la evolución de la latencia lee `comparable_runs`
+    # como `a5`/`a6`. Se reconocen por lo que las distingue: su transformación, su alias y su familia.
+    if tipo == "table" and "groupingToMatrix" in {t.get("id") for t in panel.get("transformations", [])}:
+        return "a_matriz"
+    if tipo == "table" and re.search(r"(?i)\bAS\s+resumen\b", sql):
+        return "a_resumen"
+    if (
+        tipo == "timeseries"
+        and re.search(r"evaluation\.comparable_runs\b", sql)
+        and re.search(r"grp\s*=\s*'latency'", sql)
+    ):
+        return "a_evolucion_latencia"
     if tipo == "timeseries" and re.search(r"evaluation\.comparable_runs\b", sql):
         if re.search(r"judgment\s*=\s*'automatic'", sql):
             return "a5"
@@ -212,13 +227,16 @@ def clasificar(panel):
 
 
 CLAVES_A = ("a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "a9")
+# Piezas añadidas por `jup-121-lectura-dashboard`: no se mezclan con las nueve originales para que las pruebas que
+# recorren `CLAVES_A` sigan midiendo exactamente lo mismo.
+CLAVES_LECTURA = ("a_matriz", "a_resumen", "a_evolucion_latencia")
 
 
 def buscar(clave) -> list:
-    """Paneles que cumplen la pieza `clave` (`a0`..`a9`, `b_texto`, `b_tabla`) del contrato."""
+    """Paneles que cumplen la pieza `clave` (`a0`..`a9`, de lectura, `b_texto`, `b_tabla`) del contrato."""
     if clave == "a0":
         return [p for p in de_seccion("A") if p.get("type") == "text"]
-    if clave in CLAVES_A:
+    if clave in CLAVES_A + CLAVES_LECTURA:
         return [p for p in de_seccion("A") if clasificar(p) == clave]
     if clave == "b_texto":
         return [p for p in de_seccion("B") if p.get("type") == "text"]
@@ -554,6 +572,17 @@ class SeccionATests(unittest.TestCase):
             with self.subTest(pieza=clave):
                 self.assertEqual(len(buscar(clave)), 1, [p["title"] for p in buscar(clave)])
 
+    def test_las_piezas_de_lectura_existen_una_sola_vez_y_cada_una_con_su_tipo(self):
+        # El clasificador distingue la matriz, el resumen y la evolución de la latencia del detalle (`a4`) y de las
+        # evoluciones `a5`/`a6`, con las que comparten palabras. Si una regla se pierde, el panel se cuela en otra
+        # pieza (`a4` pasa a tener dos) o queda sin clasificar: aquí se exige exactamente uno de cada y su tipo.
+        esperados = {"a_matriz": "table", "a_resumen": "table", "a_evolucion_latencia": "timeseries"}
+        self.assertEqual(set(esperados), set(CLAVES_LECTURA))
+        for clave, tipo in esperados.items():
+            with self.subTest(pieza=clave):
+                self.assertEqual(len(buscar(clave)), 1, [p["title"] for p in buscar(clave)])
+                self.assertEqual(_unico(clave)["type"], tipo)
+
     def test_ningun_panel_de_datos_de_a_queda_sin_clasificar(self):
         # Un panel de A que ninguna pieza reclama es un panel que el contrato no conoce (y que las pruebas no ven).
         for panel in de_seccion("A"):
@@ -694,6 +723,14 @@ def _proporcion(numerador):
     )
 
 
+# Tasa de error de `jup-121-lectura-dashboard` (D1): el numerador lleva `or vector(0)` para valer 0 cuando hay peticiones
+# y ninguna acaba en 5xx; sin peticiones el denominador no tiene series y sigue diciendo «Sin datos».
+ERROR_CON_NUMERADOR_A_CERO = (
+    '100 * (sum(rate(backend_http_requests_total{status_code=~"5.."}[5m])) or vector(0)) '
+    "/ sum(rate(backend_http_requests_total[5m]))"
+)
+
+
 class SeccionCTests(unittest.TestCase):
     def _exprs(self):
         return [(p, e) for p in de_seccion("C") for e in expresiones(p)]
@@ -707,21 +744,38 @@ class SeccionCTests(unittest.TestCase):
         for panel in textos:
             self.assertTrue(panel.get("options", {}).get("content", "").strip())
 
-    def test_las_tres_expresiones_del_dashboard_tecnico_se_reutilizan_identicas(self):
+    def test_latencia_y_consultas_se_reutilizan_identicas_y_el_error_solo_difiere_en_el_numerador_a_cero(self):
         p95, error, consultas = _expresiones_tecnicas()
         todas = [e for _, e in self._exprs()]
-        for nombre, expr in (("p95", p95), ("error", error), ("consultas/min", consultas)):
+        # La latencia y las consultas por minuto siguen siendo idénticas a las del dashboard técnico (JUP-043).
+        for nombre, expr in (("p95", p95), ("consultas/min", consultas)):
             with self.subTest(expresion=nombre):
                 self.assertEqual(todas.count(expr), 1, expr)
+        # La tasa de error ya no lo es (D1 de `jup-121-lectura-dashboard`): vale 0 con tráfico y sin 5xx. Se exige la
+        # expresión nueva exacta, una sola vez, y que la del dashboard técnico (que no se toca) ya no aparezca tal cual.
+        with self.subTest(expresion="error"):
+            self.assertEqual(todas.count(ERROR_CON_NUMERADOR_A_CERO), 1, todas)
+            self.assertEqual(todas.count(error), 0, error)
+            # Y que difiere de la del dashboard técnico SOLO en el `or vector(0)` del numerador: quitado ese
+            # fragmento (con su paréntesis) y normalizados los espacios, queda la expresión técnica tal cual.
+            sin_el_cero = re.sub(
+                r"\(\s*(sum\(rate\([^()]*\[5m\]\)\))\s+or\s+vector\(0\)\s*\)", r"\1", ERROR_CON_NUMERADOR_A_CERO
+            )
+            self.assertNotEqual(sin_el_cero, ERROR_CON_NUMERADOR_A_CERO)
+            self.assertEqual(re.sub(r"\s+", " ", sin_el_cero).strip(), re.sub(r"\s+", " ", error).strip())
 
     def test_los_paneles_de_latencia_y_error_se_rotulan_como_trafico_real(self):
-        p95, error, consultas = _expresiones_tecnicas()
-        for expr in (p95, error):
+        p95, _, consultas = _expresiones_tecnicas()
+        # La latencia conserva su expresión; el error se localiza ya por la expresión nueva (D1).
+        for expr in (p95, ERROR_CON_NUMERADOR_A_CERO):
             paneles_con = [p for p, e in self._exprs() if e == expr]
             self.assertEqual(len(paneles_con), 1)
             self.assertIn("tráfico real", paneles_con[0]["title"].lower())
             # La latencia y la tasa de error se leen solos: ninguna otra serie comparte su panel.
             self.assertEqual(expresiones(paneles_con[0]), [expr])
+        # D2: la latencia agrega todas las rutas del backend y el título lo dice (no es la del asistente).
+        panel_p95 = [p for p, e in self._exprs() if e == p95][0]
+        self.assertEqual(panel_p95["title"], "Latencia p95 del backend (todas las rutas, tráfico real)")
         self.assertEqual(len([p for p, e in self._exprs() if e == consultas]), 1)
 
     def test_proporcion_de_busquedas_sin_contexto_con_la_guarda(self):

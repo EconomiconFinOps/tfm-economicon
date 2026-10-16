@@ -77,12 +77,81 @@
       "type": "row"
     },
     {
-      "description": "Tipo: A\nMide: texto introductorio de la sección A: qué mide, de dónde salen los datos y cómo se leen las ejecuciones no reales\nNo demuestra: el comportamiento con usuarios reales ni con preguntas fuera de la batería",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
+      "description": "Tipo: A\nMide: la última campaña de JUP-070 (la de fecha más reciente): fecha, tipo de ejecución, casos aprobados sobre el total y si ya existe alguna ejecución de JUP-070 con modelo real\nNo demuestra: el comportamiento con usuarios reales ni con preguntas fuera de la batería; son los casos de una batería fija de 28 casos, no una muestra de uso",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto",
+              "wrapText": true
+            },
+            "filterable": false,
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "noValue": "Sin datos: todavía no hay campañas de JUP-070"
+        },
+        "overrides": []
+      },
       "gridPos": {
-        "h": 11,
+        "h": 3,
         "w": 24,
         "x": 0,
         "y": 1
+      },
+      "id": 23,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": false
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH ultima AS (\n  SELECT r.run_id, r.run_at, r.is_real, r.non_real_reasons\n  FROM evaluation.runs r\n  WHERE r.source = 'JUP-070'\n    AND r.run_at IS NOT NULL\n  ORDER BY r.run_at DESC, r.run_id\n  LIMIT 1\n)\nSELECT\n  'Última campaña: ' || to_char(u.run_at AT TIME ZONE 'UTC', 'DD/MM/YYYY')\n    || ' · ' || CASE WHEN u.is_real THEN 'real'\n                     ELSE 'no real (' || array_to_string(u.non_real_reasons, ', ') || ')'\n                END\n    || ' · ' || COALESCE(\n         (SELECT max(x.case_count)::text || '/' || max(x.denominator)::text || ' casos aprobados'\n          FROM evaluation.results x\n          WHERE x.run_id = u.run_id AND x.grp = 'cases' AND x.status = 'pass'),\n         'sin recuento de casos')\n    || CASE WHEN EXISTS (SELECT 1 FROM evaluation.runs q WHERE q.source = 'JUP-070' AND q.is_real)\n            THEN ''\n            ELSE ' · todavía no hay evaluación con modelo real'\n       END AS resumen\nFROM ultima u",
+          "refId": "A"
+        }
+      ],
+      "title": "Resumen de la última campaña",
+      "type": "table"
+    },
+    {
+      "description": "Tipo: A\nMide: texto introductorio de la sección A: qué mide, de dónde salen los datos y cómo se leen las ejecuciones no reales\nNo demuestra: el comportamiento con usuarios reales ni con preguntas fuera de la batería",
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 4
       },
       "id": 2,
       "options": {
@@ -91,7 +160,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "| Qué mide | De dónde salen los datos | Qué no demuestra |\n| --- | --- | --- |\n| La calidad de las respuestas del asistente a una **batería fija de casos**, con rúbrica | Campañas de **JUP-070** sobre la batería de **JUP-069** y las métricas de **JUP-067**; calibración de la recuperación de **JUP-022**; benchmark de modelos de **JUP-078**; robustez de **JUP-071** (todavía sin informe) | El comportamiento con usuarios reales ni con preguntas fuera de la batería |\n\n- **Ejecuciones «no real».** Una ejecución hecha con plantilla, con dobles de prueba, sintética o sin modelo verificado se rotula `no real` con su motivo (`plantilla`, `doble`, `sintetica`, `sin_modelo_verificado`) y sus series se dibujan discontinuas. Es una prueba del flujo, no calidad del asistente.\n- **«No medido» no es 0 %.** Una métrica que no se pudo medir llega vacía y se muestra como «No medido». Un 0 % que se ve es un cero medido.\n- **Sin semáforos.** Los umbrales de JUP-067 son provisionales y no se aplican: ningún valor se colorea como bueno o malo.\n- **Campaña no es tráfico real.** La latencia y la disponibilidad de esta sección son las de las peticiones de una campaña; las del tráfico real están en la sección C.\n- **Evolución.** Solo se dibuja una serie si tiene al menos dos puntos medidos de ejecuciones comparables (misma batería, corpus, modelo y parámetros); una serie con un solo punto no se dibuja y, si ninguna llega a dos, el panel dice «Sin datos: no hay con qué comparar». Las marcas verticales indican un cambio de batería, modelo, prompt o corpus entre ejecuciones consecutivas de la misma fuente.\n- **La línea une puntos medidos.** En las gráficas de evolución la línea une los puntos medidos de una serie. Una ejecución en la que esa métrica no se midió no genera punto: la línea salta de la ejecución anterior medida a la siguiente medida y no se inventa ningún valor.\n- **Rango de tiempo.** El selector de tiempo del dashboard (por defecto, el último año) solo acota las dos gráficas de evolución, que consideran todas las ejecuciones cargadas con fecha dentro de ese rango: para ver ejecuciones más antiguas, amplíalo. Las tablas no se filtran por él y muestran siempre todas las ejecuciones cargadas.",
+        "content": "| Qué mide | De dónde salen los datos | Qué no demuestra |\n| --- | --- | --- |\n| La calidad de las respuestas del asistente a una **batería fija de casos**, con rúbrica | Campañas de **JUP-070** sobre la batería de **JUP-069** y las métricas de **JUP-067**; calibración de la recuperación de **JUP-022**; benchmark de modelos de **JUP-078**; robustez de **JUP-071** (todavía sin informe) | El comportamiento con usuarios reales ni con preguntas fuera de la batería |\n\n- **Ejecuciones «no real».** Hechas con plantilla, dobles de prueba, datos sintéticos o sin modelo verificado: son una prueba del flujo, no calidad del asistente. Se rotulan `no real` con su motivo y sus series se dibujan discontinuas.\n- **«No medido» no es 0 %.** Una métrica que no se pudo medir se muestra «No medido» y «—» indica que esa ejecución no la tiene; un 0 % que se ve es un cero medido.\n- **Evolución.** Una serie solo se dibuja con al menos dos puntos medidos de ejecuciones comparables; si ninguna llega a dos, el panel dice «Sin datos: no hay con qué comparar».",
         "mode": "markdown"
       },
       "title": "Cómo leer la sección A",
@@ -215,7 +284,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Estado"
+                "value": "Tipo de ejecución"
               },
               {
                 "id": "custom.width",
@@ -466,7 +535,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Estado"
+                "value": "Tipo de ejecución"
               },
               {
                 "id": "custom.width",
@@ -681,7 +750,124 @@
         "type": "grafana-postgresql-datasource",
         "uid": "evaluation-postgres"
       },
-      "description": "Tipo: A\nMide: proporciones de calidad de las respuestas (ACC, REL y GRD de JUP-067) con numerador y denominador por ejecución\nNo demuestra: el comportamiento con usuarios reales ni con preguntas fuera de la batería; con ejecuciones no reales estas cifras son una prueba del flujo",
+      "description": "Tipo: A\nMide: una fila por métrica y variante del catálogo de JUP-067 y una columna por ejecución, con el valor, el numerador y el denominador (k/n) y el intervalo de confianza del 95 % cuando existe\nNo demuestra: el comportamiento con usuarios reales ni con preguntas fuera de la batería; «No medido» es que no se pudo medir, «—» que esa ejecución no trae la métrica y ninguno de los dos es 0 %",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "minWidth": 280,
+            "cellOptions": {
+              "type": "auto",
+              "wrapText": true
+            },
+            "filterable": false,
+            "inspect": false
+          },
+          "mappings": [
+            {
+              "type": "special",
+              "options": {
+                "match": "null",
+                "result": {
+                  "text": "No medido",
+                  "index": 0
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "noValue": "Sin datos: todavía no se han cargado ejecuciones (evaluation-dashboard:load)"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Métrica"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 380
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 300
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 36,
+        "w": 24,
+        "x": 0,
+        "y": 25
+      },
+      "id": 22,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH ejecuciones AS (\n  SELECT r.run_id, r.run_at,\n         COALESCE(to_char(r.run_at AT TIME ZONE 'UTC', 'DD-MM HH24:MI'), 'sin fecha · ' || r.run_id)\n           || ' · '\n           || CASE WHEN r.is_real THEN 'real' ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ') END AS ejecucion\n  FROM evaluation.runs r\n  WHERE EXISTS (SELECT 1 FROM evaluation.results x\n                WHERE x.run_id = r.run_id\n                  AND x.grp IN ('accuracy', 'relevance', 'grounding', 'latency', 'robustness', 'availability'))\n),\nmetricas AS (\n  SELECT DISTINCT x.grp, x.metric_id, x.behavior\n  FROM evaluation.results x\n  JOIN ejecuciones e ON e.run_id = x.run_id\n  WHERE x.grp IN ('accuracy', 'relevance', 'grounding', 'latency', 'robustness', 'availability')\n),\ncatalogo AS (\n  SELECT m.*,\n         dense_rank() OVER (ORDER BY CASE m.grp WHEN 'accuracy' THEN 1 WHEN 'relevance' THEN 2 WHEN 'grounding' THEN 3\n                                                WHEN 'latency' THEN 4 WHEN 'robustness' THEN 5 ELSE 6 END,\n                                     m.metric_id, (m.behavior <> 'all'), m.behavior) AS orden\n  FROM metricas m\n)\nSELECT\n  concat_ws(' · ',\n    c.metric_id,\n    CASE c.metric_id\n      WHEN 'ACC-1' THEN 'Casos con resultado pass'\n      WHEN 'ACC-2' THEN 'Comprobaciones objetivas cumplidas'\n      WHEN 'ACC-3' THEN 'Casos clarify y abstain con resultado pass'\n      WHEN 'REL-1' THEN 'Acierto de documento'\n      WHEN 'REL-2' THEN 'Acierto de sección'\n      WHEN 'REL-3' THEN 'Resultado vacío'\n      WHEN 'REL-4' THEN 'Confianza de la recuperación'\n      WHEN 'GRD-1' THEN 'Citas válidas'\n      WHEN 'GRD-2' THEN 'Cifras sin rastro'\n      WHEN 'GRD-3' THEN 'Integridad de referencias de evidencia'\n      WHEN 'LAT-1' THEN 'Latencia mediana'\n      WHEN 'LAT-2' THEN 'Latencia percentil 95'\n      WHEN 'LAT-3' THEN 'Latencia máxima'\n      WHEN 'LAT-4' THEN 'Llamadas fallidas o agotadas'\n      WHEN 'STR-1' THEN 'Respuestas que cumplen el esquema'\n      WHEN 'STR-2' THEN 'Fallos por categoría'\n      WHEN 'AVL-1' THEN 'Disponibilidad del chat'\n      ELSE NULL\n    END,\n    CASE c.behavior\n      WHEN 'all' THEN 'todas'\n      WHEN 'judged' THEN 'con juicio humano'\n      WHEN 'clarify' THEN 'aclarar'\n      WHEN 'abstain' THEN 'abstenerse'\n      WHEN 'answer' THEN 'responder'\n      WHEN 'median' THEN 'mediana'\n      WHEN 'q1' THEN 'primer cuartil'\n      WHEN 'q3' THEN 'tercer cuartil'\n      WHEN 'embedding' THEN 'embedding'\n      WHEN 'retrieval' THEN 'recuperación'\n      WHEN 'generation' THEN 'generación'\n      WHEN 'total' THEN 'total'\n      WHEN 'timeout' THEN 'tiempo agotado'\n      WHEN 'connection' THEN 'conexión'\n      WHEN 'transport' THEN 'transporte'\n      WHEN 'authentication' THEN 'autenticación'\n      WHEN 'request' THEN 'petición rechazada'\n      WHEN 'redirect' THEN 'redirección'\n      WHEN 'rate_limit' THEN 'límite de peticiones'\n      WHEN 'upstream' THEN 'fallo del servicio externo'\n      WHEN 'invalid_response' THEN 'respuesta no válida'\n      WHEN 'schema_validation' THEN 'validación del esquema'\n      ELSE c.behavior\n    END) AS metrica,\n  c.orden,\n  e.ejecucion,\n  CASE\n    WHEN x.run_id IS NULL THEN '—'\n    WHEN x.status = 'not_measured' THEN 'No medido'\n    ELSE CASE\n           WHEN x.unit = 'tasa' THEN to_char(x.value * 100, 'FM990.0') || ' %'\n           WHEN x.unit = 'porcentaje' THEN to_char(x.value, 'FM990.0') || ' %'\n           WHEN x.unit = 'ms' THEN to_char(x.value, 'FM9999999990.0') || ' ms'\n           WHEN x.unit = 'similitud' THEN to_char(x.value, 'FM0.000')\n           WHEN x.unit = 'recuento' THEN to_char(x.value, 'FM9999999990')\n           ELSE trim_scale(round(x.value::numeric, 4))::text || ' ' || x.unit\n         END\n         || CASE WHEN x.numerator IS NOT NULL AND x.denominator IS NOT NULL\n                 THEN ' · ' || trim_scale(x.numerator::numeric)::text || '/' || x.denominator ELSE '' END\n         || CASE WHEN x.ci_low IS NOT NULL AND x.ci_high IS NOT NULL\n                 THEN ' · IC95 ' || to_char(x.ci_low * 100, 'FM990.0') || '–' || to_char(x.ci_high * 100, 'FM990.0') || ' %'\n                 ELSE '' END\n  END AS celda\nFROM catalogo c\nCROSS JOIN ejecuciones e\nLEFT JOIN evaluation.results x\n  ON x.run_id = e.run_id AND x.grp = c.grp AND x.metric_id = c.metric_id AND x.behavior = c.behavior\nORDER BY c.orden, e.run_at NULLS LAST, e.run_id",
+          "refId": "A"
+        }
+      ],
+      "title": "Resultados por métrica y ejecución",
+      "transformations": [
+        {
+          "id": "groupingToMatrix",
+          "options": {
+            "columnField": "ejecucion",
+            "rowField": "metrica",
+            "valueField": "celda",
+            "emptyValue": "null"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "metrica\\ejecucion": "Métrica"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
+      "description": "Tipo: A\nMide: detalle fila a fila, con numerador y denominador, de las proporciones de calidad de las respuestas (ACC, REL y GRD de JUP-067); la lectura principal es la tabla «Resultados por métrica y ejecución»\nNo demuestra: el comportamiento con usuarios reales ni con preguntas fuera de la batería; con ejecuciones no reales estas cifras son una prueba del flujo",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -847,7 +1033,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Estado"
+                "value": "Tipo de ejecución"
               },
               {
                 "id": "custom.width",
@@ -899,12 +1085,31 @@
             },
             "properties": [
               {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "variante"
+            },
+            "properties": [
+              {
                 "id": "displayName",
-                "value": "Conducta"
+                "value": "Variante"
               },
               {
                 "id": "custom.width",
-                "value": 105
+                "value": 170
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto",
+                  "wrapText": true
+                }
               }
             ]
           },
@@ -915,46 +1120,8 @@
             },
             "properties": [
               {
-                "id": "displayName",
-                "value": "Resultado"
-              },
-              {
-                "id": "custom.width",
-                "value": 100
-              },
-              {
-                "id": "mappings",
-                "value": [
-                  {
-                    "type": "value",
-                    "options": {
-                      "measured": {
-                        "text": "Medido",
-                        "index": 0
-                      },
-                      "not_measured": {
-                        "text": "No medido",
-                        "index": 1
-                      },
-                      "pass": {
-                        "text": "Aprobado",
-                        "index": 2
-                      },
-                      "fail": {
-                        "text": "Fallido",
-                        "index": 3
-                      },
-                      "blocked": {
-                        "text": "Bloqueado",
-                        "index": 4
-                      },
-                      "not_run": {
-                        "text": "No ejecutado",
-                        "index": 5
-                      }
-                    }
-                  }
-                ]
+                "id": "custom.hidden",
+                "value": true
               }
             ]
           },
@@ -1066,7 +1233,7 @@
         "h": 36,
         "w": 24,
         "x": 0,
-        "y": 25
+        "y": 61
       },
       "id": 5,
       "options": {
@@ -1090,11 +1257,11 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\n  r.run_id,\n  r.source,\n  r.run_at,\n  COALESCE(r.suite_version, 'no registrado') AS suite_version,\n  COALESCE(r.commit_sha, 'no registrado') AS commit_sha,\n  COALESCE(left(r.commit_sha, 8), 'no registrado') AS commit_corto,\n  COALESCE(r.generation_model, 'no registrado') AS generation_model,\n  CASE WHEN r.is_real THEN 'real'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n  END AS estado,\n  x.metric_id,\n  x.behavior,\n  x.status,\n  x.value,\n  CASE\n    WHEN x.unit = 'tasa' THEN to_char(x.value * 100, 'FM990.0') || ' %'\n    WHEN x.unit = 'porcentaje' THEN to_char(x.value, 'FM990.0') || ' %'\n    WHEN x.unit = 'ms' THEN to_char(x.value, 'FM9999999990.0') || ' ms'\n    WHEN x.unit = 'similitud' THEN to_char(x.value, 'FM0.000')\n    WHEN x.unit = 'recuento' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'parejas' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'eur_minor_2' THEN to_char(x.value / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(round(x.value::numeric, 4))::text || ' ' || x.unit\n  END AS valor_texto,\n  x.numerator,\n  x.denominator,\n  x.unit\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE x.grp IN ('accuracy', 'relevance', 'grounding')\nORDER BY r.run_at, x.metric_id, x.behavior, x.status",
+          "rawSql": "SELECT\n  r.run_id,\n  r.source,\n  r.run_at,\n  COALESCE(r.suite_version, 'no registrado') AS suite_version,\n  COALESCE(r.commit_sha, 'no registrado') AS commit_sha,\n  COALESCE(left(r.commit_sha, 8), 'no registrado') AS commit_corto,\n  COALESCE(r.generation_model, 'no registrado') AS generation_model,\n  CASE WHEN r.is_real THEN 'real'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n  END AS estado,\n  x.metric_id,\n  x.behavior,\n  CASE x.behavior\n      WHEN 'all' THEN 'todas'\n      WHEN 'judged' THEN 'con juicio humano'\n      WHEN 'clarify' THEN 'aclarar'\n      WHEN 'abstain' THEN 'abstenerse'\n      WHEN 'answer' THEN 'responder'\n      WHEN 'median' THEN 'mediana'\n      WHEN 'q1' THEN 'primer cuartil'\n      WHEN 'q3' THEN 'tercer cuartil'\n      WHEN 'embedding' THEN 'embedding'\n      WHEN 'retrieval' THEN 'recuperación'\n      WHEN 'generation' THEN 'generación'\n      WHEN 'total' THEN 'total'\n      WHEN 'timeout' THEN 'tiempo agotado'\n      WHEN 'connection' THEN 'conexión'\n      WHEN 'transport' THEN 'transporte'\n      WHEN 'authentication' THEN 'autenticación'\n      WHEN 'request' THEN 'petición rechazada'\n      WHEN 'redirect' THEN 'redirección'\n      WHEN 'rate_limit' THEN 'límite de peticiones'\n      WHEN 'upstream' THEN 'fallo del servicio externo'\n      WHEN 'invalid_response' THEN 'respuesta no válida'\n      WHEN 'schema_validation' THEN 'validación del esquema'\n      ELSE x.behavior\n    END AS variante,\n  x.status,\n  x.value,\n  CASE\n    WHEN x.unit = 'tasa' THEN to_char(x.value * 100, 'FM990.0') || ' %'\n    WHEN x.unit = 'porcentaje' THEN to_char(x.value, 'FM990.0') || ' %'\n    WHEN x.unit = 'ms' THEN to_char(x.value, 'FM9999999990.0') || ' ms'\n    WHEN x.unit = 'similitud' THEN to_char(x.value, 'FM0.000')\n    WHEN x.unit = 'recuento' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'parejas' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'eur_minor_2' THEN to_char(x.value / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(round(x.value::numeric, 4))::text || ' ' || x.unit\n  END AS valor_texto,\n  x.numerator,\n  x.denominator,\n  x.unit\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE x.grp IN ('accuracy', 'relevance', 'grounding')\nORDER BY r.run_at, x.metric_id, x.behavior, x.status",
           "refId": "A"
         }
       ],
-      "title": "Exactitud, relevancia y fundamento",
+      "title": "Exactitud, relevancia y fundamento (detalle)",
       "type": "table"
     },
     {
@@ -1102,7 +1269,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "evaluation-postgres"
       },
-      "description": "Tipo: A\nMide: latencia por etapa (LAT), robustez de formato (STR) y disponibilidad (AVL) de las peticiones de cada campaña\nNo demuestra: el comportamiento con usuarios reales ni con preguntas fuera de la batería; es la latencia de las peticiones de una campaña, no la del tráfico real",
+      "description": "Tipo: A\nMide: detalle fila a fila de la latencia por etapa (LAT), la robustez de formato (STR) y la disponibilidad (AVL) de las peticiones de cada campaña; la lectura principal es la tabla «Resultados por métrica y ejecución»\nNo demuestra: el comportamiento con usuarios reales ni con preguntas fuera de la batería; es la latencia de las peticiones de una campaña, no la del tráfico real",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1268,7 +1435,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Estado"
+                "value": "Tipo de ejecución"
               },
               {
                 "id": "custom.width",
@@ -1320,12 +1487,24 @@
             },
             "properties": [
               {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "variante"
+            },
+            "properties": [
+              {
                 "id": "displayName",
-                "value": "Etapa o tipo de fallo"
+                "value": "Variante"
               },
               {
                 "id": "custom.width",
-                "value": 205
+                "value": 170
               },
               {
                 "id": "custom.cellOptions",
@@ -1343,46 +1522,8 @@
             },
             "properties": [
               {
-                "id": "displayName",
-                "value": "Resultado"
-              },
-              {
-                "id": "custom.width",
-                "value": 100
-              },
-              {
-                "id": "mappings",
-                "value": [
-                  {
-                    "type": "value",
-                    "options": {
-                      "measured": {
-                        "text": "Medido",
-                        "index": 0
-                      },
-                      "not_measured": {
-                        "text": "No medido",
-                        "index": 1
-                      },
-                      "pass": {
-                        "text": "Aprobado",
-                        "index": 2
-                      },
-                      "fail": {
-                        "text": "Fallido",
-                        "index": 3
-                      },
-                      "blocked": {
-                        "text": "Bloqueado",
-                        "index": 4
-                      },
-                      "not_run": {
-                        "text": "No ejecutado",
-                        "index": 5
-                      }
-                    }
-                  }
-                ]
+                "id": "custom.hidden",
+                "value": true
               }
             ]
           },
@@ -1494,7 +1635,7 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 61
+        "y": 97
       },
       "id": 6,
       "options": {
@@ -1518,11 +1659,11 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\n  r.run_id,\n  r.source,\n  r.run_at,\n  COALESCE(r.suite_version, 'no registrado') AS suite_version,\n  COALESCE(r.commit_sha, 'no registrado') AS commit_sha,\n  COALESCE(left(r.commit_sha, 8), 'no registrado') AS commit_corto,\n  COALESCE(r.generation_model, 'no registrado') AS generation_model,\n  CASE WHEN r.is_real THEN 'real'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n  END AS estado,\n  x.metric_id,\n  x.behavior,\n  x.status,\n  x.value,\n  CASE\n    WHEN x.unit = 'tasa' THEN to_char(x.value * 100, 'FM990.0') || ' %'\n    WHEN x.unit = 'porcentaje' THEN to_char(x.value, 'FM990.0') || ' %'\n    WHEN x.unit = 'ms' THEN to_char(x.value, 'FM9999999990.0') || ' ms'\n    WHEN x.unit = 'similitud' THEN to_char(x.value, 'FM0.000')\n    WHEN x.unit = 'recuento' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'parejas' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'eur_minor_2' THEN to_char(x.value / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(round(x.value::numeric, 4))::text || ' ' || x.unit\n  END AS valor_texto,\n  x.unit,\n  x.numerator,\n  x.denominator\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE x.grp IN ('latency', 'robustness', 'availability')\nORDER BY r.run_at, x.metric_id, x.behavior, x.status",
+          "rawSql": "SELECT\n  r.run_id,\n  r.source,\n  r.run_at,\n  COALESCE(r.suite_version, 'no registrado') AS suite_version,\n  COALESCE(r.commit_sha, 'no registrado') AS commit_sha,\n  COALESCE(left(r.commit_sha, 8), 'no registrado') AS commit_corto,\n  COALESCE(r.generation_model, 'no registrado') AS generation_model,\n  CASE WHEN r.is_real THEN 'real'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n  END AS estado,\n  x.metric_id,\n  x.behavior,\n  CASE x.behavior\n      WHEN 'all' THEN 'todas'\n      WHEN 'judged' THEN 'con juicio humano'\n      WHEN 'clarify' THEN 'aclarar'\n      WHEN 'abstain' THEN 'abstenerse'\n      WHEN 'answer' THEN 'responder'\n      WHEN 'median' THEN 'mediana'\n      WHEN 'q1' THEN 'primer cuartil'\n      WHEN 'q3' THEN 'tercer cuartil'\n      WHEN 'embedding' THEN 'embedding'\n      WHEN 'retrieval' THEN 'recuperación'\n      WHEN 'generation' THEN 'generación'\n      WHEN 'total' THEN 'total'\n      WHEN 'timeout' THEN 'tiempo agotado'\n      WHEN 'connection' THEN 'conexión'\n      WHEN 'transport' THEN 'transporte'\n      WHEN 'authentication' THEN 'autenticación'\n      WHEN 'request' THEN 'petición rechazada'\n      WHEN 'redirect' THEN 'redirección'\n      WHEN 'rate_limit' THEN 'límite de peticiones'\n      WHEN 'upstream' THEN 'fallo del servicio externo'\n      WHEN 'invalid_response' THEN 'respuesta no válida'\n      WHEN 'schema_validation' THEN 'validación del esquema'\n      ELSE x.behavior\n    END AS variante,\n  x.status,\n  x.value,\n  CASE\n    WHEN x.unit = 'tasa' THEN to_char(x.value * 100, 'FM990.0') || ' %'\n    WHEN x.unit = 'porcentaje' THEN to_char(x.value, 'FM990.0') || ' %'\n    WHEN x.unit = 'ms' THEN to_char(x.value, 'FM9999999990.0') || ' ms'\n    WHEN x.unit = 'similitud' THEN to_char(x.value, 'FM0.000')\n    WHEN x.unit = 'recuento' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'parejas' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'eur_minor_2' THEN to_char(x.value / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(round(x.value::numeric, 4))::text || ' ' || x.unit\n  END AS valor_texto,\n  x.unit,\n  x.numerator,\n  x.denominator\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE x.grp IN ('latency', 'robustness', 'availability')\nORDER BY r.run_at, x.metric_id, x.behavior, x.status",
           "refId": "A"
         }
       ],
-      "title": "Latencia, formato y disponibilidad de la campaña",
+      "title": "Latencia, formato y disponibilidad de la campaña (detalle)",
       "type": "table"
     },
     {
@@ -1601,7 +1742,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 75
+        "y": 111
       },
       "id": 7,
       "options": {
@@ -1630,6 +1771,151 @@
         }
       ],
       "title": "Evolución de las métricas automáticas",
+      "transformations": [
+        {
+          "id": "prepareTimeSeries",
+          "options": {
+            "format": "multi"
+          }
+        },
+        {
+          "id": "seriesToRows",
+          "options": {}
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "type": "include",
+            "match": "any",
+            "filters": [
+              {
+                "fieldName": "Value",
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                }
+              }
+            ]
+          }
+        },
+        {
+          "id": "partitionByValues",
+          "options": {
+            "fields": [
+              "Metric"
+            ],
+            "naming": {
+              "asLabels": false
+            }
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
+      "description": "Tipo: A\nMide: evolución de la latencia mediana (LAT-1) y del percentil 95 (LAT-2) de la etapa total de las campañas, en milisegundos, entre ejecuciones comparables\nNo demuestra: el comportamiento con usuarios reales ni con preguntas fuera de la batería; es la latencia de las peticiones de una campaña, no la del tráfico real, y una serie solo une ejecuciones comparables",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 7,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "always",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 0,
+          "min": 0,
+          "noValue": "Sin datos: no hay con qué comparar",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*no real.*"
+            },
+            "properties": [
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    10,
+                    10
+                  ],
+                  "fill": "dash"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 111
+      },
+      "id": 24,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "WITH puntos AS (\n  SELECT\n    c.run_at AS time,\n    x.metric_id\n      || CASE WHEN x.metric_id = 'LAT-1' THEN ' · mediana total' ELSE ' · percentil 95 total' END\n      || ' · ' || c.source\n      || ' · serie ' || left(c.comparability_key, 8)\n      || CASE WHEN c.is_real THEN ''\n              ELSE ' · no real: ' || array_to_string(r.non_real_reasons, ', ')\n         END AS metric,\n    x.value AS value,\n    count(*) OVER (PARTITION BY c.comparability_key, x.metric_id) AS medidos\n  FROM evaluation.comparable_runs c\n  JOIN evaluation.results x ON x.run_id = c.run_id\n  JOIN evaluation.runs r ON r.run_id = c.run_id\n  WHERE x.grp = 'latency'\n    AND x.metric_id IN ('LAT-1', 'LAT-2')\n    AND x.behavior = 'total'\n    AND x.status = 'measured'\n    AND x.unit = 'ms'\n    AND c.run_at IS NOT NULL\n)\nSELECT time, metric, value\nFROM puntos\nWHERE medidos >= 2\nORDER BY time, metric",
+          "refId": "A"
+        }
+      ],
+      "title": "Evolución de la latencia de la campaña",
       "transformations": [
         {
           "id": "prepareTimeSeries",
@@ -1745,9 +2031,9 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 75
+        "w": 24,
+        "x": 0,
+        "y": 120
       },
       "id": 8,
       "options": {
@@ -1977,7 +2263,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Estado"
+                "value": "Tipo de ejecución"
               },
               {
                 "id": "custom.width",
@@ -2142,7 +2428,7 @@
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 84
+        "y": 129
       },
       "id": 9,
       "options": {
@@ -2331,7 +2617,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Estado"
+                "value": "Tipo de ejecución"
               },
               {
                 "id": "custom.width",
@@ -2490,7 +2776,7 @@
         "h": 5,
         "w": 24,
         "x": 0,
-        "y": 96
+        "y": 141
       },
       "id": 10,
       "options": {
@@ -2692,7 +2978,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Estado"
+                "value": "Tipo de ejecución"
               },
               {
                 "id": "custom.width",
@@ -2767,46 +3053,8 @@
             },
             "properties": [
               {
-                "id": "displayName",
-                "value": "Resultado"
-              },
-              {
-                "id": "custom.width",
-                "value": 95
-              },
-              {
-                "id": "mappings",
-                "value": [
-                  {
-                    "type": "value",
-                    "options": {
-                      "measured": {
-                        "text": "Medido",
-                        "index": 0
-                      },
-                      "not_measured": {
-                        "text": "No medido",
-                        "index": 1
-                      },
-                      "pass": {
-                        "text": "Aprobado",
-                        "index": 2
-                      },
-                      "fail": {
-                        "text": "Fallido",
-                        "index": 3
-                      },
-                      "blocked": {
-                        "text": "Bloqueado",
-                        "index": 4
-                      },
-                      "not_run": {
-                        "text": "No ejecutado",
-                        "index": 5
-                      }
-                    }
-                  }
-                ]
+                "id": "custom.hidden",
+                "value": true
               }
             ]
           },
@@ -2906,7 +3154,7 @@
         "h": 5,
         "w": 24,
         "x": 0,
-        "y": 101
+        "y": 146
       },
       "id": 11,
       "options": {
@@ -2943,7 +3191,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 106
+        "y": 151
       },
       "id": 12,
       "panels": [],
@@ -2956,7 +3204,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 107
+        "y": 152
       },
       "id": 13,
       "options": {
@@ -2965,7 +3213,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "| Qué mide | De dónde salen los datos | Qué no demuestra |\n| --- | --- | --- |\n| Tiempo ahorrado, gasto asignado y ahorro potencial y realizado | Registros reproducibles de **JUP-068** | Un beneficio observado mientras no haya un piloto real |\n\n- **Hoy el registro es un ejemplo sintético**, por eso se rotula `no real` con el motivo `sintetica`. Son cifras de demostración del método, no resultados de un piloto.\n- **Ahorro realizado: «No medido».** El informe lo deja sin valor por diseño; no es 0 €. Mientras no haya un piloto real, el beneficio realizado no se mide.\n- **Unidades.** Los tiempos se muestran en minutos y los importes en euros; el numerador y el denominador se guardan en unidades menores (céntimos) o en milisegundos, tal como los emite el informe.",
+        "content": "| Qué mide | De dónde salen los datos | Qué no demuestra |\n| --- | --- | --- |\n| Tiempo ahorrado, gasto asignado y ahorro potencial y realizado | Registros reproducibles de **JUP-068** | Un beneficio observado mientras no haya un piloto real |\n\n- **Hoy el registro es un ejemplo sintético**, por eso se rotula `no real` con el motivo `sintetica`. Son cifras de demostración del método, no resultados de un piloto.\n- **Ahorro realizado: «No medido».** El informe lo deja sin valor por diseño; no es 0 €. Mientras no haya un piloto real, el beneficio realizado no se mide.\n- **Unidades.** Los tiempos se muestran en minutos y los importes en euros, también el numerador y el denominador (el informe los emite en milisegundos y céntimos y la tabla los convierte). Un denominador de parejas es un recuento, no un tiempo.",
         "mode": "markdown"
       },
       "title": "Cómo leer la sección B",
@@ -3130,7 +3378,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Estado"
+                "value": "Tipo de ejecución"
               },
               {
                 "id": "custom.width",
@@ -3408,12 +3656,36 @@
             },
             "properties": [
               {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "denominator"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "numerador_texto"
+            },
+            "properties": [
+              {
                 "id": "displayName",
                 "value": "Numerador"
               },
               {
                 "id": "custom.width",
-                "value": 100
+                "value": 110
               },
               {
                 "id": "mappings",
@@ -3435,7 +3707,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "denominator"
+              "options": "denominador_texto"
             },
             "properties": [
               {
@@ -3444,7 +3716,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 115
+                "value": 120
               },
               {
                 "id": "mappings",
@@ -3469,7 +3741,7 @@
         "h": 26,
         "w": 24,
         "x": 0,
-        "y": 113
+        "y": 158
       },
       "id": 14,
       "options": {
@@ -3493,7 +3765,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\n  r.run_id,\n  r.run_at,\n  COALESCE(r.suite_version, 'no registrado') AS suite_version,\n  COALESCE(r.commit_sha, 'no registrado') AS commit_sha,\n  COALESCE(left(r.commit_sha, 8), 'no registrado') AS commit_corto,\n  COALESCE(r.generation_model, 'no registrado') AS generation_model,\n  CASE WHEN r.is_real THEN 'real'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n  END AS estado,\n  x.grp,\n  x.metric_id,\n  x.behavior,\n  x.status,\n  x.value,\n  CASE\n    WHEN x.case_count IS NOT NULL THEN to_char(x.case_count, 'FM9999999990')\n    WHEN x.unit = 'tasa' THEN to_char(x.value * 100, 'FM990.0') || ' %'\n    WHEN x.unit = 'porcentaje' THEN to_char(x.value, 'FM990.0') || ' %'\n    WHEN x.unit = 'ms' THEN to_char(x.value / 60000, 'FM9999990.0') || ' min'\n    WHEN x.unit = 'similitud' THEN to_char(x.value, 'FM0.000')\n    WHEN x.unit = 'recuento' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'parejas' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'eur_minor_2' THEN to_char(x.value / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(round(x.value::numeric, 4))::text || ' ' || x.unit\n  END AS valor_texto,\n  x.unit,\n  x.numerator,\n  x.denominator\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE x.measure_type = 'B'\nORDER BY CASE x.grp WHEN 'time' THEN 1 WHEN 'allocation' THEN 2 ELSE 3 END, x.metric_id, x.behavior, x.status",
+          "rawSql": "SELECT\n  r.run_id,\n  r.run_at,\n  COALESCE(r.suite_version, 'no registrado') AS suite_version,\n  COALESCE(r.commit_sha, 'no registrado') AS commit_sha,\n  COALESCE(left(r.commit_sha, 8), 'no registrado') AS commit_corto,\n  COALESCE(r.generation_model, 'no registrado') AS generation_model,\n  CASE WHEN r.is_real THEN 'real'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n  END AS estado,\n  x.grp,\n  x.metric_id,\n  x.behavior,\n  x.status,\n  x.value,\n  CASE\n    WHEN x.case_count IS NOT NULL THEN to_char(x.case_count, 'FM9999999990')\n    WHEN x.unit = 'tasa' THEN to_char(x.value * 100, 'FM990.0') || ' %'\n    WHEN x.unit = 'porcentaje' THEN to_char(x.value, 'FM990.0') || ' %'\n    WHEN x.unit = 'ms' THEN to_char(x.value / 60000, 'FM9999990.0') || ' min'\n    WHEN x.unit = 'similitud' THEN to_char(x.value, 'FM0.000')\n    WHEN x.unit = 'recuento' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'parejas' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'eur_minor_2' THEN to_char(x.value / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(round(x.value::numeric, 4))::text || ' ' || x.unit\n  END AS valor_texto,\n  x.unit,\n  x.numerator,\n  x.denominator,\n  CASE\n    WHEN x.numerator IS NULL THEN NULL\n    WHEN x.unit = 'porcentaje' AND x.grp = 'time' THEN to_char(x.numerator / 60000, 'FM9999990.0') || ' min'\n    WHEN x.unit = 'porcentaje' AND x.grp IN ('allocation', 'savings') THEN to_char(x.numerator / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(x.numerator::numeric)::text\n  END AS numerador_texto,\n  CASE\n    WHEN x.denominator IS NULL THEN NULL\n    WHEN x.unit = 'porcentaje' AND x.grp = 'time' THEN to_char(x.denominator / 60000, 'FM9999990.0') || ' min'\n    WHEN x.unit = 'porcentaje' AND x.grp IN ('allocation', 'savings') THEN to_char(x.denominator / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(x.denominator::numeric)::text\n  END AS denominador_texto\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE x.measure_type = 'B'\nORDER BY CASE x.grp WHEN 'time' THEN 1 WHEN 'allocation' THEN 2 ELSE 3 END, x.metric_id, x.behavior, x.status",
           "refId": "A"
         }
       ],
@@ -3506,7 +3778,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 139
+        "y": 184
       },
       "id": 15,
       "panels": [],
@@ -3519,7 +3791,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 140
+        "y": 185
       },
       "id": 16,
       "options": {
@@ -3590,7 +3862,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 148
+        "y": 193
       },
       "hideTimeOverride": false,
       "id": 17,
@@ -3629,7 +3901,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Tipo: C\nMide: latencia p95 de las peticiones HTTP del backend\nNo demuestra: que las respuestas sean correctas ni su acierto: solo detecta síntomas; una respuesta rápida puede ser incorrecta",
+      "description": "Tipo: C\nMide: latencia p95 de las peticiones HTTP del backend, agregando todas las rutas; no es la latencia de las consultas al asistente (la de una campaña está en la sección A)\nNo demuestra: que las respuestas sean correctas ni su acierto: solo detecta síntomas; una respuesta rápida puede ser incorrecta",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -3680,7 +3952,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 148
+        "y": 193
       },
       "hideTimeOverride": false,
       "id": 18,
@@ -3711,7 +3983,7 @@
         }
       ],
       "timeFrom": "1h",
-      "title": "Latencia p95 del backend (tráfico real)",
+      "title": "Latencia p95 del backend (todas las rutas, tráfico real)",
       "type": "timeseries"
     },
     {
@@ -3770,7 +4042,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 148
+        "y": 193
       },
       "hideTimeOverride": false,
       "id": 19,
@@ -3793,7 +4065,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "100 * sum(rate(backend_http_requests_total{status_code=~\"5..\"}[5m])) / sum(rate(backend_http_requests_total[5m]))",
+          "expr": "100 * (sum(rate(backend_http_requests_total{status_code=~\"5..\"}[5m])) or vector(0)) / sum(rate(backend_http_requests_total[5m]))",
           "instant": false,
           "legendFormat": "backend error %",
           "range": true,
@@ -3861,7 +4133,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 156
+        "y": 201
       },
       "hideTimeOverride": false,
       "id": 20,
@@ -3952,7 +4224,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 156
+        "y": 201
       },
       "hideTimeOverride": false,
       "id": 21,
