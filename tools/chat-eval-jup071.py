@@ -4,9 +4,11 @@ The suite root is trusted local Python code, imported explicitly. This tool neve
 creates conversations, generates answers, retries inference or evaluates quality.
 """
 import argparse
+from collections import Counter
 from datetime import datetime, timezone
 import importlib.util
 import json
+import math
 import os
 from pathlib import Path
 import subprocess
@@ -27,9 +29,13 @@ collector = load('chat_eval_collect', Path(__file__).with_name('chat-eval-collec
 retrieval = load('chat_eval_retrieval', Path(__file__).with_name('chat-eval-retrieval.py'))
 
 
+class AdapterError(ValueError):
+    """Only adapter-owned, constant diagnostic messages may reach the CLI."""
+
+
 def require(condition, message):
     if not condition:
-        raise ValueError(message)
+        raise AdapterError(message)
 
 
 def read(path):
@@ -47,10 +53,11 @@ def plan_for(tool, repetitions):
     require(len(cases) == 29 and len({c['id'] for c in cases}) == 29,
             'Review the adapter when the 29-case JUP-071 suite changes')
     sources = [Path(tool.__file__), tool.ROOT / 'tools/assistant-eval.py',
+               tool.ROOT / 'tools/assistant-metrics.py', tool.ROOT / 'tools/retrieval-calibration.py',
                tool.SUITE, tool.BASELINE, tool.SERVICE, tool.evaluation.RULES_PATH,
                tool.ROOT / suite['methodology']['path'],
                *(tool.ROOT / s['path'] for s in suite['sources'].values())]
-    return {'version': 1, 'jup': 'JUP-071', 'repetitions': repetitions,
+    return {'version': 2, 'jup': 'JUP-071', 'repetitions': repetitions,
             'bank_sha256': tool.file_digest(tool.SUITE), 'suite_sha256': tool.digest(suite),
             'suite_commit': tool.code_commit(),
             'suite_files': {p.relative_to(tool.ROOT).as_posix(): tool.file_digest(p) for p in sources},
@@ -60,7 +67,16 @@ def plan_for(tool, repetitions):
 
 
 def validate_plan(plan, tool):
-    require(plan == plan_for(tool, plan['repetitions']), 'Plan or suite differs from frozen sources')
+    expected = plan_for(tool, plan['repetitions'])
+    if plan['version'] == 1:
+        # Existing receipts remain readable under their original, commit-pinned contract.
+        expected['version'] = 1
+        for name in ('tools/assistant-metrics.py', 'tools/retrieval-calibration.py'):
+            expected['suite_files'].pop(name)
+    else:
+        require(plan['version'] == 2, 'Unsupported plan version; prepare a new plan')
+        expected['suite_commit'] = plan.get('suite_commit')  # Informational, not source identity.
+    require(plan == expected, 'Plan or suite differs from frozen sources; prepare a new plan')
 
 
 def outside(path, suite_root):
@@ -192,7 +208,7 @@ def rows_from(plan, directory):
     return rows, manifest
 
 
-def public_row(sample, row):
+def checked_row(sample, row):
     """Recheck from originals; never trust an edited VERIFIED flag or derived answer."""
     raw = row['resources']
     cid, oid = row['conversation_id'], row['operation']['operation_id']
@@ -215,29 +231,80 @@ def public_row(sample, row):
             checked = retrieval.reconcile(checked, row['retrieval_supplement'], sample)
     except (ValueError, KeyError, TypeError, AttributeError):
         checked = None
-    ok = (checked is not None and row['collection_state'] == 'VERIFIED_PUBLIC_SNAPSHOT'
+    verified = (checked is not None and row['collection_state'] == 'VERIFIED_PUBLIC_SNAPSHOT'
           and checked['collection_state'] == 'VERIFIED_PUBLIC_SNAPSHOT'
           and checked['state'] == 'completed' and not row.get('collection_errors'))
-    # Without a measured distance, the legacy scorer would lose corpus traceability
-    # and count authentic citations as dangling. Preserve evidence but block scoring.
-    ok = ok and all(type(item.get('distance')) in (int, float)
-                    for item in checked['authorized_evidence'] if item.get('kind') == 'corpus')
+    return checked, verified
+
+
+def measured_distance(value):
+    return type(value) in (int, float) and math.isfinite(value)
+
+
+def public_row(sample, row, *, accepts_unmeasured_distance=False):
+    checked, verified = checked_row(sample, row)
+    corpus = [item for item in (checked or {}).get('authorized_evidence', []) if item.get('kind') == 'corpus']
+    # Capability negotiation only permits absent/null distances, never malformed values.
+    ok = verified and all(measured_distance(item.get('distance')) or
+                          (accepts_unmeasured_distance is True and item.get('distance') is None)
+                          for item in corpus)
     result = (checked or {}).get('result', {})
-    # Full public originals remain in the sidecar, including actual evidence metadata.
-    # The legacy format requires a numeric distance. Never invent an unavailable
-    # distance of zero to make fragments look like measured retrieval.
-    chunks = []
-    if ok:
-        for item in checked['authorized_evidence']:
-            if item.get('kind') == 'corpus' and type(item.get('distance')) in (int, float):
-                chunks.append({'chunk_id': item['id'], 'source': item['source'],
-                               'content': item['content'], 'distance': item['distance']})
-    citations = [item['id'] for item in result.get('metadata', {}).get('response', {}).get('evidence', [])]
+    response = result.get('metadata', {}).get('response', {})
+    chunks = [{'chunk_id': item['id'], 'source': item['source'], 'content': item['content'],
+               'distance': item.get('distance')} for item in corpus] if ok else []
+    citations = [item['id'] for item in response.get('evidence', [])]
+    statuses = ('ok', 'partial', 'no_data', 'insufficient_data', 'unsupported', 'refused', 'error')
+    status = response.get('status')
+    actions = response.get('next_actions')
     return {'case': sample['case_id'], 'prompt': sample['content'],
             'answer': result.get('content', '') if ok else '',
             'citations': citations if ok else [], 'retrieved': chunks,
             'public_evidence': (checked or {}).get('authorized_evidence', []),
+            'structured': {'status': status if verified and status in statuses else None,
+                           'has_next_actions': bool(actions) if verified and isinstance(actions, list) else None},
             'failure_category': None if ok else 'invalid_response', 'total_ms': None}
+
+
+def server_reported(sample, row):
+    """Copy provenance from rechecked public resources, never from run-info or sidecar labels."""
+    checked, verified = checked_row(sample, row)
+    raw = (checked or {}).get('resources', {})
+    generation = (raw.get('result') or {}).get('metadata', {}).get('generation', {})
+    initial = (raw.get('context') or {}).get('manifest', {})
+    effective = generation.get('context_manifest', {})
+    reported = {'sample_id': sample['sample_id'], 'snapshot_verified': verified,
+                'attested': False}
+    for key in ('prompt_version', 'prompt_sha256', 'response_schema_sha256',
+                'assembler_sha256', 'tokenizer_sha256'):
+        # prompt_version includes its server-provided bundle hash; it is not a prompt SHA.
+        if key in effective:
+            reported[key] = effective[key]
+        elif key in initial:
+            reported[key] = initial[key]
+        elif key == 'prompt_version':
+            reported[key] = generation.get(key, (raw.get('operation') or {}).get(key))
+    if 'usage' in generation:
+        reported['usage'] = generation['usage']
+    return reported
+
+
+def collection_summary(plan, rows):
+    return {'planned': len(plan['samples']), 'observed': len(rows),
+            'missing': len(plan['samples']) - len(rows),
+            'collection_states': dict(sorted(Counter(row['collection_state'] for row in rows.values()).items())),
+            'operation_states': dict(sorted(Counter(row['state'] for row in rows.values()).items()))}
+
+
+def collection_complete(summary):
+    return (summary['missing'] == 0
+            and summary['collection_states'].get('VERIFIED_PUBLIC_SNAPSHOT', 0) == summary['planned']
+            and summary['operation_states'].get('completed', 0) == summary['planned'])
+
+
+def export_summary(raws):
+    rows = [row for raw in raws for row in raw['cases']]
+    return {'exported': len(rows), 'blocked': sum(row['failure_category'] is not None for row in rows),
+            'structured_statuses': dict(sorted(Counter(row['structured']['status'] or 'unknown' for row in rows).items()))}
 
 
 def export_raw(tool, plan, directory, repetition, config):
@@ -253,14 +320,22 @@ def export_raw(tool, plan, directory, repetition, config):
                      'collector_manifest_sha256': collector.digest(manifest),
                      'collector_commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()}
     execution = tool.provenance(suite, 'live_unverified', configuration)
+    # Identity is the frozen source snapshot. Unrelated suite commits must not
+    # change exports or make paired repetitions incomparable after collection.
+    execution['harness_commit'] = plan['suite_commit']
     execution['collected_at'] = manifest['collected_at']
     execution['collection'] = {'plan_sha256': collector.digest(plan),
                                'manifest_sha256': collector.digest(manifest), 'repetition': repetition,
                                'collected_at': manifest['collected_at'],
+                               'accepts_unmeasured_distance': getattr(tool, 'ACCEPTS_UNMEASURED_DISTANCE', False) is True,
+                               'server_reported': [server_reported(s, rows[s['sample_id']]) for s in plan['samples']
+                                                   if s['repetition'] == repetition and s['sample_id'] in rows],
                                'limitations': ['Runtime/model and latency not attested by GET snapshots.',
-                                               'Corpus without a measured distance blocks legacy scoring; complete evidence remains in sidecars.']}
+                                               'Server provenance and usage are reported, not attested.',
+                                               'Unmeasured corpus distances require an explicit evaluator capability; otherwise scoring is blocked.']}
     raw = {'raw_version': 1, 'execution': execution,
-           'cases': [public_row(s, rows[s['sample_id']]) for s in plan['samples']
+           'cases': [public_row(s, rows[s['sample_id']], accepts_unmeasured_distance=
+                                getattr(tool, 'ACCEPTS_UNMEASURED_DISTANCE', False) is True) for s in plan['samples']
                      if s['repetition'] == repetition and s['sample_id'] in rows]}
     tool.validate_raw(raw, suite, cases)
     return raw
@@ -278,17 +353,24 @@ def main(argv=None):
     collect.add_argument('--handles', type=Path, required=True)
     collect.add_argument('--base-url', required=True)
     collect.add_argument('--output-dir', type=Path, required=True)
+    collect.add_argument('--strict', action='store_true', help='Save receipts, then exit 3 unless all samples are verified and completed')
     collect.add_argument('--retrieval-snapshots', type=Path,
                          help='Optional exact recorded tool payloads; never reconstructed by another search')
     export = sub.add_parser('export')
     export.add_argument('--plan', type=Path, required=True)
     export.add_argument('--receipts', type=Path, required=True)
-    export.add_argument('--repetition', type=int, required=True)
+    repetitions = export.add_mutually_exclusive_group(required=True)
+    repetitions.add_argument('--repetition', type=int)
+    repetitions.add_argument('--all-repetitions', action='store_true')
     export.add_argument('--run-info', type=Path, required=True)
-    export.add_argument('--output', type=Path, required=True)
+    export.add_argument('--output', type=Path, help='New file for --repetition')
+    export.add_argument('--output-dir', type=Path, help='New directory for --all-repetitions')
+    export.add_argument('--strict', action='store_true', help='Save exports, then exit 3 if any sample is missing or blocked')
     try:
         args = cli.parse_args(argv)
         tool = suite_tool(args.suite_root)
+        summary = None
+        strict_failed = False
         if args.command == 'prepare':
             write_new(outside(args.output, args.suite_root), plan_for(tool, args.repetitions))
         else:
@@ -301,16 +383,46 @@ def main(argv=None):
                 get = collector.reader(args.base_url, os.environ['CHAT_EVAL_TOKEN'], os.environ['CHAT_EVAL_TENANT'])
                 snapshots = read(args.retrieval_snapshots) if args.retrieval_snapshots else None
                 collect_all(plan, handles, get, output, snapshots)
+                rows, _ = rows_from(plan, output)
+                summary = collection_summary(plan, rows)
+                strict_failed = args.strict and not collection_complete(summary)
             else:
-                output = outside(args.output, args.suite_root)
+                require((args.all_repetitions and args.output_dir is not None and args.output is None)
+                        or (not args.all_repetitions and args.output is not None and args.output_dir is None),
+                        'Use --repetition with --output, or --all-repetitions with --output-dir')
+                output = outside(args.output_dir if args.all_repetitions else args.output, args.suite_root)
                 require(not output.exists(), 'Output already exists')
-                raw = export_raw(tool, plan, args.receipts, args.repetition, read(args.run_info))
-                write_new(output, raw)
-        print(json.dumps({'state': 'SAVED', 'quality_assessed': False, 'inference_started': False}))
-        return 0
+                config = read(args.run_info)
+                selected = range(1, plan['repetitions'] + 1) if args.all_repetitions else [args.repetition]
+                raws = [export_raw(tool, plan, args.receipts, repetition, config) for repetition in selected]
+                if args.all_repetitions:
+                    output.mkdir(parents=True, exist_ok=False)
+                    for raw in raws:
+                        repetition = raw['execution']['collection']['repetition']
+                        write_new(output / f'raw-r{repetition}.json', raw)
+                else:
+                    write_new(output, raws[0])
+                summary = export_summary(raws)
+                summary['missing'] = len(selected) * (len(plan['samples']) // plan['repetitions']) - summary['exported']
+                strict_failed = args.strict and bool(summary['blocked'] or summary['missing'])
+        print(json.dumps({'state': 'SAVED', 'quality_assessed': False, 'inference_started': False,
+                          'summary': summary, 'strict_failed': strict_failed}))
+        return 3 if strict_failed else 0
     except Exception as exc:
         # Imported validators, malformed input or HTTP errors can carry secrets.
-        print('JUP-071 collector: ' + type(exc).__name__ + '; consult the guide and preserved sidecars.', file=sys.stderr)
+        if isinstance(exc, AdapterError):
+            reason = str(exc)
+        elif isinstance(exc, FileExistsError):
+            reason = 'Output already exists; choose a new destination'
+        elif isinstance(exc, FileNotFoundError):
+            reason = 'Required input file not found; check suite, plan and receipt paths'
+        elif isinstance(exc, json.JSONDecodeError):
+            reason = f'Invalid JSON at line {exc.lineno}, column {exc.colno}'
+        elif isinstance(exc, KeyError):
+            reason = 'Missing required field or environment setting; check the input contract'
+        else:
+            reason = type(exc).__name__ + '; imported validation or input failed; consult preserved sidecars'
+        print('JUP-071 collector: ' + reason, file=sys.stderr)
         return 2
 
 

@@ -6,6 +6,35 @@ adaptarlo para JUP-071 y publicar PR independiente; chat
 Tarjetas: [JUP-123](https://trello.com/c/TqtcumIN),
 [JUP-071](https://trello.com/c/H0woDubz).
 
+## Contrato del colector solicitado en PR #131 — 16/10/2026
+
+Origen: «Implementa los cambios que nos piden en PR131»; identificador del chat
+no disponible. Base de corrección `af8388d0`.
+Leídas todas las reviews y comentarios; sin inline. Lucía valida favorablemente
+el alcance probado y propone un contrato con JUP-071/dashboard; la solicitud
+de cambios de Víctor permanece hasta su aprobación.
+
+Implementado el contrato del [comentario de Lucía](https://github.com/EconomiconFinOps/tfm-economicon/pull/131#issuecomment-6209801137):
+capacidad booleana exacta ACCEPTS_UNMEASURED_DISTANCE para corpus con distance:null,
+bloqueo legado conservado, structured sin texto de acciones y procedencia pública
+por muestra marcada no atestiguada. Opcionales incluidos: exportación conjunta,
+resúmenes, modo estricto con evidencia preservada y errores seguros con motivo.
+Planes v2 fijan hashes de contenidos, métricas y calibrador; los commits ajenos
+no invalidan ni alteran la identidad al reexportar. Planes/recibos v1 compatibles.
+No se cambia la rama de JUP-071, aplicaciones ni proveedor. La consulta remota de
+JUP-071 aún devuelve `81ceafc6`, sin capacidad; ese camino se prueba con fixtures.
+
+Contrato y comandos en [la guía](../validation/chat-collector.md#contrato-con-jup-071-y-el-dashboard-de-jup-121);
+detalle y límites en [la evidencia](../evidence/JUP-123-collector-validation.md).
+Pruebas finales: 48/48 conformes, OpenSpec 74/74 y trazabilidad/higiene conformes.
+Integración offline final: 87 fixtures, 521 GET, herramientas originales conformes,
+exportación conjunta idéntica a las individuales y recibos v1 compatibles.
+Recibo externo `JUP-123-collector/integration-10dd5cef/summary.json`, reproducible
+con `materiales/07-evidencias/JUP-123-collector/integration-contract-20261016.py`
+desde el espacio Economicon. Publicación del nuevo candidato en curso; no se da por integrada
+ni aceptada B. Gasto incremental 0; no mensajes a Discord.
+
+## Corte anterior: corrección y diagnóstico de CI
 
 Estado actual: review de Víctor solicita cambios sobre `5cae4942`; comentario de
 Paris corrobora el problema con una operación real de A. Corrección local:
@@ -15,7 +44,7 @@ verificado: sin distancia fail→blocked; con distancia pass. Dos intentos de
 prueba previos no ejecutaron la aserción por ACL; luego se reprodujo el fallo
 antes de corregirlo. Ajustes editoriales de los documentos incluidos. A real no
 aporta distancia: queda explícita esa dependencia del evaluador de JUP-071.
-Publicación de la corrección, CI nueva y revalidación siguen pendientes.
+Corrección publicada en `af8388d0a87cf08184472c84f79247e7974c961b`. La CI nueva conserva seis fallos de salud en backend, cuyo árbol no cambia frente a la base: JWT de prueba creados al recolectar y caducados después de cinco minutos. El mecanismo se confirma con reloj sintético; no se cambian esas pruebas ni se relanza la CI. Revalidación de Víctor y validación de Lucía pendientes. Diagnóstico externo `PR121-local-evaluation/pr131-ci-auth-diagnosis-v1.json`.
 Los resultados inferiores son históricos del candidato inicial.
 
 Rama independiente `feat/JUP-123-response-collector`, base develop `53b43bb1`.

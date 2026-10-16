@@ -6,7 +6,54 @@ Base: `develop/53b43bb1e79b08967cc1b9efdf66669f11e8197c`.
 Rama: `feat/JUP-123-response-collector`. Extracción autorizada por el usuario;
 no representa aceptación de B ni validación humana independiente.
 
-## Corrección tras revisión — 16/10/2026
+## Contrato solicitado por Lucía — 16/10/2026
+
+Origen: «Implementa los cambios que nos piden en PR131».
+Leídos todos los comentarios de conversación, reviews e inline (ninguno) antes
+de editar `af8388d0`. La [validación de Lucía](https://github.com/EconomiconFinOps/tfm-economicon/pull/131#pullrequestreview-5543997424)
+es favorable en su alcance probado; su [propuesta de contrato](https://github.com/EconomiconFinOps/tfm-economicon/pull/131#issuecomment-6209801137)
+se implementa en esta entrega. No se atribuyen sus pruebas al autor ni se levanta
+la solicitud de cambios de Víctor.
+
+- Capacidad `ACCEPTS_UNMEASURED_DISTANCE = True` consultada en la herramienta
+  importada: conserva corpus con `distance: null`, respuesta y citas. Sin ese
+  booleano exacto se mantiene el bloqueo legado; valores mal formados o no finitos
+  bloquean en ambos modos. No se modifica la rama de JUP-071.
+- `structured` conserva `status` y `has_next_actions` sin texto de acciones;
+  los datos ausentes o no verificados siguen como `null`.
+- `execution.collection.server_reported` conserva procedencia por muestra,
+  `attested: false`, desde recursos públicos revalidados. No inventa hashes ni
+  uso ausentes y distingue el hash del bundle incluido en `prompt_version`
+  del hash del texto del prompt. Contrato completo en la [guía](../validation/chat-collector.md#contrato-con-jup-071-y-el-dashboard-de-jup-121).
+- Opcionales solicitados implementados: `--all-repetitions`, resúmenes de estados,
+  `--strict` con código 3 después de guardar evidencia parcial y diagnósticos
+  propios con motivo seguro. Los planes nuevos v2 fijan contenidos relevantes,
+  incluidas métricas y calibrador; commits ajenos no invalidan ni cambian la
+  identidad de comparación. Los planes v1 siguen con su contrato anterior.
+
+Verificación propia de esta entrega: pruebas locales de biblioteca estándar,
+**48/48 conformes**, sin inferencias ni servicios externos de pago. El primer intento en sandbox
+Windows encontró ACL en los temporales; la ejecución con acceso normal pasa.
+La integración con JUP-071 original `81ceafc6` usa 87 fixtures/521 GET locales,
+cero POST y tres raw aceptados por review-sheet/score/compare; se conserva un fallo
+técnico y reexportar produce bytes idénticos. No acredita calidad de un modelo.
+La exportación conjunta coincide byte a byte con las individuales y el modo
+estricto devuelve 3 por el fallo preservado. Plan y recibos v1 históricos se
+revalidan y exportan correctamente. Recibo externo:
+`JUP-123-collector/integration-10dd5cef/summary.json`; guion reproducible en
+`materiales/07-evidencias/JUP-123-collector/integration-contract-20261016.py`
+del espacio de trabajo padre. Higiene conforme (1597 archivos), trazabilidad
+conforme y OpenSpec estricto 74/74. Estos controles no sustituyen CI remota.
+
+La rama remota de JUP-071 consultada el 16/10 sigue en `81ceafc6`, sin anunciar
+la capacidad. Su adaptación corresponde a esa entrega; las pruebas del camino
+con capacidad son fixtures explícitas, sin fingir una integración ya publicada.
+El fallo previo de seis pruebas de salud backend en `af8388d0` es ajeno a este
+delta y conserva su diagnóstico histórico en continuidad. CI del nuevo commit,
+revisión de Víctor y actualización de validación siguen pendientes al preparar
+esta evidencia. No se integra, despliega ni ejecuta una campaña real.
+
+## Corrección tras revisión — 16/10/2026, corte anterior
 
 Leídos la [revisión de Víctor](https://github.com/EconomiconFinOps/tfm-economicon/pull/131#pullrequestreview-5540209141)
 y el [contraste real de Paris](https://github.com/EconomiconFinOps/tfm-economicon/pull/131#issuecomment-6203151803)
