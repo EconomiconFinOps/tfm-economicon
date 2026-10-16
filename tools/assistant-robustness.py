@@ -282,6 +282,7 @@ def server_prompt(execution):
     reported = (collection or {}).get("server_reported")
     if reported is None:
         return None
+    require(execution.get("kind") == "live_unverified", "server-reported provenance only applies to live collections")
     require(isinstance(reported, list) and all(isinstance(x, dict) and x.get("attested", False) is False for x in reported),
             "invalid server-reported provenance")
     hashes = [x.get("prompt_sha256") for x in reported]

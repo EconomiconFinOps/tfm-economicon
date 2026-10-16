@@ -233,6 +233,11 @@ The tool SHALL provide a `rows` command that writes a score report as the `rows-
 - **THEN** the report states it as server-reported and not attested, and the rows carry it
 - **AND** when the samples disagree or report none, the rows carry no prompt hash
 
+#### Scenario: Malformed server provenance
+- **WHEN** the server-reported provenance is not a list of objects, a hash is not 64 lowercase hexadecimal characters, an entry is marked as attested, or it appears in a template run
+- **THEN** the collection is rejected with a controlled error
+- **AND** extra keys inside an entry are never copied to the report or the rows
+
 #### Scenario: Inconsistent report
 - **WHEN** counts are negative, do not add up, or a rate does not match its counts
 - **THEN** the command fails with a controlled error and writes nothing

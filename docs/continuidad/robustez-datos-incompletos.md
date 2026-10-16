@@ -22,7 +22,7 @@ Actualizado el 2026-10-16. [Tarjeta](https://trello.com/c/H0woDubz), ID `69da46a
 
 ## Siguiente paso concreto
 
-1. Revisión y validación por las personas de los roles de la tarjeta, o por la excepción temporal vigente si el equipo la aplica.
-2. Acordar con quien lidera JUP-123 cómo se puntúan las respuestas con citas del chat real (evidencia sin distancia) y quién genera las respuestas.
+1. Revisión y validación por las personas de los roles de la tarjeta, o por la excepción temporal vigente si el equipo la aplica. La parte de instrumento (tareas 1 a 5) está terminada: 123 pruebas, siete pasadas automatizadas y los `rows` aceptados por el validador del dashboard.
+2. El colector de JUP-123 (cabeza `e0a0c41e`) ya adopta la distancia no medida, `structured` y la procedencia del servidor; falta validar esa cabeza y que su CI esté en verde. Queda acordar quién genera las respuestas del chat real.
 3. Con el chat activado con un modelo, un presupuesto de inferencia acordado y los juicios humanos, ejecutar las tres campañas iguales con el colector de JUP-123.
 4. No cerrar ni archivar la tarjeta por tener verdes las pruebas del instrumento.

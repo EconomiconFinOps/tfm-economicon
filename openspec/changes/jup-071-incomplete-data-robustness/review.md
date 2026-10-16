@@ -138,6 +138,10 @@ Resultaron 1 HIGH, 4 MEDIUM y 6 LOW. Se corrigieron con ciclo RGR (113 pruebas, 
 
 Esta pasada no se repitió sobre las correcciones. No sustituye a la `Revision JUP-071` de una persona.
 
+### Pasada 7 (adversarial automatizada, otra sesión; `accept` con 2 MEDIUM y 3 LOW)
+
+Revisó las tareas 4.4 a 4.6 completas (distancia no medida, `rows`, procedencia del servidor, desglose por tipo de perturbación) y comprobó que las correcciones de la pasada 6 siguen en pie. Resultado: el bloque `server_reported` se aceptaba también en una ejecución de plantilla (ahora se rechaza); el diseño tenía una frase obsoleta y una cláusula duplicada (corregidas); la spec no recogía las reglas de rechazo de la procedencia (escenario añadido); un hash en mayúsculas del servidor bloquea la colección entera (documentado en el protocolo, pendiente de confirmar con #131); y las claves extra de cada entrada nunca llegan al informe (prueba añadida). 123 pruebas en verde; los `rows` de `docs/evidence` se regeneran idénticos. Estas últimas correcciones no se revisaron de nuevo. No sustituye a la `Revision JUP-071` de una persona.
+
 ## Pattern sweep
 
 - Cifras sin alias y cifras no pedidas: las variantes de cumplimiento eran las únicas con dos cifras o sin alias; JUP-071-010 tiene una cifra y se resuelve por la etiqueta «julio».

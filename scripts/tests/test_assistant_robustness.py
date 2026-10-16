@@ -1503,6 +1503,19 @@ class ServerProvenanceTests(unittest.TestCase):
         with self.assertRaises(robustness.Error):
             scored(raw)
 
+    def test_server_provenance_is_only_accepted_for_live_collections(self):
+        raw = raw_fixture()
+        raw["execution"]["collection"] = {"server_reported": [{"prompt_sha256": self.HASH_A}]}
+        with self.assertRaises(robustness.Error):
+            scored(raw)
+
+    def test_extra_keys_of_server_provenance_never_reach_the_report(self):
+        raw = self.live_raw([{"prompt_sha256": self.HASH_A, "evil": "LEAK-SECRET-VALUE", "prompt": "texto privado"}])
+        report = scored(raw)
+        text = json.dumps(report) + json.dumps(robustness.rows_v1(report))
+        self.assertNotIn("LEAK-SECRET-VALUE", text)
+        self.assertNotIn("texto privado", text)
+
     def test_rows_reject_an_invalid_report_hash(self):
         report = scored(self.live_raw([{"prompt_sha256": self.HASH_A}]))
         report["server_reported"]["prompt_sha256"] = "not-a-hash"
