@@ -23,6 +23,8 @@ entradas de comparación conformes; corregida tabla obsoleta80/84 del informe.
 Preparación técnica completa, criterios/adjudicación/alcanceN5 actual pendientes.
 Objetivo marcado `blocked` tras tres turnos del mismo impedimento de cierre;
 retomar sólo ante decisiones nuevas o evidencia accionable. No presupuesto agotado.
+Propuesta C1/C2/C3 para revisores y borrador Discord preparados por petición humana;
+no enviados ni acordados. Detalle en evaluación local e informe de revisión.
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |

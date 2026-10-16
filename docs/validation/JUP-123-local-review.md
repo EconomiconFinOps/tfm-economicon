@@ -262,6 +262,26 @@ no se traslada al producto/corpus/modelo nuevo.
    independiente; reviews/CI no se trasladan. B sigue local, sin aprobación,
    publicación o activación permanente.
 
+### Decisiones concretas para los revisores — propuesta del 16/10/2026
+
+Preparada por petición del usuario; **no es un acuerdo del equipo ni una nueva
+autorización de pruebas, publicación o despliegue**.
+
+| Decisión | Propuesta para ratificar o modificar | Respuesta necesaria |
+| --- | --- | --- |
+| C1. Qué bloquea la aceptación | Aplicar los 109 requisitos originales y los controles adicionales de soporte documental y consistencia. Cero fallos de contenido/soporte y ninguna regresión obligatoria; una media no compensa un fallo. Defectos exclusivamente editoriales pueden registrarse aparte si no alteran contenido o interpretación. Las incertidumbres no cuentan como PASS. | Confirmar estos criterios o indicar cuáles se modifican y qué se considera no bloqueante, antes de medir de nuevo. |
+| C2. Quién adjudica y qué dictamina | Designar revisor y validador independientes del autor, conforme al flujo del proyecto, para contrastar los juicios locales con respuesta y contexto originales. Ratificar o corregir el dictamen de 012 histórico y resolver 023 histórico: distinguir pedir una fuente/exportación autorizada de insinuar conexión o ejecución que el asistente no ofrece. Mantener las etiquetas locales originales y añadir el dictamen humano con razón y evidencia. | Identificar responsables y alcance de su contraste de las 84 respuestas actuales; emitir dictámenes explícitos para 012/023. El PASS actual de 012 no borra su FAIL histórico. |
+| C3. Qué medición basta para el MVP | Elegir si basta N3 actual o se exige N5. Propuesta: completar N5 de los 28 casos añadiendo dos repeticiones por caso (56 respuestas), conservando las 84 ya recogidas de esta misma combinación de producto/corpus/modelo. Preparar un plan nuevo trazable que enlace esas muestras, sin modificar el plan N3 ni heredar la N5 antigua. Mantener fuente, modelo, prompts y corpus, máximo acumulado 30 USD y reservas íntegras; admisión fresca por operación. | Confirmar N3, N5 completa o una selección explícita de casos/repeticiones. Aceptar expresamente el límite de banco conocido sin juez LLM calibrado ni test ciego, o definir el conjunto independiente exigido antes de medir. |
+
+La propuesta N5 añade repetición, no garantiza generalización ni adjudicación.
+Si hay que cambiar producto o corpus, no se mezclan las 84 muestras anteriores
+con la combinación nueva para afirmar una N5 homogénea. Acordar estas decisiones
+desbloquea el trabajo de cierre; no equivale a aprobar B o activar el chat.
+
+Borrador externo para copiar: `discord-decisiones-desbloquear-B-20261016.txt`,
+en la carpeta de evidencias indicada abajo. **No enviado**. El permiso del resumen
+de modelos anterior no autoriza publicar este mensaje nuevo.
+
 ## Evidencia reproducible
 
 Directorio externo relativo a la raíz del proyecto:

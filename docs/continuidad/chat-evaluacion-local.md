@@ -9,6 +9,16 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 16/10/2026
 
+Petición humana posterior: preparar resumen concreto de decisiones para revisores
+y borrador Discord. Añadida propuesta C1/C2/C3 en
+[informe local](../validation/JUP-123-local-review.md#decisiones-concretas-para-los-revisores--propuesta-del-16102026):
+criterios sin fallos semánticos/soporte, responsables y adjudicación012/023,
+y suficienciaN3 o N5 actual (propuesta56muestras adicionales, sin repetir84).
+Son propuestas pendientes, no un acuerdo ni un plan de campaña aplicado.
+Borrador externo `discord-decisiones-desbloquear-B-20261016.txt`, NO enviado;
+necesita autorización específica si se solicita publicarlo. No nuevas inferencias,
+pruebas, reservas o cambios de producto. El objetivo sigue bloqueado en el cierre.
+
 Estado del objetivo: **blocked**, confirmado por la herramienta tras tres turnos
 consecutivos con el mismo impedimento de cierre: acuerdo de criterios,
 adjudicación independiente y alcance N5 actual. La última comprobación deja
