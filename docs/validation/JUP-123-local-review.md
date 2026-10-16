@@ -141,14 +141,16 @@ No se invalidan los resultados históricos ni se atribuyen al corpus nuevo.
 
 ## Contabilidad y continuación
 
-Máximo autorizado vigente: **20 USD acumulados**, sin liberar reservas.
+Máximo autorizado vigente desde16/10: **30 USD acumulados**, sin liberar reservas.
+La N5 se ha retomado desde001r5 con política externa y prefijo1247 intacto;
+los resultados112 que siguen describen el corte congelado anterior, no la campaña final.
 N3 añadió0.4066383825 USD observados. De N5 hay109 costes conciliados que suman
 0.511401845 USD; los otros tres no se presentan como gratuitos ni liquidados.
 
 Al congelar N5, la cota conservadora era **19.683534838 USD** y la siguiente
 operación requería **20.003486838 USD**. Las reservas desconocidas suman
 **12.69071250 USD**:11.73085650 anteriores más0.959856 nuevos, todos intactos.
-El ledger mantiene1247 filas, con1135 previas idénticas, SHA
+Al corte congelado el ledger tenía1247 filas, con1135 previas idénticas, SHA
 `72328e57bd9137af50d803bd4d6692b26f032df14c3470eb6053280acce1188f`.
 
 Una lectura posterior del contador elevó la cota a **19.741856785 USD** y la
@@ -157,11 +159,13 @@ sin inferencias nuevas. Son cotas conservadoras de cuenta, **no factura ni coste
 exacto atribuible al trabajo**. No se deduce de esa variación quién consumió o
 cuándo se contabilizó cada cargo.
 
-Está preparada una propuesta **no autorizada ni activada** de21 USD para continuar
-desde001r5. El ensayo contable en memoria verifica que cabría la siguiente
-operación sin alterar claves, límites efectivos, contadores ni reservas. No
-garantiza terminar las28: cada llamada conserva admisión fresca. No se ejecutará
-por interpretar silencio o una opción preseleccionada como consentimiento.
+La propuesta histórica de21USD fue sustituida el16/10 por la autorización explícita
+de30USD. La política externa nueva conserva fuente y plan; se continúa
+desde001r5. El preflight real con30USD y seis guardas pasó sin inferencias;
+la política se aplica por separado a admisión y ledger, sin alterar fuente ni
+reservas previas. No garantiza terminar las28: cada operación conserva admisión
+fresca. La autorización procede del mensaje humano «Ampliar a30» y de su respuesta
+a la consulta pendiente.
 
 Las mismas claves siguen hasta16/10a18:00París; processor4.5 USD/backend0.1 USD.
 No nuevas claves, renovación ni aumento automático. Los controladores anteriores
@@ -169,8 +173,8 @@ están terminados; no se relanzan y no se repiten las112 muestras.
 
 ## Para cerrar B
 
-1. Decidir si se completa la quinta ronda con una ampliación explícita o se
-   mantiene el límite y se conserva esta medición parcial.
+1. Completar y auditar la quinta ronda reanudada bajo30USD, sin repetir112
+   ni liberar reservas anteriores.
 2. Acordar criterios con los revisores y adjudicar012/023 sin simular consenso.
 3. Determinar el alcance de validación de la integración con el corpus nuevo:
    la N3/N5 antigua no acredita esa combinación. Su plan N3 está NOT_RUN.

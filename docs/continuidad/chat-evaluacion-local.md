@@ -9,13 +9,22 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 16/10/2026
 
-La continuación automática queda bloqueada tras tres auditorías consecutivas
-sin avance: falta decisión presupuestaria (20USD vigente,21sólo propuesto) y
-siguen pendientes los criterios/adjudicación indicados. No hay proceso pagado
-vivo ni trabajo independiente útil pendiente identificado. Se conservan112muestras,
-1247entradas y todas las reservas; no se declara B completada. Auditoría externa
-`goal-impasse-audit-v1.json`. Retomar sólo ante una respuesta humana o cambio
-externo que permita completar el alcance; no repetir la pregunta ni las campañas.
+**Reanudación autorizada16/10: máximo acumulado30USD.** El usuario respondió
+«Ampliar a30» a la consulta presupuestaria. El bloqueo anterior por20USD queda
+superado; su auditoría `goal-impasse-audit-v1.json` conserva el corte histórico.
+N5 continúa sólo desde001r5, conservando las112muestras/1247entradas anteriores
+byte a byte y todas las reservas. Continúan pendientes criterios/adjudicación;
+no se da B por aceptada ni el corpus integrado por medido.
+
+Política externa `period-n5-resume-prepared-v4.json`, SHA de política
+`fda1c54dbac9914a737a8670688b30506e433088420ed50cff8891f1f574611f`. Fuente/plan/modelo/prompts intactos; wrappers de admisión
+y ledger aplican30USD, seis guardas y preflight sin inferencias conformes.
+Controlador803686/start73577006 verificado vivo; `resume-v4`, no relanzar.
+Primera001r5recogida/conciliada y002r5en curso en el corte07:48UTC.
+Contadores frescos previos: cota19.893051732USD/siguiente20.213003732USD;
+son cotas conservadoras, no factura ni atribución exacta. Reservas desconocidas
+anteriores12.69071250USD íntegras. Claves existentes sin cambiar límites ni vigencia:
+processor4.5USD/backend0.1USD hasta16/10a18:00París. No nuevas claves/reinicios.
 
 **Modelo elegido para continuar: GLM 5.2 / DeepInfra FP4**, temperatura 0 y
 reasoning desactivado, ZDR y sin fallback. No es aceptación de la versión medida.
