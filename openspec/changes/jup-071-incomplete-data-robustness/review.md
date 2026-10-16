@@ -117,7 +117,7 @@ Pasada automatizada sobre el diff `136eeaec..8f8f71fd`, con mutación manual de 
 | ADV-2 | MEDIUM | Corregido: la restricción de los seis campos de `collect` era superficial. `generation` aceptaba claves extra y `corpus` y `retrieval` cualquier valor, y todo se guardaba en el crudo. Ahora `generation` solo lleva `model_alias` y `temperature`, y `corpus` y `retrieval` son un texto corto o un objeto plano de valores cortos con claves que no parezcan credenciales. |
 | ADV-3 | LOW | Corregido con prueba: la columna de total por tipo de perturbación solo tenía una prueba de la cabecera (un mutante que borraba los valores sobrevivía). Ahora se comprueba el total de cada una de las 16 filas. |
 | ADV-4 | LOW | Corregido con prueba: el máximo de dos revisores por punto no tenía prueba. |
-| ADV-5 | LOW | Heredado y registrado sin cambio (sin aceptación humana): `check_number` de JUP-070 acepta como correctas negaciones o contraposiciones («no es del 10 %»); las variantes se comportan igual que su baseline. Lo cubre el juicio humano y la limitación ya registrada de `labelled_by`. |
+| ADV-5 | LOW | Heredado y registrado solo aquí, sin cambio y sin aceptación humana: `check_number` de JUP-070 acepta como correctas negaciones o contraposiciones («no es del 10 %»); las variantes se comportan igual que su baseline. Lo cubre el juicio humano y la limitación ya registrada de `labelled_by`. |
 
 Los arreglos de ADV-1 a ADV-4 se hicieron con RED previo y no se sometieron a otra pasada.
 
@@ -133,7 +133,7 @@ Pasada automatizada sobre el commit `8e826854` (tareas 4.4 y 4.5: distancia no m
 | P6-4 | MEDIUM | Corregido: `provider` y `alias` se descartaban; viajan como identidad de embedding. |
 | P6-5 | MEDIUM | Corregido: una ejecución real no verificada se clasificaba como real; `generation_model` queda nulo salvo verificación y el dashboard la marca `sin_modelo_verificado`. Se pierde el alias declarado en las filas. |
 | P6-6 a P6-9 | LOW | Corregido: tipo de ejecución desconocido (se rechaza); `public_evidence` con `id` o `kind` vacíos, `id` repetidos o `content`/`source` no textuales (se rechazan); el diseño decía que las tasas eran `automatic` (son `human`); el protocolo no documentaba `rows` ni la distancia nula (documentado). |
-| P6-10 / P6-11 | LOW | Registrado sin cambio (sin aceptación humana): la regex de nombres permitidos en `docs/evidence` admite puntos, igual que la de los informes; un BOM al inicio del informe da un error controlado heredado de `read()`. |
+| P6-10 / P6-11 | LOW | Registrado solo aquí, sin cambio y sin aceptación humana: la regex de nombres permitidos en `docs/evidence` admite puntos, igual que la de los informes; un BOM al inicio del informe da un error controlado heredado de `read()`. |
 
 Los arreglos no se sometieron a otra pasada hasta la pasada 7.
 
@@ -151,7 +151,7 @@ Pasada automatizada sobre `954c9dc9..369d4de1` (tareas 4.4 a 4.6 completas, incl
 
 ## Auditoría de coherencia documental (2026-10-16, tras la pasada 7)
 
-Auditoría automatizada de trazabilidad entre propuesta, diseño, spec, tareas, revisión, evidencia, protocolo, continuidad y código sobre `98b89ca9`. Veredicto: changes-required (3 HIGH, 8 MEDIUM, 7 LOW; sin defectos de código ni de estructura OpenSpec). Se corrigieron los 18 hallazgos salvo los que se indican:
+Auditoría automatizada de trazabilidad entre propuesta, diseño, spec, tareas, revisión, evidencia, protocolo, continuidad y código sobre `98b89ca9`. Veredicto: changes-required (3 HIGH, 8 MEDIUM, 7 LOW; sin defectos de código ni de estructura OpenSpec). Los 18 hallazgos (3 + 8 + 7) se corrigieron; los dos puntos de «Sin cambio» son observaciones adicionales que no estaban entre los 18:
 
 - HIGH: el estado del colector de JUP-123 se describía como «bloquea hoy» en cinco documentos aunque su cabeza `e0a0c41e` ya adopta la capacidad; el número de pruebas figuraba como 91 en revisión y evidencia (son 123); el número de pasadas no coincidía entre continuidad y tareas. Todo unificado.
 - MEDIUM: continuidad desactualizada (respuesta de #131 y #132), `configuration_sha256` sin mención en el diseño, informes versionados presentados como generados con la herramienta «actual», párrafos del protocolo con saltos duros, estado `Accepted` del backlog sin aceptación humana, pasadas 6 y 7 sin la estructura de las anteriores, reglas de `public_evidence` sin escenario en la spec, y texto sobre qué filas son `human` ya superado por la guía del dashboard.

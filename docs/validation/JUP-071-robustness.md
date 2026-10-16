@@ -48,7 +48,7 @@ La recogida se etiqueta siempre `live_unverified`. El contrato HTTP actual no at
 
 ## Puntuar sin inventar juicios
 
-La hoja muestra pregunta, contexto, rúbrica, respuesta completa, citas y fragmentos. Mantener hoja, crudos, fichas y juicios fuera de Git. La herramienta rechaza sus salidas dentro de este checkout. No registrar credenciales en la ficha.
+La hoja muestra pregunta, contexto, rúbrica, respuesta completa, citas y fragmentos. Mantener hoja, crudos, fichas y juicios fuera de Git. La herramienta rechaza sus salidas dentro de este checkout, salvo los informes generados `JUP-071-*-report.json`, `JUP-071-*-report.md` y `JUP-071-*-rows.json` de `docs/evidence/`. No registrar credenciales en la ficha.
 
 En la plantilla de juicios, cada lista vacía se completa por las personas que realmente juzgaron el punto. `raw_sha256` vincula los juicios al crudo completo: no trasladarlos a otra respuesta ni cambiar ese hash para reutilizarlos.
 
@@ -113,7 +113,7 @@ El Markdown muestra el número de casos con cobertura reducida, si la evaluació
 
 El lector numérico de JUP-070 solo mira la etiqueta anterior a la cifra: una respuesta correcta con la etiqueta de otra cifra antes de la propia (por ejemplo «de 10 EUR/pedido en julio a 6 EUR/pedido en agosto») puede quedar en `fail` en `numbers-N` y los juicios humanos no lo revierten. Ante un `fail` numérico en los casos con varias cifras, comprobar la respuesta a mano antes de atribuirlo al asistente. Está registrado en `openspec/findings/backlog.md`.
 
-Los valores declarados del bloque `run` se escriben en minúsculas, sin `:` ni `@`; un alias con sufijo de proveedor como `deepseek-v4-pro:free` hay que declararlo sin ese sufijo. Los alias de `infra/litellm/config.example.yaml` y de ADR-0002 se aceptan.
+Los valores declarados del bloque `run` se escriben en minúsculas, sin `:` ni `@`; un alias con sufijo de proveedor (por ejemplo `alias-modelo:sufijo`) hay que declararlo sin ese sufijo. Los alias de `infra/litellm/config.example.yaml` y de ADR-0002 se aceptan.
 
 ### Distancia no medida y contrato del dashboard (16/10/2026)
 

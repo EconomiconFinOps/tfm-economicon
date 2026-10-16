@@ -50,7 +50,7 @@ La herramienta acepta fragmentos con `distance: null` y `public_evidence`, y exp
 
 ### 16/10/2026: procedencia del servidor (tarea 4.6)
 
-Con la cabeza `e0a0c41e` del PR #131, el colector copia a `execution.collection.server_reported` la procedencia que reporta el servidor. El informe y `rows` llevan el `prompt_sha256` único como dato no atestiguado, y `mixed` o `absent` si no hay uno. Se comprobó con una fila construida con la forma exacta del colector (no se repitió con un backend real). 121 pruebas en verde.
+Con la cabeza `e0a0c41e` del PR #131, el colector copia a `execution.collection.server_reported` la procedencia que reporta el servidor. El informe y `rows` llevan el `prompt_sha256` único como dato no atestiguado, y `mixed` o `absent` si no hay uno. Se comprobó con una fila construida con la forma exacta del colector (no se repitió con un backend real). 123 pruebas en verde (el conjunto actual).
 
 ## Trazabilidad por criterio de Trello
 

@@ -385,7 +385,7 @@ Tipo: deuda tecnica. Severidad: Medium. Estado: Open. Owner: Equipo Economicon.
 - El fallo numérico es duro: los juicios humanos no lo revierten. Afecta a los casos de JUP-069 con varias cifras esperadas (001, 002, 005, 013, 014, 016, 017, 018, 021 y 027); JUP-069-011 y las variantes de JUP-071 tienen una sola cifra.
 - JUP-071 hereda el comportamiento porque reutiliza `check_number`; la propuesta no modifica el evaluador. Al revisar los resultados de una campaña real, un `numbers-N` en `fail` de estos casos se debe mirar a mano antes de leerlo como error del asistente.
 
-## JUP-071 — Aceptados de la revisión final: revisores en formas Unicode de compatibilidad y hash de la configuración
+## JUP-071 — Registrados de la revisión final: revisores en formas Unicode de compatibilidad y hash de la configuración
 
 Fecha: 2026-10-16. Origen: JUP-071, revisión adversarial pasada 4 (ADV-4 y ADV-5).
 Tipo: deuda tecnica. Severidad: Low. Estado: Open (registrado por una revisión automatizada; sin aceptación humana). Owner: Equipo Economicon.
