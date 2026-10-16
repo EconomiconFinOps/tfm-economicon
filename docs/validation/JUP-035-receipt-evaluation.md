@@ -315,3 +315,48 @@ Esta corrección local posterior no cambia el plan, candidato o recibos de la
 campaña7be57c05 congelada. Antes de usarla en una continuación hay que registrar
 su versión de herramientas y verificar de nuevo procedencia y admisión; no
 sustituir a escondidas los ficheros que el plan anterior mantiene fijados por hash.
+
+## Comparación entre bancos que sólo cambian procedencia — 16/10/2026
+
+`chat-receipt-eval.py compare` conserva su rechazo estricto de hashes distintos.
+El comando separado `tools/chat-eval-compare-provenance.py` permite una comparación
+descriptiva explícita cuando las preguntas, contextos, categorías, criterios y
+resto del contenido del banco son idénticos. Sólo pueden diferir `suite_version`
+y `sources`. Las reglas de evaluación deben ser iguales excepto su referencia
+a la versión del banco. Se conservan los dos hashes originales; no se reetiquetan
+recibos ni se atribuye una medición antigua a un corpus nuevo.
+
+El comando exige dos informes originales, sus auditorías, bancos y reglas:
+
+```text
+python tools/chat-eval-compare-provenance.py
+  --before-report /evidence/before-review.json --before-audit /evidence/before-audit.json
+  --before-bank /evidence/original-bank.json --before-rules /evidence/original-rules.json
+  --after-report /evidence/after-review.json --after-audit /evidence/after-audit.json
+  --after-bank docs/validation/JUP-069-questions.json
+  --after-rules docs/validation/JUP-070-evaluation-rules.json
+  --output /evidence/new-comparison.json
+```
+
+El ejemplo muestra un único comando con sus argumentos, repartidos por legibilidad;
+en una terminal deben unirse o usarse sus continuaciones de línea propias.
+
+Cada auditoría debe identificar los bytes del informe y sus juicios. El comparador
+recalcula la partición del banco original, exige el mismo scorer/heurística y
+contrasta el contenido, hash y origen de TODOS los criterios contra el banco.
+Una etiqueta debe seguir ligada a la evidencia y respuesta/contexto originales,
+con razón, autoría y grupo causal de fallo. No se usan coincidencias heurísticas
+como juicios. Operaciones técnicas, entradas no comprobadas y evidencia incompleta
+quedan excluidas explícitamente; ausencias y pares sin contraparte permanecen visibles.
+
+Una regresión incluye PASS→FAIL, PASS→incierto o PASS→sin revisar y se agrupa por
+respuesta. El resultado conserva transiciones, identidades, métodos y hashes de
+las ocho entradas. Se rechaza escribir dentro del repositorio, sustituir entradas
+o sobrescribir un informe existente. No contiene una puerta de aceptación automática.
+
+Prueba real offline: N3 de5119/banco1.0.0 frente a N3 de a7/banco1.0.1. Son84pares,
+327PASS→PASS del banco, y en la rúbrica165PASS→PASS,2FAIL→PASS y1incierto→PASS;
+ninguna regresión observada. Los dos fallos pertenecen a012r1 y la incertidumbre
+a023r3. No son tres respuestas independientes mejoradas ni mejora causal de un modelo.
+Los juicios y reservas antiguos no se modifican. Evidencia en
+[JUP-123-provenance-comparison.md](../evidence/JUP-123-provenance-comparison.md).

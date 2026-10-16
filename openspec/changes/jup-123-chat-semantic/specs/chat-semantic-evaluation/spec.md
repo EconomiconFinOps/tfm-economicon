@@ -340,3 +340,23 @@ una sección autorizada, completa y reconocida; no ejecuta cambios.
 - **AND** explica el posible impacto en rendimiento, servicio o SLA como riesgo condicional
 - **AND** no afirma una degradación observada, un ahorro garantizado ni que rightsizing siempre signifique reducir
 - **AND** las etiquetas históricas inciertas permanecen pendientes de adjudicación independiente
+
+### Requirement: Comparación descriptiva entre revisiones de procedencia
+El evaluador MUST conservar la comparación estricta existente y ofrecer una
+operación separada para comparar informes auditados cuando sólo cambia la
+procedencia del banco. No modifica originales ni concede aceptación automática.
+
+#### Scenario: Mismas preguntas y criterios con corpus identificado por otro hash
+- **WHEN** únicamente difieren versión y fuentes del banco y la referencia de versión de las reglas
+- **THEN** la comparación verifica los dos informes contra sus auditorías, bancos y reglas originales y conserva sus hashes distintos
+- **AND** informa transiciones por caso, repetición y criterio, sin atribuir resultados antiguos al corpus nuevo ni causalidad al modelo
+
+#### Scenario: Criterio o juicio alterado y muestras no verificadas
+- **WHEN** cambia una pregunta, contexto, criterio, regla o implementación evaluadora, o un juicio no está ligado a su evidencia original
+- **THEN** la operación rechaza la comparación en vez de normalizar a escondidas los informes
+- **AND** un fallo técnico, entrada no verificada o evidencia incompleta nunca se compara como respuesta conforme; las ausencias permanecen visibles
+
+#### Scenario: Un mismo defecto afecta varios criterios
+- **WHEN** una respuesta presenta varios PASS que pasan a FAIL, incierto o sin revisar
+- **THEN** cada transición se conserva y la regresión se agrupa por esa respuesta
+- **AND** el resultado sigue siendo descriptivo y no levanta los criterios o juicios humanos pendientes

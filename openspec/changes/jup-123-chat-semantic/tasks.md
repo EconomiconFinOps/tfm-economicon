@@ -31,6 +31,7 @@ B local sin publicar;3.4es preparación para revisión, no aprobación humana.
 - [x] 2.2 Verificar entorno aislado y contabilidad viva para la baseline a817382b.
 - [x] 2.3 Congelar y recoger baseline N3 completa (84/84, con 7 fallos preservados).
 - [ ] 2.4 Resolver incertidumbres con adjudicación independiente.
+
 - [x] 2.5 Recoger N3 del candidato e23e495b:84/84 recibos verificados,78completed/6failed conservados; costes desconocidos con reserva íntegra, no aceptación semántica.
 - [x] 2.6 Recoger y revisar localmente N3 de c7e2d561:84/84 recibos,83 completed/1 failed;70 conformes/7 inciertas/6 fallos de contenido/1 técnico. Snapshot258 hashes; no adjudicación independiente ni aceptación.
 
@@ -44,6 +45,9 @@ B local sin publicar;3.4es preparación para revisión, no aprobación humana.
   - Corte15/10 08:04UTC:70/84 verificados,69completed/1failed,66costes observados/4maximos íntegros. Snapshot287 hashes y ocho recibos iniciales intactos.63 conformes/3fallidas/3inciertas/1técnica (013r3 classification_unverified_prose). Caducidad bloquea015r3; extensión temporal solicitada, no aplicada. Cota6.059886129/10USD con3.201520 reservados intactos. Faltan14, no cerrar2.7 ni aceptación.
 
   - Cierre15/10:84/84 recibos verificados,379 filas; {'pass': 75, 'fail': 4, 'pending': 4, 'technical_failure': 1}. Requisitos{'pass': 480, 'fail': 5, 'uncertain': 4, 'unreviewed': 6}. Snapshots privado/público congelados y ocho iniciales intactos; no aceptación. Máximos desconocidos retenidos, sin declarar coste0. Ver continuidad para hashes/comparación y cota6.111641466/10USD.
+
+- [x] 2.8 Implementar y probar comparación descriptiva entre bancos con cambios exclusivos de procedencia, sin relajar el comparador estricto o modificar juicios originales.
+  - Comparación offline de84pares 5119→a7:327PASS→PASS del banco;165PASS→PASS/2FAIL→PASS/1incierto→PASS de calidad. Sin regresiones observadas en el banco conocido; producto/corpus/modelo distintos, no causalidad o aceptación humana.
 
 ## 3. Correcciones y entrega
 - [ ] 3.1 Corregir defectos medidos con lógica determinista.

@@ -6,6 +6,13 @@ Verificado el 16/10/2026. Origen: chat
 
 ## Resultado
 
+Continuación16/10: implementado el comparador separado de revisiones de procedencia,
+con12pruebas nuevas y17anteriores conformes. La comparación de84pares 5119→a7
+conserva327PASS→PASS del banco; calidad165PASS→PASS/2FAIL→PASS/1incierto→PASS.
+Sin regresiones observadas, ausencias o exclusiones. Es descriptiva, no causal o
+aceptación humana. Aplicaciones y medición anterior intactas; sin gasto nuevo.
+Ver [evidencia](../evidence/JUP-123-provenance-comparison.md).
+
 La corrección012 está en `a7f9502d6da0e080560f028dfc260f77f729c937`: el servidor
 separa tag ausente, conformidad de tagging y asignación explícita suficiente.
 213pruebas Windows y213Linux PASS;25controles del arnés PASS. Replay167contextos

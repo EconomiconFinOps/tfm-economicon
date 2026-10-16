@@ -9,6 +9,38 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 16/10/2026
 
+### Continuación de B: comparación por requisito implementada — 16/10/2026
+
+Encargo humano: «Envía mensaje informando a discord y continúa con la implementación
+de B». Se añadió `tools/chat-eval-compare-provenance.py`, separado del comparador
+estricto existente. Admite sólo cambios de versión/fuentes del banco y referencia
+de versión de las reglas, comprobando igualdad del resto, informes ligados a sus
+auditorías y juicios originales ligados a evidencia/respuesta/contexto. No cambia
+hashes antiguos, corpus, etiquetas, apps, prompts o el modelo del gateway común.
+
+La comparación offline real de84pares 5119→a7 conserva327PASS→PASS del banco y,
+en calidad,165PASS→PASS/2FAIL→PASS/1incierto→PASS, sin ausencias/exclusiones o
+regresiones observadas. Los dos fallos pertenecen a012r1 y la duda a023r3. No es
+causalidad ni aceptación, porque cambian producto/corpus/modelo y los juicios son
+locales. La incertidumbre y los fallos antiguos permanecen intactos. No se hereda
+N5 del producto anterior; la N5 actual sigue sin ejecutar, con alcance pendiente.
+
+Pruebas nuevas12PASS y evaluador existente17PASS; OpenSpec75PASS. Primer intento
+11PASS/1ERROR por permisos del temporal de Windows; mismo código pasa12/12 con
+acceso normal al temporal. Contrafactuales finales también12/12. No inferencias,
+claves, reservas, builds o activaciones nuevos. Ver
+[evidencia y límites](../evidence/JUP-123-provenance-comparison.md).
+Informe externo `B-N3-5119-to-a7-provenance-comparison-v1.json`, SHA
+`4da6964ac124baf635b5f7889d254519d871e0f75cca3519528e7a77eb8a38af`.
+
+Discord: mensaje específico autorizado por el humano y preparado en
+`discord-modelos-B-20261016.txt` de la evidencia externa. **NO enviado al corte**:
+la sesión web pide iniciar sesión y el bot configurado es sólo lectura, sin
+SendMessages. Se solicitó únicamente iniciar sesión, no otra autorización de
+mensaje. Pestaña del canal abierta; no ampliar permisos del bot ni usar su token
+para sortear el bloqueo. Al iniciarse sesión, enviar ese único resumen y verificar
+el mensaje antes de afirmar envío. No implica permiso para otros mensajes.
+
 Análisis y justificación de modelos para el TFM: [memoria-modelos.md](memoria-modelos.md).
 Contribución preparada para JUP-063/JUP-109, sin duplicar tareas. DeepSeek es la
 elección local vigente; la ventaja histórica de calidad de GLM y sus fallos se
