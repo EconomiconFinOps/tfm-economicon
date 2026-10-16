@@ -4,13 +4,14 @@ Integración local2339 con develop53b43:192 pruebas backend únicas (29SQL),18fr
 95arnés/17evaluador,75OpenSpec; tres imágenes y351 archivos verificados.
 HTTP/UI de costes off/on pasan en preview desechable, escritorio/móvil/recarga;
 panel B disponible sólo on. Preview retirada, cero inferencias; no valida generación.
-N3 del producto5119 completa:327 requisitos originales conformes,1fallo adicional
-de calidad y1duda. N5 parcial112/140:111 conformes/1técnica,433 requisitos originales
-conformes/3no evaluables; faltan las28 muestras de la quinta ronda. Presupuesto20USD
-con todas las reservas: siguiente cobertura20.003486838 al cierre,20.061808785 en
-lectura posterior. No N5 completa, aceptación ni medición del corpus nuevo.
-Las casillas1.4/2.4/3.1–3.3 siguen pendientes por esos límites;3.4 acredita preparar
-un candidato revisable con limitaciones, no cerrar la tarjeta.
+N3de5119 completa:327requisitos originalesPASS,012r1fallida/023r3dudosa.
+N5final140recogidas/auditadas:139completed/1failed;138conformes/1fallida012r5/
+1técnica010r3,542requisitos originalesPASS/3no evaluables;276calidadPASS/2FAIL/
+2no evaluables. Quinta ronda28completed sin técnicos nuevos,112anteriores intactas.
+Máximo30USD/cota19.893051732, reservas12.69071250íntegras;1275filas/paquete310archivos.
+No aceptación independiente ni campaña del corpus integrado nuevo. Casillas
+1.4/2.4/3.1–3.3 pendientes:criterios/adjudicación,012 y confirmación de alcance;
+3.4 acredita candidato preparado. La recogidaN5 ya finalizó.
 Ver `docs/validation/JUP-123-local-review.md` y continuidad; los cortes inferiores
 conservan historia y no sustituyen este estado.
 
@@ -67,6 +68,7 @@ conservan historia y no sustituyen este estado.
   - N3 finales72 y a545 completas84/84 y congeladas. En a545:80PASS/1FAIL027r2/2inciertas020r1/r3/1técnica022r1 por429;003/013/015/025PASS3/3. Requisitos486PASS/1FAIL/2inciertos/6no evaluables. Frente72:3FAIL→PASS,2inciertos→PASS,1PASS→FAIL y2PASS→inciertos; técnicos aparte. No cumple ausencia de regresiones,3.2 permanece abierta.547filas y252recibos de últimas tres campañas intactos; reservas4.161376 conservadas, cota7.7121919645/10USD. UI003/013/015/025 de historial/recarga conformes, sin nueva inferencia.
   - Comparación c7/e23 registrada:438 pass→pass,7 pass→fail,7 uncertain→uncertain,6 uncertain→pass,2 fail→pass; técnicos aparte. No se cumple ausencia de regresiones; casilla abierta.
 - [ ] 3.3 Confirmar N5 según alcance acordado y presupuesto.
+  - Recogida/auditoría final140/140 completadas16/10 bajo30USD;138PASS/1FAIL012r5/1técnico010r3 conservados, paquete310archivos. No falta recogida: quedan criterio acordado y aceptación, que no se simulan.
 - [x] 3.4 Preparar candidato local con pruebas, evidencias y limitaciones.
   - Integración2339, informeJUP-123-local-review, tres imágenes sin activar y paquete112 inmutable de250archivos. No se traslada N3/N5de5119 al corpus nuevo. Revisiones, incertidumbres, confirmaciónN5 y aceptación permanecen pendientes.
 

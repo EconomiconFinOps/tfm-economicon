@@ -9,28 +9,43 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 16/10/2026
 
-**Reanudación autorizada16/10: máximo acumulado30USD.** El usuario respondió
-«Ampliar a30» a la consulta presupuestaria. El bloqueo anterior por20USD queda
-superado; su auditoría `goal-impasse-audit-v1.json` conserva el corte histórico.
-N5 continúa sólo desde001r5, conservando las112muestras/1247entradas anteriores
-byte a byte y todas las reservas. Continúan pendientes criterios/adjudicación;
-no se da B por aceptada ni el corpus integrado por medido.
+**N5 terminada, auditada y congelada:140/140 muestras**, fuente5119e330,
+banco1.0.0 y GLM5.2/DeepInfraFP4 sin cambios durante las cinco rondas.
+139operaciones completed/1failed técnico010r3;140snapshots verificados.
+Revisión local:138conformes/1fallida de calidad012r5/1técnica; ningún juicio
+pendiente entre las respuestas completadas. Banco original542PASS/3no evaluables
+por el fallo técnico; calidad276PASS/2FAIL de una respuesta/2no evaluables.
+No140éxitos ni aceptación independiente.012r5 repite la preferencia normativa
+no sustentada de owner: clasificación allocated correcta; dos checks, un grupo.
+023r5pasa pidiendo datos autorizados, sin pedir conexión; la duda023r3deN3 persiste.
 
+Auditoría `period-api-n5-final-audit-v2.json`, SHA`6981d89bcdf3760cd3680d0a0517f65ce3c5b9760ed6c355119c8e28c0499406`.
+Paquete final `period-n5-full140-frozen-v1/`,310archivos, manifest
+SHA`db463ef190e19bc063784f0ef44ecaee329f9bb99b0b2a0f04ece9d4327f3bdd`. Paquete parcial112/250archivos
+conservado íntegro, no sustituido. Los112recibos y1247filas iniciales permanecen
+byte a byte; ledger final1275filas SHA`0e861c496853a687f9053f2d0a212829cfd25a53752e4889cff0c6059f9751b9`.
+
+El usuario autorizó30USD acumulados el16/10 («Ampliar a30»). Quinta ronda sólo
+desde001r5:28completed,27conformes/1fallida012r5, cero técnicos nuevos y
+0.110671422USD observados. N5 total137costes observados:0.622073267USD
+(totales redondeados a9decimales; auditoría conserva los originales).
+Tres máximos desconocidos propios íntegros; reservas pendientes de todo el
+historial12.69071250USD, sin liberar ninguna. Cota final conservadora
+19.893051732/30USD, no factura ni coste exacto atribuible al trabajo.
+
+Controlador803686/start73577006 **terminado** con COLLECTED; no relanzar.
 Política externa `period-n5-resume-prepared-v4.json`, SHA de política
-`fda1c54dbac9914a737a8670688b30506e433088420ed50cff8891f1f574611f`. Fuente/plan/modelo/prompts intactos; wrappers de admisión
-y ledger aplican30USD, seis guardas y preflight sin inferencias conformes.
-Controlador803686/start73577006 verificado vivo; `resume-v4`, no relanzar.
-Corte08:00UTC:130/140recibos,128conformes/1fallo012r5/1técnico heredado010r3.
-012r5 reconoce allocated, pero convierte preferencia del valor equipo/persona
-en preferencia del mecanismo owner;2checks de calidad fallan en un único grupo,
-con el mismo criterio que N3. Banco original conforme para esa respuesta.
-Batch15 conservado; no se cambia producto a mitad de campaña. Seguimiento
-programado a10:10París para terminar recogida/revisión/auditoría, sin repetir112.
-Primera001r5recogida/conciliada y002r5en curso en el corte07:48UTC.
-Contadores frescos previos: cota19.893051732USD/siguiente20.213003732USD;
-son cotas conservadoras, no factura ni atribución exacta. Reservas desconocidas
-anteriores12.69071250USD íntegras. Claves existentes sin cambiar límites ni vigencia:
-processor4.5USD/backend0.1USD hasta16/10a18:00París. No nuevas claves/reinicios.
+fda1c54dbac9914a737a8670688b30506e433088420ed50cff8891f1f574611f;
+fuente/plan/modelo/prompts intactos y admisión fresca por operación. Claves
+existentes processor4.5USD/backend0.1USD hasta16/10a18:00París, sin renovación,
+nuevas claves, reinicios o cambios de límites en esta continuación.
+
+Comparación emparejada N3/N5:487PASS→PASS,2FAIL→PASS,1incierto→PASS;
+324PASS→PASS originales. Mismo candidato: variación, no mejora causal.
+56muestras r4/r5 sin par, incluida012r5fallida; los pares no la borran ni
+borran012r1fallida/023r3dudosa deN3. No juezLLMcalibrado/testciego ni
+adjudicación independiente. Pendientes012, criterios con revisores y corpus
+integrado nuevo. B no aceptada/publicada, Trello noDone.
 
 **Modelo elegido para continuar: GLM 5.2 / DeepInfra FP4**, temperatura 0 y
 reasoning desactivado, ZDR y sin fallback. No es aceptación de la versión medida.
@@ -132,7 +147,7 @@ Al cierre: **1135 filas**, prefijo original de 1051 intacto y reservas antiguas
 **11.73085650 USD** íntegras. Cota **18.212276993/20 USD**, no factura.
 Ledger N3 SHA `dba497b32b13188d2b6fc93159589d091ed373e42b39a495c6cd1f3c9dc4af84`.
 
-**N5 detenida y congelada por presupuesto:112/140 muestras**, candidato5119,
+**Corte histórico112, superado por la N5final140 anterior:** detenido por presupuesto en5119,
 cuatro rondas y28 ausentes (001–028r5). **111 conformes y1fallo técnico**;
 433 requisitos originales conformes/3no evaluables;222checks de calidad conformes/
 2no evaluables. No N5 completa ni aceptación.109costes conciliados suman
@@ -180,7 +195,8 @@ por el envoltorio de logging; v2 lo decodifica sin contenido, URLs o credenciale
 `period-n5-cap21-continuation-proposal-v1.json` es una **propuesta no autorizada ni
 activada**, con ensayo puro en memoria:20rechaza la siguiente y21la admitiría,
 sin claves, límites efectivos, fuente, prompts o ledger modificados. Consulta al
-usuario pendiente para21USD; silencio u opción preseleccionada no autorizan.
+La consulta histórica de21USD quedó superada por la respuesta humana30USD del16/10.
+No utilizar este corte para decidir la siguiente operación.
 No garantiza completar28si hay más costes desconocidos. Máximo vigente sigue20.
 
 **Integración local2339 con develop53b43**, GitHub comprobado otra vez el16/10:

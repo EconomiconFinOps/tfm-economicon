@@ -20,7 +20,7 @@ La entrega A coincide en `apps/` y `tools/` con 8ea5a0c4, ya incorporada.
 No se han descartado sus arreglos por resolver conflictos con la versión B.
 
 El checkout `tfm-economicon-jup035-local` y el entorno de la campaña conservan
-**5119e330** y su banco original para poder revisar o continuar esa medición.
+**5119e330** y su banco original para revisar la medición congelada.
 No confundir ese producto medido con el candidato integrado de este checkout.
 `CHAT_ENABLED` continúa desactivado por defecto.
 
@@ -50,20 +50,20 @@ manifiestos verificados; no se declara un paquete compartido inexistente.
 | Comparación N3 GLM | Replay, 84 respuestas válidas; anterior a002/014 finales |82 conformes, 2 fallidas; 326 requisitos originales conformes/1fallido |
 | Comparación N3 DeepSeek | Mismos wire/contextos, 84 respuestas válidas |77 conformes, 6 fallidas, 1 incierta; 327 requisitos originales conformes |
 | API N3 de5119 | Banco1.0.0; 84 completed, 84snapshots y84 costes conciliados |82 conformes, 1fallida012r1, 1dudosa023r3; 327 requisitos originales conformes |
-| N5 parcial de5119 |112/140 intentos previstos: cuatro rondas, 111 completed/1 failed |111 conformes, 1 técnico; 433 requisitos originales conformes/3no evaluables; 222 checks de calidad conformes/2no evaluables |
-| Integración2339 | Banco1.0.1/corpus actualizado, código y SQL comprobados |No hay campaña generativa de esta combinación ni activación/API/UI nuevos |
+| N5 final de5119 |140/140 recogidas:139completed/1failed |138conformes,1fallida012r5,1técnica010r3;542requisitos originalesPASS/3no evaluables;276calidadPASS/2FAIL de un grupo/2no evaluables |
+| Integración2339 | Banco1.0.1/corpus actualizado, código/SQL e imágenes comprobados |HTTP/UI costes off/on conformes en preview retirada, sin generación. Campaña generativa NOT_RUN |
 
-La quinta ronda completa, 001–028r5, **no se ejecutó**. No es N5 terminada, ni
-mejor selección de repeticiones. El fallo010r3 permanece y sus cinco checks no
-evaluables no se contabilizan como PASS. La ausencia de fallos de contenido en
-las111 respuestas de esa campaña no borra el fallo y la duda de la N3 anterior.
+La quinta ronda001–028r5 se completó bajo30USD:28completed,27conformes y1fallida
+de calidad012r5, sin técnicos nuevos. Las112anteriores nunca se repitieron ni
+sustituyeron. El fallo técnico010r3 queda conservado con5checks no evaluables.
+La revisión es local/provisional;140muestras recogidas no significa140éxitos.
 
-La comparación emparejada N3/N5 conserva487 PASS→PASS, 2 FAIL→PASS y1 incierto→PASS;
-324 PASS→PASS del banco original. El fallo técnico se compara aparte y la cuarta
-ronda aporta28 muestras sin par en N3. **Mismo producto y parámetros**: las
-variaciones no prueban una corrección causal. No hay regresión obligatoria
-observada entre las respuestas emparejadas evaluables; siguen existiendo
-ausencias, un fallo técnico y falta de adjudicación independiente.
+La comparación emparejada N3/N5 conserva487PASS→PASS,2FAIL→PASS y1incierto→PASS;
+324PASS→PASS del banco original. El técnico se compara aparte. Rondas4/5
+aportan56muestras sin par, incluida012r5fallida: los pares no la borran.
+Mismo producto/parámetros, no mejora causal. N3 conserva012r1fallida/023r3dudosa.
+No regresiones originales observadas entre pares evaluables, con límites de
+adjudicación, fallo técnico y corpus nuevo pendientes.
 
 La partición histórica ya se usó para selección/correcciones; no es un test ciego.
 El scorer automatiza procedencia, contraste de etiquetas y recuentos. Las
@@ -72,7 +72,7 @@ etiquetas semánticas son revisión local del agente con razones y hashes;
 
 ## Defectos y dudas que no se ocultan
 
-- **012r1 de N3:** allocated es correcto, pero una interpretación confunde la
+- **012r1 de N3 y012r5 de N5:** allocated es correcto, pero una interpretación confunde la
   preferencia del valor owner por equipo con que la clave sea preferente/no
   exclusiva. Dos checks de calidad fallidos, un mismo grupo causal. No se vuelve
   a etiquetar como PASS porque otras repeticiones no lo reproduzcan.
@@ -141,40 +141,27 @@ No se invalidan los resultados históricos ni se atribuyen al corpus nuevo.
 
 ## Contabilidad y continuación
 
-Máximo autorizado vigente desde16/10: **30 USD acumulados**, sin liberar reservas.
-La N5 se ha retomado desde001r5 con política externa y prefijo1247 intacto;
-los resultados112 que siguen describen el corte congelado anterior, no la campaña final.
-N3 añadió0.4066383825 USD observados. De N5 hay109 costes conciliados que suman
-0.511401845 USD; los otros tres no se presentan como gratuitos ni liquidados.
+Máximo autorizado vigente: **30USD acumulados**. Auditoría final N5:
+**19.893051732USD de cota conservadora**, no factura ni atribución exacta.
+Se conservan **12.69071250USD** de reservas desconocidas:11.73085650 anteriores
+y0.959856 de016r2/010r3/027r3. No se tratan intentos desconocidos como gratis.
 
-Al congelar N5, la cota conservadora era **19.683534838 USD** y la siguiente
-operación requería **20.003486838 USD**. Las reservas desconocidas suman
-**12.69071250 USD**:11.73085650 anteriores más0.959856 nuevos, todos intactos.
-Al corte congelado el ledger tenía1247 filas, con1135 previas idénticas, SHA
-`72328e57bd9137af50d803bd4d6692b26f032df14c3470eb6053280acce1188f`.
+N5 tiene137costes observados:0.622073267USD. La continuación001r5 añadió28costes
+observados por0.110671422USD (redondeados a9decimales; auditoría conserva valores
+originales). Ledger final1275filas, SHA`0e861c496853a687f9053f2d0a212829cfd25a53752e4889cff0c6059f9751b9`;
+1135previas y las1247al retomar siguen idénticas, igual que los112recibos y su
+paquete parcial250archivos.
 
-Una lectura posterior del contador elevó la cota a **19.741856785 USD** y la
-cobertura exigida para la siguiente a **20.061808785 USD**, con el mismo ledger y
-sin inferencias nuevas. Son cotas conservadoras de cuenta, **no factura ni coste
-exacto atribuible al trabajo**. No se deduce de esa variación quién consumió o
-cuándo se contabilizó cada cargo.
-
-La propuesta histórica de21USD fue sustituida el16/10 por la autorización explícita
-de30USD. La política externa nueva conserva fuente y plan; se continúa
-desde001r5. El preflight real con30USD y seis guardas pasó sin inferencias;
-la política se aplica por separado a admisión y ledger, sin alterar fuente ni
-reservas previas. No garantiza terminar las28: cada operación conserva admisión
-fresca. La autorización procede del mensaje humano «Ampliar a30» y de su respuesta
-a la consulta pendiente.
-
-Las mismas claves siguen hasta16/10a18:00París; processor4.5 USD/backend0.1 USD.
-No nuevas claves, renovación ni aumento automático. Los controladores anteriores
-están terminados; no se relanzan y no se repiten las112 muestras.
+La política externa30USD, autorizada por «Ampliar a30», se aplicó a admisión y
+ledger con seis guardas y comprobación fresca por operación. No cambió fuente,
+prompt, modelo o plan de5119. Controlador803686 terminó con COLLECTED. Mismas
+claves processor4.5/backend0.1 hasta16/10a18:00París, sin renovación ni nuevas.
+No volver a lanzar140muestras. Paquete final310archivos conserva el histórico.
+B no publicada; ningún despliegue compartido modificado.
 
 ## Para cerrar B
 
-1. Completar y auditar la quinta ronda reanudada bajo30USD, sin repetir112
-   ni liberar reservas anteriores.
+1. Resolver el defecto de calidad012 medido nuevamente, conservando las campañas.
 2. Acordar criterios con los revisores y adjudicar012/023 sin simular consenso.
 3. Determinar el alcance de validación de la integración con el corpus nuevo:
    la N3/N5 antigua no acredita esa combinación. Su plan N3 está NOT_RUN.
@@ -190,6 +177,8 @@ Directorio externo relativo a la raíz del proyecto:
 - `model-selection-final-v1.{json, md}` y `matched-model-comparison-final-v1.json`.
 - `period-api-n3-final-audit-v2.json`, SHA
   `fe5db9bbb23b034044a8686726325d97ca0116ddf50ce9eb51c1220336f34541`.
+- `period-api-n5-final-audit-v2.json`, SHA`6981d89bcdf3760cd3680d0a0517f65ce3c5b9760ed6c355119c8e28c0499406`.
+- Paquete final310archivos: `period-n5-full140-frozen-v1/manifest.json`, SHA`db463ef190e19bc063784f0ef44ecaee329f9bb99b0b2a0f04ece9d4327f3bdd`.
 - `period-api-n5-budget-stop-audit-v1.json`, SHA
   `30557789c152f64369446950e4376caf72780f965059e8d575c968235220d04f`.
 - Paquete112 inmutable de250 archivos: `period-n5-budget112-frozen-v1/manifest.json`,

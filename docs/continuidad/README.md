@@ -9,12 +9,12 @@ Actualización15/10: colector extraído y adaptado para071 en PR131abierta,
 revisión solicitada a Lucía (`lmatsan`),
 31tests y compatibilidad con su evaluador comprobados; B no se ha publicado.
 Detalle en evaluación local y en la continuidad propia de la rama del colector.
-Actualización16/10: GLM elegido. N3 de5119 completa:327 requisitos originales
-conformes,012r1fallo de calidad/023r3duda. N5 detenida por presupuesto112/140:
-111conformes/1técnica,433requisitos conformes/3no evaluables; faltan28r5.
-16/10: usuario autoriza30USD acumulados. N5 retomada desde001r5; las112muestras
-anteriores y todas sus reservas se conservan. Controlador803686 vivo al corte07:48UTC.
-Criterios/adjudicación siguen pendientes; detalle del presupuesto y vigencia en el tema.
+Actualización16/10: GLM elegido. N3de5119 completa con012r1fallida/023r3dudosa.
+N5final140/140:138conformes/1fallida012r5/1técnica010r3;542requisitos originales
+PASS/3no evaluables. Quinta ronda28completadas sin técnicos nuevos; controlador
+terminado. Auditoría y paquete310archivos congelados, paquete112intacto.
+Máximo30USD, cota19.893051732 y reservas12.69071250USD conservadas.
+012, criterios/adjudicación y corpus integrado siguen pendientes.
 Integración local2339 con develop53b43:192backend únicos(29SQL),18frontend,
 95arnés/17evaluador,75OpenSpec y3imágenes verificadas. HTTP/UI de costes con flag
 off/on pasan en preview desechable retirada, sin modelo. No se atribuye
@@ -25,7 +25,7 @@ Detalle y paquete en el tema.
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
 | [Consultas de coste Azure](../evidence/JUP-036-validation.md) | PR69: reconciliación local de `1cf4087f` con develop `a3f514f7` (#129), sin cambios de producto. Corpus1.1.1 conservado; los dos casos SQL pendientes pasan en Cockroach24.1.11. Revisión/validación independientes del nuevo candidato y CI posterior pendientes. | 2026-10-15 |
-| [Evaluación local del chat](chat-evaluacion-local.md) | GLM elegido. N3 de5119 completa; N5 parcial112/140:111conformes/1técnica,433requisitos conformes/3no evaluables. Máximo30USD autorizado16/10; quinta ronda retomada y reservas intactas. Integración2339 con develop53b43 probada en código/SQL e imágenes; HTTP/UI de costes off/on conformes en preview retirada, cero modelo. Criterios, adjudicación y nueva combinación pendientes; no aceptación ni publicación. | 2026-10-16 |
+| [Evaluación local del chat](chat-evaluacion-local.md) | GLM elegido. N3 de5119 completa; N5final140:138conformes/1fallida012r5/1técnica010r3;542requisitosPASS/3no evaluables.30USD/cota19.893051732 y reservas intactas; paquete310archivos. Integración2339 con develop53b43 probada en código/SQL e imágenes; HTTP/UI de costes off/on conformes en preview retirada, cero modelo. Criterios, adjudicación y nueva combinación pendientes; no aceptación ni publicación. | 2026-10-16 |
 | [Chat conversacional](chat-conversacional.md) | PR121: focal28 3PASS/4FAIL, JSONB7PASS. Corrección29 de soporte literal visible e interpretación separada en regresión offline; aceptación/batería real pendientes. Gasto0.957927619/2USD. | 2026-10-13 |
 | [División del chat en A/B](chat-entregas-a-b.md) | División aprobada; B d9b/9e2 corregida,50/84 muestras con47PASS/3técnicas429, sin publicar ni aceptar. Ver evaluación local. Base A8ea/develop0543 y reviews/CI conservan su fecha histórica, sin nueva consulta. | 2026-10-15 |
 | [Pantallas de maqueta ocultas del MVP](pantallas-ocultas-mvp.md) | JUP-116: Coste Detallado, Corte Global y Recomendaciones ya no tienen ruta ni menú (se conservan en el código y se reactivan con dos líneas) y Overview sale del menú pero conserva su ruta; una dirección desconocida lleva a `/`. 797 pruebas del frontend y 16 comprobaciones en navegador; mergeado en `develop` el 2026-10-12 (#124). | 2026-10-13 |
