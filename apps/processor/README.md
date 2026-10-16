@@ -244,7 +244,7 @@ python -m pytest tests
 - `docs/api/azure-cost-ingestion-client.md` describe configuración, errores,
   observabilidad y límites del cliente sin requerir un tenant Azure.
 
-## Fragmentación documental
+## Fragmentación documental — JUP-125
 
 Las ingestas nuevas usan estructura del normalizado v1 y tokens reales, con
 procedencia por tramo. Los documentos antiguos siguen consultables. Configuración,
@@ -256,3 +256,7 @@ el normalizado exacto usando sólo contenido y metadata, rechaza conjuntos
 incompletos/incoherentes y conserva los blancos excluidos de embeddings. Los
 chunks históricos mantienen su búsqueda; no todos permiten reconstrucción exacta
 sin reprocesar. La función no regenera binarios/layouts originales. Ver el runbook.
+
+La formalización es retrospectiva. Ver [matriz de quince criterios y límites](../../docs/evidence/JUP-125-validation.md)
+y [OpenSpec archivado](../../openspec/changes/archive/2026-10-16-jup-125-deterministic-document-chunking/proposal.md).
+No implica reviews humanas ni integración de la dependencia JUP-124.

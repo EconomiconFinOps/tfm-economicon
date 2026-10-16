@@ -1,8 +1,12 @@
 # Fragmentación documental estructural
 
-Actualización técnica: 2026-10-16. Etapa experimental en `feat/rag-chunking`,
-sobre `7daa2d7962675804a3d5e712d95b9d0e08fcd9f5`, que incorpora la ingesta corregida
-documental de la etapa anterior. Sin JUP oficial, PR ni integración en `develop`.
+Actualización documental: 2026-10-16. [JUP-125](https://trello.com/c/H0RUnArf),
+rama `feat/JUP-125-deterministic-document-chunking`. Formalización retrospectiva
+de la implementación experimental y sus correcciones; no OpenSpec pre-code.
+Dependencia JUP-124/PR #133 en borrador, sin integración confirmada en develop.
+[Matriz de quince criterios](../evidence/JUP-125-validation.md),
+[OpenSpec archivado](../../openspec/changes/archive/2026-10-16-jup-125-deterministic-document-chunking/proposal.md)
+y [ADR-0023 Proposed](../adr/ADR-0023-deterministic-document-chunking.md).
 
 Las nuevas ingestas entregan al grafo el documento normalizado v1 persistido:
 texto canónico, bloques, formato, origen y extracción. El chunker no descarga ni
@@ -98,5 +102,50 @@ anteriores y los 59 casos de local:doctor, pero detectaron otro borde: espacios
 interiores largos conservaban un recuento de fragmentos que incluía piezas
 blancas omitidas. Se corrige numerando sólo fragmentos persistidos, manteniendo
 los blancos exactos en metadata y los errores de conjuntos incompletos. Los
-informes adversos originales se conservan; la reevaluación afectada y la
-aprobación humana están pendientes. No acredita cierre ni integración.
+informes adversos originales se conservan. Revisión y validación locales R2
+favorables: 175 y 126 pruebas propias afectadas, respectivamente, más recorrido
+SQL propio del Validador con nueve formatos y equivalencia completa del lote.
+Ambos resolvieron el mismo input de 200.013 caracteres y mantuvieron los negativos
+de fragmento ausente/duplicado. PM verificó las mismas referencias sin violaciones.
+No equivale a reviews humanas, CI o integración.
+
+
+## Formalización y base incorporada — 16/10/2026
+
+El checkpoint R2 `5dc63747` preserva el resultado evaluado. PM incorporó JUP-124
+`e126b217` mediante `23896393`: seis rutas modificadas y ocho documentos añadidos,
+con 1.640 fuentes anteriores byte-idénticas y ningún borrado. Chunker, regresiones,
+fixtures y comparación permanecen iguales; sandbox de extracción y su test son
+el único delta de producto, evaluado separadamente en fase 1. Se conserva el
+sandbox y sólo sus rutas de bibliotecas Python declaradas son de lectura.
+
+OpenSpec, diseño y ADR registran decisiones ya implementadas; la matriz separa
+pruebas históricas de controles documentales/consumidores actuales. La nueva base
+y documentación requieren evaluación independiente afectada y controles PM nuevos;
+no se extienden los PASS R2 automáticamente. No se vuelve a pagar el lote ni se
+repite OCR o una batería completa por rutina.
+
+Roles humanos recibidos del liderazgo: Paris lidera; Víctor pairing, Lucía revisión,
+Alejandro validación. Asignación no acredita aportaciones. Revisión/validación locales
+de esta formalización, ratificación documental del ADR, aprobación final, archivo
+específico y publicación quedan separados; no se archiva ni abre PR desde este hito.
+La fase 3 espera el cierre coordinado de la fase 2. El estado CI oficial y cualquier
+ajuste posterior de base se contrastan por separado en la evidencia JUP-125.
+
+
+PM incorporó después la corrección evaluada de una única prueba health,
+`eb4453f9`, mediante `2bf31fe356aeccc45991c9f91d65dfbba29b003d`, conservando
+los trece documentos en preparación y las otras 1.660 fuentes. Los tokens de
+prueba se crean al actuar, sin cambios auth/TTL/leeway/runtime. Las ocho variantes
+afectadas pasan localmente, separadas de las tres TXT/MD/sandbox y de la evidencia
+R2 reutilizada. CI remota del HEAD final y reviews humanas no se presumen.
+
+
+## Cierre local y archivo autorizado — 16/10/2026
+
+Revisión y validación finales favorables, quince criterios y cuatro comprobaciones
+vigentes, con control PM de las mismas referencias sin violaciones. Paris aprobó
+el cierre y el archivo; requisitos promovidos y enlaces actualizados en esta rama.
+Producto/tests/corpus conservados. Commit/push/CI propia se comprueban después;
+publicación de la PR espera que Paris vea el mensaje. Pairing y reviews humanas
+no se dan por realizados; ADR-0023 continúa Proposed.

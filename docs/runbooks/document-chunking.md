@@ -1,4 +1,8 @@
-# Chunking estructural y reprocesamiento
+# Chunking estructural y reprocesamiento — JUP-125
+
+[JUP-125](https://trello.com/c/H0RUnArf): ver [requisitos/diseño retrospectivos](../../openspec/changes/archive/2026-10-16-jup-125-deterministic-document-chunking/proposal.md),
+[matriz y límites de evidencia](../evidence/JUP-125-validation.md) y
+[ADR-0023 Proposed](../adr/ADR-0023-deterministic-document-chunking.md).
 
 El worker usa `StructuredChunker` sobre el contrato normalizado v1. No es una
 nueva extracción ni añade información al contenido enviado al modelo de embeddings.
