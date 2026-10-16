@@ -210,7 +210,7 @@ Dos ejecuciones son comparables si comparten la **clave de comparabilidad**: fue
 - Con los datos actuales, las ejecuciones 1 y 2 de JUP-070 tienen claves distintas (cambian el proveedor de embeddings y `max_distance`), así que las dos muestran ese mensaje.
 - Una anotación marca cada cambio de batería, modelo, prompt o corpus entre ejecuciones consecutivas de la misma fuente, con la fecha de la segunda. Si el informe no registra el prompt, se muestra «prompt no registrado» y no hay anotación de cambio de prompt.
 - Las series automáticas y las de juicio humano van separadas. Las de juicio humano solo incluyen ejecuciones de hito.
-- La latencia de la campaña tiene su propia gráfica porque su unidad (milisegundos) no se puede mezclar con las proporciones (%). Dibuja solo LAT-1 (mediana) y LAT-2 (percentil 95) de la etapa `total`, con las mismas reglas: una serie por clave de comparabilidad, al menos dos puntos medidos y «Sin datos: no hay con qué comparar» si ninguna llega a dos. LAT-3, LAT-4, las demás etapas, GRD-2 y REL-4 quedan fuera de la evolución (motivos en «Calculado y no mostrado»).
+- La latencia de la campaña tiene su propia gráfica porque su unidad (milisegundos) no se puede mezclar con las proporciones (%). Dibuja solo LAT-1 (mediana) y LAT-2 (percentil 95) de la etapa `total`, con las mismas reglas: una serie por clave de comparabilidad, al menos dos puntos medidos y «Sin datos: no hay con qué comparar» si ninguna llega a dos. LAT-3, las demás etapas, GRD-2 y REL-4 quedan fuera de esta gráfica (motivos en «Calculado y no mostrado»). LAT-4, que es una tasa, sí se dibuja en la gráfica de proporciones de las métricas automáticas.
 
 ### Juicio humano o automático
 

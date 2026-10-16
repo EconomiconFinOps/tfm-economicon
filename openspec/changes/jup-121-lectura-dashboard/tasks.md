@@ -23,4 +23,4 @@
 ## 5. Documentación y validación
 
 - [x] 5.1 Apartado «Calculado y no mostrado» y lectura del dashboard en `docs/validation/evaluation-dashboard.md`; actualizar `docs/evidence/JUP-121-validation.md`
-- [ ] 5.2 Validación con la pila real (capturas de la sección A rehecha), `evaluation-dashboard:test`, `openspec:validate`, `jup:check`, `jup:cleanup:check`, y `review.md` con la evidencia
+- [x] 5.2 Validación con la pila real (capturas de la sección A rehecha), `evaluation-dashboard:test`, `openspec:validate`, `jup:check`, `jup:cleanup:check`, y `review.md` con la evidencia

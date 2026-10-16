@@ -1,13 +1,13 @@
 # Dashboard de resultados de evaluación del asistente — JUP-121
 
-Última actualización documental: 2026-10-15. Esta nota no repite el alcance de la tarjeta, que vive en [Trello](https://trello.com/c/aIdxwsXR).
+Última actualización documental: 2026-10-16. Esta nota no repite el alcance de la tarjeta, que vive en [Trello](https://trello.com/c/aIdxwsXR).
 
 ## Estado
 
-- Rama `feat/JUP-121-assistant-evaluation-dashboard`, creada desde `develop`; `origin/develop` integrado dos veces (JUP-120 y JUP-122). Sin push ni PR todavía.
+- Rama `feat/JUP-121-assistant-evaluation-dashboard`, creada desde `develop`; `origin/develop` integrado dos veces (JUP-120 y JUP-122). PR [#132](https://github.com/EconomiconFinOps/tfm-economicon/pull/132) abierta. Paris pidió cambios (`local:doctor` con la variable nueva) y Lucia dejó un comentario de pairing con mejoras de lectura; ambos se atienden en el change `jup-121-lectura-dashboard`, pendiente de revalidación.
 - OpenSpec: `openspec/changes/archive/2026-10-15-jup-121-assistant-evaluation-dashboard/` (propuesta, diseño, spec, tareas y `review.md` con la evidencia por tarea). ADR: [ADR-0022](../adr/ADR-0022-assistant-evaluation-results-in-grafana.md), en estado Proposed.
 - Guía y contrato de datos: [evaluation-dashboard.md](../validation/evaluation-dashboard.md). Manifiesto versionado: [evaluation-runs.json](../validation/evaluation-runs.json). Evidencia: [JUP-121-validation.md](../evidence/JUP-121-validation.md) y capturas en `docs/evidence/JUP-121/`.
-- Producto: `tools/evaluation-dashboard.py` (adaptadores, SQL, carga, rol), `apps/monitoring/grafana/dashboards/assistant-evaluation.json` (21 paneles, secciones A, B y C), datasource `evaluation-postgres.yml`, variable `GRAFANA_EVALUATION_DB_PASSWORD` en `docker-compose.yml` y `.env.example`, scripts `evaluation-dashboard:*` y un paso de CI. Cambio mínimo en el backend: `assistant.py` crea a 0 las series de `backend_retrieval_failures_total`.
+- Producto: `tools/evaluation-dashboard.py` (adaptadores, SQL, carga, rol), `apps/monitoring/grafana/dashboards/assistant-evaluation.json` (24 paneles, secciones A, B y C, con resumen de la última campaña, matriz por métrica y ejecución y evolución de la latencia), datasource `evaluation-postgres.yml`, variable `GRAFANA_EVALUATION_DB_PASSWORD` en `docker-compose.yml` y `.env.example`, scripts `evaluation-dashboard:*` y un paso de CI. Cambio mínimo en el backend: `assistant.py` crea a 0 las series de `backend_retrieval_failures_total`.
 
 ## Decisiones que no se deducen del código
 
@@ -16,6 +16,8 @@
 - **Lo no medido nunca es 0 %.** Las ejecuciones de plantilla, dobles o sintéticas se rotulan «no real» y sus series van discontinuas. Una serie con menos de dos puntos medidos no se dibuja.
 - **Latencia y disponibilidad de campaña (tipo A) y de tráfico real (tipo C) no se mezclan** en un panel.
 - **El `load` necesita la pila de Compose levantada y el `.env` completo**; la contraseña de Grafana y la de `load` son la misma variable.
+
+- **La matriz «Resultados por métrica y ejecución» pivota con `groupingToMatrix`** (una columna por ejecución, funciona con texto en Grafana 11.3.0), pero la transformación no ordena las filas: la consulta cruza las ejecuciones con el catálogo de métricas y ordena en SQL. Los nombres legibles salen de un `CASE` con las 17 métricas de JUP-067 (una prueba exige que cubra el catálogo entero). Las tablas por fila se conservan como «detalle» porque la conciliación con los informes originales las usa. Todo el dashboard va en UTC.
 
 ## Qué tocar si cambia algo
 
@@ -26,7 +28,7 @@
 
 ## Pendiente
 
-- Revisión y validación independientes; PR a `develop`.
+- Revalidación de Paris y revisión técnica de Alejandro sobre el candidato corregido; respuesta a los comentarios de la PR #132.
 - Añadir `GRAFANA_EVALUATION_DB_PASSWORD` al `.env` local y al de DockerServer antes de levantar la pila: `docker compose` se niega a arrancar sin ella.
 - Hallazgos diferidos con su detalle en `openspec/findings/backlog.md` (cargas simultáneas, contraseña en claro en el `ALTER ROLE` si el servidor registra sentencias, y otros de severidad baja).
 - La robustez espera a JUP-071; la validación en DockerServer y la primera ejecución de la CI en GitHub no se han hecho.

@@ -416,8 +416,16 @@ Tipo: deuda tecnica. Severidad: Low. Estado: Open. Owner: Equipo Economicon.
 - El detalle de un error de `psql` usa la ultima linea de la salida y no la que empieza por `ERROR:`.
 - Las restricciones CHECK de las tablas `evaluation.*` no tienen nombre (el mensaje de violacion es poco claro).
 - El manifiesto versionado cita rutas absolutas en los mensajes de error de la capa de manifiestos.
-- El panel 19 (tasa de error del backend, heredado de JUP-043) queda vacio mientras no haya respuestas 5xx porque la
-  serie no existe; las series con etiqueta de `backend_http_requests_total` no se inicializan.
+- El panel 19 (tasa de error del backend) quedaba vacio mientras no hubiera respuestas 5xx; corregido en
+  `jup-121-lectura-dashboard` (numerador con `or vector(0)`). Sigue sin ser identico a la del dashboard tecnico de
+  JUP-043, que no se toca, y da NaN (no se dibuja) si el contador existe con tasa 0 durante toda la ventana.
 - `grafana` en `docker-compose.yml` no define `healthcheck`; los puertos de los servicios se publican en `0.0.0.0`
   y `PUBLIC` conserva `CONNECT` sobre la base, ambos heredados de la configuracion existente.
 - La robustez por categoria y perturbacion (JUP-071) sigue sin datos: la seccion existe y muestra «Sin datos».
+- Del change `jup-121-lectura-dashboard` (PR #132), severidad Low: columnas «Hito» y «Commit» de «Ejecuciones
+  cargadas» recortadas a 1440 px y «Denominador» recortado en el detalle de exactitud; las consultas por minuto no suman
+  por instancia (`sum()`; copia de JUP-043: con replicas dibujaria una linea por instancia); la leyenda de las
+  evoluciones muestra identificadores crudos (`ACC-2 · judged`); la calibracion muestra «50.0%» sin espacio; dos
+  ejecuciones del mismo minuto y tipo darian la misma cabecera de columna en la matriz; el titulo del panel de latencia p95
+  se trunca en un panel de un tercio de ancho; GRD-2 por caso se carga y aparecera como filas con el identificador de caso
+  crudo en la matriz cuando haya fallos.

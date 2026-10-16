@@ -35,6 +35,14 @@ Sin cambios en `tools/evaluation-dashboard.py`, el esquema `evaluation`, el rol 
 
 Dos pasadas con Edge headless a 1440 y 1600 px sobre PostgreSQL 17, Prometheus 2.55.1 con un exporter sintético y el provisioning del repo: los 24 paneles responden sin error. La primera encontró los ajustes de D10; la segunda, hecha tras corregirlos, está en `docs/evidence/JUP-121/`. `groupingToMatrix` con celdas de texto funciona en 11.3.0 y no hay un orden de filas garantizado por la transformación, por eso la consulta cruza ejecuciones con el catálogo de métricas y ordena en SQL.
 
+## QA independiente
+
+Veredicto `accept`, sin hallazgos BLOCKING. Ejecutó por su cuenta la suite completa (1801 OK), la conciliación (22), las pruebas de lectura (177) y `local-doctor` (57); reconstruyó 11 celdas de la matriz y el resumen contra `JUP-070-run-2-report.json`, y la sección B con 0 diferencias; probó con `promtool` que la tasa de error da 0 con tráfico sin 5xx y vector vacío sin ninguna petición; y mató 12 mutantes manuales sobre el JSON real. Hallazgos medios, ya corregidos: la guía decía que LAT-4 quedaba fuera de la evolución (sí se dibuja en la gráfica de proporciones); continuidad y backlog estaban desactualizados; la tarea 5.2 sin marcar. Bajos, ya diferidos: la prueba versionada de `promtool` solo cubre las proporciones (la tasa de error se prueba en `test_evaluation_readability_section_c.py`, que se salta sin Docker), y la tasa de error da NaN —que Grafana no dibuja— si el contador existe con tasa 0 en toda la ventana.
+
+## Verificación final
+
+`corepack pnpm evaluation-dashboard:test`: 1801 OK en 266 s. `openspec:validate` 75/75, `jup:check` y `jup:cleanup:check` en verde, `node --test tools/local-doctor.test.mjs` 57/57, `lint`, `type-check` y escaneo de secretos del DoD en verde. La regresión completa del DoD sigue en rojo por las pruebas del processor de JUP-035 sin el `tokenizer.json` generado (ajeno; `git diff origin/develop -- apps/processor` vacío).
+
 ## Hallazgos diferidos (severidad baja)
 
 - «Ejecuciones cargadas» pierde la columna «Hito» y recorta el commit a 1440 px.
