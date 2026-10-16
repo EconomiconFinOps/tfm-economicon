@@ -33,13 +33,17 @@ claves, reservas, builds o activaciones nuevos. Ver
 Informe externo `B-N3-5119-to-a7-provenance-comparison-v1.json`, SHA
 `4da6964ac124baf635b5f7889d254519d871e0f75cca3519528e7a77eb8a38af`.
 
-Discord: mensaje específico autorizado por el humano y preparado en
-`discord-modelos-B-20261016.txt` de la evidencia externa. **NO enviado al corte**:
-la sesión web pide iniciar sesión y el bot configurado es sólo lectura, sin
-SendMessages. Se solicitó únicamente iniciar sesión, no otra autorización de
-mensaje. Pestaña del canal abierta; no ampliar permisos del bot ni usar su token
-para sortear el bloqueo. Al iniciarse sesión, enviar ese único resumen y verificar
-el mensaje antes de afirmar envío. No implica permiso para otros mensajes.
+Discord: sesión web iniciada por el humano y verificada en Economicon/#general.
+El resumen de `discord-modelos-B-20261016.txt` está pegado en el compositor,
+**NO publicado**. La revisión automática rechazó pulsar Return: exige aprobación
+explícita de texto exacto y canal para compartir los resultados internos.
+Se presentó una única consulta con el texto completo y destino
+`https://discord.com/channels/1477630870541303861/1477630871627370702`;
+PENDIENTE de respuesta al corte. El aviso de sesión anterior queda resuelto.
+No repetir envío, cambiar de canal/token o reducir el texto para sortear el rechazo.
+El bot sigue siendo sólo lectura. Tras respuesta humana válida sobre esa consulta,
+verificar el borrador y publicar sólo ese aviso una vez, comprobando resultado.
+Silencio o la autorización de login no aprueban la consulta nueva del envío.
 
 Análisis y justificación de modelos para el TFM: [memoria-modelos.md](memoria-modelos.md).
 Contribución preparada para JUP-063/JUP-109, sin duplicar tareas. DeepSeek es la
