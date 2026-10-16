@@ -75,7 +75,7 @@ class FormatosExactosTests(unittest.TestCase):
     def setUpClass(cls):
         M.panel()
         cls.matriz = M.Matriz(M.resultado(preparacion_de_formatos()))
-        cls.columna = cls.matriz.columna("14-10 09:30")
+        cls.columna = cls.matriz.columna("2026-10-14 09:30")
 
     def celda(self, identificador: str, variante: str) -> str:
         return self.matriz.celdas[(fila_de(self.matriz, identificador, variante), self.columna)]
@@ -143,19 +143,19 @@ class CalendarioDeColumnasTests(unittest.TestCase):
         cls.matriz = M.Matriz(M.resultado(preparacion_de_calendario()))
 
     def test_orden_exacto_de_las_columnas_y_cabecera_de_las_sin_fecha(self):
-        # Las dos campañas versionadas (08-10) van primero; después por fecha; a igual fecha, por identificador; y las
+        # Las dos campañas versionadas (2026-10-08) van primero; después por fecha; a igual fecha, por identificador; y las
         # ejecuciones sin fecha al final, por identificador, con «sin fecha · <id>» para distinguirlas entre sí.
         esperado = [
-            "13-10 08:00 · real",
-            "14-10 09:30 · real",
-            "14-10 09:30 · no real: doble",
+            "2026-10-13 08:00 · real",
+            "2026-10-14 09:30 · real",
+            "2026-10-14 09:30 · no real: doble",
             "sin fecha · rm-t0 · no real: sintetica",
             "sin fecha · rm-t1 · no real: sintetica",
         ]
         self.assertEqual(self.matriz.ejecuciones[2:], esperado, self.matriz.ejecuciones)
 
     def test_la_ejecucion_que_solo_trae_disponibilidad_tiene_su_columna_y_su_celda(self):
-        columna = self.matriz.columna("13-10 08:00")
+        columna = self.matriz.columna("2026-10-13 08:00")
         celda = self.matriz.celdas[(fila_de(self.matriz, "AVL-1", "todas"), columna)]
         self.assertRegex(celda, rf"^90{DECIMAL}0 % · 9/10$")
         # Y no inventa nada en las demás métricas: «—».
@@ -172,7 +172,7 @@ class MismaMetricaEnDosGruposTests(unittest.TestCase):
                        + R.insertar_resultado(r, "accuracy", "ACC-1", valor=0.5)
                        + R.insertar_resultado(r, "relevance", "ACC-1", valor=0.9))
         filas = [f for f in M.resultado(preparacion)["filas"]
-                 if f["ejecucion"].startswith("14-10 11:00") and f["metrica"].startswith("ACC-1 · ")]
+                 if f["ejecucion"].startswith("2026-10-14 11:00") and f["metrica"].startswith("ACC-1 · ")]
         celdas = sorted(re.sub(r"[.,]", ".", f["celda"]) for f in filas)
         self.assertEqual(celdas, ["50.0 %", "90.0 %"], filas)
 

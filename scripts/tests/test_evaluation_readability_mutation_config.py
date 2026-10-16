@@ -39,7 +39,8 @@ CALIDAD = ("Exactitud, relevancia y fundamento", "A")
 CAMPANA = ("Latencia, formato y disponibilidad de la campaña", "A")
 ROBUSTEZ = ("Robustez", "A")
 NEGOCIO = ("Tiempo, asignación y ahorro", "B")
-P95 = ("Latencia p95 del backend", "C")
+# D6 (`jup-121-anotaciones-y-fuente`): los títulos de C miden <= 40 caracteres; «tráfico real» pasó a la descripción.
+P95 = ("Latencia p95, todas las rutas", "C")
 ERROR = ("Tasa de error del backend", "C")
 
 
@@ -178,10 +179,19 @@ class SeccionCTests(unittest.TestCase):
         self.assertEqual(expresion, "1000 * histogram_quantile(0.95, sum(rate(backend_http_request_duration_seconds_bucket[5m])) by (le))")
 
     def test_los_dos_paneles_miran_la_ultima_hora_y_nombran_el_trafico_real(self):
+        # Antes el título terminaba en «(tráfico real)»; con los títulos de 40 caracteres ese alcance vive en la línea
+        # «Mide:» de la descripción (el ⓘ) y en el texto «Cómo leer la sección C». Se exige ahí, y que el título sea el
+        # exacto, quepa en un tercio de ancho y ya no arrastre el rótulo.
+        texto_c = norm(R.por_titulo("Cómo leer la sección C", "C")["options"]["content"])
+        self.assertIn("trafico real", texto_c)
         for clave in (P95, ERROR):
             with self.subTest(panel=clave[0]):
+                titulo = panel_de(clave)["title"]
                 self.assertEqual(panel_de(clave).get("timeFrom"), "1h")
-                self.assertRegex(norm(panel_de(clave)["title"]), r"trafico real\)$")
+                self.assertEqual(titulo, clave[0])
+                self.assertLessEqual(len(titulo), 40)
+                self.assertNotIn("trafico real", norm(titulo))
+                self.assertIn("trafico real", descripcion(clave)["mide"])
 
     def test_la_tasa_de_error_dice_que_solo_detecta_sintomas(self):
         self.assertIn("solo detecta sintomas", descripcion(ERROR)["no_demuestra"])

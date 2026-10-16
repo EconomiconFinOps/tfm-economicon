@@ -764,19 +764,31 @@ class SeccionCTests(unittest.TestCase):
             self.assertNotEqual(sin_el_cero, ERROR_CON_NUMERADOR_A_CERO)
             self.assertEqual(re.sub(r"\s+", " ", sin_el_cero).strip(), re.sub(r"\s+", " ", error).strip())
 
-    def test_los_paneles_de_latencia_y_error_se_rotulan_como_trafico_real(self):
+    def test_los_paneles_de_latencia_y_error_se_rotulan_como_trafico_real_en_la_descripcion(self):
         p95, _, consultas = _expresiones_tecnicas()
         # La latencia conserva su expresión; el error se localiza ya por la expresión nueva (D1).
         for expr in (p95, ERROR_CON_NUMERADOR_A_CERO):
             paneles_con = [p for p, e in self._exprs() if e == expr]
             self.assertEqual(len(paneles_con), 1)
-            self.assertIn("tráfico real", paneles_con[0]["title"].lower())
+            # D6 (`jup-121-anotaciones-y-fuente`): el título ya no lleva «(tráfico real)» (cabe en <= 40 caracteres, el
+            # ancho de un tercio); el rótulo vive en la línea «Mide:» de la descripción (el ⓘ del panel).
+            self.assertNotIn("tráfico real", paneles_con[0]["title"].lower())
+            self.assertLessEqual(len(paneles_con[0]["title"]), 40)
+            mide = [l for l in paneles_con[0]["description"].split("\n") if l.startswith("Mide:")]
+            self.assertEqual(len(mide), 1, paneles_con[0]["description"])
+            self.assertIn("tráfico real", mide[0].lower())
             # La latencia y la tasa de error se leen solos: ninguna otra serie comparte su panel.
             self.assertEqual(expresiones(paneles_con[0]), [expr])
         # D2: la latencia agrega todas las rutas del backend y el título lo dice (no es la del asistente).
         panel_p95 = [p for p, e in self._exprs() if e == p95][0]
-        self.assertEqual(panel_p95["title"], "Latencia p95 del backend (todas las rutas, tráfico real)")
-        self.assertEqual(len([p for p, e in self._exprs() if e == consultas]), 1)
+        self.assertEqual(panel_p95["title"], "Latencia p95, todas las rutas")
+        panel_error = [p for p, e in self._exprs() if e == ERROR_CON_NUMERADOR_A_CERO][0]
+        self.assertEqual(panel_error["title"], "Tasa de error del backend")
+        paneles_consultas = [p for p, e in self._exprs() if e == consultas]
+        self.assertEqual(len(paneles_consultas), 1)
+        # Las consultas por minuto también se rotulan como tráfico real, en su descripción y no en su título.
+        self.assertEqual(paneles_consultas[0]["title"], "Consultas al asistente por minuto")
+        self.assertIn("tráfico real", paneles_consultas[0]["description"].lower())
 
     def test_proporcion_de_busquedas_sin_contexto_con_la_guarda(self):
         self._proporcion("backend_retrieval_empty_total")

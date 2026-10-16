@@ -109,7 +109,7 @@ class Matriz:
             self.celdas[(metrica, ejecucion)] = fila["celda"]
 
     def columna(self, prefijo_fecha: str) -> str:
-        """Cabecera de la ejecución cuya fecha UTC (`DD-MM HH:MM`) empieza por `prefijo_fecha`."""
+        """Cabecera de la ejecución cuya fecha UTC (`AAAA-MM-DD HH:MM`, ISO) empieza por `prefijo_fecha`."""
         encontradas = [e for e in self.ejecuciones if e.startswith(prefijo_fecha)]
         if len(encontradas) != 1:
             raise AssertionError(f"se esperaba una cabecera que empiece por {prefijo_fecha!r}: {self.ejecuciones}")
@@ -213,7 +213,7 @@ def resultados_de_la_base(preparacion: str = "") -> list:
 
 def cabecera_esperada(fila_db: dict) -> str:
     instante = datetime.fromisoformat(fila_db["run_at"]).astimezone(timezone.utc)
-    return instante.strftime("%d-%m %H:%M")
+    return instante.strftime("%Y-%m-%d %H:%M")
 
 
 def informe(numero: int) -> dict:
@@ -325,11 +325,11 @@ class ConManifiestoVersionadoTests(unittest.TestCase):
         runs = {f["run_id"]: f for f in self.base if f["run_id"].startswith("jup-070-")}
         self.assertEqual(len(runs), 2)
         for cabecera in self.matriz.ejecuciones:
-            self.assertRegex(cabecera, r"^\d{2}-\d{2} \d{2}:\d{2} · (real|no real: .+)$")
+            self.assertRegex(cabecera, r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2} · (real|no real: .+)$")
         # Las dos campañas son de plantilla: no reales, con sus motivos (la primera además con dobles de prueba).
-        primera = self.matriz.columna("08-10 20:13")
-        segunda = self.matriz.columna("08-10 21:01")
-        self.assertTrue(primera.startswith("08-10 20:13 · no real: ") and segunda.startswith("08-10 21:01 · no real: "))
+        primera = self.matriz.columna("2026-10-08 20:13")
+        segunda = self.matriz.columna("2026-10-08 21:01")
+        self.assertTrue(primera.startswith("2026-10-08 20:13 · no real: ") and segunda.startswith("2026-10-08 21:01 · no real: "))
         for motivo in ("plantilla", "doble"):
             self.assertIn(motivo, primera)
         self.assertIn("plantilla", segunda)
@@ -337,7 +337,7 @@ class ConManifiestoVersionadoTests(unittest.TestCase):
 
     def test_las_columnas_siguen_el_orden_cronologico(self):
         # `groupingToMatrix` ordena las columnas por primera aparición: la consulta debe emitir las ejecuciones por fecha.
-        self.assertEqual([e[:11] for e in self.matriz.ejecuciones], ["08-10 20:13", "08-10 21:01"])
+        self.assertEqual([e[:16] for e in self.matriz.ejecuciones], ["2026-10-08 20:13", "2026-10-08 21:01"])
 
     def test_las_filas_siguen_el_orden_del_catalogo(self):
         # ACC, REL, GRD, LAT, STR, AVL = el orden de las familias y de los ids de JUP-067 (no el alfabético).
@@ -417,12 +417,12 @@ class ConManifiestoVersionadoTests(unittest.TestCase):
             with self.subTest(metrica=metrica, ejecucion=ejecucion):
                 self.assertTrue(celda.strip())
                 if celda.strip() == "0":
-                    self.assertIn((separar(metrica)[0], ejecucion[:11]), medidos_a_cero)
+                    self.assertIn((separar(metrica)[0], ejecucion[:16]), medidos_a_cero)
 
     def test_una_celda_de_la_ejecucion_2_coincide_con_el_informe_original(self):
         # Los k/n y los intervalos salen del JSON del informe de JUP-070 (la conciliación existente), no de la base.
         original = informe(2)
-        columna = self.matriz.columna("08-10 21:01")
+        columna = self.matriz.columna("2026-10-08 21:01")
         casos = [
             ("ACC-2", "todas", original["metrics"]["ACC-2"]),
             ("ACC-2", "con juicio humano", original["metrics"]["ACC-2"]["judged"]),
@@ -438,11 +438,11 @@ class ConManifiestoVersionadoTests(unittest.TestCase):
         # La ejecución 2 de ACC-2 es 25/51 y la 1 es 26/51: cada columna conserva SU valor (no se cruzan).
         fila_acc2 = self.matriz.fila("ACC-2", "todas")
         self.assertIn(" · 25/51 · ", self.matriz.celdas[(fila_acc2, columna)])
-        self.assertIn(" · 26/51 · ", self.matriz.celdas[(fila_acc2, self.matriz.columna("08-10 20:13"))])
+        self.assertIn(" · 26/51 · ", self.matriz.celdas[(fila_acc2, self.matriz.columna("2026-10-08 20:13"))])
         self.assertRegex(self.matriz.celdas[(fila_acc2, columna)], r"^49[.,]0 ?%")
 
     def test_una_metrica_sin_intervalo_no_lo_lleva(self):
-        columna = self.matriz.columna("08-10 21:01")
+        columna = self.matriz.columna("2026-10-08 21:01")
         for identificador, variante in (("LAT-1", "total"), ("REL-4", "mediana"), ("GRD-2", "todas")):
             celda = self.matriz.celdas[(self.matriz.fila(identificador, variante), columna)]
             with self.subTest(metrica=identificador):
@@ -450,7 +450,7 @@ class ConManifiestoVersionadoTests(unittest.TestCase):
                 self.assertNotIn("/", celda, "sin numerador no hay k/n")
 
     def test_latencia_y_similitud_con_su_unidad(self):
-        columna = self.matriz.columna("08-10 21:01")
+        columna = self.matriz.columna("2026-10-08 21:01")
         self.assertRegex(self.matriz.celdas[(self.matriz.fila("LAT-2", "total"), columna)], r"^4[.,\u00a0 ]?561[.,]7[ \u00a0]ms$")
         self.assertRegex(self.matriz.celdas[(self.matriz.fila("REL-4", "mediana"), columna)], r"^0[.,]617$")
 
@@ -502,7 +502,7 @@ class TerceraEjecucionSinteticaTests(unittest.TestCase):
 
     def test_aparece_una_tercera_columna_sin_tocar_el_dashboard(self):
         self.assertEqual(len(self.matriz.ejecuciones), 3, self.matriz.ejecuciones)
-        self.assertEqual(self.matriz.ejecuciones[-1], "14-10 09:30 · real")
+        self.assertEqual(self.matriz.ejecuciones[-1], "2026-10-14 09:30 · real")
         # Una ejecución real no lleva «no real» ni motivos en la cabecera.
         self.assertNotIn("no real", self.matriz.ejecuciones[-1])
 

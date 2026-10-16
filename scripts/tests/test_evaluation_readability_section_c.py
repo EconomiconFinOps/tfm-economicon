@@ -122,9 +122,16 @@ class TasaDeErrorEstaticaTests(unittest.TestCase):
 
 class LatenciaP95Tests(unittest.TestCase):
     def test_el_titulo_dice_que_son_todas_las_rutas(self):
-        titulo = panel_de_latencia()["title"]
+        panel = panel_de_latencia()
+        titulo = panel["title"]
         self.assertIn("todas las rutas", titulo)
-        self.assertIn("backend", titulo.lower())
+        # D6 (`jup-121-anotaciones-y-fuente`): el título es el exacto de <= 40 caracteres y ya no dice «backend» ni
+        # «tráfico real»; ese alcance (el backend, con tráfico real) pasa a la línea «Mide:» de la descripción.
+        self.assertEqual(titulo, "Latencia p95, todas las rutas")
+        self.assertLessEqual(len(titulo), 40)
+        mide = panel["description"].split("\n")[1].lower()
+        self.assertIn("backend", mide)
+        self.assertIn("tráfico real", mide)
         # El rótulo de «tráfico real» ya no basta: la sección C cuenta síntomas del backend, no del asistente.
 
     def test_la_descripcion_aclara_que_no_es_la_latencia_de_las_consultas_al_asistente(self):
