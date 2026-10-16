@@ -1,12 +1,57 @@
 # Colector reutilizable del chat
 
-Verificado: 2026-10-16. Origen: usuario solicita extraer el colector de B,
+Verificado: 2026-10-17. Origen: usuario solicita extraer el colector de B,
 adaptarlo para JUP-071 y publicar PR independiente; chat
 `01a1270c-e332-7462-9c90-706d49ade92c`.
 Tarjetas: [JUP-123](https://trello.com/c/TqtcumIN),
 [JUP-071](https://trello.com/c/H0woDubz).
 
-## Aprobación y actualización con develop — 16/10/2026
+## Confirmaciones y nuevo avance de develop — 17/10/2026
+
+Origen: «Hay confirmacion de ambos». Confirmado sobre la misma cabeza publicada
+`08b597ecfefc7b16a040dc5e87dd821d94900e4d`:
+[Lucía revalida la fusión](https://github.com/EconomiconFinOps/tfm-economicon/pull/131#pullrequestreview-5553890323)
+y [Víctor renueva su aprobación](https://github.com/EconomiconFinOps/tfm-economicon/pull/131#pullrequestreview-5554025349).
+CI de PR 38963964154 y de push 38963955510, SQL 38963964101 y JUP reviews
+terminados correctamente. Los distintos recuentos locales y del revisor se
+conservan con su entorno y autoría, sin sustituirlos por una sola cifra.
+
+La PR sigue OPEN/APPROVED, pero GitHub indica CONFLICTING/DIRTY: develop avanzó
+a `ee4e8031` al integrar JUP-071 (#136). Verificación sin modificar el checkout:
+`git merge-tree --write-tree HEAD origin/develop` identifica tres conflictos en
+`.github/workflows/ci.yml`, `scripts/tests/test_evaluation_scripts.py` y
+`tools/ci-workflow.test.mjs`. No se ha cambiado ni publicado la cabeza aprobada.
+Siguiente acción: reconciliar la incorporación de JUP-071 y las expectativas de
+CI, validar el árbol resultante y obtener los dictámenes aplicables al nuevo delta.
+No se ha integrado la PR ni enviado mensajes.
+
+## Solicitudes oficiales de la fusión — corte histórico del 16/10/2026
+
+Por petición explícita del usuario, solicitadas oficialmente en GitHub la
+revisión de la fusión a Víctor (`Victorh1397`) y la revalidación a Lucía
+(`lmatsan`). Ejecutado `gh pr edit 131 --repo EconomiconFinOps/tfm-economicon
+--add-reviewer Victorh1397 --add-reviewer lmatsan`.
+Readback de `reviewRequests` confirma ambos usuarios sobre la cabeza
+`08b597ecfefc7b16a040dc5e87dd821d94900e4d` de [PR #131](https://github.com/EconomiconFinOps/tfm-economicon/pull/131).
+Son solicitudes pendientes, no dictámenes ya emitidos. Se conserva la distinción
+de roles y el alcance incremental descritos en la PR. Sin nuevos commits.
+
+## Consulta de CI y revisión de la fusión — corte anterior del 16/10/2026
+
+Origen: «Comprueba cómo va la CI de la PR131 y si ya han revisado la fusión».
+Cabeza remota confirmada `08b597ecfefc7b16a040dc5e87dd821d94900e4d`,
+OPEN/MERGEABLE, sin conflictos y REVIEW_REQUIRED.
+En la [CI de PR 38963964154](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38963964154)
+pasan frontend build/tipos, Azure y JUP policy; backend, processor y OpenSpec
+siguen en curso sin conclusión. [SQL 38963964101](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38963964101)
+terminó SUCCESS. El check JUP reviews también SUCCESS, pero no hay nuevas reviews
+ni comentarios sobre la fusión: la aprobación de Víctor sobre e0a0c41e consta
+DISMISSED tras el push, y la última validación de Lucía sigue sobre e0a0c41e.
+Pendientes la revisión incremental de Víctor, revalidación del delta por Lucía
+y terminar los tres jobs. Es una instantánea de estado, no una CI completa verde.
+Sin nuevos commits, inferencias, merge ni comunicaciones externas en esta consulta.
+
+## Aprobación y actualización con develop — corte anterior del 16/10/2026
 
 Origen: «Han aprobado la revision». Confirmado en GitHub: [Víctor aprueba](https://github.com/EconomiconFinOps/tfm-economicon/pull/131#pullrequestreview-5553358426)
 `e0a0c41e` y levanta su solicitud de cambios. [Lucía revalida](https://github.com/EconomiconFinOps/tfm-economicon/pull/131#pullrequestreview-5552441528)
