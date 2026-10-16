@@ -1,4 +1,4 @@
-JUP: JUP-121 · ADR: [ADR-0022](../../../docs/adr/ADR-0022-assistant-evaluation-results-in-grafana.md)
+JUP: JUP-121 · ADR: [ADR-0022](../../../../docs/adr/ADR-0022-assistant-evaluation-results-in-grafana.md)
 
 ## Context
 

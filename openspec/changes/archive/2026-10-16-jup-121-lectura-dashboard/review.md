@@ -1,6 +1,6 @@
 # Revisión de jup-121-lectura-dashboard
 
-JUP: JUP-121 · [Trello](https://trello.com/c/aIdxwsXR) · ADR: [ADR-0022](../../../docs/adr/ADR-0022-assistant-evaluation-results-in-grafana.md) · PR [#132](https://github.com/EconomiconFinOps/tfm-economicon/pull/132)
+JUP: JUP-121 · [Trello](https://trello.com/c/aIdxwsXR) · ADR: [ADR-0022](../../../../docs/adr/ADR-0022-assistant-evaluation-results-in-grafana.md) · PR [#132](https://github.com/EconomiconFinOps/tfm-economicon/pull/132)
 
 ## Resumen
 
