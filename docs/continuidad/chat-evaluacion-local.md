@@ -9,6 +9,33 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 16/10/2026
 
+### Auditoría del objetivo local — 16/10/2026
+
+Preparación técnica contrastada con artefactos originales:388archivos de los
+paquetes203+185 intactos,213identidades JUnit nativas conformes, artefactos de
+dos builds y ocho entradas de comparación verificadas por hash. Apps/packages
+de HEAD y árbol de trabajo idénticos a a7; develop53b43 ancestro y39blobs de
+reconciliación A verificados en7be. A se incorporó por bloques: su commit no es
+ancestro; no se infiere pérdida de ingeniería de ese hecho. El adaptador del
+stream tiene los cambios propios de B. Errores iniciales del auditor (ascendencia
+y nombre de estado del build) conservados en el registro, sin fallo del producto.
+
+Se corrigió una tabla obsoleta80/84 del informe: la N3 actual está completa84/84,
+495checks. El informe distingue preparación técnica, revisión local y aceptación.
+Baseline84, comparación84pares sin regresiones observadas y reservas intactas
+confirmadas con los recibos existentes; no nuevas pruebas, inferencias o servicios.
+Registro externo `B-local-readiness-audit-v1.json`, SHA
+`4070c8a34dd20522ddb62d0a88090872acdbe483a28bf38abf95cf9f78de9b9c`.
+
+Trello leído sólo por el puente: descripción SHA71f1180c sin cambios; últimas100
+acciones del tablero incluyen dos comentarios sobre PR131, sin nuevo acuerdo B.
+No es una lectura exhaustiva de toda la historia. La continuidad propia del
+colector ya registra correcciones e0a0c41e con cambios documentales ajenos en
+curso: no se tocaron ni se trasladaron sus revisiones a B.
+Pendientes1.4/2.4/3.1–3.3: criterios/adjudicación/alcanceN5 actual y aceptación.
+Preparación local3.4 cumplida; no objetivo completo. Sin relanzar campañas ni
+repetir preguntas pendientes por inercia. El máximo humano vigente sigue30USD.
+
 ### Continuación de B: comparación por requisito implementada — 16/10/2026
 
 Encargo humano: «Envía mensaje informando a discord y continúa con la implementación

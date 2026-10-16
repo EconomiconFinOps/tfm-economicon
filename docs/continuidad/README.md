@@ -18,6 +18,9 @@ Continuación16/10: comparador entre revisiones de procedencia implementado,
 12pruebas nuevas y17anterioresPASS. Comparación84pares sin regresiones observadas;
 Resumen Discord publicado una sola vez en #general tras autorización explícita
 del texto y canal; mensaje1560728370025730078 verificado. No volver a enviarlo.
+Auditoría local posterior:388archivos congelados,213identidades JUnit, builds y
+entradas de comparación conformes; corregida tabla obsoleta80/84 del informe.
+Preparación técnica completa, criterios/adjudicación/alcanceN5 actual pendientes.
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |

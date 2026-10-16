@@ -4,6 +4,35 @@ Verificado el 16/10/2026. Origen: chat
 `01a1270c-e332-7462-9c90-706d49ade92c`.
 **Código preparado para revisión; B no aceptada, publicada ni activada de forma permanente.**
 
+## Auditoría del objetivo local — 16/10/2026
+
+La comprobación offline actual verificó los 203 archivos del paquete N3 final y
+los 185 del parcial, 213 identidades JUnit nativas conformes, los artefactos de
+las dos imágenes estándar y los ocho hashes de entrada de la comparación. No
+se repitieron pruebas ni inferencias. Las aplicaciones y paquetes de HEAD y del
+árbol de trabajo son idénticos al producto medido `a7f9502d`.
+
+| Requisito del objetivo | Evidencia y estado |
+| --- | --- |
+| Reconciliar A/develop | Develop53b43 es ancestro; los 39 blobs de la reconciliación A coinciden en7be. CD y las superficies de disponibilidad/evidencia comprobadas conservan los blobs de A. A se incorporó por bloques, no por ascendencia de su commit. El adaptador del stream contiene los cambios propios de B, documentados y probados. |
+| Evaluación y recogida reproducibles | Colector, scorer y comparación versionados; la auditoría liga los informes a fuente, banco, criterios y respuestas. El colector independiente PR131 conserva revisión/CI propias; no se trasladan a B. |
+| Línea base repetida | Baseline original:84 muestras, tres repeticiones y sin ausencias; sus fallos y juicios pendientes se conservan. |
+| Correcciones deterministas | Producto a7 sin modificaciones posteriores en apps/packages; 213 identidades nativas conformes, builds verificados y N3 propia84/84. Las garantías siguen acotadas a las gramáticas documentadas. |
+| Mejoras y regresiones | Comparación auditada de84pares:492PASS→PASS/2FAIL→PASS/1incierto→PASS; ninguna regresión observada. Sistemas distintos y revisión local: no causalidad ni aprobación de criterios obligatorios todavía no acordados. |
+| Contabilidad | Última cota conservadora registrada21.448811463/30USD;13.99052050USD desconocidos íntegros. El máximo humano de30 sustituye el objetivo histórico de2USD. Sin lectura nueva de facturación, gasto, reservas o servicios modificados en esta auditoría. |
+| Entrega local | Código, evidencia y límites preparados para revisión; sin publicación o activación permanente de B. El resumen específico de Discord se publicó con permiso y no constituye aceptación. |
+| Cierre pendiente | Acordar criterios, adjudicación independiente y alcance N5 del candidato actual. Las casillas1.4/2.4/3.1–3.3 no se cierran con esta auditoría. |
+
+Registro externo `B-local-readiness-audit-v1.json`, SHA
+`4070c8a34dd20522ddb62d0a88090872acdbe483a28bf38abf95cf9f78de9b9c`;
+operador `audit-B-local-readiness-v1.py`. Dos errores de preparación del auditor
+(suponer ascendencia de A y esperar un nombre terminal genérico del build)
+se corrigieron contrastando Git y el recibo original; no eran fallos de producto.
+Trello se consultó por el puente autorizado: descripción sin cambios y dos
+comentarios recientes sobre el colector, sin acuerdo nuevo de criterios de B.
+La lectura de actividad abarca las últimas100acciones del tablero, no toda su
+historia. No se declara completado el objetivo mientras faltan esos acuerdos.
+
 ## Resultado
 
 Continuación16/10: implementado el comparador separado de revisiones de procedencia,
@@ -71,7 +100,9 @@ manifestSHA996304903e99d2a7449e8378dc605ae80a041f090b0e78f475866e1d79f43c3c.
 Parcial80/185archivos y paquetes históricos preservados, sin sobrescribirlos.
 Procedimientos y siguientes pasos en `allocation-012-handoff-v8.json`.
 B preparada localmente; no publicada, integrada, activada permanentemente o
-aceptada. No GitHub/Discord/Done. PR131 permanece independiente.
+aceptada. Sin publicación B en GitHub ni Done. Resumen de modelos informado en
+Discord con autorización específica; no trasladar esa autorización a otro envío.
+PR131 permanece independiente.
 
 Los cortes siguientes conservan las mediciones de sus commits originales;
 no acreditan el modelo/corpus nuevos de a7f9502d.
@@ -122,7 +153,7 @@ manifiestos verificados; no se declara un paquete compartido inexistente.
 | API N3 de5119 | Banco1.0.0; 84 completed, 84snapshots y84 costes conciliados |82 conformes, 1fallida012r1, 1dudosa023r3; 327 requisitos originales conformes |
 | N5 final de5119 |140/140 recogidas:139completed/1failed |138conformes,1fallida012r5,1técnica010r3;542requisitos originalesPASS/3no evaluables;276calidadPASS/2FAIL de un grupo/2no evaluables |
 | Integración2339 | Banco1.0.1/corpus actualizado, código/SQL e imágenes comprobados |HTTP/UI costes off/on conformes en preview retirada, sin generación. Campaña generativa NOT_RUN |
-| API N3 a7f9502d / DeepSeek | Banco1.0.1, corpus54, ZDR/CoreWeaveFP8;80/84 por corte de caducidad |80conformes/473checks,80costes observados; faltan025–028r3. UIhistorial003/012/027 conforme; sin aceptación |
+| API N3 a7f9502d / DeepSeek | Banco1.0.1, corpus54, ZDR/CoreWeaveFP8;84/84 recogidas tras la prórroga explícita |84conformes/495checks,84costes observados; sin muestras pendientes. UIhistorial003/012/027 conforme; sin aceptación |
 
 La quinta ronda001–028r5 se completó bajo30USD:28completed,27conformes y1fallida
 de calidad012r5, sin técnicos nuevos. Las112anteriores nunca se repitieron ni
@@ -260,7 +291,7 @@ sustituye las disposiciones finales de la auditoría.
 Estado y procedimientos en [continuidad](../continuidad/chat-evaluacion-local.md).
 
 
-### N3 DeepSeek reanudada sin repetir las 26 primeras — 16/10/2026
+### Corte histórico previo al cierre: N3 reanudada sin repetir las 26 primeras — 16/10/2026
 
 Semilla54 cargada una sola vez con el segundo permiso; ambas reservas0.01USD
 intactas. GLMparcial4 congelada (2respuestas/2tecnicas429), no es N3completa.

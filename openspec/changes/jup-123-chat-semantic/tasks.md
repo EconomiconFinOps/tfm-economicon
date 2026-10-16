@@ -13,6 +13,14 @@ No N5 del candidato nuevo, aceptación independiente o generalización ciega.
 el fallo012 está técnicamente corregido y nuevaN3 cerrada, no falta su recogida.
 B local sin publicar;3.4es preparación para revisión, no aprobación humana.
 
+Auditoría posterior16/10:388archivos congelados y213identidades JUnit nativas
+verificados; apps/packages actuales idénticos a a7, dos builds y entradas de
+comparación por hash conformes. Baseline84 y comparación actual84pares comprobadas.
+No defectos nuevos observados en esa evidencia.3.1/3.2 conservan pendientes los
+criterios y aceptación; no falta recogida/comparación local.1.4/2.4/3.3 siguen
+requiriendo acuerdo/adjudicación/alcanceN5 actual. Ver informe local y auditoría
+externa `B-local-readiness-audit-v1.json`; no nuevas campañas o gasto.
+
 ## 1. Base y contratos
 - [x] 1.1 Recuperar B y activar JUP-123 en Trello.
 - [x] 1.2 Admitir recibos repetidos y detectar ausencias/duplicados (15 pruebas).
@@ -72,7 +80,7 @@ B local sin publicar;3.4es preparación para revisión, no aprobación humana.
 - [ ] 3.3 Confirmar N5 según alcance acordado y presupuesto.
   - Recogida/auditoría final140/140 completadas16/10 bajo30USD;138PASS/1FAIL012r5/1técnico010r3 conservados, paquete310archivos. No falta recogida: quedan criterio acordado y aceptación, que no se simulan.
 - [x] 3.4 Preparar candidato local con pruebas, evidencias y limitaciones.
-  - Integración2339, informeJUP-123-local-review, tres imágenes sin activar y paquete112 inmutable de250archivos. No se traslada N3/N5de5119 al corpus nuevo. Revisiones, incertidumbres, confirmaciónN5 y aceptación permanecen pendientes.
+  - Vigente: productoa7f9502d, informeJUP-123-local-review, dos builds estándar y N3 propia84/84 congelada en203archivos, con parcial80/185 preservado. Comparación por requisito implementada y auditada; no se traslada N5de5119 al corpus/modelo nuevo. Criterios, adjudicación, alcanceN5 y aceptación pendientes. El corte2339/paquete112 fue una preparación anterior, no el candidato final medido.
 
 ## Evidencia de medición — 2026-10-14
 
