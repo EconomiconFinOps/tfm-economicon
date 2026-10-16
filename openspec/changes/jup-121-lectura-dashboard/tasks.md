@@ -1,6 +1,6 @@
 ## 1. Cambios de Paris y verificación de Grafana
 
-- [ ] 1.1 Parche de `tools/local-doctor.test.mjs` con la variable `GRAFANA_EVALUATION_DB_PASSWORD` (fixtures, lista esperada y casos de ausencia o vacía), aplicado por el usuario porque el hook congela el test; comprobar `node --test tools/local-doctor.test.mjs`
+- [x] 1.1 Parche de `tools/local-doctor.test.mjs` con la variable `GRAFANA_EVALUATION_DB_PASSWORD` (fixtures, lista esperada y casos de ausencia o vacía), aplicado por el usuario porque el hook congela el test; comprobar `node --test tools/local-doctor.test.mjs`
 - [ ] 1.2 Comprobar con un Grafana 11.3.0 real si `groupingToMatrix` admite celdas de texto (decisión D3) y fijar la transformación o la alternativa SQL
 
 ## 2. Sección C
