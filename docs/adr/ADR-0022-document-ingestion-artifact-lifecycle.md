@@ -73,6 +73,14 @@ representan nuevos benchmarks comparativos o una nueva aprobación de diseño.
 
 ## Evidence And Follow-up
 
+Corrección de admisión y finalización, 16/10/2026 sobre `eb4453f9`: los límites
+DOCX se comprueban sobre bytes efectivos y sólo métodos OPC, antes de parsear
+XML sin DTD. Todas las transiciones de un archivo, incluido failed y el descarte
+terminal, requieren propietario vigente. Una revocación confirmada termina el
+trabajo sin extraer contenido, libera dedup y conserva la retención documentada.
+Los mensajes ajenos no cambian estado. No cambia la arquitectura, las tablas,
+la visibilidad del conocimiento dentro del tenant ni el estado Proposed del ADR.
+
 [Matriz JUP-124](../evidence/JUP-124-validation.md),
 [diseño](../../openspec/changes/archive/2026-10-16-jup-124-advanced-document-ingestion/design.md) y
 [operación](../runbooks/document-ingestion.md) conservan trazabilidad y límites.

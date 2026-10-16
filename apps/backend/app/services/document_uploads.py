@@ -130,6 +130,19 @@ class DocumentUploads:
             prior = connection.execute(text('''SELECT job_id FROM document_content_claims
                 WHERE tenant_id=:tenant AND content_hash=:hash'''),
                 {'tenant': tenant, 'hash': row['content_hash']}).scalar_one()
+            if prior != new_job:
+                terminal = connection.execute(text('''SELECT 1 FROM jobs j
+                    JOIN document_uploads u ON u.job_id=j.id AND u.tenant_id=j.tenant_id
+                    WHERE j.id=:job AND j.tenant_id=:tenant AND j.status='failed'
+                      AND u.status='confirmed' AND u.terminal_failure=true'''),
+                    {'job': prior, 'tenant': tenant}).first()
+                if terminal is not None:
+                    # Recover claims left by an older worker without redirecting
+                    # healthy, completed or retryable jobs belonging to the tenant.
+                    connection.execute(text('''UPDATE document_content_claims SET job_id=:job
+                        WHERE tenant_id=:tenant AND content_hash=:hash AND job_id=:prior'''),
+                        {'job': new_job, 'tenant': tenant, 'hash': row['content_hash'], 'prior': prior})
+                    prior = new_job
             duplicate = prior != new_job and not row['force_reprocess']
             job_id = prior if duplicate else new_job
             if not duplicate:

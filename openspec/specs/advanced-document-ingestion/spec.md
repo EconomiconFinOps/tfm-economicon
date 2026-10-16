@@ -47,6 +47,11 @@ creating a processable job; malformed containers SHALL fail controlled admission
 - **THEN** it returns the controlled 422 format error, not an uncaught decompression error
 - **AND** no job is created/published; existing cancel/expiry behavior remains available.
 
+#### Scenario: DOCX headers understate expansion or disguise XML declarations
+- **WHEN** a container understates member sizes or contains a DTD in an XML encoding
+- **THEN** both backend and processor reject it using bounded actual reads
+- **AND** non-OPC compression is rejected before decompression, without changing upload limits.
+
 ### Requirement: Keep private storage in the general stack
 MinIO SHALL run separately in general Compose with a dedicated private bucket,
 bounded staging PUT authorization and explicit browser origins. Administrator
@@ -72,6 +77,16 @@ without re-extracting a published normalized checkpoint.
 - **WHEN** a job is failed with retry_pending true
 - **THEN** UI and smoke wait for recovery or a terminal result
 - **AND** a transient polling notice disappears after successful status recovery.
+
+#### Scenario: Membership is revoked before file execution
+- **WHEN** an unchanged persisted file delivery no longer has tenant membership
+- **THEN** it becomes failed and terminal under a current execution reservation, without extraction
+- **AND** retention cleanup remains recoverable and deduplication does not retain that terminal job.
+
+#### Scenario: A worker loses its document reservation
+- **WHEN** another worker owns the current reservation
+- **THEN** the stale worker cannot publish failed or terminal state for that document
+- **AND** an altered or foreign delivery cannot change persisted state.
 
 ### Requirement: Clean originals only after durable success
 The system SHALL preserve originals needed by queued/running/recoverable work.

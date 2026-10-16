@@ -95,3 +95,54 @@ producción, campaña LLM real ni fases 2/3 en esta evidencia.
 ## Archivo autorizado — 16/10/2026
 
 Paris aprobó el cierre documental y autorizó archivar OpenSpec y publicar hacia develop. El CLI OpenSpec 1.8.0 promovió los diez requisitos a advanced-document-ingestion y archivó el change como 2026-10-16-jup-124-advanced-document-ingestion, sin omitir actualización de specs ni validación. Se ajustan las referencias relativas y el propósito de la capacidad promovida; producto y pruebas permanecen intactos. El ADR continúa Proposed: esta autorización no se presenta como ratificación colectiva ni como pairing o reviews realizados. La publicación y CI se verifican en GitHub por separado.
+
+## Correcciones del pairing de PR #133
+
+Incremento local del 16/10/2026 sobre `eb4453f96b7bab819bf4ba692e6bdcf7e521f2ef`,
+base develop `53b43bb1`. Responde al feedback de Lucía, no sustituye su pairing
+ni las reviews humanas. Los resultados siguientes son de esta corrección;
+revisión y validación independientes del candidato final están pendientes.
+
+- DOCX: lectura efectiva acotada, métodos OPC antes de descomprimir y rechazo
+  DTD independiente de codificación. Las dos copias de admisión son idénticas.
+  Un contenedor BZip2 falseado de 440 bytes y 32 MiB expandibles devuelve 422
+  por HTTP/S3 reales, sin job y con cancelación de su reserva. En procesos Linux
+  nuevos, ambos validadores lo rechazan con incremento de pico RSS de 0 KiB;
+  la prueba exige menos de 16 MiB. Esta medida no promete memoria constante
+  para cualquier documento válido ni reproduce el archivo privado de 300 MB.
+- Ciclo de vida: revocar membresía antes del consumo termina failed/terminal,
+  sin checkpoint, sin ejecutar el pipeline y sin claims residuales. Otro usuario
+  del mismo tenant sube los mismos bytes y completa un trabajo nuevo. El barrido
+  retira los originales fallidos tras su retención sin borrar el checkpoint sano.
+  El ensayo adelanta sólo las fechas de esa fixture, no el reloj ni los plazos.
+- Propietario: running/failed y descarte terminal comprueban reserva vigente;
+  una ejecución antigua no pisa a la nueva. Un mensaje alterado no autoriza
+  cambios de estado. Dedup también recupera referencias terminales heredadas.
+- Interfaz: los 422 de formato muestran un motivo cerrado y requieren otro
+  archivo; los fallos transitorios mantienen el reintento existente.
+
+Pruebas: 41 casos de backend/admisión, 10 de checkpoint/propietario, 12 de panel
+y transporte. Las regresiones de extracción/worker suman 183 casos únicos
+favorables en ejecuciones separadas: 171 iniciales, seis SQLite y seis Cockroach
+repetidas tras preparar correctamente su entorno. Las 18 extracciones incluyen
+DOC antiguo, PDF mixto, OCR y sandbox real. No se suman reejecuciones al total.
+Los fallos originales de preparación se conservan: PyJWT ausente en la imagen
+de desarrollo, topología/marca de Cockroach exigidas por la fixture, y correo
+sintético inválido en el primer recorrido. No se alteraron pruebas ni aserciones
+para resolverlos. La primera tanda incompleta no se presenta como favorable.
+
+Controles favorables: trazabilidad, política de PR/CI, gobierno, OpenSpec global,
+higiene, typecheck/lint/build del frontend y diff-check. No se repitieron suites
+generales ajenas ni la batería LLM. Backend y processor construidos con los
+locks existentes; modelos y embeddings mock, gasto cero. MinIO conserva fuentes
+y versiones fijadas; su build reutilizó caché en 2,25 s sin cambiar la política
+de imagen. Los recibos, hashes de imágenes y originales quedan bajo custodia
+del liderazgo, fuera de Git y sin secretos en esta evidencia.
+
+Observaciones conservadas: conocimiento/dedup compartidos dentro del tenant,
+coste potencial de 44.445 fragmentos de un TXT de 20 MB (sin nuevo límite aquí),
+y texto/URI del formulario manual fuera del arreglo. No se acreditan calidad
+RAG con proveedores reales, DockerServer, ni las fases posteriores. La
+[reproducción](../runbooks/document-ingestion.md#reproducción) incluye las suites
+de admisión nuevas y los smokes existentes. Commit, CI remota, publicación y
+reviews humanas se gestionan por separado.

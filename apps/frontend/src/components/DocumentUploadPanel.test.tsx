@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { DocumentUploadPanel } from "./DocumentUploadPanel";
+import { ApiError } from "../services/api";
 import type { DocumentTransport, UploadStatus, UploadTicket } from "../services/document-contracts";
 
 const id = "10000000-0000-4000-8000-000000000001";
@@ -23,6 +24,18 @@ function choose(files: File[]) { fireEvent.change(screen.getByLabelText("Selecci
 afterEach(() => { vi.unstubAllGlobals(); });
 
 describe("Document upload", () => {
+  it("explains a permanent format rejection without offering the same invalid file again", async () => {
+    vi.stubGlobal("crypto", { subtle: { digest: vi.fn().mockResolvedValue(new Uint8Array(32).buffer) } });
+    const api=transport();
+    vi.mocked(api.confirm).mockRejectedValue(new ApiError(422,JSON.stringify({detail:"invalid_pdf_document"})));
+    render(<DocumentUploadPanel transport={api} />);choose([file("invalid.pdf")]);
+    fireEvent.click(screen.getByRole("button",{name:"Subir archivo"}));
+    await waitFor(()=>expect(screen.getByText(/El archivo PDF no es válido/)).toBeInTheDocument());
+    expect(screen.queryByRole("button",{name:/Reintentar/})).toBeNull();
+    expect(screen.getByRole("button",{name:"Subir archivo"})).toBeDisabled();
+    expect(api.cancel).toHaveBeenCalledWith(id);
+    choose([file()]);expect(screen.getByRole("button",{name:"Subir archivo"})).toBeEnabled();
+  });
   it("accepts one file and rejects a multi-file drop without reserving a transfer", () => {
     const api = transport(); render(<DocumentUploadPanel transport={api} />);
     const input = screen.getByLabelText("Selecciona o arrastra un archivo aquí");

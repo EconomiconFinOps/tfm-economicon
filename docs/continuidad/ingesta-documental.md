@@ -47,8 +47,9 @@ como anteriores, sin rotar valores existentes. Cada ranura usa su puerto MinIO
 [procedimiento CD](../deployment/dockerserver-cd.md) incluye actualización del
 agente y túnel S3; las releases ya preparadas permanecen inmutables.
 
-La admisión DOCX convierte errores de descompresión DEFLATE/BZip2/LZMA en rechazo
-de formato 422, sin publicar un trabajo ni cambiar las reservas o sus plazos.
+La admisión DOCX conserva el rechazo 422 sin publicar un trabajo: ahora sólo
+acepta ZIP sin compresión/DEFLATE, verifica los bytes efectivos por bloques y
+rechaza BZip2/LZMA antes de descomprimir, además de DTD también en UTF-16.
 Las dos copias del contrato de formatos permanecen idénticas. Las regresiones
 están en `tools/cd/test_deploy.py` y `test_document_uploads.py`: preparación real
 con Compose de ambas ranuras y raíz anterior, preservación de secretos y
@@ -79,3 +80,16 @@ recursos, red, escritura y archivos ajenos; no se admiten `/opt` ni el prefijo
 completo. Las 18 pruebas de extracción y las siete de checkpoint pasan en un
 contenedor aislado sin red con el runtime oficial de CI y usuario no privilegiado.
 Este resultado local no sustituye la CI remota ni acredita un despliegue.
+
+## Corrección del feedback de pairing de PR #133
+
+Sobre `eb4453f9`, se corrigen el pico de memoria del contenedor DOCX falseado y
+el trabajo huérfano tras revocar membresía. Las transiciones running/failed y
+terminal requieren propietario vigente; una entrega manipulada no muta estado.
+El fallo terminal libera dedup y recupera la limpieza con la retención existente.
+El panel distingue un formato inválido de un fallo transitorio y no lo reintenta.
+El ensayo propio con CockroachDB, RabbitMQ y MinIO reales confirma DOCX válido,
+revocación, nueva subida por otro usuario y limpieza sin borrar su checkpoint;
+los proveedores son mock y no hay gasto. Se conservan los fallos de preparación.
+La [evidencia incremental](../evidence/JUP-124-validation.md#correcciones-del-pairing-de-pr-133)
+separa pruebas, límites y evaluaciones independientes todavía pendientes.

@@ -14,6 +14,7 @@ from app.documents.document_checkpoint import load_checkpoint, save_checkpoint
 from app.db.database import Database
 from app.repositories.jobs import JobRepository
 from app.tasks.ingest import IngestTask
+from app.tasks.ingest import InvalidJobMessage
 
 
 @pytest.fixture
@@ -156,3 +157,59 @@ def test_completion_sql_rejects_wrong_or_expired_owner_atomically(case):
         with pytest.raises(PermissionError): database.update_job_status(stored['id'],'completed',{},document_owner=processor.owner,**scope)
         with engine.connect() as c: assert c.execute(text('SELECT status FROM jobs')).scalar_one()=='queued'
     finally: processor.release(stored)
+
+
+def test_revoked_file_delivery_is_terminal_and_releases_dedup_without_processing(case):
+    engine,storage,stored,_=case
+    database=Database.__new__(Database);database.engine=engine
+    with engine.begin() as connection:
+        connection.execute(text("INSERT INTO document_content_claims VALUES('tenant',:hash,:job)"),
+            {'hash':hashlib.sha256(b'Cloud budget 42 USD').hexdigest(),'job':stored['id']})
+        connection.execute(text("DELETE FROM user_tenants WHERE user_id='user' AND tenant_id='tenant'"))
+    task=IngestTask(JobRepository(database),SimpleNamespace(run=lambda *_:pytest.fail('Revoked delivery must not process')),
+                    DocumentProcessor(engine,storage))
+    with pytest.raises(InvalidJobMessage):task.execute(stored)
+    with engine.connect() as connection:
+        assert connection.execute(text('SELECT status FROM jobs')).scalar_one()=='failed'
+        assert connection.execute(text('SELECT terminal_failure FROM document_uploads')).scalar_one()
+        assert connection.execute(text('SELECT count(*) FROM document_content_claims')).scalar_one()==0
+        assert connection.execute(text('SELECT count(*) FROM document_execution_claims')).scalar_one()==0
+    with engine.begin() as connection:
+        connection.execute(text("INSERT INTO user_tenants VALUES('user','tenant','member',:now)"),
+                           {'now':datetime.now(timezone.utc)})
+    with pytest.raises(InvalidJobMessage):task.execute(stored)
+
+
+def test_forged_revoked_delivery_does_not_modify_persisted_job(case):
+    engine,storage,stored,_=case
+    database=Database.__new__(Database);database.engine=engine
+    with engine.begin() as connection:
+        connection.execute(text("DELETE FROM user_tenants WHERE user_id='user' AND tenant_id='tenant'"))
+    task=IngestTask(JobRepository(database),SimpleNamespace(run=lambda *_:pytest.fail('Must not process')),
+                    DocumentProcessor(engine,storage))
+    forged={**stored,'payload':{**stored['payload'],'metadata':{'forged':True}}}
+    with pytest.raises(InvalidJobMessage):task.execute(forged)
+    with engine.connect() as connection:
+        assert connection.execute(text('SELECT status FROM jobs')).scalar_one()=='queued'
+        assert not connection.execute(text('SELECT terminal_failure FROM document_uploads')).scalar_one()
+
+
+def test_failed_sql_and_terminal_failure_cannot_finish_another_workers_claim(case):
+    engine,storage,stored,payload=case
+    first,second=DocumentProcessor(engine,storage),DocumentProcessor(engine,storage)
+    database=Database.__new__(Database);database.engine=engine
+    first.claim(stored,payload)
+    with engine.begin() as connection:
+        connection.execute(text('UPDATE document_execution_claims SET expires_at=:past'),
+                           {'past':datetime.now(timezone.utc)-timedelta(seconds=1)})
+    second.claim(stored,payload)
+    try:
+        with pytest.raises(PermissionError):
+            JobRepository(database).mark_failed(stored['id'],'ingestion_failed',tenant_id='tenant',
+                                               created_by='user',document_owner=first.owner)
+        database.update_job_status(stored['id'],'failed',{},tenant_id='tenant',created_by='user',document_owner=second.owner)
+        with pytest.raises(RuntimeError,match='execution_busy'):first.terminal_failure(stored)
+        with engine.connect() as connection:
+            assert not connection.execute(text('SELECT terminal_failure FROM document_uploads')).scalar_one()
+        second.assert_owned(stored,payload)
+    finally:first.release(stored);second.release(stored)
