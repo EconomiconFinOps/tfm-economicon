@@ -4,7 +4,7 @@
 
 ## Estado actual (16/10/2026)
 
-El trabajo vive en la rama local `test/JUP-071-incomplete-data-robustness`, sobre `develop`, sin publicar. Parte de la contribución de Alejandro Aguado (PR #90 draft, commit técnico `d98d18d`, cerrado sin integrar el 10/10), recuperada con sus commits y su autoría.
+El trabajo vive en la rama local `feat/JUP-071-incomplete-data-robustness`, sobre `develop`, sin publicar. Parte de la contribución de Alejandro Aguado (PR #90 draft, commit técnico `d98d18d`, cerrado sin integrar el 10/10), recuperada con sus commits y su autoría.
 
 Se añaden 16 variantes con 13 referencias JUP-069 (29 casos), un runner que reutiliza JUP-070 y dos ejecuciones del servicio de plantilla real. El JSON de la batería fija los hashes del banco original, la metodología y las fuentes del corpus. Se prueban owner ausente, null y vacío, valores desconocidos, reglas contradictorias, reparto compartido, denominadores, periodos, monedas y unidades, ingesta parcial y acceso inexistente. Tres variantes `answer` impiden considerar acertada una abstención universal.
 
