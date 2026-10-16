@@ -13,7 +13,10 @@ import tarfile
 
 ROOT = Path(__file__).resolve().parents[1]
 BANK = ROOT / 'docs/validation/JUP-069-questions.json'
-EXPECTED_BANK = '0bd8a31792d68ff82c2bb222d42593f139d9596e2d24ad37f77c08d648a9f2e7'
+# JUP-120 updates only suite/source provenance to 1.0.1. The 28 case definitions
+# are unchanged. Old campaigns keep their old checkout, bank hash and receipts;
+# this pin must never admit an old plan against the new corpus implicitly.
+EXPECTED_BANK = '15afb8db2605288d90a70761c5a8daf6787809aae13726618fcf05d98181e684'
 
 
 def sha(path):

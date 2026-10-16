@@ -103,23 +103,44 @@ Una anomalia candidata puede detectarse con una regla determinista MVP:
 relative_delta > 20 % AND absolute_delta > 100 EUR/day
 ```
 
+Los dos limites son estrictos: un aumento de exactamente 20 % o de exactamente 100 EUR/dia no activa la regla.
+
 La doble condicion reduce ruido: una variacion porcentual grande con impacto minimo puede no ser prioritaria, y una variacion absoluta relevante puede requerir otra regla.
 
-Severidad propuesta:
+### Episodio y valor esperado
 
-- P1: riesgo mayor que 2.000 EUR/mes o impacto critico;
-- P2: entre 500 y 2.000 EUR/mes;
-- P3: menor que 500 EUR/mes.
+Una anomalia es un episodio: una anomalia candidata por cliente, moneda y servicio. Se abre el dia en que salta la regla y sigue siendo la misma mientras la regla vuelva a saltar dentro de 3 dias.
 
-Estados sugeridos:
+El valor esperado de un dia es la media diaria de los 7 dias anteriores. Mientras un episodio esta en seguimiento, el valor esperado es su referencia anclada: la media de los 7 dias previos a su inicio. Asi una subida que se mantiene sigue viendose aunque la media reciente ya la alcance.
 
-- `new`;
-- `acknowledged`;
-- `investigating`;
-- `resolved`;
-- `false_positive`.
+El ultimo dia con datos del cliente se considera incompleto y no se evalua, ni el dia tomado como hoy ni los posteriores. Un dia solo se evalua si el y los 7 anteriores tienen datos del cliente.
 
-Toda anomalia debe tener owner, scope, evidencia, impacto estimado y resolucion o motivo de falso positivo.
+Cuando pasan mas de 3 dias desde la ultima vez que salto la regla (es decir, al cuarto dia sin saltar), el episodio se muestra como "Ya no se observa". No se cierra solo: una persona debe cerrarlo. Si despues vuelve a saltar, se abre un episodio nuevo enlazado al anterior.
+
+### Servicio sin gasto previo
+
+Sin datos previos no se puede afirmar que un recurso nuevo cumpla o no cumpla la regla: con referencia cero el aumento relativo no esta definido. Por eso el primer dia de gasto de un servicio nuevo no abre un episodio. Desde el segundo dia la referencia incluye ese primer dia, de modo que un gasto nuevo y estable puede abrir un episodio desde el segundo dia si es lo bastante alto.
+
+### Severidad
+
+La severidad se calcula sobre el impacto acumulado del episodio: la suma, por cada dia evaluado mientras se sigue, de lo que el gasto observado supera la referencia. Se mide en la moneda del episodio y no se proyecta a un mes.
+
+- P1 (Alta): impacto acumulado mayor que 2.000;
+- P2 (Media): de 500 a 2.000, ambos incluidos;
+- P3 (Baja): menor que 500.
+
+Los umbrales son nominales en EUR y USD, sin conversion entre monedas. Otras monedas no se evaluan.
+
+### Estados
+
+Una anomalia es siempre una candidata: indica que hay que investigar si el cambio era esperado. No establece una causa, un ahorro ni una confianza estadistica. El reconocimiento que mide MTTA es el primer cambio de estado desde Nueva.
+
+- `new`: abierta y sin revisar;
+- `investigating`: una persona la esta investigando;
+- `resolved`: cerrada porque se resolvio;
+- `false_positive`: cerrada porque no era una anomalia.
+
+Cerrar un episodio exige un motivo y es definitivo: si el gasto vuelve a subir, se abre un episodio nuevo. No existe un estado "reconocida" (`acknowledged`).
 
 ## Recomendaciones
 
@@ -186,19 +207,21 @@ Campos conceptuales:
 
 ### Anomaly
 
-Campos conceptuales:
+Campos conceptuales de un episodio:
 
 - `id`;
-- `scope`;
-- `metric_date`;
-- `expected_cost`;
-- `observed_cost`;
-- `absolute_delta`;
-- `relative_delta`;
+- `service`;
+- `currency`;
+- `start_date`;
+- `last_seen_date`;
+- `expected_cost` (referencia);
+- `accumulated_impact`;
+- `impact_day_count`;
 - `severity`;
-- `owner`;
 - `status`;
-- `root_cause`.
+- `closure_reason`.
+
+La causa de una anomalia no se registra: queda sin establecer hasta que una persona la investigue.
 
 ### Recommendation
 

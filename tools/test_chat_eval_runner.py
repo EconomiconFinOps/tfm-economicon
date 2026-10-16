@@ -31,6 +31,16 @@ class RunnerTests(unittest.TestCase):
         return r.Runner(self.plan, self.api, self.ledger, Path(self.temp.name) / 'receipts',
                         lambda plan: self.verified, clock=lambda: 100)
 
+    def test_old_corpus_plan_is_rejected_before_any_dispatch_or_reservation(self):
+        # Cases did not change in JUP-120; provenance did. Equal questions must
+        # not permit carrying an old plan into a different documentary corpus.
+        self.plan['bank_sha256'] = '0bd8a31792d68ff82c2bb222d42593f139d9596e2d24ad37f77c08d648a9f2e7'
+        with self.assertRaisesRegex(ValueError, 'immutable bank'):
+            self.runner()
+        self.assertEqual(self.api.created, 0)
+        self.assertEqual(self.api.posts, 0)
+        self.assertEqual(self.ledger.pending(), [])
+
     def test_start_then_restart_observes_and_collects_same_operation(self):
         self.assertEqual(self.runner().step()['state'], 'OBSERVING')
         self.assertEqual(self.runner().step()['state'], 'COLLECTED_ONE')

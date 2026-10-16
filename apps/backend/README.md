@@ -265,6 +265,9 @@ decision: [ADR-0020](../../docs/adr/ADR-0020-cost-anomaly-episodes.md). Las
 pruebas con CockroachDB real (`tests/test_anomaly_episode_*.py`) necesitan
 `JUP086_COCKROACH_TEST_URL` y no corren en CI.
 
+### Consultas de coste Azure
+
+El chat acepta `cost_query` para consultar por suscripción, cuenta de facturación o servicio. Véase [contrato y ejemplos](../../docs/api/azure-cost-questions.md).
 ### Explicacion de anomalias (JUP-038)
 
 `POST /assistant/conversations/{id}/messages` acepta el campo opcional `anomaly_query`

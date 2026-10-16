@@ -45,3 +45,15 @@ describe("ownership cost evidence", () => {
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
 });
+
+
+it("renders the Azure account evidence with selection-scoped provenance", () => {
+  render(<CostEvidence evidence={{ ...evidence, adapter_version: "azure-cost-1.0",
+    summary: { ...billing, group_by: "account" },
+    selected_groups: [{ value: "account-a", currency: "EUR", cost: "9007199254740993.01", record_count: 1 }]
+  }} />);
+  fireEvent.click(screen.getByText("Evidencia de costes — Datos disponibles"));
+  expect(screen.getByText("Procedencia de la selección consultada")).toBeVisible();
+  fireEvent.click(screen.getByText("Todos los grupos seleccionados (1)"));
+  expect(screen.getByText("9007199254740993.01")).toBeVisible();
+});

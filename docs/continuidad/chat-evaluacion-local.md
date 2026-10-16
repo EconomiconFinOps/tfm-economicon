@@ -3,7 +3,563 @@
 Origen: [JUP-123 / JUP-035B](https://trello.com/c/TqtcumIN), chat
 `01a1270c-e332-7462-9c90-706d49ade92c`.
 
+Evidencia y operadores citados sin otro prefijo: `../materiales/07-evidencias/PR121-local-evaluation/`
+desde la raíz del proyecto. El entorno remoto aislado está bajo
+`/home/danteadmin/economicon-jup123-20261014` en DockerServer.
+
+## Estado actual — 16/10/2026
+
+**Modelo elegido para continuar: GLM 5.2 / DeepInfra FP4**, temperatura 0 y
+reasoning desactivado, ZDR y sin fallback. No es aceptación de la versión medida.
+La comparación congelada terminó: GLM **82 conformes provisionales y 2 fallidas**;
+DeepSeek **77 conformes, 6 fallidas y 1 dudosa**. GLM tiene una regresión obligatoria
+en 014r2 y un defecto adicional de soporte en 002r3; no se compensan con la media.
+DeepSeek es más rápido y barato: 0.176012028 USD frente a 0.3470654625 USD;
+p50 de generación 5.54 s frente a 11.66 s. Se priorizan menos defectos medidos y
+conservar la ruta ya configurada en B. No se aísla el efecto del proveedor ni se
+declara superioridad estadística con N3. Juicio local, sin adjudicación independiente.
+
+Evidencia final inmutable: `matched-model-comparison-final-v1.json`,
+`model-selection-final-v1.{json,md}`. GLM snapshot
+`glm-matched-v1-collected/snapshots/snapshot-1792104887937.json`; revisión
+`glm-matched-v1-collected/reviews/snapshot-1792104887937-688694c5.json`.
+84 respuestas válidas por modelo, 168 fases por modelo con coste observado y
+ninguna reserva desconocida nueva en esas dos campañas finales. Sonnet/Sol y
+DeepSeek v1/v2 conservan todos sus errores y sus reservas, sin repetirlos.
+
+Cierre comparativo: 1051 filas, 883 anteriores intactas, **11.73085650 USD** de
+reservas desconocidas anteriores conservadas; cota **17.8056386105 / 20 USD**,
+no factura. Cada inferencia posterior requiere admisión fresca. Las mismas claves
+siguen autorizadas hasta el 16/10 a las 18:00 de París; no se han cambiado límites,
+contadores, credenciales ni reservas anteriores en este trabajo.
+
+**Candidato local 5119e330d87519ce8afff227e6c5cc248656fa70:** corrige 002/014 con
+terminales del servidor para declaraciones completas de comparación mensual y
+forecast/acumulado/presupuesto. 258 pruebas locales conformes, incluidas 57 nuevas.
+Se conserva el error de colección inicial por un parámetro reservado de pytest;
+se corrigió sólo el nombre del parámetro. Banco, prompt y contrato público intactos.
+Backend/processor concuerdan en 56 contextos cargados en frío. El contrafactual
+frente a 9513 conserva 52 esquemas y cambia sólo 002/014 con y sin RAG; no es una
+validación del modelo corregido. `period-regression-v2.xml`,
+`period-schema-counterfactual-proof-v1.json`, `period-resource-parity-v1.json`.
+Nueva identidad
+`jup-035.chat.v3:194f7d2b6419c64662a83c90dffe814cff4164c117daa6a0c936e9ebc34695c8`,
+assembler `319757c04e39f35a621ff5ce76065732172a5d11fbf1542911379bce7e569127`,
+manifest SHA `e6b713ddd70c2cb4a839c3ecf4d4400560dee74e40ced3bb7ebe77ffcb5ed218`.
+
+Transferencia versionada autorizada, archivo SHA
+`c20f988cbd522ebdee7cedca4628c2b372e57e22a202bda122aeea49dc5f9d00`,
+sin credenciales locales. Regresión Linux terminada: **356 pruebas nuevas únicas
+conformes, cero fallos, errores, omisiones o resultados heredados**. Evidencia
+`period-native-final-audit-v1.json` y exportación `period-native-collected/1792106202903/`.
+Build terminado y fuentes verificadas; exportación `period-build-collected/1792106278187/`.
+
+Backend y processor propios activados y sanos; fuentes verificadas: 117 archivos
+backend, 106 processor y 127 frontend. Imagen backend
+`sha256:6a0f8388b3ce7fba19c97b5f41f05f49a3e0fe17f8acd152a9b9f3ce34af2104`;
+processor `sha256:e70ed24c44f8470113422dc1d2d16d2fd472df4372a4d3832e90c39b507c2380`.
+Frontend y seis servicios auxiliares conservados. Activación sin inferencias ni
+cambios de las 1.051 entradas del ledger: `period-activation-result-v1.json` y
+remoto `period-5119e330-activation-v1/complete.json`. El processor ya está activo;
+la parada por OOM anterior queda como antecedente, no como estado actual.
+Descriptor firmado y recursos comprobados: `period-5119e330-live-readiness-v1.json`.
+
+La preparación de la nueva N3 por API detectó antes de inferir una lectura con
+codificación predeterminada de Windows en el plan v1. Se conserva ese intento,
+sin entradas ni llamadas nuevas. Plan v2 reconstruido desde el banco inmutable
+con UTF-8 explícito: SHA `3441119f09c63b3aab5719689f5033294eb3ce968e79f193cc28646712eb4535`.
+El arnés externo v2 verifica el prefijo completo de 1.051 entradas históricas y
+todas las operaciones adicionales contra SQL y el orden del banco. Las llamadas
+directas comparativas siguen contando, con sus reservas. Preflight sin inferencias
+conforme, incluidas 12 guardas contables (`period-api-prepared-v2.json`).
+
+**N3 real por API terminada y congelada**, candidato 5119: **84/84 completed**, cero
+fallos técnicos, 84 snapshots verificados y 84 costes conciliados. Revisión local:
+**82 conformes, 1 fallida (012r1) y 1 dudosa (023r3)**. Los **327 requisitos
+originales están conformes**. Rúbrica adicional: **165 conformes, 2 fallos de una
+respuesta y 1 incierto**. No es aceptación ni adjudicación independiente.
+`period-api-n3-final-audit-v2.json` (SHA
+`fe5db9bbb23b034044a8686726325d97ca0116ddf50ce9eb51c1220336f34541`),
+revisión `period-api-v2-reviews/review-2dac64f187f84f00ab8dd95480ad5268c6c49f8820c746e4aafcf4797aa6e8e2.json`.
+Finalizaron el controlador PID 1760267/start 70572777 y sus 84 conversaciones únicas;
+no relanzarlos. Se verificaron fuentes activas, hashes de originales y derivados,
+RAG real, paridad pública/historial, operaciones SQL y reportes de cada intento.
+La recuperación de RAG tardío usa suplementos SQL con hashes exactos y guarda
+los recibos originales: no se presenta como recogida exclusivamente pública.
+
+002 y 014 conformes 3/3. Comparación semántica emparejada con el replay GLM:
+3 FAIL→PASS, 2 PASS→FAIL de calidad en 012r1 y 1 PASS→incierto en 023r3;
+326 PASS→PASS y 1 FAIL→PASS del banco original, sin regresión original observada.
+Métodos de recogida distintos: es descriptiva, no causal ni una baseline API fingida.
+`paired-replay-f0cd88662ed9d57e4737dfa77b5f37203a3ac9af0334015d239cfbbb93956709.json`.
+
+012r1 clasifica allocated correctamente, pero confunde la preferencia de owner
+por equipo frente a persona con que la clave sea preferente/no exclusiva; dos
+fallos de calidad, un grupo causal. 012r2/r3 no repiten esa afirmación. En 023r3
+se niega acceso real, pero se pide al usuario una conexión al tenant además de
+una fuente: posible insinuación de capacidad o solicitud externa genérica,
+pendiente de adjudicar. Los dos cambios de juicio local se conservan explícitos:
+`period-012-rubric-discrepancy-v1.json` (requisito original FAIL→PASS por coherencia
+con la rúbrica previa; calidad sigue fallando) y `period-023-rubric-discrepancy-v1.json`
+(consistencia PASS→incierto al distinguir pedir conexión de pedir una exportación).
+No se reetiquetan las campañas anteriores ni se relajan criterios para cerrar.
+
+N3 añadió **0.4066383825 USD observados**, sin reserva desconocida nueva.
+Al cierre: **1135 filas**, prefijo original de 1051 intacto y reservas antiguas
+**11.73085650 USD** íntegras. Cota **18.212276993/20 USD**, no factura.
+Ledger N3 SHA `dba497b32b13188d2b6fc93159589d091ed373e42b39a495c6cd1f3c9dc4af84`.
+
+**N5 real iniciada, misma versión y parámetros**, 140 muestras completas previstas,
+no un reenvío de N3. Directorio remoto `period-5119e330-n5-v1`, PID **2157888**,
+start **70883426**, controlador SHA
+`98517a795ad21f8dce9d9d2f0c002a312c67dbdefad3a1110b2993ece9a92752`;
+plan SHA `8c8517a5e1ec4a528db7e5f4c362b99f78fa5a3fb27c63d20712aeeedb4127a5`.
+`observe-period-n5-v1.py` sólo observa ese proceso. Exportar con
+`export-period-n5-public-v1.py` y `export-period-n5-contexts-v1.py`; después
+`review-period-n5-v1.py`. Juicios nuevos en `period-n5-v1-manual-judgments.json`,
+con lotes explícitos y `append-period-n5-review-v1.py`. Sólo se arrastran juicios
+de respuesta completa y contexto autorizado idénticos; no hay juez LLM calibrado.
+Al corte de continuación: 44 respuestas recogidas y revisadas conformes. El
+controlador original terminó en step209/phase2 al conciliar 016r2: respuesta
+completada con dos intentos, el primero sin coste informado. **No es un fallo
+semántico ni coste cero.** Se conserva el máximo íntegro **0.319952 USD** mediante
+`retain_completed_cost`; 1178 filas anteriores intactas y las 44 muestras no se
+reenvían. Pruebas `period-n5-cost-diagnostic-v1.json` y
+`period-n5-016-full-bound-retained-v1.json`. Nuevo ledger SHA
+`d4cad8a992d4f9f512411a24a0901df4a19c47eebe7c4f7a5aa2d2b725046065`.
+
+**Continuación del mismo plan**, no campaña nueva: PID **2409620**, start
+**71084922**, `period-5119e330-n5-v1/resume-v1`, controlador SHA
+`4590d26049999cfac403e25ab0c027851384c1d150ebc426ee44194f6f680889`.
+`resume-launch-v1.json` y `period-n5-resume-launch-v1.json`. Preflight fresco
+sin inferencias conforme antes de continuar desde017r2. El observador ya usa este
+handle; no relanzar el original ni el continuador. El cierre esperado es
+`resume-v1/complete.json`. Auditoría final preparada para retenciones íntegras;
+no exigir 140 costes observados ni fingir liquidación de intentos desconocidos.
+
+Paquete local de revisión en
+[`JUP-123-5119e330-local-review.md`](../validation/JUP-123-5119e330-local-review.md).
+GitHub develop comprobado16/10: **53b43bb1e79b08967cc1b9efdf66669f11e8197c**;
+A/cf821570 coincide en apps/tools con8ea5a0c4. JUP-036 y JUP-120 son posteriores
+a la base0543 del producto medido. Previsualización de merge guardada en
+`period-develop-merge-preview-v1.txt`. Reconciliación preparada en checkout propio
+`../tfm-economicon-jup123-integration`, rama `fix/JUP-123-develop-integration`:
+36 conflictos resueltos usando igualdad contra A; sólo assistant.py y su esquema
+toman los cambios de JUP-036 y se preservan las dos actualizaciones del índice.
+`period-develop-local-resolution-proof-v1.json` comprueba que no cambia ninguna
+otra aplicación. Los 28 casos del banco son idénticos; JUP-120 cambia versión y
+hashes de sus fuentes. Se actualiza el pin del arnés, con prueba de rechazo de un
+plan antiguo antes de reservar o enviar. Las campañas históricas conservan sus
+checkouts y hashes, sin reetiquetar el corpus anterior como el nuevo.
+
+En este checkout: 95 pruebas del arnés conformes, 163 backend conformes/14 SQL
+omitidas por faltar CockroachDB local, 18 frontend conformes, tipos y build
+conformes, lint sin errores con una advertencia anterior de useLayoutEffect;
+75 items OpenSpec estrictos conformes. Primeros intentos de pruebas fallaron
+por permisos de temporales/esbuild y por PYTHONPATH ausente; corregido el entorno,
+sin cambiar aserciones. SQL real de la versión conjunta sigue pendiente. El
+producto activo de N5 sigue siendo5119 y no cambia por esta copia local.
+
+Para cubrir N5 se amplió **sólo el máximo de la misma clave processor de 3.5 a
+4.5 USD**, después del cierre N3 y de comprobar margen bajo los 20 USD acumulados.
+`period-existing-key-budget-extension-v1.json`: material, modelos, expiración,
+contadores, 1135 filas y reservas idénticos; no nuevas claves, compras ni reinicios.
+Backend conserva máximo 0.1 USD. Vigencia de ambas: **16/10 a las 18:00 de París**,
+sin renovación automática. N5 pasó 12 guardas contables y preflight sin inferencias
+antes de su lanzamiento; su prefijo completo de 1135 filas es inmutable.
+
+**Navegador conforme** en 002/014, escritorio/móvil/recarga y texto exacto de esta
+campaña, cero escrituras del asistente y errores del navegador; capturas inspeccionadas,
+`period-5119-r1-ui-v1-result.json`. **9 lecturas SSE terminales conformes** de
+002/014/017 con UTF-8 estricto en bloques de 1/7/4096 bytes,
+`period-terminal-sse-proof-v2.json`. Arnes v1 esperaba snapshot al reconectar una
+operación terminada, cuyo contrato es started/final: error conservado, expectativa
+corregida sólo en el arnés. **SSE vivo real observado** en 019r3 por GET a una
+operación ya prevista: active→snapshot→delta→final→resultado exacto, secuencia,
+revisión y offsets UTF-16 correctos; `period-live-sse-proof-v2.json`. No creó ni
+reanudó inferencias y no acredita render incremental del navegador ni TTFT del
+proveedor. El observador v1 agotó la espera de una operación posterior sin capturar
+ni generar; el v2 admitió observar la operación actual activa.
+
+Regla de trabajo: `period-validation-stopping-rule-v1.json`; terminar la medición
+congelada y separar requisitos originales de calidad adicional. No exigir perfección
+inventada ni abrir otro parche por una sola observación. La partición histórica se
+conserva para trazabilidad, pero sus familias ya son conocidas y se han usado en
+selección/correcciones: no son un test ciego de generalización. Banco, prompt y
+producto no han cambiado durante N3/N5. B sigue local, sin publicar ni cerrar Trello.
+Pendientes: completar/congelar N5 y sus costes, perfilar fallos/dudas sin ocultarlos,
+informe y candidato local para revisión, acuerdo de criterios y adjudicación humana.
+
+Corte N5 `2026-10-16T00:24:16.656977+00:00`: 9/140 completadas, 9 costes observados,
+1145 filas con las 1135 anteriores intactas. Cota 18.57397328800000000000/20 USD,
+incluye la llamada actual reservada; las reservas antiguas siguen íntegras.
+
+**Colector PR131**, independiente: af8388d0 publicado con bloqueo del formato
+legado cuando falta distancia. 33 pruebas, contrafactual del scorer y 87 fixtures /
+521 GET conformes. CI backend falla6 pruebas de salud del árbol base sin cambios:
+headers creados al recolectar caducan a los5min. Mecanismo confirmado con reloj
+sintético; no hay tiempos JWT completos del log ni una reejecución que lo oculte.
+`pr131-ci-auth-diagnosis-v1.json`; CHANGES_REQUESTED y validación humana pendientes.
+No se han enviado mensajes Discord. Trello123 conserva lista/roles/fechas.
+
+## Cortes previos del 16/10 — superados por el estado anterior
+
+
+Avance del 16/10, corte GLM47: **46 conformes provisionales y 1 fallida**,
+014r2. Falla una parte del requisito compuesto (omisión del gasto acumulado actual)
+y añade política documental de alertas sin soporte visible. Se conservan respuesta,
+etiquetas y dos defectos por esa única muestra. No afirmar 47PASS ni ganador.
+Revisión `glm-matched-v1-collected/reviews/snapshot-1792103685609-8e1fe988.json`.
+
+Corrección local sin medir: terminal forecast_budget para declaración completa y
+fechada de acumulado/forecast suministrado/budget. 179 pruebas locales conformes,
+incluyen 28 nuevas; fuente compartida idéntica en ambos servicios. Paridad fría
+56 contextos por servicio, identidad
+`jup-035.chat.v3:bc02542a0b8b2afddb70d9aaee007d9544e7b3099677058f36f98da4ec552db4`,
+assembler d7251d01b1f52591a5908f5a8a4f54c28108c151be2e7433b9f2eb39dc5a216f,
+manifest SHA2ce4cb08ddad64d0bbadc56017a54b0ab44fd893cdf2a09f803e136bebc83bf0.
+Prompt, banco y contrato público no cambian. `forecast-regression-v1.xml` y
+`forecast-resource-parity-v1.json`; Linux y API/UI nuevos pendientes.
+Se canceló únicamente el build9513 aún en espera, antes de crear recursos:
+`wire-build-superseded-v1.json`. Su preparación y las 139 pruebas anteriores
+siguen conservadas, pero no validan esta lógica nueva. Activador preparado
+`activate-wire-candidate-v1.py` queda superado y no se ejecuta sobre9513.
+GLM sigue en la imagen congelada original; ninguna muestra se reenvía.
+
+CI PR131/af8388d0: **backend falla 6 pruebas de salud**, no verde global; los demás
+checks técnicos actuales pasan y JUP reviews sigue fallando por review pendiente.
+Backend idéntico por árbol Git en base53b43bb1, anterior5cae4942 y af8388d0.
+Tres headers JWT se crean al recolectar, con5min de vida+5s de margen; las seis
+pruebas se ejecutan tras ese plazo. Se confirmó el mecanismo con reloj sintético
+a311s; no había JWT completos disponibles para leer tiempos exactos en el log.
+No se modifica backend ni se relanza la CI para ocultarlo. Diagnóstico
+`pr131-ci-auth-diagnosis-v1.json`, captura `pr131-ci-1792104105972.json`.
+La corrección propia del colector mantiene33PASS y el contrafactual del scorer.
+
+Avance 00:30 París: GLM comparable alcanza 39/84 respuestas válidas y conformes
+provisionales, sin errores técnicos; 45 aún no ejecutadas en este corte. Cota
+17.7024580655/20 USD incluye una fase en curso; reservas anteriores intactas.
+Construcción aislada en espera del fin de GLM: PID1261672/start70137538,
+`wire-9513-build-v1`, sin activar servicios ni inferencias. No elegir ganador
+antes de cerrar las repeticiones y contrastar los resultados.
+
+En paralelo se detectó una review nueva del colector PR131. Se leyeron revisión
+de Víctor, comentario de Paris y ausencia de inline; corrección publicada en
+af8388d0a87cf08184472c84f79247e7974c961b, rama independiente del colector.
+Corpus sin distancia bloquea el scorer legado de JUP-071 sin perder evidencia.
+33 pruebas conformes; contrafactual con evaluador original: fail→blocked sin
+distancia, pass con distancia real. 87 fixtures/521 GET repetidos, sin gasto.
+Guía, OpenSpec y separación de números/palabras corregidos. Fuente y continuidad
+propias en `../tfm-economicon-jup123-collector`; pruebas externas
+`collector-pr131-scorer-fixtures-v1/proof.json`. CI nueva aún en curso y
+CHANGES_REQUESTED sigue vigente; no se publica B ni mensajes Discord.
+Trello123 actualizado por el puente autorizado, sin modificar lista/roles/fechas:
+`jup123-model-progress-updated-v1.json`, descripción SHA
+939cb99ce7a7add38fdabc6316f557cd02768ed46e12a247da7b2c9ad818611e.
+
+Autorización vigente: elegir el mejor modelo de los probados, añadir DeepSeek y
+terminar JUP-123 en local. Máximo acumulado **20 USD**, sin liberar ninguna
+reserva anterior ni reiniciar contadores. Mismas claves hasta 16/10 a las 18:00
+de París. No publicar B ni mensajes de Discord. Criterios y reviews humanas
+siguen pendientes; la selección técnica no los sustituye.
+
+**DeepSeek v3 terminado:** 84/84 respuestas técnicamente válidas, 0 errores.
+Revisión local provisional: **77 conformes, 6 fallidas y 1 dudosa**; 327/327
+requisitos del banco original conformes, rúbrica adicional 160 conformes,
+7 fallidos y 1 incierto, agrupados en 6 fallos causales. No es aceptación ni
+validación API/UI. 002r1/r2 y 014r1/r2 añaden metodología/políticas sin soporte
+visible; 012r3 aplica al costcenter un catálogo que la fuente exige a environment;
+024r1 niega agosto de 2026 aportado; 023r1 mantiene duda de alcance real/simulado.
+Evidencia inmutable: `deepseek-v3-collected/final/report-v1.{json,md}`. Su snapshot
+SHA es abb6f33b1b326c5cd7a5c2153813839a1c51d5d3064d1772782e6a1b31b44779.
+Coste comunicado de esta campaña 0.176012028 USD, 168 fases con coste observado,
+0 reservas desconocidas nuevas. Las 715 filas previas siguen intactas; 883 filas
+totales. Cota conservadora al cierre **17.458573148 / 20 USD**, incluyendo
+**11.73085650 USD** de reservas anteriores desconocidas íntegras. No es factura.
+
+**Regresión incremental del esquema terminada:** 139 identidades únicas
+conformes, 104 processor y 35 backend, 0 fallos/errores/omisiones. Producto
+b76b6fd980242518e5b520d09a81e4a42cc35194; HEAD 9513e930 corrige únicamente la
+expectativa de una prueba para usar el esquema wire nuevo. No modifica código
+de producto. Pruebas heredadas verificadas por identidad y SHA de JUnit: 122;
+17 restantes en contenedores fríos individuales v5. Auditoría local independiente
+`wire-native-final-audit-v1.json` confirma unión exacta de las 139 identidades.
+No se afirma una nueva ejecución de las 1793 pruebas históricas del chat.
+Se conservan los intentos fallidos: dependencia nativa sobre /tmp noexec en v2,
+una expectativa antigua de esquema en v3 y un lote v4 terminado sin JUnit
+(causa no confirmada). La reparación del arnés usa /testdeps exec aislado y
+contenedores individuales con red deshabilitada; no debilita aserciones.
+
+**GLM comparable en curso:** z-ai/glm-5.2, DeepInfra FP4, temperature 0 y reasoning
+desactivado, mismo contexto/prompt/corpus y esquema wire que DeepSeek. 56 capturas
+offline verificadas antes de lanzar; no cambia producto activo. Directorio remoto
+`/home/danteadmin/economicon-jup123-20261014/glm52-deepinfra-matched-wire-v1`,
+PID 1231753/start 70111630, plan SHA
+61417a5ef30c22ca6893ae6f1dc84683295509488cb7dd330b51e7fb72b89965.
+Baseline 883 filas/SHA ea71842b9ab47b861a58324d077349dd14fde5439c0d646436528ba1355bbd9a.
+Se observa mediante `glm-matched-operator-v1.py observe/export`, nunca relanzar
+ni reenviar muestras. Recogida prevista 84; cada fase verifica precio, caducidad
+y admisión con todo el ledger. No hay ganador todavía.
+
+Processor B sigue parado por el OOM propio ya documentado; restantes servicios
+propios activos. Mantenerlo parado durante GLM porque la guarda exige su estado
+congelado. Tras terminar, verificar nuevamente SQL/colas y recuperar sólo el
+entorno B; después construir/activar el candidato y validar API/UI reales.
+El alias compartido economicon-chat sigue siendo GLM; el alias DeepSeek ya
+existente es V4 Pro, **no Flash 4.1 probado**. No sustituirlos sin equivalencia.
+
+Próximos pasos: completar y revisar GLM; comparar requisitos/repeticiones con
+DeepSeek; seleccionar configuración elegible; corregir los defectos medidos y
+validar el candidato local completo dentro del presupuesto. N5 obligatoria,
+adjudicación independiente y criterios/reviews mantienen su estado pendiente.
+
+## Cortes históricos del 15/10 — superados por el estado anterior
+
 ## Estado actual y autorización — 15/10/2026
+
+### Autonomía para seleccionar modelo y terminar B — corte21:02UTC
+
+Último corte21:42UTC:DeepSeekv3 alcanza64/84respuestas técnicamente válidas,
+0errores técnicos; NO64PASSsemánticos. Al corte revisado52:41PASSprovisionales,
+3FAIL(002/014mezclan política documental en prosa sin soportevisible;
+024niega el períodoagosto2026aportado) y8pendientes(incluye023con duda sobre
+promesa condicionada de analizar datos reales). Los cálculos de002/014soncorrectos;
+no se inventa que el contenido de la metodología sea falso. RevisorCodexlocal,
+no adjudicación independiente. `deepseek-v3-collected/reviews/snapshot-1792100297177-9b23f0b4.json`.
+Herramienta `review-model-replay-v1.py` verifica respuesta contra fase original,
+requestSHA,entrada yRAGreal;hereda juicios sólo por identidad exacta de respuesta
+completa ycontexto. Juiciosmanuales anteriores congelados en judgment-history/.
+
+Integración local b76b6fd980242518e5b520d09a81e4a42cc35194:gateway y ambos dueños
+de recursos usan esquema equivalente;metadatos y admisión cuentan el wire real.
+Helper backendcopiado deprocessor con hash exigido por manifiesto (deuda de
+duplicación general NO resuelta). Utilidad045d0f0f corrige dos interseccionesnull
+y equivalencia1/1.0enums:4fallos de prueba conservados y35PASSposteriores;con
+paridadstream/final y rechazo de fuente forjada,41PASS. Dependenciajsonschema sólodev.
+`wire-resource-parity-v1.json`:56contextos por cada servicio,cargados en frío,
+schemas/tokens/reservas/identidad iguales. `wire-campaign-equivalence-v1.json`:
+101schemas capturados producen exactamenteel mismo wire conffdfyB76;no afirma
+validaciónAPI ni prueba universal. Prompt y contrato público sin cambios.
+Nuevaidentidad `jup-035.chat.v3:6ea3ece9c1b35717aea95e652bbc472bd4d3d11e728832468d529b0317733459`,
+assembler660b39a78480ce8990b3c225a514db262294cb0a6494c692577c2327fe852c69;
+manifiestocanónicoSHA3e67a4e5c54ea863743d661b70940852a2b91375f15e8b2dc9be750847c8458c.
+N3actual sigue usando imagen/contexto congeladosd9b y adaptadorffdfenarnés;
+no confundir con una N3API del candidatoB76.
+
+RegresiónlocalWindows89PASS/9FAIL sobre98;los9de red local se reproducen
+íntegros en commit anterior045d0f0f(`wire-windows-counterfactual-v1.json`).
+No se relajan aserciones para Windows. Linux pendiente:supervisor1006467/start69907972,
+`/home/danteadmin/economicon-jup123-20261014/wire-b76b6fd9-offline-v2` espera
+terminación deDeepSeek antes de iniciar pruebas;no competir por memoria.
+Imagenes nativas pytest previas,sourceb76 por gitarchiveSHA
+9379e323cd7436b029f4e82db0aa034f314631308dbcbe429b77422cab54ca85,
+ruedas de pruebas con hashes,networknone,768MiB y6tests por contenedor+GC.
+Primerpreflightv1rechazó por margen RAMsin crearrecursos;v2prepara y espera
+dependencia,exige1550MiBaladmitirtests. `observe-wire-linux-v2.py --export`.
+No reiniciar processorB durante replay oregresión;recuperación posteriorpendiente.
+
+Contabilidad21:42:845filas,prefijo715intacto,11.73846710USDreservadoincluyefase
+encurso,cota17.438660674/20USD;no facturado exacto. Todas las reservas previasíntegras.
+Lecturagateway `gateway-model-routing-readonly-v1.json`:economicon-chat=GLM5.2;
+alias yaexistenteeconomicon-chat-deepseek=DeepSeekV4Pro(NOFlash4.1probado).
+ClaveBprocessor sólo permitechat+embedding,3.5máximo/spend2.85175;sin cambios.
+No sustituir modelo por esealias sin prueba ni alterar desplieguecompartido.
+Selección final de modelo todavía pendiente de la N3 y sus defectos.
+
+Último avance21:17UTC:v2 también termina4fallos400enfinal;constantes no eran la
+única incompatibilidad.715filas,prefijo707intacto,11.73085650USD desconocidos
+retenidos,cota17.282561120USD. `deepseek-v2-collected/snapshots/snapshot-1792098845392.json`.
+Utilidad ampliada en ffdfdfaf:objetos exactos y eliminación de definiciones
+inaccesibles mediante arrays maxItems0 y referencias locales transitivas.
+29tests de equivalencia/rechazo PASS; aún NO integrada en gateway/API. V3pruned
+en curso PID875058/start69795740;planSHA
+cd0707ff3bca45ec741845d467e90dc7689bf4818ec4e55896e56666e1f4e4bb;
+baseline715SHA20ce8310809f5224b3993c3e1f75d2f2f978777a9c816fadcc53c238ed0d0f1f.
+56capturas offline sinred antes de lanzar,mismas entradas/prompts/modelo/ruta;
+conversión equivalente y recuento de contexto convertido sólo en arnés.
+No inferir compatibilidad/semántica antes del resultado. Si persiste400,
+congelar causa y comprobar otra ruta DSfijaZDR antes de más rediseño especulativo.
+`deepseek-operator-v3.py observe/export` observa mismohandle,sin repetición.
+
+Inspección Breadonly21:17:`b-recovery-readonly-1792099050057.json`:572operaciones
+completed+24failed,0jobs y0mensajes RabbitMQ. Processor900MiB detenido porOOM;
+resto propio activo. Reinicio sólo de ese processor pendiente al terminar replay
+y volver a revisar estado; no reiniciarlo mientras guard espera estadofalse.
+Documento externo `model-selection-jup123-current.md` conserva criterio de decisión;
+datos21:12históricos, complementar con este corte. Seguimiento único actualizado.
+
+Avance21:07UTC:DeepSeekv1 detenido automáticamente tras cuatro fallos técnicos
+consecutivos:4borradores200válidos,4finales400«JSON schema contains features not
+supported by xgrammar». No respuestas ni elección por calidad. Snapshot
+`deepseek-v1-collected/snapshots/snapshot-1792098428621.json`,8fases inmutables;
+707filas,699previas intactas;11.68276675USDreservas desconocidas retenidas,
+cota17.228956042USD. Versiónv2 en preparación, mismo producto/contextos,
+con conversión equivalente de constantes a objetos cerrados. Utilidad local
+18e90f79:22pruebas de equivalencia/rechazo PASS con JSONSchema independiente;
+no integrada aún en gateway ni activa en API. Dependencia jsonschema sólo de
+pruebas; no runtime nuevo. Primera ejecución pytest no llegó a probar por permisos
+del temporal global;22PASS usando temporal propio. No afirma compatibilidad
+del proveedor por equivalencia offline. No modificar campañas anteriores.
+
+El usuario autoriza elegir entre los modelos probados, añadir DeepSeek después
+de esta comparación y continuar hasta terminar JUP. Supera la limitación anterior
+de sólo recopilar/no decidir. Permanecen máximo20USD acumulados, todas las
+reservas pendientes y mismas claves hasta16/10a18:00París; sin publicaciónB/Discord.
+
+Decisión: cerrar la comparación actual tras la primera ronda completa, por fallos
+obligatorios de contrato, conservando margen para DeepSeek y validación del candidato.
+Proceso602367 confirmado terminal con56/168:Sonnet28errores;Sol25errores y3respuestas
+finales sin adjudicar.112repeticiones NO ejecutadas; no equivale a N3 ni elección
+de ganador por calidad. Prueba `model-comparison-first-round-stop-v3.json`.
+Exportación `model-comparison-v3-collected/snapshots/snapshot-1792098119928.json`:
+85fases inmutables,0activas.699filas,614previas intactas; reservas desconocidas
+11.634464USD(4.247848nuevas),coste observado nuevo1.7680265USD. Cota conservadora
+17.173804092USD a21:02UTC, NO gasto facturado. Ver `model-comparison-v3-inspection-1792098131476.json`.
+
+DeepSeekV4.1Flash canónico20260910/rutaCoreWeaveFP8 elegido para la siguiente
+medición por soporte anunciado de structured_outputs/ZDR y precio0.15/0.65USDporM.
+No ganador todavía. Preparación aislada offline en curso;56capturas previstas,
+temperature0 y reasoning desactivado (diferencia explícita respecto a defaults
+obligatorios de Sonnet/Sol). Producto,esquemas,prompts y contextos sin cambios;
+plan nuevo compartiendo ledger completo y reservas, sin repetir intentos previos.
+No inferencias DeepSeek confirmadas en este corte. `deepseek-prepare-v1.py` y
+`deepseek-catalog-readonly-v1.json` conservan procedimiento y catálogo fechado.
+Processor B sigue detenido por OOM propio anterior; recuperación sólo de B pendiente
+tras terminar replay y revisar colas. API/UI no revalidadas. Seguimiento único
+actualizado a autonomía; criterios de revisores y aceptación siguen pendientes.
+
+### N3 con rutas ZDR autorizadas — en curso desde20:36UTC
+
+El usuario autoriza «Usar esas rutas sólo para N=3» y después «Continua».
+Campaña nueva v3:Sonnet5.5 por google-vertex/global,Sol6.1 por azure,alias
+max_completion_tokens en Azure con mismos1000/2200. Sólo recopilar,no corregir
+producto/esquema ni elegir modelo.112capturas offline completas verifican los
+28contextos×2modelos×2fases,0red/credenciales reales,sólo rutas/alias cambian.
+
+Proceso602367/start_ticks69546080 en
+`/home/danteadmin/economicon-jup123-20261014/model-comparison-sonnet55-sol61-v3-zdr-routes`.
+PlanSHAae59b3a7ac57bd96bfa981ec064859448c9a0635e27a7a507fe1eb01cc1e02c4;
+worker73755b1b8191dfd3757c09fab9e69415def8c007ac76c7bb18f19da3081b95c9.
+Workers desechables512MiB/CPU1/readonly por fase usan imagen643e42d4,sin tocar
+servicios existentes. Precios2/10porM y contabilidad se verifican antes de cada
+envío. Baseline614filas SHAc5228fad557448e422395d1d4228965d97845c6f623550ae842e6b2745ae578d;
+7.386616USD retenidos iniciales íntegros,todo en MISMO ledger,máximo20USD.
+
+Corte20:40UTC:9/168;Sonnet5errores(4truncados/1inválido),Sol4borradores válidos
+pero4HTTP400enfinal por invalid_json_schema del proveedor. Azure rechaza
+combinadores en raíz o falta de type en answer;no se cambia el esquema para pasar.
+0respuestas finales en ese corte,ninguna conclusión semántica.628filas,reservas
+8.031950,cota12.086210592/20incluyendo ejecución en curso. No confundir con gasto
+liquidado. Consultar evidencia fresca y observar MISMO controlador,sin relanzar.
+
+Incidente:primer intento offline en processor B provocó OOMKilled137 a20:29:57UTC.
+Se corrigió el arnés con aislamiento/memoria limitada y limpieza explícita;112
+capturas después completadas en contenedor propio,retirado. El processor B
+original sigue detenido;no se reiniciaron servicios. Código/config intactos,
+pero NO afirmar despliegue B íntegro o API/UI operativas. N3 es replaygeneración.
+
+Evidencia externa:`model-comparison-results-v3.md`,`model-comparison-offline-routes-v3.json`,
+`model-comparison-prepared-v3.json`,`model-comparison-launch-v3.json` y
+`model-comparison-v3-collected/`(fases inmutables,snapshots,JSON/CSV estructurales).
+Operadoresinspect/export/report/watchv3. Seguimiento actualizado a observarv3
+sin duplicar ni reparar resultados. V1/v2 congeladas aparte,16errores conservados.
+Sin publicación B/GitHub/Discord,no reanudar GLM/v7 ni liberar reservas.
+
+Consulta del usuario sobre si la inestabilidad procedía del modelo:contraste
+histórico confirmado en a545full84,caso027:juicio provisional PASS/FAIL/PASS.
+Los tres contextos RAG son iguales,incluido orden/contenido de4chunks:
+SHA78545e6f16a6ec6e54c0cc05e74da7851ef2c0a41e1ae86ff8f7f4f717f7eedd.
+La respuesta r2 revisada efectivamente etiqueta+200EUR/+20%del gasto total como
+variación de coste unitario,aunque concluye−40%correctamente. Es indicio de
+variabilidad de generación,no causalidad exclusiva del modelo:los inputs completos
+incluyen fechas/contexto de ejecución y no se probó igualdad byteabyte de todo el
+request.429del servicio,400de esquema y límites de salida son causas distintas.
+No se recomienda ni selecciona modelo. N3 continúa sin cambios;al20:52UTC37/168,
+Sonnet19errores,Sol15errores/3respuestas recogidas sin adjudicar,cota15.039416USD.
+Exportación posterior39/168:Sonnet20errores,Sol16errores/3respuestas,capturas
+inmutables59fases y020Solr1draft en curso. Snapshot1792097570147SHA
+02326273025803dbb06157d0963f2e5bb94ecb724dac14fa5f70ac9780f5cb23.
+Conservar schema400deGoogle:«Schema type 'const - complex' is not supported»
+en015final;no es un fallo de razonamiento. Proceso sigue vivo,usar mismohandle.
+
+### Adaptación del arnés autorizada y ejecutada — corte20:25UTC
+
+El usuario confirma «Adaptar sólo el arnés y ejecutarN=3». Se aplicaron únicamente
+las dos omisiones propuestas:temperature y reasoning.enabled;exclude:true y los
+defaults de cada modelo permanecen.4capturas offline de draft/final verifican
+que no cambió ningún otro parámetro;producto/gateway/prompts/corpus/banco intactos.
+Campaña aparte `model-comparison-sonnet55-sol61-v2-defaults`,planSHA
+64dd4b26b54f630ae6c69cadb3af1b2745032a6e46f5c9754a855bdf935927b5.
+
+**Nueva recogida:4/84por modelo,8HTTP404antes del draft,0respuestas**;001–004r1.
+El error ahora explicita DataPolicy excluyendo anthropic/openai. Detenida ante
+rechazo estructural;proceso528616/start_ticks69474003 confirmado terminal.
+N3 sigue incompleta:80pendientes/modelo. No se relajan políticas o selecciona
+otro proveedor/modelo. Los8errores previos de v1 permanecen aparte e intactos.
+
+Preservadas606filas previas SHAsemántico
+e9e8ce38dcf6998c87e3cefae21b6c15601087ea935aca07144f5a31d5d44488 y6.733852retenidos.
+8fases nuevas:614filas,total retenido7.386616USD,cota11.221203103/20USD a20:25UTC.
+No se ha liberado ninguna reserva ni cambiado claves,contadores o vencimientos.
+
+GET de previewZDR20:26UTC enumera rutas candidatas para los modelos exactos:
+Sonnet por google-vertex/global y Sol por azure,2/10USDpor millón. No se han usado
+ni se ha probado acceso;Azure anuncia max_completion_tokens como alias de salida.
+Propuesta concreta sólo de rutas/alias preparada pero NO aplicada,pendiente de
+confirmar por la restricción de no decidir y la autorización previa de dos campos.
+No sustituir Sol por Pro,relajar ZDR o incrementar salida para hacer pasar tests.
+
+Evidencia externa en `materiales/07-evidencias/PR121-local-evaluation/`:
+`model-comparison-results-v2-defaults.md`,snapshot
+`model-comparison-sonnet55-sol61-results-v2-defaults/`,capturas/preparedv2,
+`model-comparison-zdr-routes-v1.json` y `model-comparison-zdr-routing-proposal-v1.md`.
+No publicación B ni comparación de calidad. No reanudar GLM/v7:su auditor debe
+seguir rechazando una historia ampliada hasta reconciliarla íntegra.
+
+### Prueba solicitada de Sonnet5.5 y Sol6.1 — corte20:17UTC
+
+El usuario pide sólo recopilar tests sin modificar producto ni decidir modelo;
+confirma28casosN=3,84/modelo. Replay externo con los contextos exactos de9e2,
+leídos de canonical_input y contrastados con sus hashes, más el RAG original.
+No es API E2E. Se conservan parámetros efectivos del despliegue, incluyendo
+temperature0, reasoning desactivado y require_parameters; sólo cambia modelo
+y ruta nativa por petición. Sin cambios de producto/gateway/prompt/banco/corpus.
+
+**Resultado:4/84ejecuciones por modelo,0respuestas.** Casos001–004r1:las8devuelven
+HTTP404 «No endpoints found that can handle the requested parameters» antes
+del draft. Recogida detenida ante rechazo estructural;80pendientes/modelo.
+N3 y comparación semántica NO completadas. El error no aísla un parámetro causal;
+no se ha quitado temperatura ni adaptado razonamiento para forzar compatibilidad.
+Proceso476718/start_ticks69423548 confirmado detenido.
+
+Las598filas previas y6.081088USD retenidos están intactos. Ocho nuevas fases
+de replay se registraron en el MISMO ledger:606filas,0.652764USD adicionales
+desconocidos retenidos, total6.733852. Sin liberar reservas o asumir404gratuito.
+Cota conservadora fresca10.568439103/20USD; no es gasto atribuido liquidado.
+Las filas nuevas no son operaciones del backend: el auditor GLM anterior
+rechaza esta historia ampliada; no omitirlas para reanudar ni lanzarv7.
+Seguimiento16Oct08:00 actualizado para no inferir, reparar ni reanudar GLM
+sin instrucciones nuevas. Claves/vencimientos originales permanecen intactos.
+
+Evidencia fuera de Git, raíz del workspace:
+`materiales/07-evidencias/PR121-local-evaluation/model-comparison-results-v1.md`
+y `model-comparison-sonnet55-sol61-results-v1/`:respuestas HTTP originales,
+requests, duraciones, ledger, prueba de preservación/cierre y manifest con hashes.
+Sin publicación B/GitHub/Discord ni decisión sobre qué modelo utilizar.
+
+**Contraste posterior20:20UTC,sin inferencias:**el catálogo público declara
+razonamiento mandatory:true en ambos modelos;esfuerzo predeterminado highSonnet,
+mediumSol. Ninguna de sus rutas anuncia temperature. Las peticiones actuales
+envían temperature0/require_parameterstrue/reasoning.enabledfalse:incompatibilidades
+concretas según metadata y documentación oficial, sin ensayo por eliminación.
+Proceso otra vez confirmado detenido;8ejecuciones históricas intactas.
+Evidencias `model-comparison-parameter-audit-v1.json` y
+`model-comparison-reasoning-metadata-v1.json`. Propuesta externa
+`model-comparison-compatibility-proposal-v1.md` NO aplicada:quitar sólo temperature
+y reasoning.enabled del transporte de pruebas,conservar exclude y usar esfuerzos
+predeterminados explícitamente distintos. Pendiente aclarar la restricción
+del usuario «no hagas modificaciones ni tomes decisiones»;no inferir permiso.
+No reiniciar campaña,adaptar producto ni liberar reservas mientras tanto.
 
 ### Máximo acumulado ampliado a20USD — autorización posterior del15/10
 
@@ -11,8 +567,12 @@ El usuario indica «Amplia el gasto a20$». Sustituye el máximo10USD sin reinic
 contabilidad, claves, intentos o campañas, y sin liberar reservas. Herramientas
 locales de admisión y planes nuevos actualizadas a20USD:94pruebas offline PASS,
 incluida la admisión del siguiente máximo conservando6.081088USD retenidos.
-Transferencia/activación de estas herramientas separadas todavía pendiente en
-este corte; no se modifica el árbol medido9e2, su plan histórico ni sus imágenes.
+Transferencia/activación completada posteriormente: herramientas8de0aae8 en
+`evaluation-tools-8de0aae8`,94pruebas LinuxPASS y admisión20 ensayada sin envío
+en `cap20-authorization-applied-v1.json`; cota entonces9.903101435USD. Configuración
+separada SHA9cf2d9eb1bab78ab293ee41fb4ca66fda310bf166917935d32c99a5b3c31b9a1.
+No se modifica el árbol medido9e2, su plan histórico ni sus imágenes. V7 preparado
+pero NO ejecutado: la prueba de modelos posterior sustituye esa reanudación.
 El límite monetario efectivo de OpenRouter leído es25USD, con21.198014901USD
 disponibles; no se ha cambiado ese límite ni se le atribuye la causa del429.
 
