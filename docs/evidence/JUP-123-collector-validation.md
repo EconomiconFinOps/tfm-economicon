@@ -6,7 +6,39 @@ Base: `develop/53b43bb1e79b08967cc1b9efdf66669f11e8197c`.
 Rama: `feat/JUP-123-response-collector`. Extracción autorizada por el usuario;
 no representa aceptación de B ni validación humana independiente.
 
-## Reconciliación tras aprobación — 16/10/2026
+## Segunda reconciliación con JUP-071 — 17/10/2026
+
+Base entrante `develop/ee4e8031` (#136), cabeza aprobada `08b597ec`. Se resuelven
+los tres conflictos de `.github/workflows/ci.yml`,
+`scripts/tests/test_evaluation_scripts.py` y `tools/ci-workflow.test.mjs`
+conservando todos los comandos y expectativas: colector, robustez y dashboard.
+Código del colector idéntico a 08b597ec; evaluador y aplicaciones idénticos al
+develop entrante. La guía deja de presentar JUP-071 como una dependencia ausente.
+
+Comprobaciones locales nuevas:
+
+- Colector: 48/48; robustez: 123/123 y banco de 29 casos con hashes conformes.
+- Node `tools/ci-workflow.test.mjs`: 14/14; OpenSpec 76/76; trazabilidad e higiene conformes.
+- Dashboard: 1644 pruebas, 1436 PASS y 208 SKIP, usando sólo desktop-linux sin
+  daemon disponible. No se ejecutan integraciones omitidas ni se toca DockerServer.
+- Integración con el evaluador JUP-071 integrado: 87 fixtures, 521 GET locales,
+  0 POST y 0 llamadas al proveedor; tres raw de 29 casos aceptados por
+  review-sheet/score/compare. Las respuestas exitosas conservan citas y corpus
+  con distance:null; un fallo técnico se conserva; reexportación idéntica.
+- Tres exportaciones rows-v1 (117 filas cada una) aceptadas por
+  `tools/evaluation-dashboard.py` mediante adapt_rows_v1 y validate_rows.
+
+Recibo externo `JUP-123-collector/integration-5f93818c/summary.json`, con plan y
+hashes de ficheros del árbol reconciliado antes del commit. El commit informativo
+del plan es d795d5ae, no una atestación de runtime. Guion reproducible en
+`materiales/07-evidencias/JUP-123-collector/integration-merged-jup071-20261017.py`
+del workspace padre. Un primer intento del guion falló por usar --report en
+rows; se corrigió a --input y la integración completa terminó favorablemente.
+Los fixtures y sus puntuaciones no representan respuestas reales ni juicios
+humanos; no hay aceptación semántica o nueva inferencia. CI del nuevo SHA y
+dictámenes de Víctor/Lucía pendientes tras publicar y solicitar oficialmente.
+
+## Reconciliación tras aprobación — corte histórico del 16/10/2026
 
 [Víctor aprueba e0a0c41e](https://github.com/EconomiconFinOps/tfm-economicon/pull/131#pullrequestreview-5553358426)
 y [Lucía revalida esa cabeza](https://github.com/EconomiconFinOps/tfm-economicon/pull/131#pullrequestreview-5552441528)

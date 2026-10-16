@@ -81,6 +81,8 @@ jobs:
           corepack pnpm assistant-metrics:test
           corepack pnpm assistant-eval:test
           corepack pnpm chat-collector:test
+          corepack pnpm assistant-robustness:validate
+          corepack pnpm assistant-robustness:test
           corepack pnpm evaluation-dashboard:test
           corepack pnpm synthetic-demo:test
           corepack pnpm demo-dataset:test

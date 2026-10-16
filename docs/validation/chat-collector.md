@@ -29,12 +29,14 @@ de JUP-071. Leer respuestas existentes no aumenta gasto ni modifica reservas.
 
 ## Usarlo con los 29 casos de JUP-071
 
-Conservar otra copia de JUP-071 que contenga `tools/assistant-robustness.py` y su
-banco. El adaptador importa **código local de confianza** de esa copia; no la
-descarga ni ejecuta el modo `offline` de la antigua plantilla. Corte comprobado:
-`test/JUP-071-robustness`, commit `81ceafc67ba400414040b1468d795a41d9d5468d`.
-Una vez integrada JUP-071 puede usarse la misma copia mediante `--suite-root .`.
-Los ejemplos parten de la raíz de esta PR y de una copia hermana `../jup071`.
+JUP-071 está integrada en `develop/ee4e8031` por #136 y en este árbol reconciliado:
+puede usarse la misma copia mediante `--suite-root .`. También se admite otra
+copia explícita que contenga `tools/assistant-robustness.py` y su banco. El
+adaptador importa **código local de confianza**; no lo descarga ni ejecuta el
+modo `offline` de la antigua plantilla. La compatibilidad legada se comprobó en
+`81ceafc67ba400414040b1468d795a41d9d5468d`; la integrada anuncia la capacidad para
+distancia no medida. Los ejemplos siguientes siguen usando una copia hermana
+`../jup071`; si se usa este checkout, sustituir ese destino por `.`.
 
 Crear previamente `../evaluacion-jup071` fuera de ambos repositorios. Preparar N3
 (también se admiten 1 y 5):
@@ -157,11 +159,12 @@ de puntuación son comprobaciones distintas.
 **La evidencia de corpus que ofrece A no incluye `distance`. Por ello, todas
 sus filas con corpus quedan bloqueadas para el evaluador legado**, incluso con
 un suplemento RAG exacto. Las respuestas sin corpus no requieren distancia; los
-fragmentos con distancia real conservan la exportación anterior. Para puntuar
-filas de A sin inventar distancias, JUP-071 necesita adaptar su evaluador para
-usar los IDs y el contenido de `public_evidence`. Ese cambio pertenece a JUP-071
-y queda fuera de esta PR. El adaptador sólo abre esa exportación cuando la
-herramienta importada anuncia la capacidad explícita.
+fragmentos con distancia real conservan la exportación anterior. La adaptación
+de JUP-071 integrada por #136 admite estas filas usando los IDs y el contenido
+de la evidencia sin inventar distancias. El adaptador sólo abre esa exportación
+cuando la herramienta importada anuncia la capacidad explícita; las copias
+legadas siguen bloqueadas. Esto acredita compatibilidad de transporte y formato,
+no calidad semántica ni aceptación de una campaña.
 
 ## Contrato con JUP-071 y el dashboard de JUP-121
 

@@ -15,7 +15,7 @@ Contrato que se valida:
 * Los cuatro scripts son contiguos y van entre `chat-collector:test` y `synthetic-demo:test`; el resto de scripts
   no se toca (se fijan siete representativos con su valor de hoy como literales).
 * La CI ejecuta `corepack pnpm evaluation-dashboard:test` UNA sola vez, en el paso «Validate governance tooling»,
-  justo después de `chat-collector:test` y antes de `synthetic-demo:test`, con la misma sangría; el resto del
+  después de colector y robustez y antes de `synthetic-demo:test`, con la misma sangría; el resto del
   bloque no cambia.
 * La guía nombra los cuatro scripts.
 
@@ -97,6 +97,8 @@ CI_BLOCK_TODAY = [
     "corepack pnpm assistant-metrics:test",
     "corepack pnpm assistant-eval:test",
     "corepack pnpm chat-collector:test",
+    "corepack pnpm assistant-robustness:validate",
+    "corepack pnpm assistant-robustness:test",
     "corepack pnpm synthetic-demo:test",
     "corepack pnpm demo-dataset:test",
     "corepack pnpm demo-data:test",

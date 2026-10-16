@@ -6,7 +6,33 @@ adaptarlo para JUP-071 y publicar PR independiente; chat
 Tarjetas: [JUP-123](https://trello.com/c/TqtcumIN),
 [JUP-071](https://trello.com/c/H0woDubz).
 
-## Confirmaciones y nuevo avance de develop — 17/10/2026
+## Segunda reconciliación y nuevo delta — 17/10/2026
+
+Origen: «Resuelve los nuevos conflictos de la PR131, comprueba las pruebas y pide
+oficialmente la revisión y revalidación del nuevo delta a Víctor y Lucía».
+Se reconcilia `08b597ec` con develop `ee4e8031` (#136/JUP-071). Los tres conflictos
+de CI y sus expectativas se resuelven conservando colector, validación/pruebas
+de robustez y dashboard, además del timeout de 20 minutos. No cambia el código
+aprobado del colector ni el evaluador de JUP-071 llegado de develop. Se actualiza
+la guía para indicar que JUP-071 y su capacidad ya están integrados.
+
+Pruebas del árbol reconciliado: colector 48 PASS, robustez 123 PASS, CI Node
+14 PASS, dashboard 1436 PASS/208 SKIP (1644 pruebas, contexto desktop-linux sin
+daemon), OpenSpec 76/76 y trazabilidad/higiene conformes. Integración local:
+87 fixtures, 521 GET/0 POST, tres raw aceptados por review-sheet/score/compare,
+distancia null y citas conservadas, fallo técnico preservado y reexportación
+idéntica. Tres rows-v1 de 117 filas aceptadas por el validador del dashboard.
+Evidencia externa `JUP-123-collector/integration-5f93818c/summary.json` y guion
+`materiales/07-evidencias/JUP-123-collector/integration-merged-jup071-20261017.py`.
+El primer intento del guion usó --report en rows; corregido a --input, sin cambio
+de producto. Prueba sobre árbol reconciliado previo al commit, fijado por hashes
+en plan.json; no acredita despliegue, IA real, juicios o calidad. Nuevo gasto 0.
+
+La publicación del delta requiere una nueva revisión de Víctor y revalidación de
+Lucía, solicitadas expresamente por el usuario para esta entrega. Se comprobarán
+sus solicitudes en GitHub después del push; no se atribuyen ya emitidas aquí.
+
+## Confirmaciones y nuevo avance de develop — corte anterior del 17/10/2026
 
 Origen: «Hay confirmacion de ambos». Confirmado sobre la misma cabeza publicada
 `08b597ecfefc7b16a040dc5e87dd821d94900e4d`:
