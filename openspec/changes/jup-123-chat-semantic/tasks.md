@@ -1,5 +1,12 @@
 ## Estado vigente — 16/10/2026
 
+Último corte:74/74conformes/437PASS,66pendientesdesde019r3. V7terminaltimeout,
+SQLpropio fataldiskstallrecuperado yrestauraciónfinal exit0/0activas. Usuario
+apagará/ampliaráDockerServer16GB; no inferencias hasta arranque16GBverificado.
+Ledger1439/SHA557bd7ed yreservasíntegras. Nuevo continuador/cierre necesario;
+C3no cumplido, no marcar3.1–3.3finales. Vercontinuidad vigente; párrafos siguientes
+conservan los cortes anteriores.
+
 Decisión posterior del usuario: C1/C3 aceptados, C2 sustituido por subagentes
 revisor y validador separados. El impedimento humano anterior queda superado;
 no simular reviews humanas/oficiales. Revisor detecta R1/R2 (premisas numéricas

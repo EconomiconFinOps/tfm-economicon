@@ -4,6 +4,27 @@ Verificado el 16/10/2026. Origen: chat
 `01a1270c-e332-7462-9c90-706d49ade92c`.
 **Código preparado para revisión; B no aceptada, publicada ni activada de forma permanente.**
 
+## Corte actual:74/140 y ampliación deDockerServer — 16/10/2026
+
+74/74 respuestas conformes,437checksPASS(289banco/148calidad),sinfallos/dudas;
+35identidades explícitas+39carries exactos internos. C3pendiente:66muestras desde
+019r3, no repetir74 ni heredar84antiguas. Fuente d965/plan1408af94f71 intactos.
+V7terminó por timeoutDocker; CockroachDB propio había salido7 pordiskstall20s,
+no otroOOM. SQLrecuperado mismosID/image/volumen y restauraciónfinal efectiva
+exit0/0activas: B antiguo sano y nuevosparados. Fallosprevios conservados.
+Ledger1439SHA557bd7ed y74costes observados; holds históricos13.99052050 íntegros.
+Paquete parcial074183archivos/manifest e74c4167 ydictamenasistidoac5b583d.
+
+El usuario amplía a16GB y necesita apagarVM; se confirmó listo paraapagar después
+de restaurar. **No hay nuevas inferencias hasta verificar arranque16GB.** Harán
+falta activación/policy/continuador y cierre nuevos que conserven1439/74 ytracen
+reinicios reales; el auditorv4 aprobadoexigev7COLLECTED yno puede ejecutarse sobre
+estecorte. Misma cuentacap30 y claves4.5/.1hasta17oct18París; no renovaciones/reset.
+AmpliarRAM no demuestra causalidad deldiskstall ni autoriza límites nuevos.
+Detalles/proofs en[continuidad](../continuidad/chat-evaluacion-local.md).
+
+Lo siguiente conserva los cortes previos y no describe como vivo elcontroladorv7.
+
 ## Decisión humana y candidato corregido — 16/10/2026
 
 El usuario acepta C1/C3 y sustituye C2 por subagentes revisor y validador

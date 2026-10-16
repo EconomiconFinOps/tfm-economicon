@@ -38,6 +38,15 @@ B antiguo backend/processor temporalmente pausados, restauración v7 al terminar
 Cap30/reservas y límites4.5/.1/vigencia17oct18París intactos. Cierre v4 preparado,
 NO ejecutado; no N5 completa ni aceptación. Antiguo impedimento humano superado.
 
+Último estado operativo16/10: el usuario apagará DockerServer para ampliar a16GB;
+no reanudar inferencias hasta verificar16GB. N5 detenida74/74 conformes/437PASS,
+faltan66 desde019r3. SQL propio se cerró pordiskstall20s, se recuperó mismocontenedor/
+volumen; no otroOOM. Restauraciónfinal exit0/SQL0activas, B antiguo sano, temporales
+parados, se confirmó listo paraapagar. Ledger1439/SHA557bd7ed,74costes observados y
+holds13.99052050intactos. Parcial074183archivos/manifest e74c4167; historialpreservado.
+V5/V7terminales, V6no lanzado; se necesitarán nuevo continuador/cierre trasreinicio,
+no usar auditor4 talcual. Ver estado vigente deltema, que supera párrafos anteriores.
+
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
 | [Consultas de coste Azure](../evidence/JUP-036-validation.md) | PR69: reconciliación local de `1cf4087f` con develop `a3f514f7` (#129), sin cambios de producto. Corpus1.1.1 conservado; los dos casos SQL pendientes pasan en Cockroach24.1.11. Revisión/validación independientes del nuevo candidato y CI posterior pendientes. | 2026-10-15 |

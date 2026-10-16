@@ -9,7 +9,74 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 16/10/2026
 
-### N5 en curso; continuación tras OOM — 16/10/2026
+### Estado vigente: apagado autorizado para ampliar a16GB — 16/10/2026
+
+El usuario confirmó que no había cambiado nada y decide «Amplío a16GB antes de
+continuar»; después indica que necesita apagar DockerServer. Se le confirmó que
+YA PUEDE APAGARLO tras terminar la restauración. **No ejecutar inferencias hasta
+verificar el arranque con16GB**. No hay ampliación/arranque confirmados todavía.
+No apagar/reiniciar nosotros ni arrancar despliegues ajenos. No es una orden de
+cancelar B o de pausar formalmente el objetivo; es una dependencia externa para
+continuar las66muestras pendientes.
+
+N5 d965 MISMO plan140/hash8af94f71: **74/74 conformes,437PASS**(289banco+148calidad),
+35identidades explícitas y39carries exactos internos. Ninguna etiqueta histórica
+heredada, fallo o duda; no son140 ni C3cumplido. Próxima019r3, batch011. Dictamen
+`B-assisted-validation-role-n5-partial074-20261016-v1.json`/SHAac5b583d.
+Paquete parcial074 **183archivos**, manifest
+`e74c41670eafdb7e703458a18c41ff35373439d26d6860f0de83ed3175b07a08`;
+parcial040/103archivos y N3anteriores intactos.
+
+V7PID1601495 TERMINAL por TimeoutExpired de dockerinspect; no relanzar. SQL propio
+CockroachDB db42e17d salió7/noOOM a21:26:43UTC por FATAL diskstall: no pudo sincronizar
+logs en20s. Host seguía7940MiB, swap casi llena y disco89%/22GB libres; posible
+presión de memoria/E/S, no causalidad demostrada. Backend/processor/gateway nuevos
+seguían sanos, sin otroOOM. Restauración automáticav7 falló porSQLcaído; intento
+manual original conservado también falló, ninguno se reetiqueta como éxito.
+
+Se recuperó exclusivamente ese SQL propio, mismosID/image/volumen/límites,
+comprobado healthy con margen deRAM; `B-role-n5-sql-recovery-proof-v1.json`.
+Se reconstruyó exactamente elRAG real018r3 mediante colector congelado. La función
+contable congelada se ejecutó aislada porAST, SINRunner ni dispatch: último coste
+0.00190422USD observado; ahora74costes observados. Ledger1439SHA
+`557bd7edd2b597bcc4f42589bd7ffd529e9ea752505e51d89ced68fc1a3e58c6`;
+1438filas anteriores idénticas, prefijos1405/1365 y holds13.99052050USD intactos.
+`B-role-n5-last074-cost-reconciliation-v1.json`. El disclaimerRESERVED de la
+vista018r3/dictamen074 corresponde al corte anterior; el proofcontable posterior
+lo aclara, sin cambiar respuesta ni juicios.
+
+**Restauración efectiva completada, exit0**, ambosflocks ySQL0activas real:
+`B-role-n5-safe-shutdown-restore-status-v1.json`. Nuevos trescontenedores parados;
+B antiguo seisservicios sanos/mismosIDs/imágenes. Excepción explícita y trazada:
+StartedAtSQL cambió porcrashrecuperado. `B-role-n5-restore-after-sql-recovery-v1.py`
+SHaf14a2b6d yreview `B-role-n5-sql-recovery-restore-review-v1.md`/SHAd226773f:
+overlay de expectativa sóloenmemoria traspinproof/mismosID/image/volumen/salud,
+8contrafactuales. No se modificó elprooforiginal ni elterminal/statusfallidov7.
+Proofremoto `runtime-restored-after-sql-recovery-v1.json`, no `runtime-restored-v7`.
+
+Al volver: verificar MemTotal16GB, reloj/boot/runtime real, salud y márgenes; no
+asumir autostart (servicios propios tienenrestart=no). Si hace falta recuperar
+servicios, sólo propios identificados/sus datos; no dockerstartglobal. Preparar
+NUEVO continuador/policy, protegiendo ahora1439filas/74recibos/raw/costes ytodos
+paquetes, desde019r3 sin repetir74. Registrar StartedAt nuevos porreinicio humano,
+no forzar guardav7 basada en fechas anteriores. Mismo d965/modelo/prompt/banco/
+corpus; backend768MiB sigue vigente, host16GBno amplía límites porinferencias.
+Nueva activación real, preflight fresco ymisma contabilidad externa30, vigencia
+17oct18París/processor4.5/backend.1; no nuevasclaves/renovar/reset/liberarholds.
+
+Auditorv4/comparadorv3/paquetev3 estaban aprobados, NO ejecutados y **ya no son
+aplicables tal cual**: exigen v7COLLECTED/restauraciónv7exit0. Preparar nuevo cierre
+que componga v5STOPPED+v7STOPPED+continuaciónreal, crashSQL/recuperación yreinicio
+humano. Mantener los825juicios/proyección real y límites de banco conocido;
+no inventar juezcalibrado, testciego, nuevaUI, aceptaciónhumana/GitHub o latencias
+con entornoidéntico. B local; C1/C3finales aúnpendientes. Revisor/validador C2
+asistidos aceptados porhumano, no falta volver a pedir validaciónhumana.
+
+Trello últimoestado SHAc82aaa82/16279chars sigue anterior aeste incidente;
+actualizar únicamente porpuente al volver, leer antes de escribir y preservar
+historia/metadatos/concurrencia/límite. No conectar porotra vía siDockerServeroff.
+
+### Histórico: continuación tras OOM anterior — 16/10/2026
 
 El humano confirmó **140 muestras nuevas** de d965e2cd. C1/C3 aceptados y C2
 sustituido por dos subagentes separados; no falta una decisión humana anterior.
