@@ -9,6 +9,54 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 16/10/2026
 
+### N3 completa; claves ampliadas 24 horas — 16/10/2026
+
+Respuesta humana real: «Amplia las claves 24 horas». Se amplió únicamente la
+caducidad de las MISMAS dos claves hasta el **17/10/2026 a las 18:00 de París**;
+límites processor4.5/backend0.1USD, contadores y reservas conservados. Prueba
+`allocation-deepseek-expiry-24h-20261017-v1.json`. Sustituye la solicitud19:00
+pendiente del corte anterior; no hay permiso pendiente de caducidad.
+
+Continuación externa explícita, política990a7df0, protegió1361asientos/80recibos
+y recogió SOLO025–028r3, sin repetir80 ni enviar embeddings. Controller-v3
+PID4170005/start76793587 TERMINADO COLLECTED; no relanzarlo. La política histórica
+ca97550b y la fuenteCAP20 permanecen intactas; cap30 aplicado en admisión y ledger.
+
+**84/84 completed y verificadas; 84 respuestas conformes en revisión local
+provisional, 495comprobaciones (327banco/168calidad), 28/28 por cada ronda.**
+Los cuatro resultados finales se contrastaron contra pregunta, respuesta y RAG
+real; la herencia de etiquetas sólo usa identidad exacta de respuesta completa
+y contexto dentro de esta campaña. 012,015,017,020 y027 pasan3/3. Sin fallos o
+incertidumbres locales nuevos. No adjudicación independiente ni aceptación.
+
+Fuentea7f9502d/banco1.0.1/corpus54/plan5f3186da; DeepSeekV4.1Flash/CoreWeaveFP8,
+ZDR/sinfallback/temp0/razonamientodesactivado. No se atribuye la mejora a un solo
+factor ni superioridad general; respuestas variables en005/007/016/023/024.
+No se heredan N3/N5de5119 ni la parcialGLM. N5 del candidato nuevo NOejecutada;
+criterios obligatorios y alcance final con revisores siguen pendientes.
+
+Ledger1365/SHAeb664308fb3b8aceed0c2493a6d167d3afa51a7b96b2c990da7e8ba7fb10e1f5; prefijos1281/1307/1361 y80recibos intactos.
+84costes observados:0.176265160USD (cuatro finales0.007430496USD, redondeados9decimales).
+Reservas desconocidas anteriores13.99052050USD intactas, incluidas ambas0.01de
+embeddings. Cota conservadora de cuenta21.448811463/30USD;
+NO factura ni atribución exacta. Ningún handle pendiente o reserva liberada.
+
+B anterior restaurado sano, mismosIDs/imágenes, demás servicios y proxy
+compartido sin cambios; backend/processor/proxy/frontend temporales parados.
+Navegador003/012/027/historial/recarga/1280/390px ya conforme sin generaciones;
+no se repitieron suites/builds/UI ni se cambió producto durante esta continuación.
+Las imágenes derivadas ejecutadas se distinguen de las estándar no activadas.
+
+Auditoría `allocation-deepseek-api-n3-final-audit-v2.json`, SHA07d33e8b61affeb07b62ede7a7010920a1b96f08b30eddf72f4b15a9bc4cc06f.
+Paquete NUEVO `allocation-deepseek-n3-frozen-v1`:203archivos,
+manifestSHA996304903e99d2a7449e8378dc605ae80a041f090b0e78f475866e1d79f43c3c.
+Parcial80/185archivos y paquetes históricos preservados, sin sobrescribirlos.
+Procedimientos y siguientes pasos en `allocation-012-handoff-v8.json`.
+B preparada localmente; no publicada, integrada, activada permanentemente o
+aceptada. No GitHub/Discord/Done. PR131 permanece independiente.
+
+El corte80 siguiente es histórico, anterior al permiso de24horas y al cierre.
+
 ### Corte conservado: 80 de 84 respuestas conformes — 16/10/2026
 
 La N3 separada de DeepSeek V4.1 Flash/CoreWeave FP8 terminó su vigencia de

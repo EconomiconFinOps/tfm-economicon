@@ -9,16 +9,16 @@ Actualización15/10: colector extraído y adaptado para071 en PR131abierta,
 revisión solicitada a Lucía (`lmatsan`),
 31tests y compatibilidad con su evaluador comprobados; B no se ha publicado.
 Detalle en evaluación local y en la continuidad propia de la rama del colector.
-Actualización16/10: N3 DeepSeek de a7f9502d detenida por caducidad en80/84;
-80 respuestas localmente conformes,473comprobaciones y80costes observados.
-Faltan sólo025–028r3. UI003/012/027/historial/recarga/escritorio/móvil conformes.
-B anterior restaurado sano; recursos temporales parados. Cota21.3759/30USD,
-reservas intactas. Solicitud19:00 pendiente, no aplicada. Handoffv7; sin aceptación.
+Actualización16/10: N3 DeepSeek de a7f9502d completa84/84 y localmente conforme,
+495comprobaciones/84costes observados. Claves prorrogadas24h hasta17/10a18:00París,
+mismos límites/contadores/reservas; sólo se completaron025–028r3. UI conforme,
+B anterior restaurado sano y temporales parados. Cota21.4488/30USD, sin aceptación.
+Paquete203archivos/handoffv8; parcial80 y campañas históricas preservadas.
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
 | [Consultas de coste Azure](../evidence/JUP-036-validation.md) | PR69: reconciliación local de `1cf4087f` con develop `a3f514f7` (#129), sin cambios de producto. Corpus1.1.1 conservado; los dos casos SQL pendientes pasan en Cockroach24.1.11. Revisión/validación independientes del nuevo candidato y CI posterior pendientes. | 2026-10-15 |
-| [Evaluación local del chat](chat-evaluacion-local.md) | a7f9502d:213Windows+213Linux/2builds; N3DeepSeek80/84 conformes,473checks;4muestras pendientes por caducidad. UI conforme; recursos restaurados/parados,30USD/reservas intactas,19:00pendiente. Sin aceptación/publicación. | 2026-10-16 |
+| [Evaluación local del chat](chat-evaluacion-local.md) | a7f9502d:213Windows+213Linux/2builds; N3DeepSeek84/84 conformes,495checks/84costes. Claves17/10a18:00París sin resets; UI conforme, B restaurado,21.4488/30USD/reservas intactas. Sin aceptación/publicación. | 2026-10-16 |
 | [Chat conversacional](chat-conversacional.md) | PR121: focal28 3PASS/4FAIL, JSONB7PASS. Corrección29 de soporte literal visible e interpretación separada en regresión offline; aceptación/batería real pendientes. Gasto0.957927619/2USD. | 2026-10-13 |
 | [División del chat en A/B](chat-entregas-a-b.md) | División aprobada; B d9b/9e2 corregida,50/84 muestras con47PASS/3técnicas429, sin publicar ni aceptar. Ver evaluación local. Base A8ea/develop0543 y reviews/CI conservan su fecha histórica, sin nueva consulta. | 2026-10-15 |
 | [Pantallas de maqueta ocultas del MVP](pantallas-ocultas-mvp.md) | JUP-116: Coste Detallado, Corte Global y Recomendaciones ya no tienen ruta ni menú (se conservan en el código y se reactivan con dos líneas) y Overview sale del menú pero conserva su ruta; una dirección desconocida lleva a `/`. 797 pruebas del frontend y 16 comprobaciones en navegador; mergeado en `develop` el 2026-10-12 (#124). | 2026-10-13 |

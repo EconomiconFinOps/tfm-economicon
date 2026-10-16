@@ -1,25 +1,17 @@
 ## Estado vigente — 16/10/2026
 
-Corrección012 en a7f9502d:213Windows/213Linux conformes, replay167 y dos builds
-estándar. Corpus nuevo54 cargado tras permisos específicos; dos máximos0.01USD
-conservados. GLMparcial4 congelada:2respuestas/2técnicos429, sin reemplazarlos.
-
-La N3 separada DeepSeek/CoreWeave se detuvo por corte de caducidad en80/84:
-80completed,80costes observados,80respuestas localmente conformes/473comprobaciones.
-Faltan exactamente025–028r3; no N3completa ni aceptación independiente.
-012,015,017,020 pasan3/3. 024r3 ya generada se recogió por GET/SQL, sin repetirla.
-UI003/012/027 conforme: texto/fuentes/fechas, historial/recarga y1280/390px, sin
-POSTgenerativos. B anterior restaurado sano; temporales parados y túnel cerrado.
-
-Ledger1361/hashbea760b6 protegido; coste nuevo0.168834664USD, reservas anteriores
-13.99052050USD intactas, cota conservadora21.375932853/30USD. Claves hastaHOY18:00
-París; solicitud19:00PENDIENTE, no aplicada. Sin permiso no reanudar inferencias.
-Paquete parcial185archivos inmutable; no sobrescribir al continuar desde025r3.
-
-La N5de5119 conserva140recogidas/139completed/un técnico y un fallo de calidad012r5;
-no acredita este código/corpus/modelo. Casillas1.4/2.4/3.1–3.3 conservan alcance
-pendiente: criterios, adjudicación y cierre de medición actual. 3.4es preparación
-local. Informe/continuidad contienen hashes y límites; cortes inferiores históricos.
+Corrección012a7f9502d:213Windows/213Linux, replay167 y2builds estándar conformes.
+N3DeepSeek/CoreWeave de banco1.0.1/corpus54 COMPLETA:84respuestas conformes
+localmente,495checks(327banco/168calidad),84costes observados0.176265160USD.
+Sólo se añadieron025–028r3 tras prórroga explícita24h de las MISMAS claves hasta
+17/10a18:00París; límites4.5/0.1/counters/reservas intactos. Prefijo1361/80recibos
+intacto, ledger1365, cota conservadora21.448811463/30USD. B anterior restaurado,
+temporales parados. Paquete nuevo203archivos; parcial80yN5histórica preservados.
+012/015/017/020/027conformes3/3; UIhistorial/recarga/1280/390px ya conforme.
+No N5 del candidato nuevo, aceptación independiente o generalización ciega.
+1.4/2.4/3.1–3.3 conservan su alcance de criterios/adjudicación y cierre acordado;
+el fallo012 está técnicamente corregido y nuevaN3 cerrada, no falta su recogida.
+B local sin publicar;3.4es preparación para revisión, no aprobación humana.
 
 ## 1. Base y contratos
 - [x] 1.1 Recuperar B y activar JUP-123 en Trello.

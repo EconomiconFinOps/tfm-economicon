@@ -2,17 +2,17 @@ JUP: JUP-123
 
 ## Verificación actual y límites — 16/10/2026
 
-La N3 separada DeepSeek/CoreWeave de a7f9502d/banco1.0.1/corpus54 termina su
-vigencia de admisión en80/84:80respuestas localmente conformes/473comprobaciones,
-con costes observados. Faltan025–028r3; no prueba N3completa ni aceptación humana.
-012,015,017 y020 pasan3/3; las campañas anteriores conservan sus fallos y alcance.
-La elección operativa no demuestra superioridad general ni separa los efectos
-del modelo, proveedor, corpus y cambios del servidor. B conserva el flujo general
-fuera de sus gramáticas acotadas; no se promete corrección semántica universal.
-UI de historial003/012/027 conforme: API, texto/fuentes/fechas, recarga y1280/390px;
-no primer token ni generación en navegador. B anterior sano, temporales parados.
-Criterios y adjudicación pendientes; chat desactivado por defecto. Detalle en
-`docs/validation/JUP-123-local-review.md` y continuidad.
+N3 separada de a7f9502d/banco1.0.1/corpus54, DeepSeek/CoreWeave:84completed,
+84respuestas localmente conformes y495comprobaciones(327banco/168calidad).
+Cada ronda28/28;012,015,017,020,027conformes3/3. No adjudicación independiente,
+causalidad atribuida al modelo o corrección universal fuera de gramáticas acotadas.
+Las cuatro finales se recogieron sin repetir80 ni modificar producto, mediante
+política externa que registra el permiso real de prórroga24h hasta17/10a18:00París.
+Cap30, mismos límites/contadores y todas las reservas intactas. Controller-v3
+terminal; B anterior sano, temporales parados. UI/historial003/012/027 ya conforme,
+sin generación en navegador o prueba de primer token. Chat desactivado por defecto.
+N5vieja no se hereda; N5del candidato nuevo no ejecutada. Criterios y adjudicación
+pendientes; B no publicada ni aceptada. Detalle y hashes en el informe local.
 
 ## Suficiencia de asignación y ausencia de tag — 16/10/2026
 
