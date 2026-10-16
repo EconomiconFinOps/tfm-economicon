@@ -43,7 +43,7 @@
       }
     ]
   },
-  "description": "Resultados de evaluación del asistente: calidad con rúbrica (A), negocio (B) y señales en vivo (C). Cada panel declara qué mide y qué no demuestra.",
+  "description": "Resultados de evaluación del asistente: calidad con rúbrica (A), negocio (B) y señales en vivo (C). Cada panel declara qué mide y qué no demuestra. Todas las horas están en UTC.",
   "editable": false,
   "fiscalYearStartMonth": 0,
   "id": null,
@@ -398,7 +398,7 @@
         ]
       },
       "gridPos": {
-        "h": 8,
+        "h": 10,
         "w": 24,
         "x": 0,
         "y": 12
@@ -711,10 +711,10 @@
         ]
       },
       "gridPos": {
-        "h": 5,
+        "h": 8,
         "w": 24,
         "x": 0,
-        "y": 20
+        "y": 22
       },
       "id": 4,
       "options": {
@@ -809,10 +809,10 @@
         ]
       },
       "gridPos": {
-        "h": 36,
+        "h": 52,
         "w": 24,
         "x": 0,
-        "y": 25
+        "y": 30
       },
       "id": 22,
       "options": {
@@ -1233,7 +1233,7 @@
         "h": 36,
         "w": 24,
         "x": 0,
-        "y": 61
+        "y": 82
       },
       "id": 5,
       "options": {
@@ -1635,7 +1635,7 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 97
+        "y": 118
       },
       "id": 6,
       "options": {
@@ -1742,7 +1742,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 111
+        "y": 132
       },
       "id": 7,
       "options": {
@@ -1887,7 +1887,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 111
+        "y": 132
       },
       "id": 24,
       "options": {
@@ -2033,7 +2033,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 120
+        "y": 141
       },
       "id": 8,
       "options": {
@@ -2267,7 +2267,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 110
+                "value": 180
               },
               {
                 "id": "mappings",
@@ -2428,7 +2428,7 @@
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 129
+        "y": 150
       },
       "id": 9,
       "options": {
@@ -2621,7 +2621,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 110
+                "value": 180
               },
               {
                 "id": "mappings",
@@ -2776,7 +2776,7 @@
         "h": 5,
         "w": 24,
         "x": 0,
-        "y": 141
+        "y": 162
       },
       "id": 10,
       "options": {
@@ -3154,7 +3154,7 @@
         "h": 5,
         "w": 24,
         "x": 0,
-        "y": 146
+        "y": 167
       },
       "id": 11,
       "options": {
@@ -3191,7 +3191,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 151
+        "y": 172
       },
       "id": 12,
       "panels": [],
@@ -3204,7 +3204,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 152
+        "y": 173
       },
       "id": 13,
       "options": {
@@ -3550,12 +3550,24 @@
             },
             "properties": [
               {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "variante"
+            },
+            "properties": [
+              {
                 "id": "displayName",
-                "value": "Detalle"
+                "value": "Variante"
               },
               {
                 "id": "custom.width",
-                "value": 105
+                "value": 130
               }
             ]
           },
@@ -3741,7 +3753,7 @@
         "h": 26,
         "w": 24,
         "x": 0,
-        "y": 158
+        "y": 179
       },
       "id": 14,
       "options": {
@@ -3765,7 +3777,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\n  r.run_id,\n  r.run_at,\n  COALESCE(r.suite_version, 'no registrado') AS suite_version,\n  COALESCE(r.commit_sha, 'no registrado') AS commit_sha,\n  COALESCE(left(r.commit_sha, 8), 'no registrado') AS commit_corto,\n  COALESCE(r.generation_model, 'no registrado') AS generation_model,\n  CASE WHEN r.is_real THEN 'real'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n  END AS estado,\n  x.grp,\n  x.metric_id,\n  x.behavior,\n  x.status,\n  x.value,\n  CASE\n    WHEN x.case_count IS NOT NULL THEN to_char(x.case_count, 'FM9999999990')\n    WHEN x.unit = 'tasa' THEN to_char(x.value * 100, 'FM990.0') || ' %'\n    WHEN x.unit = 'porcentaje' THEN to_char(x.value, 'FM990.0') || ' %'\n    WHEN x.unit = 'ms' THEN to_char(x.value / 60000, 'FM9999990.0') || ' min'\n    WHEN x.unit = 'similitud' THEN to_char(x.value, 'FM0.000')\n    WHEN x.unit = 'recuento' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'parejas' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'eur_minor_2' THEN to_char(x.value / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(round(x.value::numeric, 4))::text || ' ' || x.unit\n  END AS valor_texto,\n  x.unit,\n  x.numerator,\n  x.denominator,\n  CASE\n    WHEN x.numerator IS NULL THEN NULL\n    WHEN x.unit = 'porcentaje' AND x.grp = 'time' THEN to_char(x.numerator / 60000, 'FM9999990.0') || ' min'\n    WHEN x.unit = 'porcentaje' AND x.grp IN ('allocation', 'savings') THEN to_char(x.numerator / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(x.numerator::numeric)::text\n  END AS numerador_texto,\n  CASE\n    WHEN x.denominator IS NULL THEN NULL\n    WHEN x.unit = 'porcentaje' AND x.grp = 'time' THEN to_char(x.denominator / 60000, 'FM9999990.0') || ' min'\n    WHEN x.unit = 'porcentaje' AND x.grp IN ('allocation', 'savings') THEN to_char(x.denominator / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(x.denominator::numeric)::text\n  END AS denominador_texto\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE x.measure_type = 'B'\nORDER BY CASE x.grp WHEN 'time' THEN 1 WHEN 'allocation' THEN 2 ELSE 3 END, x.metric_id, x.behavior, x.status",
+          "rawSql": "SELECT\n  r.run_id,\n  r.run_at,\n  COALESCE(r.suite_version, 'no registrado') AS suite_version,\n  COALESCE(r.commit_sha, 'no registrado') AS commit_sha,\n  COALESCE(left(r.commit_sha, 8), 'no registrado') AS commit_corto,\n  COALESCE(r.generation_model, 'no registrado') AS generation_model,\n  CASE WHEN r.is_real THEN 'real'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n  END AS estado,\n  x.grp,\n  x.metric_id,\n  x.behavior,\n  CASE x.behavior\n      WHEN 'all' THEN 'todos'\n      WHEN 'candidate' THEN 'candidatas'\n      WHEN 'estimated' THEN 'estimadas'\n      WHEN 'not_evaluable' THEN 'no evaluables'\n      ELSE x.behavior\n    END AS variante,\n  x.status,\n  x.value,\n  CASE\n    WHEN x.case_count IS NOT NULL THEN to_char(x.case_count, 'FM9999999990')\n    WHEN x.unit = 'tasa' THEN to_char(x.value * 100, 'FM990.0') || ' %'\n    WHEN x.unit = 'porcentaje' THEN to_char(x.value, 'FM990.0') || ' %'\n    WHEN x.unit = 'ms' THEN to_char(x.value / 60000, 'FM9999990.0') || ' min'\n    WHEN x.unit = 'similitud' THEN to_char(x.value, 'FM0.000')\n    WHEN x.unit = 'recuento' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'parejas' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'eur_minor_2' THEN to_char(x.value / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(round(x.value::numeric, 4))::text || ' ' || x.unit\n  END AS valor_texto,\n  x.unit,\n  x.numerator,\n  x.denominator,\n  CASE\n    WHEN x.numerator IS NULL THEN NULL\n    WHEN x.unit = 'porcentaje' AND x.grp = 'time' THEN to_char(x.numerator / 60000, 'FM9999990.0') || ' min'\n    WHEN x.unit = 'porcentaje' AND x.grp IN ('allocation', 'savings') THEN to_char(x.numerator / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(x.numerator::numeric)::text\n  END AS numerador_texto,\n  CASE\n    WHEN x.denominator IS NULL THEN NULL\n    WHEN x.unit = 'porcentaje' AND x.grp = 'time' THEN to_char(x.denominator / 60000, 'FM9999990.0') || ' min'\n    WHEN x.unit = 'porcentaje' AND x.grp IN ('allocation', 'savings') THEN to_char(x.denominator / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(x.denominator::numeric)::text\n  END AS denominador_texto\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE x.measure_type = 'B'\nORDER BY CASE x.grp WHEN 'time' THEN 1 WHEN 'allocation' THEN 2 ELSE 3 END, x.metric_id, x.behavior, x.status",
           "refId": "A"
         }
       ],
@@ -3778,7 +3790,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 184
+        "y": 205
       },
       "id": 15,
       "panels": [],
@@ -3791,7 +3803,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 185
+        "y": 206
       },
       "id": 16,
       "options": {
@@ -3862,7 +3874,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 193
+        "y": 214
       },
       "hideTimeOverride": false,
       "id": 17,
@@ -3952,7 +3964,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 193
+        "y": 214
       },
       "hideTimeOverride": false,
       "id": 18,
@@ -4042,7 +4054,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 193
+        "y": 214
       },
       "hideTimeOverride": false,
       "id": 19,
@@ -4133,7 +4145,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 201
+        "y": 222
       },
       "hideTimeOverride": false,
       "id": 20,
@@ -4224,7 +4236,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 201
+        "y": 222
       },
       "hideTimeOverride": false,
       "id": 21,
@@ -4272,7 +4284,7 @@
     "from": "now-1y",
     "to": "now"
   },
-  "timezone": "browser",
+  "timezone": "utc",
   "title": "Economicon — Evaluación del asistente",
   "uid": "economicon-assistant-evaluation",
   "version": 1

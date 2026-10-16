@@ -334,7 +334,7 @@ class CabeceraTests(unittest.TestCase):
         self.assertEqual(d["schemaVersion"], 39)
         self.assertIs(type(d.get("version")), int)
         self.assertEqual(d["version"], 1)
-        self.assertEqual(d.get("timezone"), "browser")
+        self.assertEqual(d.get("timezone"), "utc")  # JUP-121: las ejecuciones se registran en UTC
         # Sin refresco automático: los resultados son históricos, no cambian cada 10 s.
         self.assertEqual(d.get("refresh"), "")
         # Rango amplio: las ejecuciones son de octubre de 2026 y las series no usan `$__timeFilter`.

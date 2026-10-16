@@ -38,7 +38,7 @@ VISIBLES_ESPERADAS = {
     CALIDAD: COMUNES + ["Métrica", "Variante", "Valor", "Numerador", "Denominador"],
     CAMPANA: COMUNES + ["Métrica", "Variante", "Valor", "Numerador", "Denominador"],
     ROBUSTEZ: COMUNES + ["Métrica", "Categoría y perturbación", "Valor", "Numerador", "Denominador"],
-    NEGOCIO: COMUNES + ["Medida", "Detalle", "Resultado", "Valor", "Numerador", "Denominador"],
+    NEGOCIO: COMUNES + ["Medida", "Variante", "Resultado", "Valor", "Numerador", "Denominador"],
 }
 TABLAS = list(VISIBLES_ESPERADAS)
 
