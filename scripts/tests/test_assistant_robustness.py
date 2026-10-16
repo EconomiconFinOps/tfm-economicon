@@ -1277,9 +1277,10 @@ class RowsContractTests(unittest.TestCase):
         if empty["totals"]["evaluated"] == 0:
             self.assertEqual((rate["status"], rate["value"], rate["denominator"]), ("not_measured", None, 0))
         total = next(r for r in document["results"] if r["metric_id"] == "pass_over_total")
-        self.assertEqual(total["status"], "measured")
-        self.assertEqual(total["numerator"], empty["totals"]["pass"])
-        self.assertEqual(total["denominator"], 29)
+        self.assertEqual((total["status"], total["value"], total["denominator"]), ("not_measured", None, 29))
+        full = robustness.rows_v1(scored())
+        measured = next(r for r in full["results"] if r["metric_id"] == "pass_over_total")
+        self.assertEqual((measured["status"], measured["numerator"], measured["denominator"]), ("measured", 29, 29))
 
     def test_every_group_behavior_and_category_is_present(self):
         document = self.rows()
@@ -1329,6 +1330,103 @@ class RowsContractTests(unittest.TestCase):
         robustness.protect_outputs([ROOT / "docs/evidence/jup-071-template-fixed-rows.json"], [])
         with self.assertRaises(robustness.Error):
             robustness.protect_outputs([ROOT / "docs/evidence/other-rows.json"], [])
+
+
+class RowsReviewTests(unittest.TestCase):
+    """Regression tests for the independent pass over the rows command and unmeasured distance."""
+
+    def blocked_report(self, failure):
+        raw = raw_fixture()
+        for row in raw["cases"]:
+            row["failure_category"] = failure
+        return scored(raw, None if failure else robustness.empty_judgments(raw))
+
+    def test_malformed_nested_reports_fail_with_a_controlled_error_through_the_cli(self):
+        mutations = (
+            lambda r: r["groups"]["baseline"].update(answer=5),
+            lambda r: r["groups"].update(baseline=5),
+            lambda r: r["cases"][0].update(checks=None),
+            lambda r: r["cases"].__setitem__(0, "x"),
+            lambda r: r["run"].pop("generation"),
+            lambda r: r["categories"].update(tagging="x"),
+            lambda r: r.update(groups={}),
+            lambda r: r.update(cases=[]),
+        )
+        for index, mutate in enumerate(mutations):
+            report = scored()
+            mutate(report)
+            with self.subTest(mutation=index), tempfile.TemporaryDirectory() as folder:
+                source, output = Path(folder) / "r.json", Path(folder) / "o.json"
+                source.write_text(json.dumps(report), encoding="utf-8")
+                status, _, stderr = cli(["rows", "--input", source, "--output", output])
+                self.assertEqual(status, 2, stderr)
+                self.assertTrue(stderr.startswith("JUP-071: "))
+                self.assertFalse(output.exists())
+
+    def test_inconsistent_counts_and_rates_are_rejected(self):
+        mutations = (
+            lambda r: r["totals"].update(fail=-3),
+            lambda r: r["totals"].update(**{"pass": 40}),
+            lambda r: r["totals"].update(evaluated=r["totals"]["evaluated"] + 1),
+            lambda r: r["groups"]["baseline"]["answer"].update(**{"pass": 99}),
+            lambda r: r["categories"]["tagging"].update(total=r["categories"]["tagging"]["total"] + 1),
+            lambda r: r["totals"].update(pass_over_total=0.5),
+            lambda r: r["totals"].update(pass_over_evaluated=7),
+            lambda r: r["totals"].update(pass_over_total=None),
+            lambda r: r["cases"][0]["checks"].update({"numbers-9": "not_run"}),
+        )
+        for index, mutate in enumerate(mutations):
+            report = scored()
+            mutate(report)
+            with self.subTest(mutation=index), self.assertRaises(robustness.Error):
+                robustness.rows_v1(report)
+
+    def test_no_evaluated_cases_means_both_rates_are_not_measured(self):
+        for failure in ("timeout", None):
+            report = self.blocked_report(failure)
+            self.assertEqual(report["totals"]["evaluated"], 0)
+            rates = {r["metric_id"]: r for r in robustness.rows_v1(report)["results"] if r["grp"] == "rates"}
+            for name in ("pass_over_total", "pass_over_evaluated"):
+                with self.subTest(failure=failure, rate=name):
+                    self.assertEqual((rates[name]["status"], rates[name]["value"]), ("not_measured", None))
+
+    def test_provider_and_alias_travel_as_the_embedding_identity(self):
+        report = scored()
+        report["run"]["provider"], report["run"]["alias"] = "provider-x", "embed-1"
+        run = robustness.rows_v1(report)["run"]
+        self.assertEqual((run["embedding_provider"], run["embedding_alias"]), ("provider-x", "embed-1"))
+
+    def test_an_unverified_live_model_is_not_presented_as_a_real_one(self):
+        report = scored()
+        report["kind"] = "live_unverified"
+        report["run"]["generation"] = {"model_alias": "model-x/mini", "temperature": None}
+        self.assertFalse(report["model_execution_verified"])
+        self.assertIsNone(robustness.rows_v1(report)["run"]["generation_model"])
+        template = robustness.rows_v1(scored())["run"]
+        self.assertEqual(template["generation_model"], "plantilla-sin-modelo")
+
+    def test_unknown_execution_kind_is_rejected(self):
+        report = scored()
+        report["kind"] = "other"
+        with self.assertRaises(robustness.Error):
+            robustness.rows_v1(report)
+
+    def test_public_evidence_identity_and_text_fields_are_checked(self):
+        base = {"id": "e1", "kind": "corpus", "distance": None}
+        for bad in ([{**base, "id": ""}], [{**base, "kind": ""}], [base, dict(base)],
+                    [{**base, "content": {"x": 1}}], [{**base, "source": 5}]):
+            raw = raw_fixture()
+            raw["cases"][0]["public_evidence"] = bad
+            with self.subTest(bad=bad), self.assertRaises(robustness.Error):
+                scored(raw)
+        raw = raw_fixture()
+        raw["cases"][0]["public_evidence"] = [{**base, "content": "texto", "source": "docs/x.md"}]
+        self.assertEqual(scored(raw)["totals"]["total"], 29)
+
+    def test_the_protocol_documents_rows_and_unmeasured_distance(self):
+        text = (ROOT / "docs/validation/JUP-071-robustness.md").read_text(encoding="utf-8")
+        for needle in ("rows --input", "distance", "public_evidence", "rows-v1"):
+            self.assertIn(needle, text)
 
 
 if __name__ == "__main__":

@@ -303,8 +303,10 @@ def validate_raw(raw, suite, cases):
             evidence = row["public_evidence"]
             require(isinstance(evidence, list), f"{cid}: invalid public evidence")
             for item in evidence:
-                require(isinstance(item, dict) and all(isinstance(item.get(k), str) for k in ("id", "kind")), f"{cid}: invalid public evidence")
+                require(isinstance(item, dict) and all(isinstance(item.get(k), str) and item[k] for k in ("id", "kind")), f"{cid}: invalid public evidence")
+                require(all(isinstance(item.get(k, ""), str) for k in ("source", "content")), f"{cid}: invalid public evidence text")
                 require(item.get("distance") is None or finite(item["distance"]), f"{cid}: invalid public evidence distance")
+            require(len({x["id"] for x in evidence}) == len(evidence), f"{cid}: duplicate public evidence id")
         total = row.get("total_ms")
         require(total is None or (finite(total) and total >= 0), f"{cid}: invalid latency")
 
@@ -470,21 +472,52 @@ ROWS_RESULT_KEYS = ("measure_type", "grp", "metric_id", "behavior", "status", "c
 HUMAN_STATES = ("pass", "fail")
 
 
+def checked_counts(c, where):
+    require(isinstance(c, dict) and all(type(c.get(k)) is int and c[k] >= 0 for k in (*OUTCOMES, "total", "evaluated")),
+            f"{where}: counts must be non-negative integers")
+    require(sum(c[k] for k in OUTCOMES) == c["total"] and c["evaluated"] == c["pass"] + c["fail"], f"{where}: inconsistent counts")
+    for rate, numerator, denominator in (("pass_over_total", c["pass"], c["total"]), ("pass_over_evaluated", c["pass"], c["evaluated"])):
+        expected = numerator / denominator if denominator else None
+        value = c.get(rate)
+        require(value is None if expected is None else (finite(value) and abs(value - expected) < 1e-9), f"{where}: inconsistent {rate}")
+    return c
+
+
 def rows_v1(report):
     """Emit the score report as the dashboard `rows-v1` contract: identifiers and numbers only.
 
     Not-measured values are null, never zero. Answer texts, reviewer names and notes are not in the report.
+    The report is validated before anything is emitted, so inconsistent counts cannot become versionable evidence.
     """
     require(isinstance(report, dict) and isinstance(report.get("run"), dict) and isinstance(report.get("totals"), dict)
             and isinstance(report.get("groups"), dict) and isinstance(report.get("categories"), dict)
             and isinstance(report.get("cases"), list), "report is not a JUP-071 score report")
+    require(report.get("kind") in KINDS, "unknown execution kind")
     run = report["run"]
-    generation = run["generation"]
+    require(all(isinstance(run.get(k), str) for k in ("run_id", "date", "commit", "provider", "alias", "suite_version"))
+            and isinstance(report.get("suite_sha256"), str), "report run identity is incomplete")
+    generation = run.get("generation")
+    require(isinstance(generation, dict) and isinstance(generation.get("model_alias"), str), "report generation is invalid")
+    totals = checked_counts(report["totals"], "totals")
+    require(totals["total"] > 0 and len(report["cases"]) == totals["total"], "report cases do not match the total")
+    for group in ("baseline", "perturbation"):
+        require(isinstance(report["groups"].get(group), dict), f"missing group {group}")
+        for behavior in ("answer", "clarify", "abstain"):
+            checked_counts(report["groups"][group].get(behavior), f"{group}/{behavior}")
+    require(report["categories"], "report has no categories")
+    for name, c in report["categories"].items():
+        require(isinstance(name, str), "invalid category")
+        checked_counts(c, f"category {name}")
+    require(all(isinstance(c, dict) and isinstance(c.get("checks"), dict) and type(c.get("reduced_coverage")) is bool
+                for c in report["cases"]), "report cases are malformed")
+    # The tool never verifies which model ran (JUP-035 does not attest it), so a declared live alias is not published as the
+    # model: leaving it null lets the dashboard flag the run as having no verified model instead of presenting it as real.
+    model = generation["model_alias"] if report["kind"] == "template_mock" or report.get("model_execution_verified") is True else None
     out_run = {"run_id": run["run_id"], "source": "JUP-071", "run_at": run["date"], "commit": run["commit"],
                "suite": "JUP-071", "suite_version": run["suite_version"], "suite_sha256": report["suite_sha256"],
-               "corpus_sha256": None, "embedding_provider": None, "embedding_alias": None, "retrieval": None,
-               "generation_model": generation["model_alias"] if isinstance(generation, dict) else generation,
-               "prompt_sha256": None, "synthetic": report["kind"] == "template_mock"}
+               "corpus_sha256": None, "embedding_provider": run["provider"], "embedding_alias": run["alias"],
+               "retrieval": None, "generation_model": model, "prompt_sha256": None,
+               "synthetic": report["kind"] == "template_mock"}
 
     def row(grp, metric_id, behavior, unit, judgment, status, **fields):
         base = dict.fromkeys(ROWS_RESULT_KEYS)
@@ -494,31 +527,25 @@ def rows_v1(report):
         return base
 
     def case_rows(grp, behavior, c):
-        require(all(type(c.get(k)) is int for k in (*OUTCOMES, "total")), "report counts must be integers")
         return [row(grp, "cases", behavior, "casos", "human" if s in HUMAN_STATES else "automatic", s,
                     count=c[s], denominator=c["total"]) for s in OUTCOMES]
 
-    totals = report["totals"]
     results = case_rows("cases", "all", totals)
     for group, behaviors in report["groups"].items():
         for behavior, c in behaviors.items():
             results += case_rows(group, behavior, c)
     for name, c in report["categories"].items():
         results += case_rows("category", name, c)
-    require(finite(totals.get("pass_over_total")) or totals.get("pass_over_total") is None, "invalid pass rate")
-    if totals["pass_over_total"] is None:
-        results.append(row("rates", "pass_over_total", "all", "tasa", "human", "not_measured", denominator=totals["total"]))
-    else:
-        results.append(row("rates", "pass_over_total", "all", "tasa", "human", "measured", value=totals["pass_over_total"],
-                           numerator=totals["pass"], denominator=totals["total"]))
-    if totals["evaluated"]:
-        results.append(row("rates", "pass_over_evaluated", "all", "tasa", "human", "measured",
-                           value=totals["pass_over_evaluated"], numerator=totals["pass"], denominator=totals["evaluated"]))
-    else:
-        results.append(row("rates", "pass_over_evaluated", "all", "tasa", "human", "not_measured", denominator=0))
+    for metric, denominator in (("pass_over_total", totals["total"]), ("pass_over_evaluated", totals["evaluated"])):
+        if totals["evaluated"]:
+            results.append(row("rates", metric, "all", "tasa", "human", "measured", value=totals[metric],
+                               numerator=totals["pass"], denominator=denominator))
+        else:
+            results.append(row("rates", metric, "all", "tasa", "human", "not_measured", denominator=denominator))
     results.append(row("review", "reduced_coverage", "all", "recuento", "automatic", "measured",
                        value=sum(1 for c in report["cases"] if c["reduced_coverage"])))
     checks = [v for c in report["cases"] for k, v in c["checks"].items() if k.startswith("numbers-")]
+    require(all(v in HUMAN_STATES for v in checks), "numeric checks must be pass or fail")
     if checks:
         for state in HUMAN_STATES:
             results.append(row("numeric", "numeric_checks", "all", "casos", "automatic", state,

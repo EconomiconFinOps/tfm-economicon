@@ -123,7 +123,20 @@ Los arreglos de ADV-1 a ADV-4 se hicieron con RED previo y no se sometieron a ot
 
 ## Cambios posteriores a la pasada 5 (2026-10-16)
 
-Se añadieron las tareas 4.4 (distancia no medida y `public_evidence`) y 4.5 (comando `rows` para el contrato `rows-v1`), con 14 pruebas rojas primero y verdes después. No han pasado por una pasada adversarial independiente ni por una persona; deben incluirse en la `Revision JUP-071`.
+Se añadieron las tareas 4.4 (distancia no medida y `public_evidence`) y 4.5 (comando `rows` para el contrato `rows-v1`), con 14 pruebas rojas primero y verdes después. 
+### Pasada 6 (adversarial automatizada, otra sesión; veredicto inicial `changes-required`)
+
+Resultaron 1 HIGH, 4 MEDIUM y 6 LOW. Se corrigieron con ciclo RGR (113 pruebas, en verde):
+
+- HIGH, `rows` lanzaba una excepción no controlada con informes de tipos anidados incorrectos: `rows_v1` valida ahora la forma completa y siempre falla con un error controlado.
+- MEDIUM, `rows` emitía recuentos negativos o incoherentes y tasas que no coincidían con su cociente: se validan antes de emitir.
+- MEDIUM, con cero casos evaluados `pass_over_total` salía medida con valor 0: ambas tasas son `not_measured`.
+- MEDIUM, `provider` y `alias` se descartaban: viajan como identidad de embedding.
+- MEDIUM, una ejecución real no verificada se clasificaba como real: `generation_model` queda nulo salvo verificación, y el dashboard la marca `sin_modelo_verificado`. Se pierde el alias declarado en las filas; queda por confirmar con quien mantiene el dashboard.
+- LOW, tipo de ejecución desconocido aceptado (ahora se rechaza); `public_evidence` con `id` o `kind` vacíos, `id` repetidos o `content`/`source` no textuales (ahora se rechazan); el diseño decía que las tasas eran `automatic` (corregido, son `human`); el protocolo no documentaba `rows` ni la distancia nula (documentado).
+- Registrado sin cambio: la regex de nombres permitidos en `docs/evidence` admite puntos en el nombre, igual que la de los informes; un BOM al inicio del informe da un error controlado heredado de `read()`.
+
+Esta pasada no se repitió sobre las correcciones. No sustituye a la `Revision JUP-071` de una persona.
 
 ## Pattern sweep
 

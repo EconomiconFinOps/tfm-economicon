@@ -217,7 +217,7 @@ The raw collection format SHALL accept a retrieved fragment whose `distance` is 
 
 ### Requirement: Dashboard rows without text or names
 
-The tool SHALL provide a `rows` command that writes a score report as the `rows-v1` contract of the evaluation dashboard (JUP-121): a run identity taken from the report (identifier, date, commit, suite and its hash, model alias, and a synthetic flag that is true for template runs) and result rows for the case states in total, by baseline or variant and behavior, and by category, for both pass rates, for reduced coverage and for numeric checks. Case-state rows SHALL carry a count and a denominator and no value. A rate with no evaluated cases SHALL be not measured with a null value, never zero. The rows SHALL NOT contain answer text, reviewer names or notes. Fields no report records (corpus, retrieval and prompt hashes) SHALL be null. Output paths SHALL follow the same limits as the other outputs, with generated `JUP-071-*-rows.json` files allowed in `docs/evidence`.
+The tool SHALL provide a `rows` command that writes a score report as the `rows-v1` contract of the evaluation dashboard (JUP-121): a run identity taken from the report (identifier, date, commit, suite and its hash, model alias, and a synthetic flag that is true for template runs) and result rows for the case states in total, by baseline or variant and behavior, and by category, for both pass rates, for reduced coverage and for numeric checks. Case-state rows SHALL carry a count and a denominator and no value. The report SHALL be validated for consistency (non-negative integer counts that add up, evaluated equal to pass plus fail, rates equal to their quotient, known execution kind) before any row is emitted. Both rates with no evaluated cases SHALL be not measured with a null value, never zero. Provider and alias SHALL travel as the embedding identity, and the generation model SHALL be null unless the model execution is verified, so an unverified live run is not presented as a real one. The rows SHALL NOT contain answer text, reviewer names or notes. Fields no report records (corpus, retrieval and prompt hashes) SHALL be null. Output paths SHALL follow the same limits as the other outputs, with generated `JUP-071-*-rows.json` files allowed in `docs/evidence`.
 
 #### Scenario: Rows from a report
 - **WHEN** `rows` converts a valid score report
@@ -227,6 +227,10 @@ The tool SHALL provide a `rows` command that writes a score report as the `rows-
 #### Scenario: Rate without evaluated cases
 - **WHEN** the report has no evaluated cases
 - **THEN** the evaluated rate is not measured, with a null value and a zero denominator
+
+#### Scenario: Inconsistent report
+- **WHEN** counts are negative, do not add up, or a rate does not match its counts
+- **THEN** the command fails with a controlled error and writes nothing
 
 #### Scenario: Unsafe input or output
 - **WHEN** the report is malformed or missing, or the output would overwrite the input or sits inside the repository outside the generated names

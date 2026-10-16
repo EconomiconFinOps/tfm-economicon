@@ -172,6 +172,12 @@ El lector numérico de JUP-070 solo mira la etiqueta anterior a la cifra: una re
 
 Los valores declarados del bloque `run` se escriben en minúsculas, sin `:` ni `@`; un alias con sufijo de proveedor como `deepseek-v4-pro:free` hay que declararlo sin ese sufijo. Los alias de `infra/litellm/config.example.yaml` y de ADR-0002 se aceptan.
 
+### Distancia no medida y contrato del dashboard (16/10/2026)
+
+El crudo admite fragmentos con `distance: null` (el servidor no informó distancia; nunca se escribe cero) y una lista opcional `public_evidence` por caso, que la hoja de revisión muestra junto a las citas. Un colector puede detectar `ACCEPTS_UNMEASURED_DISTANCE` en esta herramienta para exportar esa evidencia en lugar de bloquear la fila.
+
+Para el dashboard de JUP-121, `python tools/assistant-robustness.py rows --input <informe-de-puntuacion.json> --output <fichero>` escribe el informe como `rows-v1` (identificadores y números, sin texto ni nombres). Se valida primero la coherencia del informe; una tasa sin casos evaluados sale `not_measured` con valor nulo; una ejecución real no verificada deja `generation_model` nulo para que el dashboard la marque como sin modelo verificado. Dentro del repositorio solo se aceptan los ficheros generados `JUP-071-*-rows.json` de `docs/evidence`.
+
 ### Descripción de la ejecución con el colector de JUP-123 (16/10/2026)
 
 El colector de JUP-123 escribe el `run-info` con seis cadenas. El bloque `run` acepta `generation` como una sola cadena, que registra como alias del modelo sin temperatura, y un commit declarado de 7 a 40 caracteres hexadecimales en minúscula. `provider`, `alias` y la propia cadena de `generation` siguen sujetos al patrón restringido (minúsculas, dígitos, `.`, `/`, `-`, hasta 64 caracteres y sin forma de clave), de modo que `SHA_DESPLEGADO_DECLARADO` u otros marcadores de la guía de ese colector hay que sustituirlos por valores reales. El adaptador del colector fija el commit y los hashes de esta herramienta en su plan: cualquier cambio posterior en la copia de JUP-071 obliga a preparar otro plan y a volver a leer los recibos.
