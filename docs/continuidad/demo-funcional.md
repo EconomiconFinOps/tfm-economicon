@@ -199,3 +199,14 @@ la lista exacta heredada de JUP-121 no incluia los tres comandos demo. Se
 incorporan a la expectativa, manteniendo comparacion estricta, orden y todos
 los controles; no se elimina ningun test.16tests focales y18workflow PASS.
 Nuevo SHA y CI sustituyen ese candidato; pendiente revalidacion independiente.
+
+## Actualizacion17/10/2026
+
+Develop ee4e8031 (PR136/JUP071) incorporado sobre396bac67 sin conflictos.
+CI, tests de workflow y lista exacta de evaluation_scripts conservan controles
+de demo y robustez. Cambios disjuntos contrastados con Git sin perdidas.
+15artefactos reproducibles normal/optimizado,3tests integridad,16evaluation_scripts
+y88workflow/politica/gobernanza correctos; OpenSpec y trazabilidad/higiene PASS.
+CI del nuevo SHA pendiente; no se ejecuta modelo ni ensayo. Paris conserva
+su comentario favorable sobre6a498a40; Request changes Victor pendiente de
+revalidacion y Approve. No se modifican reviews ni se integra PR135 aqui.
