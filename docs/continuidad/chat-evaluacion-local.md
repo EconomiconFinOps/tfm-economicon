@@ -71,14 +71,20 @@ conversiones/restas de monedas futuras sin soporte. Históricos012/023 conservad
 
 Cierre v3 preparado/revisado quedó superado operacionalmente: exigía v5COLLECTED.
 **Nuevos** `freeze-B-role-n5-final-v4.py`, `compare-B-role-n3-n5-v3.py` y
-`freeze-B-role-n5-package-v3.py` PREPARADOS/NO EJECUTADOS, revisión focal pendiente.
+`freeze-B-role-n5-package-v3.py` PREPARADOS/NO EJECUTADOS, revisión focal APPROVE
+en `B-role-n5-final-segments-review-v4.md`/SHA81923b4f:15contrafactuales y
+herencia explícita de gates/proyectores/bucle por recibo del auditor v3.
 Componen v5STOPPED+v7COLLECTED,40preservadas y140nuevas totales,825juicios y
 restauración real. Mantienen proyección exacta de recibos/contextos y no promedian
 fallos/incertidumbres. No ejecutar versiones anteriores ni declarar N5 por40.
 
-Trello último corte previo vía puente: SHA56f5a85a/16214chars; leer antes de
+Trello actualizado vía puente: SHAc82aaa82/16279chars; leer antes de
 mutar, preservar historia/concurrencia/metadatos/límite16384. B local, sin nuevas
-publicaciones GitHub/merge/Discord. Handoffv1 quedó histórico tras esta reanudación.
+publicaciones GitHub/merge/Discord. Handoff vigente `B-role-n5-handoff-v2.json`,
+SHA3361ad49; v1 histórico. Automatización existente actualizada con el proceso v7
+y cierre v4, conservando horario. El usuario señala la posibilidad de ampliar el
+host a16GB; no hay ampliación ejecutada o confirmada. Si reaparece OOM, comunicar
+el fallo y su alcance antes de dedicar tiempo a otra adaptación de recursos.
 
 ### Parche revisado y builds verificados — 16/10/2026
 
