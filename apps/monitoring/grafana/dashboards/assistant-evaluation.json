@@ -23,7 +23,8 @@
           "exclude": false,
           "ids": [
             7,
-            8
+            8,
+            24
           ]
         },
         "hide": false,
@@ -738,7 +739,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\n  r.run_id,\n  r.run_at,\n  CASE WHEN r.is_real THEN 'real'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n  END AS estado,\n  COALESCE(r.generation_model, 'no registrado') AS generation_model,\n  COALESCE(r.suite, 'no registrado') AS suite,\n  COALESCE(r.suite_version, 'no registrado') AS suite_version,\n  COALESCE(r.commit_sha, 'no registrado') AS commit_sha,\n  max(x.case_count) FILTER (WHERE x.status = 'pass') AS pass,\n  max(x.case_count) FILTER (WHERE x.status = 'fail') AS fail,\n  max(x.case_count) FILTER (WHERE x.status = 'blocked') AS blocked,\n  max(x.case_count) FILTER (WHERE x.status = 'not_run') AS not_run,\n  max(x.denominator) AS denominator\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE x.grp = 'cases' AND x.metric_id = 'cases'\nGROUP BY r.run_id\nORDER BY r.run_at, r.run_id",
+          "rawSql": "SELECT\n  r.run_id,\n  r.run_at,\n  CASE WHEN r.is_real THEN 'real'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n  END AS estado,\n  COALESCE(r.generation_model, 'no registrado') AS generation_model,\n  COALESCE(r.suite, 'no registrado') AS suite,\n  COALESCE(r.suite_version, 'no registrado') AS suite_version,\n  COALESCE(r.commit_sha, 'no registrado') AS commit_sha,\n  max(x.case_count) FILTER (WHERE x.status = 'pass') AS pass,\n  max(x.case_count) FILTER (WHERE x.status = 'fail') AS fail,\n  max(x.case_count) FILTER (WHERE x.status = 'blocked') AS blocked,\n  max(x.case_count) FILTER (WHERE x.status = 'not_run') AS not_run,\n  max(x.denominator) AS denominator\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE x.grp = 'cases' AND x.metric_id = 'cases' AND r.source = 'JUP-070'\nGROUP BY r.run_id\nORDER BY r.run_at, r.run_id",
           "refId": "A"
         }
       ],

@@ -492,18 +492,19 @@ class SeriesDeEvolucionEstructuraTests(unittest.TestCase):
             with self.subTest(sql=sql[:40]):
                 self.assertNotRegex(sql, r"\$\{?__time(Filter|From|To)")
 
-    def test_la_anotacion_solo_se_muestra_en_los_dos_paneles_de_evolucion(self):
-        # `filter.ids` limita la anotación a los paneles que la necesitan (a5 y a6) y `exclude: false` la hace una
-        # lista de inclusión: con `exclude: true` se mostraría en todos MENOS en esos dos.
+    def test_la_anotacion_solo_se_muestra_en_los_tres_paneles_de_evolucion(self):
+        # `filter.ids` limita la anotación a los paneles que la necesitan (a5, a6 y la evolución de la latencia de la
+        # campaña, JUP-121) y `exclude: false` la hace una lista de inclusión: con `exclude: true` se mostraría en todos
+        # MENOS en esos tres.
         filtro = S.anotaciones_propias()[0].get("filter")
         self.assertIsInstance(filtro, dict)
         self.assertIs(filtro.get("exclude"), False)
         ids = filtro.get("ids")
         self.assertIsInstance(ids, list)
-        esperados = {S._unico("a5")["id"], S._unico("a6")["id"]}
+        esperados = {S._unico("a5")["id"], S._unico("a6")["id"], S._unico("a_evolucion_latencia")["id"]}
         self.assertEqual(len(ids), len(set(ids)))
         self.assertEqual(set(ids), esperados)
-        self.assertEqual(len(esperados), 2)
+        self.assertEqual(len(esperados), 3)
 
 
 # --- M1: metadatos del resultado en todas las tablas de resultados -----------------------------------------------------

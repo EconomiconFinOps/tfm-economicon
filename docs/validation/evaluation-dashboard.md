@@ -237,6 +237,18 @@ La proporción de búsquedas vacías es un límite inferior: el denominador incl
 
 No existe todavía un informe de robustez. La sección está en el dashboard y muestra «Sin datos» hasta que haya filas. Cuando JUP-071 tenga su informe, puede emitir un fichero `rows-v1` con `source: JUP-071` (por categoría y tipo de perturbación, comparada con su caso base en `behavior`) o aportar su propio adaptador, y añadirlo al manifiesto; el dashboard no cambia.
 
+La lectura del panel «Robustez (JUP-071)» (nombres, traducciones y categorías) no está cerrada: se hará con el informe real de JUP-071, cuando exista.
+
+### Contrato de clasificación para nuevas fuentes
+
+Quien emita filas `rows-v1` para una fuente nueva (por ejemplo, JUP-071) debe clasificarlas bien, porque las gráficas de evolución son genéricas a propósito: no filtran por fuente y cualquier serie comparable entra. En concreto, la gráfica de métricas automáticas no filtra por fuente, así que lo único que impide que una proporción que depende de personas aparezca en ella es la marca de juicio (`human` o `automatic`) que ponga quien emite las filas. Reglas:
+
+- Las proporciones que salen del resultado de un caso (`pass_over_total`, `pass_over_evaluated` y los `pass`/`fail` de casos) se marcan `human`: el resultado de un caso mezcla reglas y puntos juzgados por personas, y marcarlas `automatic` las llevaría a «Evolución de las métricas automáticas».
+- Los marcados de revisión (`reduced_coverage`) también se marcan `human`, porque los decide una persona.
+- Las comprobaciones que decide una regla (`numeric_checks`) se marcan `automatic`.
+- No se reutilizan los grupos de las campañas de JUP-070 (`accuracy`, `relevance`, `grounding`, `latency`, `robustness`, `availability`): varios paneles toman esos grupos sin filtrar por fuente y mezclarían las series de la nueva fuente con las de las campañas. Una fuente nueva usa grupos propios y distintos de esos.
+- «Estado de los casos por ejecución» solo muestra ejecuciones de JUP-070: una ejecución de otra fuente con el grupo y la métrica `cases` no aparece en ese panel.
+
 ## Calculado y no mostrado
 
 Cifras que el informe de origen calcula, o que existen en el sistema, y que el dashboard no enseña (salvo el intervalo de confianza, que ahora sí se muestra). Cada una lleva su motivo para que echarla en falta no parezca un olvido; ninguna se ha descartado por incómoda y todas se pueden reconsiderar en otro change.
