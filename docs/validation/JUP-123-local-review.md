@@ -1,29 +1,31 @@
 # JUP-123: candidato local y validación conservada
 
-Verificado el 16/10/2026. Origen: chat
+Verificado el 17/10/2026. Origen: chat
 `01a1270c-e332-7462-9c90-706d49ade92c`.
 **Código preparado para revisión; B no aceptada, publicada ni activada de forma permanente.**
 
-## Corte actual:74/140 y ampliación deDockerServer — 16/10/2026
+## Corte actual:75/140,24GB y continuaciónV9 — 17/10/2026
 
-74/74 respuestas conformes,437checksPASS(289banco/148calidad),sinfallos/dudas;
-35identidades explícitas+39carries exactos internos. C3pendiente:66muestras desde
-019r3, no repetir74 ni heredar84antiguas. Fuente d965/plan1408af94f71 intactos.
-V7terminó por timeoutDocker; CockroachDB propio había salido7 pordiskstall20s,
-no otroOOM. SQLrecuperado mismosID/image/volumen y restauraciónfinal efectiva
-exit0/0activas: B antiguo sano y nuevosparados. Fallosprevios conservados.
-Ledger1439SHA557bd7ed y74costes observados; holds históricos13.99052050 íntegros.
-Paquete parcial074183archivos/manifest e74c4167 ydictamenasistidoac5b583d.
+75/75conformes,443PASS(293banco+150calidad),sinfallos/dudas. Faltan65 desde020r3;
+no repetir75 ni heredar84antiguas. Fuente d965/plan1408af94f71 intactos;C3pendiente.
+Trasaviso humano24GB/500GB se verifican24032MiB, huésped400GiB/root194G25libres;
+no resizeFS. Antiguos6servicios propios recuperados sanos, mismosIDs/imágenes/datos.
 
-El usuario amplía a16GB y necesita apagarVM; se confirmó listo paraapagar después
-de restaurar. **No hay nuevas inferencias hasta verificar arranque16GB.** Harán
-falta activación/policy/continuador y cierre nuevos que conserven1439/74 ytracen
-reinicios reales; el auditorv4 aprobadoexigev7COLLECTED yno puede ejecutarse sobre
-estecorte. Misma cuentacap30 y claves4.5/.1hasta17oct18París; no renovaciones/reset.
-AmpliarRAM no demuestra causalidad deldiskstall ni autoriza límites nuevos.
+V8completó019r3 yparó porguardmontajes, parkingexit0. Docker alterna orden de2mounts
+idénticos enlecturasreales; defectodelarnés confirmado, sin inspectexacto delstop.
+Revisor/validador aprueban V9canonicalfullobjs, rechaza cambiosreales yduplicados.
+V9lanzadoUNAvezPID129964/start143341desde020r3; activación/preflight frescos mandan,
+preflightrealPASS y020r3completed/settled(corte76/1441), juicios nuevos pendientes.019r3coste0.002055006observado/RAGexacto,
+ledger1440/SHA210445d5 y75recibos protegidos. No nueva corrección deproducto.
+
+Cierre6/comparación5/paquete5 revisadosAPPROVE(32contrafactuales), aúnNOejecutados.
+Cap30USD/holds13.99052050íntegros; mismasclaves4.5/.1hasta17oct18París, sin
+renovación/reset/aumentos. Cierre6/comparación5/paquete5preparadosNOejecutados:
+componerV5/V7/V8STOPPED+V9terminalreal y140/825juicios, no relabelhistóricos.
+No afirmar latencias bajoentornoidéntico, generalizaciónciega o revisiónoficial.
 Detalles/proofs en[continuidad](../continuidad/chat-evaluacion-local.md).
 
-Lo siguiente conserva los cortes previos y no describe como vivo elcontroladorv7.
+Los apartados siguientes conservan cortes históricos; no prueban estados vivos actuales.
 
 ## Decisión humana y candidato corregido — 16/10/2026
 

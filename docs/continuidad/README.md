@@ -38,20 +38,18 @@ B antiguo backend/processor temporalmente pausados, restauración v7 al terminar
 Cap30/reservas y límites4.5/.1/vigencia17oct18París intactos. Cierre v4 preparado,
 NO ejecutado; no N5 completa ni aceptación. Antiguo impedimento humano superado.
 
-Último estado operativo16/10: el usuario apagará DockerServer para ampliar a16GB;
-no reanudar inferencias hasta verificar16GB. N5 detenida74/74 conformes/437PASS,
-faltan66 desde019r3. SQL propio se cerró pordiskstall20s, se recuperó mismocontenedor/
-volumen; no otroOOM. Restauraciónfinal exit0/SQL0activas, B antiguo sano, temporales
-parados, se confirmó listo paraapagar. Ledger1439/SHA557bd7ed,74costes observados y
-holds13.99052050intactos. Parcial074183archivos/manifest e74c4167; historialpreservado.
-V5/V7terminales, V6no lanzado; se necesitarán nuevo continuador/cierre trasreinicio,
-no usar auditor4 talcual. Ver estado vigente deltema, que supera párrafos anteriores.
+Último estado vigente17/10:24GB verificados(24032MiB); huésped400GiB/root194G25libres,
+FS no ampliado. Antiguos6servicios propios sanos. V8STOPPED tras019r3;75conformes/
+443PASS/1440filas conciliadas protegidas. V9correccióncanónica demontajes aprobado
+porambosagentes y lanzadoPID129964/start143341desde020r3,65faltantes, no repetir75.
+Cap30/holdsíntegros, claves4.5/.1hasta17oct18París. Cierre6preparado,noejecutado;
+C1/C3finales pendientes. Trello actualizado preservandohistoria. B local.
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
 | [Consultas de coste Azure](../evidence/JUP-036-validation.md) | PR69: reconciliación local de `1cf4087f` con develop `a3f514f7` (#129), sin cambios de producto. Corpus1.1.1 conservado; los dos casos SQL pendientes pasan en Cockroach24.1.11. Revisión/validación independientes del nuevo candidato y CI posterior pendientes. | 2026-10-15 |
 | [Memoria: modelos](memoria-modelos.md) | Análisis de GLM/DeepSeek y parciales Sonnet/Sol; elección operativa DeepSeek para B, ADR-0022 Proposed y propuesta e/g/h fuera de Git. JUP-063/JUP-109 existentes, sin nueva tarjeta ni incorporación al Doc. | 2026-10-16 |
-| [Evaluación local del chat](chat-evaluacion-local.md) | d965: N5 parcial74conformes/437PASS,66pendientes desde019r3. SQLrecuperado yrestauración efectiva antesdelapagado; usuario amplíaDockerServer16GB, sininferencias hasta verificararranque. Ledger1439/holdsíntegros, parcial074183archivos; handoffv3. C2asistido aceptado, C3aúnno. B local sinpublicar. | 2026-10-16 |
+| [Evaluación local del chat](chat-evaluacion-local.md) |24GBverificados;75/443PASS. V9lanzadoPID129964desde020r3trascorregirguardmontajes,65pendientes;1440filas/75protegidos. Cap30/holdsíntegros,C3pendiente,Blocal. | 2026-10-17 |
 | [Chat conversacional](chat-conversacional.md) | PR121: focal28 3PASS/4FAIL, JSONB7PASS. Corrección29 de soporte literal visible e interpretación separada en regresión offline; aceptación/batería real pendientes. Gasto0.957927619/2USD. | 2026-10-13 |
 | [División del chat en A/B](chat-entregas-a-b.md) | División aprobada; B d9b/9e2 corregida,50/84 muestras con47PASS/3técnicas429, sin publicar ni aceptar. Ver evaluación local. Base A8ea/develop0543 y reviews/CI conservan su fecha histórica, sin nueva consulta. | 2026-10-15 |
 | [Pantallas de maqueta ocultas del MVP](pantallas-ocultas-mvp.md) | JUP-116: Coste Detallado, Corte Global y Recomendaciones ya no tienen ruta ni menú (se conservan en el código y se reactivan con dos líneas) y Overview sale del menú pero conserva su ruta; una dirección desconocida lleva a `/`. 797 pruebas del frontend y 16 comprobaciones en navegador; mergeado en `develop` el 2026-10-12 (#124). | 2026-10-13 |

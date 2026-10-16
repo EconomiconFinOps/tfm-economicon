@@ -7,9 +7,75 @@ Evidencia y operadores citados sin otro prefijo: `../materiales/07-evidencias/PR
 desde la raíz del proyecto. El entorno remoto aislado está bajo
 `/home/danteadmin/economicon-jup123-20261014` en DockerServer.
 
-## Estado actual — 16/10/2026
+## Estado actual — 17/10/2026
 
-### Estado vigente: apagado autorizado para ampliar a16GB — 16/10/2026
+### Estado vigente:24GB verificados, V9 desde020r3 — 17/10/2026
+
+El aviso humano «Memoria ampliada a24GB y HDD a500GB» supera la espera anterior.
+Comprobados en DockerServer24032MiB/swap4095libre; discohuésped400GiB y filesystem
+raíz194G/25libres. No resizeparticiones/LVM/FS ni nuevos builds. La cifra500GB del
+humano no está aplicada íntegramente al filesystem observado. Boot08852b57.
+Antiguos6servicios propios recuperados sanos/mismosIDs/imágenes/montajes; nuevas
+pruebas pueden coexistir, no se pausan los antiguos. Proofpostboot-own-services-v1.
+
+**V9 lanzado UNA vez PID129964/start143341**, controllerSHAe68d38dc, preparedSHA
+`1e09eb20c401c3a432d9d7f063f3a8a5d5eb8558acd954592fbae349ae136a06`.
+Observador correcto `observe-B-role-n5-v9.py --compact`: verificarPID/ticks/terminal,
+no relanzar por timeout ni usar observadores antiguos. Activación/preflight actuales
+verificados en controller-v9: preflightPASS y020r3completed/settled(corte76/1441).
+No heredar last-preflight deV8 como nueva admisión; revisar nuevas etiquetas reales.
+
+Boundary congelado75: **75/75 conformes,443PASS(293banco+150calidad)**.019r3 tiene
+identidad respuesta+RAG exacta de019r1 de ESTA campaña; notas09c221db sin cambios,
+batch011 sigue disponible para siguiente identidad nueva. Próxima020r3,65faltantes;
+NO140 ni C3final. Comparación/revisión anteriores a7/5119 no se heredan.
+
+V8PID77161 terminó STOPPED porAssertionError deguardline38 tras019r3; parkingexit0,
+nuevos3parados entonces, antiguos6sanos/0activas. Preservados sus terminales/failed
+predicados. Doce inspects reales:11montajesc1513847+1mismo conjunto invertido6636bb5d.
+Defecto deorden delguard confirmado; falta inspectexacto de la excepción, por lo
+que no se afirma causa histórica única. `B-role-n5-v8-mount-order-counterobservation-v1.json`
+y `B-role-n5-mount-order-review-v1.md` explican el límite.
+
+019r3 NO reenviada: contabilidad porclosureAST0207a761 congelado sinRunner/POST,
+GETkeyinfo a mismaDB compartida mientras proxypropio estaba parado; coste observado
+0.002055006. RAGrecuperado conQUERYcongelada/DBvectoraislada ypayloadSHAexacto;
+rawguardadoflush/fsync antes de derivación. `B-role-n5-existing075-reconciliation-proof-v1.json`.
+Ledger1440SHA`210445d53dbea1f731297164af057f4083b4b190903eda7f48bdd22d2bab2e3c`,
+prefijo1439 intacto. V9policySHAa9ae6f44 protege263artefactos/75 y boundary1440.
+
+V9 corrige SOLO arnés: montajes como objetos completos ordenados/destinos únicos;
+primerpins compartidos explícitos, comparación legacy por permutación rechaza
+cualquier cambio real antes de fijarbaseline. RevisorAPPROVEf4e481ab/19casosfocales,
+validadorPASS27a3e05d/6tests+AST, ninguno envió inferencias. Misma fuente d965/plan140
+8af94f71/banco1.0.1/corpus54/DeepSeekCoreWeaveFP8/ZDRsinfall, contenedores768MiB.
+No nueva edición deproducto ni claimlatencias comparables trasRAM/reinicio.
+
+Cap30USD/holds13.99052050 intactos. Mismas claves4.5/.1hasta17oct18París; sin
+renew/reset/nuevasclaves/aumentos. Costes observados separados de máximos desconocidos;
+el límite individual puede parar aunque cuenta<30, no inferir cabida de65muestras.
+Guardas/admisión frescas poroperación. No reenviarPOST o descartar reservas.
+
+Cierre finalv6/comparisonv5/packagev5 PREPARADOS, NOejecutados; revisiónfocalAPPROVE
+6c331622/32contrafactuales. Sóloallowlistpaquete añadió su dictamen posterior,
+SHAactual enarchivo, sin modificar criterios.
+Exigen140/825juicios, raw/RAG/costproyecciones, V5STOPPED+V7STOPPED+V8STOPPED+
+V9COLLECTED/parkingexit0real. Auditoresv4/v5 ya no aplicables, no ejecutar talcual.
+PaquetesN3/040/074 intactos. B local/sinpublicar ni merge/aceptaciónoficial; C2asistido
+aceptado, C1/C3finales pendientes. No nuevo testciego/juezcalibrado/UI/live-stream.
+
+Trello actualizado porpuenteautorizado: descSHA1bb0c990,16114chars, historia y
+lista/miembros/fechas/nombre preservados; proof `B-role-n5-trello-updated-v3.json`.
+La tarjeta refleja75 yV9preparado; actualizar al siguiente hito tras lectura fresca.
+Handoffv4/fb41a209 guarda corteV9vivo; automatización existente actualizada con
+estecorte y mismo horario. Su campo revisiónfinalpendiente es histórico: el dictamen
+6c331622 posterior ya aprueba el cierre. No ejecutarfinales antes140/825/parking.
+
+### Histórico: apagado autorizado para ampliar a16GB — 16/10/2026
+
+Última instrucción humana: «Te aviso yo cuando este». Esperar ese aviso explícito;
+no hacer más SSH/sondeos deDockerServer ni reanudar pruebas, tampoco porheartbeat.
+El aviso permitirá verificar16GB/estado y continuar lo ya autorizado.
 
 El usuario confirmó que no había cambiado nada y decide «Amplío a16GB antes de
 continuar»; después indica que necesita apagar DockerServer. Se le confirmó que
