@@ -95,6 +95,8 @@ CI_BLOCK_TODAY = [
     "corepack pnpm retrieval-calibration:test",
     "corepack pnpm assistant-metrics:test",
     "corepack pnpm assistant-eval:test",
+    "corepack pnpm assistant-robustness:validate",
+    "corepack pnpm assistant-robustness:test",
     "corepack pnpm synthetic-demo:test",
     "corepack pnpm demo-dataset:test",
     "corepack pnpm demo-data:test",
