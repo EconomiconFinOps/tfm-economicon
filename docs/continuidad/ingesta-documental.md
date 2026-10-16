@@ -1,6 +1,6 @@
 # Ingesta documental
 
-Actualización técnica: 2026-10-15. Etapa experimental de la iniciativa RAG,
+Actualización técnica: 2026-10-16. Etapa experimental de la iniciativa RAG,
 en `feat/rag-ingestion`, desde `53b43bb1e79b08967cc1b9efdf66669f11e8197c`.
 El estado oficial, la formalización JUP y la integración se conservan en las
 fuentes de proyecto; este resumen no acredita aceptación final ni merge.
@@ -32,3 +32,29 @@ reproducible. Las pruebas nuevas están en `test_document_uploads.py`,
 `DocumentUploadPanel.test.tsx`; usan fixtures reales generadas localmente. La
 prueba con modelos mock demuestra recorrido/persistencia/aislamiento, no calidad
 semántica de recuperación. No se versionan corpus privados ni entornos generados.
+
+## Correcciones de despliegue y admisión
+
+El agente CD genera credenciales documentales ausentes tanto en raíces nuevas
+como anteriores, sin rotar valores existentes. Cada ranura usa su puerto MinIO
+(base + 11), endpoint público y orígenes exactos del frontend. El
+[procedimiento CD](../deployment/dockerserver-cd.md) incluye actualización del
+agente y túnel S3; las releases ya preparadas permanecen inmutables.
+
+La admisión DOCX convierte errores de descompresión DEFLATE/BZip2/LZMA en rechazo
+de formato 422, sin publicar un trabajo ni cambiar las reservas o sus plazos.
+Las dos copias del contrato de formatos permanecen idénticas. Las regresiones
+están en `tools/cd/test_deploy.py` y `test_document_uploads.py`: preparación real
+con Compose de ambas ranuras y raíz anterior, preservación de secretos y
+documentos comprimidos corruptos. La preparación renderizada no equivale a un
+despliegue real; no se ha actuado sobre DockerServer.
+
+Las fixtures de `tools/local-doctor.test.mjs` incluyen las cinco variables
+documentales obligatorias y el puerto MinIO del Compose vigente. El ejemplo
+puede contener orígenes CORS válidos aunque sus secretos sigan vacíos: la prueba
+distingue ambos casos. Se conservan los escenarios anteriores y se comprueban
+ausencias, valores vacíos y precedencia de entorno para cada variable documental,
+puertos MinIO inválidos/duplicados/ocupados y ausencia de secretos en el diagnóstico.
+No se ha relajado ni modificado `tools/local-doctor.mjs`. Las 12 pruebas que
+fallaban por preparación desactualizada quedan cubiertas por la suite corregida,
+sin omitir casos ni repetir la extracción o la batería general de aplicaciones.

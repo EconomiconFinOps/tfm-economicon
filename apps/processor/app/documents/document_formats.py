@@ -1,7 +1,9 @@
 """Non-executing admission checks shared as a contract by both deployments."""
 import io
+import lzma
 from pathlib import PurePosixPath
 import zipfile
+import zlib
 from xml.etree import ElementTree
 
 
@@ -69,7 +71,8 @@ def validate_format(data, extension):
                     raise FormatError('document_format_mismatch')
         except FormatError:
             raise
-        except (zipfile.BadZipFile, KeyError, ValueError, ElementTree.ParseError, RuntimeError):
+        except (zipfile.BadZipFile, KeyError, ValueError, ElementTree.ParseError, RuntimeError,
+                zlib.error, lzma.LZMAError, OSError, EOFError):
             raise FormatError('invalid_docx_document') from None
     elif extension == 'doc':
         import olefile

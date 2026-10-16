@@ -48,6 +48,12 @@ valor por defecto es falso para conservar el arranque anterior. En producción
 los endpoints S3 requieren HTTPS. Este Compose local no aprovisiona TLS ni AWS.
 No reutilizar claves, volúmenes ni puertos de otra instancia de pruebas.
 
+El [agente CD](../deployment/dockerserver-cd.md) genera también las credenciales
+documentales al inicializar o actualizar una raíz anterior, sin rotar valores
+existentes. Deriva el puerto S3, su endpoint público y CORS por ranura para que
+la release actual y el candidato puedan coexistir durante el relevo. En arranque
+manual, `DOCUMENT_S3_PUBLIC_ENDPOINT` debe usar el `MINIO_HOST_PORT` elegido.
+
 ## Contrato HTTP y autorización
 
 Todas las rutas requieren Bearer y un único `X-Tenant-Id` que corresponda a una
