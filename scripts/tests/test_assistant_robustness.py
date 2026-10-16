@@ -734,7 +734,7 @@ class SecondPassTests(unittest.TestCase):
                       "my-sk-abcdef", "a3f9c2d4e5b6a7c8d9e0f1a2b3c4d5e6", "Model-X", "model_x"):
             with self.subTest(value=value), self.assertRaises(robustness.Error):
                 scored(RunHeaderTests().live_raw(alias=value))
-        for value in ("openrouter/model-x.1", "gpt-4o-2024-08-06", "claude-sonnet-5-5", "handwritten-model-name"):
+        for value in ("openrouter/model-x.1", "vendor-model-4o-2024-08-06", "vendor-model-5.5", "handwritten-model-name"):
             with self.subTest(value=value):
                 scored(RunHeaderTests().live_raw(alias=value))
 

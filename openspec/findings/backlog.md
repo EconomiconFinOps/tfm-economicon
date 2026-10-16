@@ -388,7 +388,7 @@ Tipo: deuda tecnica. Severidad: Medium. Estado: Open. Owner: Equipo Economicon.
 ## JUP-071 — Aceptados de la revisión final: revisores en formas Unicode de compatibilidad y hash de la configuración
 
 Fecha: 2026-10-16. Origen: JUP-071, revisión adversarial pasada 4 (ADV-4 y ADV-5).
-Tipo: deuda tecnica. Severidad: Low. Estado: Accepted. Owner: Equipo Economicon.
+Tipo: deuda tecnica. Severidad: Low. Estado: Open (registrado por una revisión automatizada; sin aceptación humana). Owner: Equipo Economicon.
 
 - Dos revisores se distinguen tras `normalize` de JUP-070 (descomposición canónica, mayúsculas, espacios y caracteres de formato), que no equipara formas de compatibilidad como «Ana» y «Ａｎａ» (ancho completo) ni confusables de otro alfabeto. Distinguirlos como revisores independientes requiere intención deliberada del operador, y la identidad no se autentica. Mejorarlo (comparar con NFKC) toca la función de JUP-070 que usan sus dos herramientas.
 - `configuration_sha256` del informe versionable es el SHA-256 de toda la configuración declarada. Los campos extra no se copian al informe y el CLI de recogida los rechaza, pero el hash de una configuración de forma conocida con un secreto corto podría atacarse por fuerza bruta fuera de línea. Los informes actuales no tienen riesgo: la plantilla no lleva secretos. Si se aceptan configuraciones con campos libres, hashear solo los campos validados.

@@ -2,9 +2,9 @@
 
 ## Resumen
 
-Evaluación de robustez del asistente ante datos incompletos o ambiguos: batería de 16 variantes con 13 referencias de JUP-069, runner `tools/assistant-robustness.py` sobre el transporte y la comprobación numérica de JUP-070, informe con cuatro estados y denominadores, y dos mediciones de la plantilla. Contribución inicial de Alejandro Aguado (PR #90, cerrado sin integrar el 2026-10-10), recuperada sobre `develop` el 2026-10-13 y ampliada con el bloque `run` del informe, la aceptación de la descripción de ejecución del colector de JUP-123 y la corrección de los hallazgos de las revisiones.
+Evaluación de robustez del asistente ante datos incompletos o ambiguos: batería de 16 variantes con 13 referencias de JUP-069, runner `tools/assistant-robustness.py` sobre el transporte y la comprobación numérica de JUP-070, informe con cuatro estados y denominadores, y dos mediciones de la plantilla. Contribución inicial de Alejandro Aguado (PR #90, cerrado sin integrar el 2026-10-10), recuperada sobre `develop` el 2026-10-13 y ampliada con el bloque `run` del informe, la aceptación de la descripción de ejecución del colector de JUP-123, la evidencia sin distancia, el comando `rows` para el contrato del dashboard de JUP-121, la procedencia que reporta el servidor y la corrección de los hallazgos de las revisiones.
 
-El change queda abierto: los juicios humanos, la medición con el chat generativo de JUP-035, las tres campañas, la revisión y validación de personas y el acuerdo con JUP-123 sobre la evidencia sin distancia (grupo 6 de `tasks.md`) están pendientes y no se dan por hechos. Ninguna medición de este change acredita robustez generativa.
+El change queda abierto: los juicios humanos, la medición con el chat generativo de JUP-035, las tres campañas, la revisión y validación de personas y la validación del colector de JUP-123 (cabeza `e0a0c41e`) con un backend real que devuelva evidencia sin distancia (grupo 6 de `tasks.md`) están pendientes y no se dan por hechos. Ninguna medición de este change acredita robustez generativa.
 
 ## Sobre las revisiones de este documento
 
@@ -15,7 +15,7 @@ Las "pasadas adversariales" y la auditoría de trazabilidad que se recogen aquí
 - El informe incorpora un bloque `run` con los campos de la cabecera de JUP-070 y un identificador derivado del hash del crudo; los campos anteriores se mantienen. El aplanado, los valores no medidos y la unificación de formatos son de JUP-121.
 - Las cifras esperadas de una variante pueden llevar `aliases` propios; el lector numérico los usa antes que las reglas de JUP-070 y que la etiqueta. Las variantes de cumplimiento de tagging piden una sola cifra, como el caso de JUP-069 del que derivan.
 - El informe añade un desglose por categoría, porque el desglose por tipo de perturbación tiene un solo caso por grupo.
-- Los informes de plantilla de `docs/evidence/` son una repetición offline con la herramienta actual: los crudos del 10/10 están fuera de Git y no estaban disponibles. Los resultados son los mismos (0 aciertos, 8 fallos, 21 pendientes de 29). El registro de regeneraciones está en la evidencia.
+- Los informes de plantilla de `docs/evidence/` son una repetición offline con la herramienta del commit `2486d44d` (regenerarlos con la actual da los mismos totales y solo cambian identificadores, fecha y hashes): los crudos del 10/10 están fuera de Git y no estaban disponibles. Los resultados son los mismos (0 aciertos, 8 fallos, 21 pendientes de 29). El registro de regeneraciones está en la evidencia.
 - No se sube la versión de la batería (`1.0.0`) al cambiar sus alias y sus cifras porque nunca se integró en `develop`; los crudos del 10/10 dejan de ser compatibles con su hash y no se reutilizan.
 - No se escribe un colector de `/generations` ni un ejecutor de campañas: se consume el de JUP-123 (PR #131).
 
@@ -24,7 +24,7 @@ Las "pasadas adversariales" y la auditoría de trazabilidad que se recogen aquí
 Estado del 2026-10-16, Windows, Python 3.14:
 
 - `python tools/assistant-robustness.py validate`: 16 variantes, 29 casos, hashes válidos.
-- `corepack pnpm assistant-robustness:test`: 91 pruebas OK.
+- `corepack pnpm assistant-robustness:test`: 123 pruebas OK.
 - Pruebas de JUP-070 (110) y de métricas de JUP-067 (103): OK.
 - `node --test tools/ci-workflow.test.mjs`: 14 OK (con las dependencias del repositorio principal enlazadas temporalmente, porque el directorio de trabajo no tenía `node_modules`).
 - `corepack pnpm openspec:validate` (74/74), `corepack pnpm jup:check -- --change jup-071-incomplete-data-robustness` y `corepack pnpm jup:cleanup:check`: OK.
@@ -89,8 +89,8 @@ Pasada automatizada sobre el estado final `136eeaec` (base `origin/develop`): **
 | P4-1 / A-1 | MEDIUM / HIGH | ambas | Corregido: un entero demasiado grande (valor, tolerancia, temperatura, distancia o duración) lanzaba `OverflowError`, y un documento anidado miles de niveles `RecursionError`; la salida era un traceback, contra lo que promete la spec. Una única comprobación de número finito y el CLI captura `ArithmeticError` y `RecursionError`. Pruebas por campo y con un documento anidado 20 000 niveles. |
 | P4-2 | MEDIUM | adversarial | Corregido: JUP-071-002 y JUP-071-003 pedían también la cifra de coste etiquetable (1.000 EUR), que la pregunta no solicita; una respuesta correcta que daba solo el 10 % fallaba y ningún juicio humano podía revertirlo. Una sola cifra, como en su baseline JUP-069-011. Cambió el hash de la batería y se regeneró la evidencia. |
 | P4-3 / A-2 | MEDIUM / HIGH | ambas | Corregido en la spec: decía que un valor declarado que fuera «un marcador» se rechazaba, pero el código solo valida la forma (palabras como `tbd` o `unknown` cumplen el patrón). La spec dice ahora qué se rechaza y que el significado no se comprueba. |
-| P4-4 | LOW | adversarial | Aceptado y registrado en `openspec/findings/backlog.md`: dos revisores con formas Unicode de compatibilidad se cuentan como distintos; es una función de JUP-070 y requiere intención deliberada. |
-| P4-5 | LOW | adversarial | Aceptado y registrado en el backlog y en el diseño: `configuration_sha256` es un hash de toda la configuración declarada. |
+| P4-4 | LOW | adversarial | Registrado sin cambio (sin aceptación humana) en `openspec/findings/backlog.md`: dos revisores con formas Unicode de compatibilidad se cuentan como distintos; es una función de JUP-070 y requiere intención deliberada. |
+| P4-5 | LOW | adversarial | Registrado sin cambio (sin aceptación humana) en el backlog y en el diseño: `configuration_sha256` es un hash de toda la configuración declarada. |
 | P4-6 | LOW | adversarial | Corregido: una fecha de recogida con forma válida pero calendario imposible daba un error sin nombrar el campo; ahora indica «collection time». |
 | A-3 | MEDIUM | auditoría | Corregido en el diseño: afirmaba que la hoja de revisión incluye las cifras esperadas; solo incluye prompt, respuesta, citas, fragmentos y puntos de juicio. |
 | A-4 | MEDIUM | auditoría | Corregido en la spec: decía que el informe declara los hashes del banco, la metodología y las fuentes; solo trae `suite_sha256`, que los cubre porque están dentro de la batería. |
@@ -117,30 +117,48 @@ Pasada automatizada sobre el diff `136eeaec..8f8f71fd`, con mutación manual de 
 | ADV-2 | MEDIUM | Corregido: la restricción de los seis campos de `collect` era superficial. `generation` aceptaba claves extra y `corpus` y `retrieval` cualquier valor, y todo se guardaba en el crudo. Ahora `generation` solo lleva `model_alias` y `temperature`, y `corpus` y `retrieval` son un texto corto o un objeto plano de valores cortos con claves que no parezcan credenciales. |
 | ADV-3 | LOW | Corregido con prueba: la columna de total por tipo de perturbación solo tenía una prueba de la cabecera (un mutante que borraba los valores sobrevivía). Ahora se comprueba el total de cada una de las 16 filas. |
 | ADV-4 | LOW | Corregido con prueba: el máximo de dos revisores por punto no tenía prueba. |
-| ADV-5 | LOW | Aceptado y heredado: `check_number` de JUP-070 acepta como correctas negaciones o contraposiciones («no es del 10 %»); las variantes se comportan igual que su baseline. Lo cubre el juicio humano y la limitación ya registrada de `labelled_by`. |
+| ADV-5 | LOW | Heredado y registrado sin cambio (sin aceptación humana): `check_number` de JUP-070 acepta como correctas negaciones o contraposiciones («no es del 10 %»); las variantes se comportan igual que su baseline. Lo cubre el juicio humano y la limitación ya registrada de `labelled_by`. |
 
 Los arreglos de ADV-1 a ADV-4 se hicieron con RED previo y no se sometieron a otra pasada.
 
-## Cambios posteriores a la pasada 5 (2026-10-16)
+## Adversarial Review (pass 6)
 
-Se añadieron las tareas 4.4 (distancia no medida y `public_evidence`) y 4.5 (comando `rows` para el contrato `rows-v1`), con 14 pruebas rojas primero y verdes después. 
-### Pasada 6 (adversarial automatizada, otra sesión; veredicto inicial `changes-required`)
+Pasada automatizada sobre el commit `8e826854` (tareas 4.4 y 4.5: distancia no medida, `public_evidence` y comando `rows`), base `954c9dc9`. Veredicto: changes-required (1 HIGH, 4 MEDIUM, 6 LOW). Correcciones en `7f95acb0`, con ciclo RGR.
 
-Resultaron 1 HIGH, 4 MEDIUM y 6 LOW. Se corrigieron con ciclo RGR (113 pruebas, en verde):
+| ID | Sev. | Resolución |
+| --- | --- | --- |
+| P6-1 | HIGH | Corregido: `rows` lanzaba una excepción no controlada con informes de tipos anidados incorrectos; `rows_v1` valida ahora la forma completa y falla siempre con un error controlado. |
+| P6-2 | MEDIUM | Corregido: `rows` emitía recuentos negativos o incoherentes y tasas que no coincidían con su cociente; se validan antes de emitir. |
+| P6-3 | MEDIUM | Corregido: con cero casos evaluados `pass_over_total` salía medida con valor 0; ambas tasas son `not_measured`. |
+| P6-4 | MEDIUM | Corregido: `provider` y `alias` se descartaban; viajan como identidad de embedding. |
+| P6-5 | MEDIUM | Corregido: una ejecución real no verificada se clasificaba como real; `generation_model` queda nulo salvo verificación y el dashboard la marca `sin_modelo_verificado`. Se pierde el alias declarado en las filas. |
+| P6-6 a P6-9 | LOW | Corregido: tipo de ejecución desconocido (se rechaza); `public_evidence` con `id` o `kind` vacíos, `id` repetidos o `content`/`source` no textuales (se rechazan); el diseño decía que las tasas eran `automatic` (son `human`); el protocolo no documentaba `rows` ni la distancia nula (documentado). |
+| P6-10 / P6-11 | LOW | Registrado sin cambio (sin aceptación humana): la regex de nombres permitidos en `docs/evidence` admite puntos, igual que la de los informes; un BOM al inicio del informe da un error controlado heredado de `read()`. |
 
-- HIGH, `rows` lanzaba una excepción no controlada con informes de tipos anidados incorrectos: `rows_v1` valida ahora la forma completa y siempre falla con un error controlado.
-- MEDIUM, `rows` emitía recuentos negativos o incoherentes y tasas que no coincidían con su cociente: se validan antes de emitir.
-- MEDIUM, con cero casos evaluados `pass_over_total` salía medida con valor 0: ambas tasas son `not_measured`.
-- MEDIUM, `provider` y `alias` se descartaban: viajan como identidad de embedding.
-- MEDIUM, una ejecución real no verificada se clasificaba como real: `generation_model` queda nulo salvo verificación, y el dashboard la marca `sin_modelo_verificado`. Se pierde el alias declarado en las filas; queda por confirmar con quien mantiene el dashboard.
-- LOW, tipo de ejecución desconocido aceptado (ahora se rechaza); `public_evidence` con `id` o `kind` vacíos, `id` repetidos o `content`/`source` no textuales (ahora se rechazan); el diseño decía que las tasas eran `automatic` (corregido, son `human`); el protocolo no documentaba `rows` ni la distancia nula (documentado).
-- Registrado sin cambio: la regex de nombres permitidos en `docs/evidence` admite puntos en el nombre, igual que la de los informes; un BOM al inicio del informe da un error controlado heredado de `read()`.
+Los arreglos no se sometieron a otra pasada hasta la pasada 7.
 
-Esta pasada no se repitió sobre las correcciones. No sustituye a la `Revision JUP-071` de una persona.
+## Adversarial Review (pass 7)
 
-### Pasada 7 (adversarial automatizada, otra sesión; `accept` con 2 MEDIUM y 3 LOW)
+Pasada automatizada sobre `954c9dc9..369d4de1` (tareas 4.4 a 4.6 completas, incluido el desglose por tipo de perturbación y la procedencia del servidor). Veredicto: accept (2 MEDIUM, 3 LOW). Comprobó que las correcciones de la pasada 6 siguen en pie. Correcciones en `98b89ca9`.
 
-Revisó las tareas 4.4 a 4.6 completas (distancia no medida, `rows`, procedencia del servidor, desglose por tipo de perturbación) y comprobó que las correcciones de la pasada 6 siguen en pie. Resultado: el bloque `server_reported` se aceptaba también en una ejecución de plantilla (ahora se rechaza); el diseño tenía una frase obsoleta y una cláusula duplicada (corregidas); la spec no recogía las reglas de rechazo de la procedencia (escenario añadido); un hash en mayúsculas del servidor bloquea la colección entera (documentado en el protocolo, pendiente de confirmar con #131); y las claves extra de cada entrada nunca llegan al informe (prueba añadida). 123 pruebas en verde; los `rows` de `docs/evidence` se regeneran idénticos. Estas últimas correcciones no se revisaron de nuevo. No sustituye a la `Revision JUP-071` de una persona.
+| ID | Sev. | Resolución |
+| --- | --- | --- |
+| P7-1 | MEDIUM | Corregido: el bloque `server_reported` se aceptaba también en una ejecución de plantilla; ahora se rechaza. |
+| P7-2 | MEDIUM | Corregido: el diseño tenía una frase obsoleta y una cláusula duplicada. |
+| P7-3 | LOW | Corregido: la spec no recogía las reglas de rechazo de la procedencia del servidor (escenario añadido). |
+| P7-4 | LOW | Documentado en el protocolo: un hash del servidor en mayúsculas bloquea la colección entera; si ocurriera habría que normalizarlo en el colector. Pendiente de confirmar con #131 al validar su cabeza (tarea 6.6). |
+| P7-5 | LOW | Corregido con prueba: las claves extra de cada entrada nunca llegan al informe ni a las filas. |
+
+## Auditoría de coherencia documental (2026-10-16, tras la pasada 7)
+
+Auditoría automatizada de trazabilidad entre propuesta, diseño, spec, tareas, revisión, evidencia, protocolo, continuidad y código sobre `98b89ca9`. Veredicto: changes-required (3 HIGH, 8 MEDIUM, 7 LOW; sin defectos de código ni de estructura OpenSpec). Se corrigieron los 18 hallazgos salvo los que se indican:
+
+- HIGH: el estado del colector de JUP-123 se describía como «bloquea hoy» en cinco documentos aunque su cabeza `e0a0c41e` ya adopta la capacidad; el número de pruebas figuraba como 91 en revisión y evidencia (son 123); el número de pasadas no coincidía entre continuidad y tareas. Todo unificado.
+- MEDIUM: continuidad desactualizada (respuesta de #131 y #132), `configuration_sha256` sin mención en el diseño, informes versionados presentados como generados con la herramienta «actual», párrafos del protocolo con saltos duros, estado `Accepted` del backlog sin aceptación humana, pasadas 6 y 7 sin la estructura de las anteriores, reglas de `public_evidence` sin escenario en la spec, y texto sobre qué filas son `human` ya superado por la guía del dashboard.
+- LOW: referencia muerta «(ver abajo)», resumen sin mención de `rows`, línea en blanco sobrante en las tareas, la expresión «otra sesión», un nombre de modelo concreto en una prueba, cifras de la prueba del 16/10 no verificables desde el repositorio (ahora lo declara el texto) y un historial del protocolo que repetía reglas (ahora marcado como registro histórico).
+- Sin cambio: la sección `pairs` del informe no tiene requisito propio (está en el protocolo) y la rama conserva el prefijo `test/` heredado del PR #90.
+
+Estos arreglos no se sometieron a otra auditoría. Ninguna de estas revisiones es la `Revision JUP-071` ni la `Validacion JUP-071` de una persona.
 
 ## Pattern sweep
 
@@ -158,7 +176,7 @@ Revisó las tareas 4.4 a 4.6 completas (distancia no medida, `rows`, procedencia
 - Las ejecuciones medidas son de la plantilla offline y de un modelo simulado. No hay medición con el chat real ni juicios humanos (grupo 6).
 - Los fallos numéricos de los casos con varias cifras pueden deberse a la limitación de `labelled_by` de JUP-070 (registrada); hay que mirarlos a mano antes de atribuirlos al asistente.
 - Los valores declarados del bloque `run` y las rutas se validan de forma heurística y no excluyen todo secreto posible.
-- La evidencia de corpus del chat real no trae distancia y el colector de JUP-123 bloquea hoy esas filas para este evaluador: sin resolver la tarea 6.6, una campaña real no podría puntuar respuestas con citas.
+- La evidencia de corpus del chat real no trae distancia. La cabeza actual del colector de JUP-123 (`e0a0c41e`) y esta herramienta ya se entienden, pero solo se probó con una fila construida con su forma: sin un backend real que devuelva evidencia de corpus y sin la CI del colector en verde (tarea 6.6), una campaña real con citas no está demostrada.
 - La normalización de revisores no equipara formas Unicode de compatibilidad (registrado); no autentica identidades.
 
 ## ADR applicability

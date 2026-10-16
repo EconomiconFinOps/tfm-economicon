@@ -201,7 +201,7 @@ Each versionable report SHALL carry a unique run identifier derived from the raw
 
 ### Requirement: Evidence without a measured distance is kept as unmeasured
 
-The raw collection format SHALL accept a retrieved fragment whose `distance` is explicitly null, meaning the server reported no distance, and SHALL still reject a fragment whose distance is missing, textual, boolean or not finite. A case MAY carry a `public_evidence` list of objects with textual `id` and `kind` and a null or finite `distance`; the review sheet SHALL show it with the citations and fragments. A null distance SHALL NOT be converted to a number and SHALL NOT affect any outcome. The tool SHALL expose `ACCEPTS_UNMEASURED_DISTANCE` as true so a collector can detect that it may export such evidence instead of blocking the row.
+The raw collection format SHALL accept a retrieved fragment whose `distance` is explicitly null, meaning the server reported no distance, and SHALL still reject a fragment whose distance is missing, textual, boolean or not finite. A case MAY carry a `public_evidence` list of objects with non-empty textual `id` and `kind`, ids unique within the case, textual `source` and `content` when present, and a null or finite `distance`; the review sheet SHALL show it with the citations and fragments. A null distance SHALL NOT be converted to a number and SHALL NOT affect any outcome. The tool SHALL expose `ACCEPTS_UNMEASURED_DISTANCE` as true so a collector can detect that it may export such evidence instead of blocking the row.
 
 #### Scenario: Fragment with a null distance
 - **WHEN** a raw collection contains a retrieved fragment with `distance: null`
@@ -212,7 +212,7 @@ The raw collection format SHALL accept a retrieved fragment whose `distance` is 
 - **THEN** the collection is rejected with a controlled error
 
 #### Scenario: Malformed public evidence
-- **WHEN** `public_evidence` is not a list of objects with textual `id` and `kind`, or carries an invalid distance
+- **WHEN** `public_evidence` is not a list of objects with non-empty textual `id` and `kind`, repeats an id, carries non-textual `source` or `content`, or carries an invalid distance
 - **THEN** the collection is rejected
 
 ### Requirement: Dashboard rows without text or names
@@ -261,6 +261,6 @@ Evidence SHALL identify the execution date, application commit, suite version an
 - **AND** the best run is not substituted for the others
 
 #### Scenario: Mixed or repeated collections
-- **WHEN** three reports are compared and they differ in suite, configuration, code or provisional status, or two of them share the same raw collection
+- **WHEN** three reports are compared and they differ in suite, configuration, code (commit or hash), Python version or provisional status, or two of them share the same raw collection
 - **THEN** the comparison is refused
 - **AND** a summary that lacks the expected fields is refused with a controlled error

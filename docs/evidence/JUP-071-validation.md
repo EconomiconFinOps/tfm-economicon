@@ -13,7 +13,7 @@ Se añaden 16 variantes con 13 referencias JUP-069 (29 casos), un runner que reu
 | [Plantilla con fragmento fijo](JUP-071-template-fixed-report.json) | 29 | 0 | 8 | 0 | 21 | Pendiente |
 | [Plantilla sin contexto](JUP-071-template-empty-report.json) | 29 | 0 | 8 | 0 | 21 | Pendiente |
 
-Los dos informes se generaron con el commit `2486d44d` de la herramienta. También quedan juicios pendientes en los ocho casos con fallo conocido. Los resultados no son una tasa de alucinación ni una evaluación humana: en modo fijo el servicio repite el prompt en los 29 casos y en modo vacío entrega el mismo aviso sin contexto, y las cifras requeridas no se obtienen de ese eco. No se ejecutan red, gateway, embeddings, base de datos ni modelo. Los dos perfiles no son tres repeticiones equivalentes.
+Los dos informes se generaron con el commit `2486d44d` de la herramienta; regenerarlos con la herramienta actual da los mismos totales y grupos y solo cambian identificadores, fecha y hashes. También quedan juicios pendientes en los ocho casos con fallo conocido. Los resultados no son una tasa de alucinación ni una evaluación humana: en modo fijo el servicio repite el prompt en los 29 casos y en modo vacío entrega el mismo aviso sin contexto, y las cifras requeridas no se obtienen de ese eco. No se ejecutan red, gateway, embeddings, base de datos ni modelo. Los dos perfiles no son tres repeticiones equivalentes.
 
 ### Registro de regeneraciones de los informes de plantilla
 
@@ -39,14 +39,14 @@ Windows, Python 3.14, Node 24.
 | Comprobación | Resultado |
 | --- | --- |
 | `python tools/assistant-robustness.py validate` | 16 variantes / 29 casos; hashes válidos |
-| `corepack pnpm assistant-robustness:test` | 91 pruebas OK |
+| `corepack pnpm assistant-robustness:test` | 123 pruebas OK |
 | Pruebas de JUP-070 y de métricas de JUP-067 | 110 y 103 OK |
 | `node --test tools/ci-workflow.test.mjs` | 14 OK (con las dependencias del repositorio principal enlazadas temporalmente) |
 | `corepack pnpm openspec:validate`, `jup:check` del change y `jup:cleanup:check` | 74/74, OK, OK |
 
 ### 16/10/2026: distancia no medida y contrato del dashboard (tareas 4.4 y 4.5)
 
-La herramienta acepta fragmentos con `distance: null` y `public_evidence`, y expone `ACCEPTS_UNMEASURED_DISTANCE`. El comando `rows` emite el informe como `rows-v1`: se generaron `JUP-071-template-fixed-rows.json` y `JUP-071-template-empty-rows.json` y el validador de la cabeza `e4b403d4` del PR #132 de JUP-121 los acepta (código de salida 0). Se añadieron 14 pruebas (105 en total, en verde). Una pasada adversarial independiente (1 HIGH, 4 MEDIUM, 6 LOW) llevó a validar el informe antes de emitir, a marcar las dos tasas como no medidas sin casos evaluados, a copiar proveedor y alias, a dejar nulo el modelo no verificado y a endurecer `public_evidence`; quedan 113 pruebas en verde y los `rows` regenerados siguen aceptados por el validador de #132. Las correcciones no se revisaron de nuevo. Después, la guía del dashboard (cabeza `b6695100` del #132) fijó que la cobertura reducida va como juicio humano y pidió el desglose por tipo de perturbación: ambos se aplicaron, 116 pruebas en verde y los `rows` regenerados siguen aceptados por el validador de esa cabeza. Los nombres de grupo y métrica y qué filas son `human` están pendientes de confirmar con quien mantiene el dashboard.
+La herramienta acepta fragmentos con `distance: null` y `public_evidence`, y expone `ACCEPTS_UNMEASURED_DISTANCE`. El comando `rows` emite el informe como `rows-v1`: se generaron `JUP-071-template-fixed-rows.json` y `JUP-071-template-empty-rows.json` y el validador de las cabezas `e4b403d4` y `b6695100` del PR #132 de JUP-121 los acepta (código de salida 0). Una pasada adversarial automatizada (1 HIGH, 4 MEDIUM, 6 LOW) llevó a validar el informe antes de emitir, a marcar las dos tasas como no medidas sin casos evaluados, a copiar proveedor y alias, a dejar nulo el modelo no verificado y a endurecer `public_evidence`. Después, la guía del dashboard (cabeza `b6695100`) fijó que la cobertura reducida va como juicio humano y pidió el desglose por tipo de perturbación, y ambos se aplicaron. Quedan 123 pruebas en verde. Los nombres de grupo y métrica y el lugar donde se muestran siguen pendientes de confirmar con quien mantiene el dashboard (la clasificación `human`/`automatic` ya la fija su guía).
 
 ### 16/10/2026: procedencia del servidor (tarea 4.6)
 
@@ -96,13 +96,13 @@ Prueba de extremo a extremo sin coste: stack local aislado con el código del #1
 
 El modelo simulado devuelve siempre la misma respuesta de 82 caracteres (`insufficient_data`) sin evidencias, así que no se ejercitaron citas ni recuperación reales y no hay calidad que valorar. Resultado: las tres operaciones quedaron `VERIFIED_PUBLIC_SNAPSHOT` con pregunta, instantánea estable, paridad con el historial y citas conocidas en verdadero. En el log del backend el colector solo hizo GET; los POST fueron los del script que generó las operaciones. La exportación de la repetición 1, `review-sheet` y `score` funcionaron con las herramientas sin parchear: 3 filas de 29, las demás `not_run` por `missing_response`, 0 aciertos, 2 fallos numéricos y 27 pendientes, `live_unverified` y `model_execution_verified` falso. Reexportar produce bytes idénticos y no se encontró la contraseña ni el token en ninguno de los 15 ficheros generados.
 
-La primera exportación falló: el `run-info` de seis cadenas del colector no era válido para el bloque `run` (commit de 40 hexadecimales y `generation` como objeto). La cabecera pasó a aceptar un commit declarado de 7 a 40 hexadecimales y `generation` como cadena. El adaptador fija el commit y los hashes de la suite en su plan, de modo que cambiar la herramienta obliga a preparar otro plan y a volver a leer los recibos. Los artefactos de esta prueba están fuera de Git.
+La primera exportación falló: el `run-info` de seis cadenas del colector no era válido para el bloque `run` (commit de 40 hexadecimales y `generation` como objeto). La cabecera pasó a aceptar un commit declarado de 7 a 40 hexadecimales y `generation` como cadena. El adaptador fija el commit y los hashes de la suite en su plan, de modo que cambiar la herramienta obliga a preparar otro plan y a volver a leer los recibos. Los artefactos de esta prueba están fuera de Git: las cifras de esta sección (latencias, número de ficheros revisados) las declara quien ejecutó la prueba y no se pueden verificar desde el repositorio.
 
-No se probó el chat con un proveedor real, ni la lectura de evidencias y citas reales, ni más de tres muestras. Con evidencias de corpus del chat real, la versión actual del colector bloquearía las filas por falta de `distance`: está registrado como la tarea 6.6.
+No se probó el chat con un proveedor real, ni la lectura de evidencias y citas reales, ni más de tres muestras. Con evidencias de corpus del chat real, la cabeza `af8388d0` del colector bloqueaba las filas por falta de `distance`; la actual (`e0a0c41e`) exporta la distancia nula y esta herramienta la acepta, pero solo se comprobó con una fila construida con su forma, no con un backend real: tarea 6.6.
 
 ### 16/10/2026: revisión final
 
-La rama pasó una cuarta pasada adversarial automatizada (`accept`, con 3 MEDIUM y 3 LOW), una auditoría independiente de trazabilidad (`changes-required`, con hallazgos HIGH y MEDIUM de código y de documentación) y una quinta pasada dirigida sobre lo cambiado (`accept`, con 2 MEDIUM y 3 LOW). Se resolvieron o se registraron; el detalle de cada hallazgo y su resolución está en `review.md` del change. Ninguna de esas revisiones es la `Revision JUP-071` ni la `Validacion JUP-071` de una persona.
+La rama pasó siete pasadas adversariales automatizadas y dos auditorías de coherencia: las pasadas 1, 2 y 6 y las auditorías dieron `changes-required` y se corrigieron; las pasadas 3, 4, 5 y 7 dieron `accept` con hallazgos MEDIUM y LOW que se corrigieron o se registraron. El detalle de cada hallazgo y su resolución está en `review.md` del change. Los arreglos de la última auditoría documental no se revisaron de nuevo. Ninguna de esas revisiones es la `Revision JUP-071` ni la `Validacion JUP-071` de una persona.
 
 ## Límites
 
