@@ -19,6 +19,11 @@ No apagar/reiniciar nosotros ni arrancar despliegues ajenos. No es una orden de
 cancelar B o de pausar formalmente el objetivo; es una dependencia externa para
 continuar las66muestras pendientes.
 
+Handoff vigente `B-role-n5-handoff-v3.json`, SHA
+`c8671b4a37ed588c8aafdb6ff74cf274fbf6fe4a73b1ba8e935abc71747053a0`.
+Automatización existente actualizada con este corte, conservando horario: no
+reanudar v7 ni gastar mientras espera el arranque real con16GB.
+
 N5 d965 MISMO plan140/hash8af94f71: **74/74 conformes,437PASS**(289banco+148calidad),
 35identidades explícitas y39carries exactos internos. Ninguna etiqueta histórica
 heredada, fallo o duda; no son140 ni C3cumplido. Próxima019r3, batch011. Dictamen
