@@ -53,8 +53,27 @@ Evidencia adicional externa en
 Trello. Roles conservados según tarjeta: Alejandro/Paris/Víctor/Lucía.
 Colector #131 y PR documental #138 conservan sus dictámenes propios; no se
 trasladan a B. #138 sigue pendiente de Víctor al recibir el traspaso.
-Faltan concluir los checks, publicar la PR de B, pedir sus reviews oficiales y
-registrar el enlace en Trello. Sin merge ni activación permanente automática.
+Publicada [PR #140](https://github.com/EconomiconFinOps/tfm-economicon/pull/140),
+como borrador inicial en `6ae48b10`, combinando `800775ef` y `1de41b90`.
+Tablero enlazado por el puente autorizado: comentarios `6ad3a38b05778496471254a2`
+(JUP-123) y `6ad3a38c386d904bf3e3705b` (JUP-071). Primer intento de lectura
+agotó el plazo; reintento idempotente confirmado, sin duplicar ni alterar tarjetas.
+Recibo `trello-pr140-draft.json` en la evidencia adicional.
+
+En Windows con pin correcto: backend808PASS/66SKIP y2fallos de privilegio para
+crear symlinks. El launcher del venv altera la identidad PID del resolver y causa
+fallos de resumen del processor; el mismo caso pasa con el intérprete real y la
+misma dependencia aislada mediante PYTHONPATH. No se cambia el resolver para
+sortear esa guarda. La primera tanda incompatible y el diagnóstico se conservan.
+CI Linux inicial en6ae48b10 ya confirma processor, frontend, Azure API, OpenSpec,
+trazabilidad y SQL nativo conformes; backend pendiente en aquel corte. No se
+presenta toda la tanda de Windows como verde ni se heredan omisiones como PASS.
+Estado final de CI y reviews en la propia PR, con SHA exacto.
+
+Faltan concluir los checks y solicitar las dos reviews oficiales de B antes de
+integrar; las pruebas C2 asistidas no sustituyen ese paso. Sin merge ni activación
+permanente automática. Las novedades finales de publicación se anotan aquí localmente
+sin cambiar el SHA que se solicite revisar.
 
 ### Resultado final de las pruebas B — 17/10/2026
 
