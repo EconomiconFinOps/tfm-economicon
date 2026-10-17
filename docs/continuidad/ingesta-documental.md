@@ -123,3 +123,24 @@ RAG cuyos archivos mantienen identidad, ni se usan proveedores reales.
 Se entrega el árbol de trabajo para staging/commit del liderazgo, sin commit
 ni push propios. Evaluaciones independientes y CI del futuro commit pendientes;
 no se presenta la CI histórica de fd732f76 como comprobación de esta combinación.
+
+
+## Contrato de Grafana en CI sin recuento global — 17/10/2026
+
+La CI sobre la base reconciliada detectó un test desactualizado de
+`test_evaluation_grafana_datasource.py`: exigía 103 líneas ajenas a la variable
+de evaluación, frente a las 127 legítimas de esta rama (129 en fase2).
+La corrección elimina ese tamaño global fijo y conserva las cinco declaraciones
+previas relevantes, además de los casos existentes de declaración exacta/vacía,
+unicidad y posición tras `GRAFANA_ADMIN_PASSWORD`. Nombre y comentarios del test
+reflejan ese contrato, que admite ampliaciones independientes.
+
+El archivo completo pasa sus 30 casos en Python3.10/Windows y Python3.12/Linux.
+Controles mediante el override existente de configuración: tres entradas válidas
+(base actual, ampliación independiente y configuración de fase2 como dato) aceptadas;
+catorce incumplimientos de declaración/posición o ausencia/duplicación de las cinco
+variables previas rechazados por aserciones. El fallo original se conserva.
+No cambia configuración de runtime; el paquete/CI descubre el mismo archivo.
+[Evidencia de esta corrección](../evidence/JUP-124-validation.md#corrección-del-test-del-contrato-de-grafana--17102026).
+Evaluación independiente del candidato, aceptación y posterior incorporación por
+el liderazgo a fase2 siguen pendientes; fase2 no se edita anticipadamente.

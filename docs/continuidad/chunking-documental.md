@@ -171,3 +171,26 @@ ni inferencias nuevos. Detalle en la [evidencia](../evidence/JUP-125-validation.
 Staging/commit y nuevas referencias de integridad corresponden al PM antes de
 evaluación independiente de este candidato. Dictámenes previos, CI del padre,
 aprobación humana, pairing/reviews y publicación permanecen diferenciados.
+
+
+## Incorporación del fix del contrato Grafana — 17/10/2026
+
+Sobre `025a5a48`, el liderazgo inicia la incorporación de fase1 `4cf7782d`,
+que conserva el fix focal del test de CI después de revisión/validación
+independientes y retorno PM. La lógica del test se integra sin conflicto y
+permanece idéntica a la evaluada en fase1. El único conflicto, en el índice de
+continuidad, se resuelve conservando la información de ingesta y chunking.
+No se añade otra reconciliación con develop ni cambia el runtime de fase2.
+
+El archivo afectado se ejecuta **desde este checkout de fase2 con su
+`.env.example` real, sin override externo**:30/30casos correctos y14/14de
+consumidores de package/CI/documentación,44/44en la misma ejecución
+Python3.12/Linux RO/sin red. Los controles negativos previos de fase1 se
+reutilizan con atribución por identidad del test, sin repetirlos por rutina.
+No se presenta como nueva batería1842ni como CI remota favorable.
+
+Candidato local aún pendiente de staging/commit PM y evaluación independiente
+afectada contra referencias PM propias de esta incorporación. El archivo
+OpenSpec previo, chunker/metadata/reconstrucción, modelos/citas y evidencias
+funcionales anteriores permanecen conservados; participación humana y
+publicación se gestionan por separado. Sin servicios o inferencias nuevos.
