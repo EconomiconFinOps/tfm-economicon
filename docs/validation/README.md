@@ -1,5 +1,8 @@
 # Batería de preguntas FinOps — JUP-069
 
+Para recoger operaciones persistidas del chat y exportarlas a JUP-071, consultar
+el [colector reutilizable](chat-collector.md), independiente de la entrega semántica B.
+
 Para medir tiempo ahorrado, cobertura de gasto asignado y ahorro potencial,
 consultar el [instrumento funcional JUP-068](JUP-068-business-metrics.md).
 Para ver los resultados de las evaluaciones en Grafana y regenerarlos,
