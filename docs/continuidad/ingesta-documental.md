@@ -93,3 +93,33 @@ revocación, nueva subida por otro usuario y limpieza sin borrar su checkpoint;
 los proveedores son mock y no hay gasto. Se conservan los fallos de preparación.
 La [evidencia incremental](../evidence/JUP-124-validation.md#correcciones-del-pairing-de-pr-133)
 separa pruebas, límites y evaluaciones independientes todavía pendientes.
+
+## Reconciliación local con develop — 17/10/2026
+
+Se prepara la combinación de `fd732f76de9a507935559d847d50b9467d19084b` con
+`ffdd8ee9895d95e085ef31f18064fd55d56fe4e5`, comprobado por el liderazgo.
+La rama conserva ingesta, formatos/OCR, texto manual, límites y concurrencia,
+limpieza durable y los arreglos del pairing. No incorpora las fases 2/3.
+Los conflictos de los índices ADR/continuidad conservan ambas aportaciones,
+incluidas las dos rutas ADR-0022 ya identificadas en los padres; no se renumeran
+ni se ratifican. La fixture de doctor conserva variables documentales y suma
+la contraseña de evaluación requerida por Compose.
+
+La nueva obligación `GRAFANA_EVALUATION_DB_PASSWORD` exponía una incompatibilidad
+del generador CD: la preparación real fallaba tanto en raíz nueva como heredada.
+Por delimitación del liderazgo se añade sólo la clave ausente mediante el
+generador seguro existente. No se cambian valores configurados, permisos,
+roles de base de datos ni accesos operativos. Las pruebas generan exclusivamente
+secretos sintéticos temporales. Preparación de ambas raíces/ranuras y repetición
+idempotente correctas; se comprueba también la conservación de un valor existente.
+
+[Evidencia incremental](../evidence/JUP-124-validation.md#reconciliación-local-con-develop--17102026):
+127 casos de herramientas correctos y un fallo inicial propio de resolución de
+la expectativa S3, corregido y repetido focalmente; 29 casos del consumidor
+assistant y 76 OpenSpec correctos. Los errores CD originales se conservan,
+separados del resultado corregido. No se repiten OCR, multiusuario o campañas
+RAG cuyos archivos mantienen identidad, ni se usan proveedores reales.
+
+Se entrega el árbol de trabajo para staging/commit del liderazgo, sin commit
+ni push propios. Evaluaciones independientes y CI del futuro commit pendientes;
+no se presenta la CI histórica de fd732f76 como comprobación de esta combinación.

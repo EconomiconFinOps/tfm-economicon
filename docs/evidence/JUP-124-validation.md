@@ -146,3 +146,41 @@ RAG con proveedores reales, DockerServer, ni las fases posteriores. La
 [reproducción](../runbooks/document-ingestion.md#reproducción) incluye las suites
 de admisión nuevas y los smokes existentes. Commit, CI remota, publicación y
 reviews humanas se gestionan por separado.
+
+## Reconciliación local con develop — 17/10/2026
+
+Candidato sin commit nuevo: rama `feat/JUP-124-advanced-document-ingestion`,
+HEAD de partida `fd732f76de9a507935559d847d50b9467d19084b` y MERGE_HEAD
+`ffdd8ee9895d95e085ef31f18064fd55d56fe4e5`. Preparación autorizada con
+`merge --no-commit --no-ff`; staging final y commit corresponden al liderazgo.
+No se atribuyen estos bytes al HEAD inicial ni se declara CI remota nueva.
+
+Se conservan las filas de ambos índices y ambas entradas ADR-0022 por su ruta
+completa; la numeración original no se modifica. Doctor conserva sus controles
+de documentos/MinIO y añade la contraseña Grafana de develop. Compose, `.env`
+y CI combinan ambos padres, incluidos MinIO general y los motores de extracción
+en CI. Backend de documentos, processor y frontend mantienen identidad con
+fd732f76, incluidos los arreglos de pairing y el límite de 20.000.000 bytes.
+
+| Comprobación propia de la reconciliación | Resultado y límites |
+| --- | --- |
+| Doctor, smoke, topología y workflow, Node 24.22.0/yaml 2.9.0, candidato RO | Primera ejecución: 127/128 correctos; una expectativa resuelta omitía las dos claves S3. Corregida la unión, el único caso afectado pasa en ejecución focal. No se presenta como un nuevo 128/128 de una sola ejecución. |
+| Preparación CD real, raíz nueva y heredada | Fallo original en ambas por ausencia de GRAFANA_EVALUATION_DB_PASSWORD; diagnóstico saneado y recibos conservados. |
+| Compatibilidad CD corregida | Dos tests focales correctos: ambas raíces y dos ranuras, preservación del valor configurado y repetición idempotente. Usa el generador existente, añade sólo valores ausentes y no rota secretos. No se crean usuarios/grants ni se despliega. |
+| Consumidor backend del cambio de series de fallos de assistant | 29/29 correctos en entorno Python 3.10.11 propio con dependencias declaradas. Sin red de proveedores ni servicios compartidos. |
+| OpenSpec estricto global | 76/76 correctos; incluye la spec de fase 1 sin modificar sus requisitos. |
+| Trazabilidad e higiene | Ocho changes activos trazables y 1.746 archivos correctos. |
+
+El ajuste del generador CD es compatibilidad necesaria con la configuración
+entrante de JUP-121, delimitada expresamente por el liderazgo. La variable se
+genera únicamente si falta; las raíces existentes conservan sus valores y las
+releases ya preparadas siguen inmutables. No equivale a actualización del agente
+operativo ni a ejecución sobre DockerServer.
+
+Se reutilizan por identidad las evidencias históricas de ingesta/formatos/OCR,
+20 MB, aislamiento, multiusuario, limpieza y UI; no se reportan como ensayos
+nuevos. No se ejecutan campañas LLM, llamadas pagadas o fases posteriores.
+Autorrevisión y pruebas propias no sustituyen los nuevos dictámenes independientes
+ni las reviews humanas. Fuentes, recibos originales, manifiesto de bytes y
+recursos temporales quedan identificados fuera del producto bajo custodia del
+liderazgo. Commit, evaluación independiente, CI remota y publicación pendientes.

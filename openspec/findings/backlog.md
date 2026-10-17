@@ -367,6 +367,32 @@ Tipo: deuda tecnica. Severidad: Low. Estado: Open. Owner: Equipo Economicon.
 - Los errores de la capa de API (`Request failed for...`, `Invalid response for...`) y los del navegador
   (`Failed to fetch`) se muestran en ingles; decision de Lucia de dejar fuera esa capa.
 
+## JUP-071 — `outside_repository` del evaluador JUP-070 acepta rutas Windows con prefijo extendido
+
+Fecha: 2026-10-13. Origen: JUP-071, revision adversarial pasada 1 (ADV-4).
+Tipo: deuda tecnica. Severidad: Low. Estado: Open. Owner: Equipo Economicon.
+
+- `outside_repository` de `tools/assistant-eval.py` compara la ruta sin normalizar el prefijo `\?\` de Windows: una ruta de ese tipo que apunta dentro del repositorio se acepta como exterior. `write_private` y `run_collect` de JUP-070 la usan, de modo que el CLI de JUP-070 puede escribir respuestas o fragmentos dentro del repositorio con esa ruta.
+- JUP-071 lo cubre en su propio CLI con una normalizacion previa (`normalised`/`outside` en `tools/assistant-robustness.py`) porque la propuesta no modifica el evaluador de JUP-070. La correccion de raiz es normalizar en `outside_repository` y aplicar el mismo criterio en los dos CLI.
+- Solo aplica a Windows y a un uso deliberado, no accidental; la CI de Linux no lo ejerce.
+
+## JUP-071 — El lector numérico de JUP-070 rechaza respuestas correctas con la etiqueta de otra cifra antes de la propia
+
+Fecha: 2026-10-13. Origen: JUP-071, revision adversarial pasada 3 (ADV-1).
+Tipo: deuda tecnica. Severidad: Medium. Estado: Open. Owner: Equipo Economicon.
+
+- `labelled_by` de `tools/assistant-eval.py` solo mira la etiqueta anterior a la cifra, aunque `docs/validation/JUP-070-evaluation.md` dice «antes, o después si lo de antes nombra otra cifra». Una respuesta como «El coste unitario pasa de 10 EUR/pedido en julio a 6 EUR/pedido en agosto, una reducción del 40 %» falla la cifra de agosto en `JUP-069-027` porque «julio» queda a la izquierda del 6. En JUP-071-002, «Del coste total, solo el 10 % cumple los tags mínimos» falla la cifra 2 porque «coste total» es alias de la cifra 1.
+- El fallo numérico es duro: los juicios humanos no lo revierten. Afecta a los casos de JUP-069 con varias cifras esperadas (001, 002, 005, 013, 014, 016, 017, 018, 021 y 027); JUP-069-011 y las variantes de JUP-071 tienen una sola cifra.
+- JUP-071 hereda el comportamiento porque reutiliza `check_number`; la propuesta no modifica el evaluador. Al revisar los resultados de una campaña real, un `numbers-N` en `fail` de estos casos se debe mirar a mano antes de leerlo como error del asistente.
+
+## JUP-071 — Registrados de la revisión final: revisores en formas Unicode de compatibilidad y hash de la configuración
+
+Fecha: 2026-10-16. Origen: JUP-071, revisión adversarial pasada 4 (ADV-4 y ADV-5).
+Tipo: deuda tecnica. Severidad: Low. Estado: Open (registrado por una revisión automatizada; sin aceptación humana). Owner: Equipo Economicon.
+
+- Dos revisores se distinguen tras `normalize` de JUP-070 (descomposición canónica, mayúsculas, espacios y caracteres de formato), que no equipara formas de compatibilidad como «Ana» y «Ａｎａ» (ancho completo) ni confusables de otro alfabeto. Distinguirlos como revisores independientes requiere intención deliberada del operador, y la identidad no se autentica. Mejorarlo (comparar con NFKC) toca la función de JUP-070 que usan sus dos herramientas.
+- `configuration_sha256` del informe versionable es el SHA-256 de toda la configuración declarada. Los campos extra no se copian al informe y el CLI de recogida los rechaza, pero el hash de una configuración de forma conocida con un secreto corto podría atacarse por fuerza bruta fuera de línea. Los informes actuales no tienen riesgo: la plantilla no lleva secretos. Si se aceptan configuraciones con campos libres, hashear solo los campos validados.
+
 ## JUP-119 — Datos de demo por una sola ruta y fecha de referencia
 
 Fecha: 2026-10-13. Origen: JUP-119, sondeo con CockroachDB real y pruebas del change.
@@ -402,3 +428,40 @@ Tipo: deuda tecnica y mejoras de producto. Severidad: Low a Medium. Estado: Open
 - RF-119-011 (observacion, Low): `COST_REFERENCE_DATE` no se limita por entorno; una fecha olvidada en produccion congela los costes
   visibles (la cabecera lo avisa con «Fecha simulada»). Valorar un aviso en el arranque si `RUNTIME_ENVIRONMENT=production` y hay fecha fija.
 - RF-119-012 (producto, Low, para JUP-035): las respuestas economicas del asistente ya guardadas en una conversacion se leen tal como se guardaron; si la fecha de referencia retrocede, siguen mostrando importes y evidencia posteriores a ella (reproducido en la revision del PR #127). Queda fuera de JUP-119 porque solo ocurre al retroceder la fecha a mano. Al definir cómo JUP-035 guarda las respuestas, aplicar la fecha vigente al leerlas (por ejemplo, ocultar los importes y la evidencia cuyo periodo termina despues de la referencia y mostrar un aviso) y cubrirlo con una prueba de guardar, retroceder y reabrir.
+
+## RF-121-001 Cabos sueltos de menor severidad tras JUP-121
+
+Fecha: 2026-10-15. Origen: JUP-121, validacion independiente y QA por tarea (`review.md` del change).
+Tipo: deuda tecnica. Severidad: Low. Estado: Open. Owner: Equipo Economicon.
+
+- `evaluation-dashboard.py load`: dos cargas simultaneas hacen que una falle con `tuple concurrently updated` o
+  `deadlock detected` (nunca las dos, y sin dejar datos a medias). Se evita con un bloqueo asesor al inicio del
+  script del rol y el de las vistas; no se hizo porque cambiaba pruebas de entrada ya congeladas.
+- La sentencia `ALTER ROLE ... PASSWORD` lleva la contrasena en claro: si el servidor registra sentencias
+  (`log_statement` en `ddl` o `all`) quedaria en su registro. Mejora: enviar el hash SCRAM calculado en Python.
+- El detalle de un error de `psql` usa la ultima linea de la salida y no la que empieza por `ERROR:`.
+- Las restricciones CHECK de las tablas `evaluation.*` no tienen nombre (el mensaje de violacion es poco claro).
+- El manifiesto versionado cita rutas absolutas en los mensajes de error de la capa de manifiestos.
+- El panel 19 (tasa de error del backend) quedaba vacio mientras no hubiera respuestas 5xx; corregido en
+  `jup-121-lectura-dashboard` (numerador con `or vector(0)`). Sigue sin ser identico a la del dashboard tecnico de
+  JUP-043, que no se toca, y da NaN (no se dibuja) si el contador existe con tasa 0 durante toda la ventana.
+- `grafana` en `docker-compose.yml` no define `healthcheck`; los puertos de los servicios se publican en `0.0.0.0`
+  y `PUBLIC` conserva `CONNECT` sobre la base, ambos heredados de la configuracion existente.
+- La robustez por categoria y perturbacion (JUP-071) sigue sin datos: la seccion existe y muestra «Sin datos».
+- Del change `jup-121-lectura-dashboard` (PR #132), severidad Low: columnas «Hito» y «Commit» de «Ejecuciones
+  cargadas» recortadas a 1440 px y «Denominador» recortado en el detalle de exactitud; las consultas por minuto no suman
+  por instancia (`sum()`; copia de JUP-043: con replicas dibujaria una linea por instancia); la leyenda de las
+  evoluciones muestra identificadores crudos (`ACC-2 · judged`); la calibracion muestra «50.0%» sin espacio; dos
+  ejecuciones del mismo minuto y tipo darian la misma cabecera de columna en la matriz; el titulo del panel de latencia p95
+  se trunca en un panel de un tercio de ancho; GRD-2 por caso se carga y aparecera como filas con el identificador de caso
+  crudo en la matriz cuando haya fallos.
+
+## RF-070-012 Latencias de embedding y recuperacion a 0 ms en las ejecuciones de JUP-070
+
+Fecha: 2026-10-16. Origen: JUP-121, [revision de pairing de Lucia en PR #132](https://github.com/EconomiconFinOps/tfm-economicon/pull/132).
+Tipo: calidad de la medicion. Severidad: Low. Estado: Open. Owner: Equipo Economicon. Scope: JUP-070, no JUP-121.
+
+En `docs/evidence/JUP-070-run-1-report.json` y `run-2-report.json`, `LAT-1` registra 0 ms en las etapas `embedding` y
+`retrieval` con n = 28 (comprobado). La ejecucion 2 usa embeddings reales (`litellm`), por lo que 0 ms no parece una
+medicion real. El dashboard lo copia fielmente y lo muestra como «0.0 ms», un cero medido segun su propia regla («no medido
+nunca es 0»). Revisar si el medidor de JUP-070 mide esas etapas o las deja a 0 por defecto.
