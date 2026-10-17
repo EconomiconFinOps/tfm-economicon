@@ -13,6 +13,7 @@ from app.api.routes.chat import router as chat_router
 from app.api.routes.billing import router as billing_router
 from app.api.routes.health import router as health_router
 from app.api.routes.jobs import router as jobs_router
+from app.api.routes.documents import router as documents_router
 from app.api.routes.tenants import router as tenants_router
 from app.core.config import get_settings
 from app.core.logging import configure_logging
@@ -61,6 +62,16 @@ async def initialize_chat_resources(application):
     service(application,active=True)
 
 
+async def maintain_documents(service):
+    import structlog
+    while True:
+        try:
+            await asyncio.to_thread(service.maintain)
+        except Exception:
+            structlog.get_logger(__name__).warning('document_maintenance_retry_pending')
+        await asyncio.sleep(15)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     try:
@@ -78,6 +89,15 @@ async def lifespan(app: FastAPI):
             queue.start()
             app.state.database = database
             app.state.queue = queue
+            app.state.document_uploads = None
+            document_maintenance = None
+            if os.getenv('DOCUMENT_UPLOADS_ENABLED', 'false').lower() == 'true':
+                from app.services.document_storage import S3Storage
+                from app.services.document_uploads import DocumentUploads
+                storage = S3Storage()
+                resources.callback(storage.close)
+                app.state.document_uploads = DocumentUploads(database, queue, storage)
+                document_maintenance = asyncio.create_task(maintain_documents(app.state.document_uploads))
             app.state.vector_store = vector_store
             app.state.assistant_service = AssistantService()
             embedding_provider = (
@@ -91,6 +111,9 @@ async def lifespan(app: FastAPI):
             try:
                 yield
             finally:
+                if document_maintenance is not None:
+                    document_maintenance.cancel()
+                    await asyncio.gather(document_maintenance, return_exceptions=True)
                 chat = getattr(app.state, "chat_service", None)
                 if chat is not None:
                     await chat.close()
@@ -131,5 +154,6 @@ app.include_router(auth_router)
 app.include_router(tenants_router)
 app.include_router(billing_router)
 app.include_router(jobs_router)
+app.include_router(documents_router)
 app.include_router(assistant_router)
 app.include_router(chat_router)

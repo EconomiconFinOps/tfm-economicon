@@ -5,8 +5,8 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-COPY apps/backend/requirements.txt apps/backend/requirements.lock apps/backend/requirements-chat.lock ./
-RUN pip install --no-cache-dir --require-hashes -r requirements.lock -r requirements-chat.lock \
+COPY apps/backend/requirements.txt apps/backend/requirements.lock apps/backend/requirements-chat.lock apps/backend/requirements-documents.lock apps/backend/requirements-documents.txt ./
+RUN pip install --no-cache-dir --require-hashes -r requirements.lock -r requirements-chat.lock -r requirements-documents.lock \
     && pip check \
     && pip install --dry-run --no-index -r requirements.txt
 

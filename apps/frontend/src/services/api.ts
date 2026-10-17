@@ -1,3 +1,5 @@
+import type { DocumentTransport, UploadTicket, UploadStatus } from "./document-contracts";
+import { isUploadTicket, isUploadStatus } from "./document-contracts";
 import type { SystemHealth, HealthComponent, HealthReason } from "./contracts";
 import { healthReasons, isSystemHealth, isProviderObservation } from "./contracts";
 import type { QueryClient } from "@tanstack/react-query";
@@ -297,4 +299,49 @@ export function changeAnomalyEpisodeStatus(token: string, tenantId: string, epis
   return fetchJson<AnomalyEpisode>(`/billing/anomalies/episodes/${encodeURIComponent(episodeId)}`, {
     token, tenantId, method: "PATCH", body: JSON.stringify(change), validate: isAnomalyEpisode
   });
+}
+
+/** Direct S3 transfer deliberately carries no application token or tenant header. */
+export function transferDocument(ticket: UploadTicket, file: File, progress: (percent: number) => void, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal.aborted) { reject(new DOMException("Upload aborted.", "AbortError")); return; }
+    const request = new XMLHttpRequest();
+    let settled = false;
+    const finish = (error?: Error) => {
+      if (settled) return;
+      settled = true;
+      signal.removeEventListener("abort", abort);
+      if (error) reject(error); else resolve();
+    };
+    const abort = () => { request.abort(); finish(new DOMException("Upload aborted.", "AbortError")); };
+    request.open("PUT", ticket.upload_url);
+    request.withCredentials = false;
+    request.timeout = 180_000;
+    for (const [key, value] of Object.entries(ticket.headers)) request.setRequestHeader(key, value);
+    request.upload.onprogress = (event) => { if (event.lengthComputable) progress(Math.round(event.loaded / event.total * 100)); };
+    request.onload = () => finish(request.status >= 200 && request.status < 300 ? undefined : new Error("Document transfer failed."));
+    request.onerror = () => finish(new Error("Document transfer failed."));
+    request.ontimeout = () => finish(new Error("Document transfer timed out."));
+    request.onabort = () => finish(new DOMException("Upload aborted.", "AbortError"));
+    signal.addEventListener("abort", abort, { once: true });
+    request.send(file);
+  });
+}
+
+export function createDocumentTransport(token: string, tenantId: string): DocumentTransport {
+  return {
+    begin: (request, signal) => fetchJson<UploadTicket>("/jobs/uploads", {
+      method: "POST", token, tenantId, signal, body: JSON.stringify(request), validate: isUploadTicket
+    }),
+    transfer: transferDocument,
+    confirm: (id, signal) => fetchJson<UploadStatus>(`/jobs/uploads/${encodeURIComponent(id)}/confirm`, {
+      method: "POST", token, tenantId, signal, validate: isUploadStatus
+    }),
+    status: (id, signal) => fetchJson<UploadStatus>(`/jobs/uploads/${encodeURIComponent(id)}`, {
+      token, tenantId, signal, validate: isUploadStatus
+    }),
+    cancel: (id) => fetchJson<UploadStatus>(`/jobs/uploads/${encodeURIComponent(id)}`, {
+      method: "DELETE", token, tenantId, validate: isUploadStatus
+    })
+  };
 }

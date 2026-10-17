@@ -23,7 +23,7 @@ PORTS = {"COCKROACH_SQL_PORT": 0, "COCKROACH_HTTP_PORT": 1,
          "RABBITMQ_PORT": 2, "RABBITMQ_MANAGEMENT_PORT": 3, "PGVECTOR_PORT": 4,
          "API_HOST_PORT": 5, "PROCESSOR_HOST_PORT": 6,
          "AZURE_COST_API_HOST_PORT": 7, "FRONTEND_HOST_PORT": 8,
-         "PROMETHEUS_PORT": 9, "GRAFANA_PORT": 10}
+         "PROMETHEUS_PORT": 9, "GRAFANA_PORT": 10, "MINIO_HOST_PORT": 11}
 
 
 def run(args, cwd=None, capture=False, timeout=1200, env=None):
@@ -90,9 +90,28 @@ def chat_hmac_file(root):
     return path.resolve()
 
 
+def document_secrets(root):
+    """Upgrade only missing document/evaluation settings under the deployment root lock."""
+    path = root / "secrets.json"
+    values = json.loads(path.read_text())
+    original = dict(values)
+    for name, size in (("MINIO_ROOT_USER", 10), ("MINIO_ROOT_PASSWORD", 24),
+                       ("DOCUMENT_S3_ACCESS_KEY", 10), ("DOCUMENT_S3_SECRET_KEY", 24),
+                       ("GRAFANA_EVALUATION_DB_PASSWORD", 24)):
+        if name not in values:
+            values[name] = secrets.token_hex(size)
+        if not isinstance(values[name], str) or not values[name]:
+            raise ValueError(f"Invalid existing {name}; refusing to rotate it")
+    values.setdefault("DOCUMENT_S3_BUCKET", "document-ingestion")
+    values.setdefault("DOCUMENT_S3_REGION", "us-east-1")
+    if values != original:
+        atomic_json(path, values)
+    return values
+
+
 def init(root, port_base):
     if not 1024 <= port_base <= 65424:
-        raise ValueError("Port base must leave room for both eleven-port slots")
+        raise ValueError("Port base must leave room for both twelve-port slots")
     if (root / "config.json").exists() or (root / "secrets.json").exists():
         raise ValueError("Already initialized; existing secrets must be preserved")
     root.mkdir(parents=True, mode=0o700, exist_ok=True)
@@ -108,6 +127,7 @@ def init(root, port_base):
                   EMBEDDING_PROVIDER="mock", LLM_PROVIDER="mock", AI_EXECUTION_MODE="development")
     atomic_json(root / "secrets.json", values)
     atomic_json(root / "config.json", {"port_base": port_base})
+    document_secrets(root)
     chat_hmac_file(root)
 
 
@@ -147,7 +167,7 @@ def prepare(root, source, sha, slot):
                     os.chmod(path, 0o755)
         os.chmod(temporary, 0o700)
         base = json.loads((root / "config.json").read_text())["port_base"] + slot * 100
-        values = json.loads((root / "secrets.json").read_text())
+        values = document_secrets(root)
         # Also upgrades pre-chat roots without replacing any existing secret.
         values['CHAT_HMAC_FILE'] = str(chat_hmac_file(root))
         # The candidate is checked while the current release remains running.
@@ -155,9 +175,13 @@ def prepare(root, source, sha, slot):
                       PROCESSOR_CHAT_PRIVATE_IP=f"172.30.{35 + slot}.3")
         values.update({name: str(base + offset) for name, offset in PORTS.items()})
         namespace = hashlib.sha256(str(root.resolve()).encode()).hexdigest()[:12]
+        origins = [f"http://127.0.0.1:{base + 8}", f"http://localhost:{base + 8}"]
         values.update(COMPOSE_PROJECT_NAME=f"economicon-cd-{namespace}-{sha[:12]}",
                       VITE_API_BASE_URL=f"http://127.0.0.1:{base + 5}",
-                      CORS_ALLOWED_ORIGINS=json.dumps([f"http://127.0.0.1:{base + 8}", f"http://localhost:{base + 8}"], separators=(",", ":")))
+                      CORS_ALLOWED_ORIGINS=json.dumps(origins, separators=(",", ":")),
+                      DOCUMENT_CORS_ORIGINS=",".join(origins),
+                      DOCUMENT_S3_ENDPOINT="http://minio:9000",
+                      DOCUMENT_S3_PUBLIC_ENDPOINT=f"http://127.0.0.1:{base + PORTS['MINIO_HOST_PORT']}")
         (temporary / ".env").write_text("".join(f"{k}='{v}'\n" for k, v in values.items()))
         os.chmod(temporary / ".env", 0o600)
         # Render silently, then enforce private ports regardless of base Compose defaults.
