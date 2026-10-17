@@ -6,6 +6,22 @@ la memoria y abrir una JUP sólo si resulta necesaria.
 
 ## Actualización de validación — 17/10/2026
 
+Petición humana posterior: localizar otro modelo compatible para evitar429.
+Investigación pública de470modelos y catálogo ZDR, sin inferencias/gasto/envío
+de corpus/cambio de gateway. Shortlist `B-model-alternatives-20261017-v1.json`
+SHAac41b83c ysu informe.md en la evidencia externa. Las cuatro rutas anuncian
+JSONSchema/temperature/max_tokens/reasoning y contexto suficiente:
+DeepSeekV4.1Flash/DeepInfraFP8(.14/.42USDporM), el mismo porNebiusFP8(.30/1.20),
+MistralLarge4/mistral-zdr(.68/2.09) yMiniMaxM3/Together(.30/1.20).
+Recomendación para reducir cambios: probar primero DeepSeek porDeepInfraFP8;
+modelo distinto preferido para prueba: MistralLarge4, con reasoning_effort=none
+documentado. MiniMax mantiene pendiente confirmar razonamiento desactivado.
+No hay compatibilidad de ejecución/semántica demostrada: catálogo100% no garantiza
+inferencia, strict/streaming reales deben probarse en una campaña separada.
+No se altera la elección histórica ni su comparación; nuevo candidato no activado.
+N5actual95(91conformes/4técnicas),45pendientes y todas reservas preservadas.
+
+El párrafo siguiente conserva el corte093 anterior a los429de010/011:
 La comparación e informe del16/10 siguen congelados; no se reescriben sus cifras.
 El candidato posterior d965 conserva N5 NUEVA140:93recogidas,91conformes538checks,
 2técnicas(008r4:4timeouts;009r4:HTTP404),11noevaluables/47sin despachar. Paquete093

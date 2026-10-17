@@ -9,6 +9,16 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 17/10/2026
 
+Nueva instrucción humana posterior al bloqueo: buscar otro modelo compatible.
+Investigación completada sin llamadas pagadas: alternativas de ruta DeepSeek por
+DeepInfraFP8/NebiusFP8 y modelos distintos MistralLarge4ZDR/MiniMaxM3Together.
+Informe externo `B-model-alternatives-20261017-v1.{md,json}`/JSONSHAac41b83c;
+parámetros y ZDR comprobados por endpoint, no ejecución real ni calidad.
+Recomendación: DeepSeek/DeepInfra para cambiar sólo proveedor; MistralLarge4ZDR
+si se cambia modelo. No se ha cambiado runtime, fuente, ledger, claves o plan N5.
+Detalle en [memoria-modelos](memoria-modelos.md). El cierre sigue incompleto;
+los candidatos no convierten95parciales en N5 aceptada ni autorizan renovar claves.
+
 Objetivo confirmado `blocked` a17oct08:33UTC tras tres turnos consecutivos del
 mismo impedimento upstream429, contando el turno original y dos continuaciones.
 No se reutilizó el bloqueo anterior0%/presupuesto. Auditoría
