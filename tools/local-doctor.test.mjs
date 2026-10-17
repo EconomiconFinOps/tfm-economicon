@@ -20,6 +20,10 @@ const SECRETS = {
   RABBITMQ_ERLANG_COOKIE: "SENTINELCOOKIEVALUE",
   POSTGRES_PASSWORD: "SENTINEL-pg@pass:%y",
   GRAFANA_ADMIN_PASSWORD: "SENTINEL-grafana",
+  MINIO_ROOT_USER: "sentinel-minio-root",
+  MINIO_ROOT_PASSWORD: "SENTINEL-minio-root-0123456789abcdef",
+  DOCUMENT_S3_ACCESS_KEY: "sentinel-s3-user",
+  DOCUMENT_S3_SECRET_KEY: "SENTINEL-s3-service-0123456789abcdef",
   GRAFANA_EVALUATION_DB_PASSWORD: "SENTINEL-grafana-evaluation",
 };
 const enc = encodeURIComponent;
@@ -31,6 +35,7 @@ const VALID = {
   DATABASE_URL: "cockroachdb+psycopg://root@cockroachdb:26257/defaultdb?sslmode=disable",
   RUNTIME_ENVIRONMENT: "development",
   ALLOW_INSECURE_LOCAL_DATABASE: "true",
+  DOCUMENT_CORS_ORIGINS: "http://127.0.0.1:5173,http://localhost:5173",
 };
 const SENTINELS = [
   ...Object.values(SECRETS),
@@ -99,19 +104,22 @@ test("parses dotenv lines the way Compose does", () => {
 test("reads required variables and published ports from the Compose file", () => {
   const contract = readComposeContract(composeText);
   assert.deepEqual(contract.required, [
-    "AUTH_SECRET_KEY", "CHAT_HMAC_FILE", "DATABASE_URL", "GRAFANA_ADMIN_PASSWORD", "GRAFANA_EVALUATION_DB_PASSWORD",
-    "POSTGRES_PASSWORD",
+    "AUTH_SECRET_KEY", "CHAT_HMAC_FILE", "DATABASE_URL",
+    "DOCUMENT_CORS_ORIGINS", "DOCUMENT_S3_ACCESS_KEY", "DOCUMENT_S3_SECRET_KEY",
+    "GRAFANA_ADMIN_PASSWORD", "GRAFANA_EVALUATION_DB_PASSWORD",
+    "MINIO_ROOT_PASSWORD", "MINIO_ROOT_USER", "POSTGRES_PASSWORD",
     "RABBITMQ_DEFAULT_PASS", "RABBITMQ_DEFAULT_USER", "RABBITMQ_ERLANG_COOKIE",
     "RABBITMQ_URL", "VECTOR_DATABASE_URL",
   ]);
   const ports = Object.fromEntries(contract.ports.map((port) => [port.variable, port]));
   assert.deepEqual(Object.keys(ports).sort(), [
     "API_HOST_PORT", "AZURE_COST_API_HOST_PORT", "COCKROACH_HTTP_PORT", "COCKROACH_SQL_PORT",
-    "FRONTEND_HOST_PORT", "GRAFANA_PORT", "PGVECTOR_PORT", "PROCESSOR_HOST_PORT",
+    "FRONTEND_HOST_PORT", "GRAFANA_PORT", "MINIO_HOST_PORT", "PGVECTOR_PORT", "PROCESSOR_HOST_PORT",
     "PROMETHEUS_PORT", "RABBITMQ_MANAGEMENT_PORT", "RABBITMQ_PORT",
   ]);
   assert.deepEqual(ports.COCKROACH_SQL_PORT, { variable: "COCKROACH_SQL_PORT", default: "26257", host: "127.0.0.1" });
   assert.deepEqual(ports.API_HOST_PORT, { variable: "API_HOST_PORT", default: "8000", host: "0.0.0.0" });
+  assert.deepEqual(ports.MINIO_HOST_PORT, { variable: "MINIO_HOST_PORT", default: "9000", host: "127.0.0.1" });
 });
 
 test("keeps escaped apostrophes and literal backslashes in single-quoted dotenv values", () => {
@@ -159,14 +167,48 @@ test("a valid local configuration passes", async () => {
   assertNoSecrets(result.text);
 });
 
-test("a plain copy of .env.example lists every missing secret and the opt-in", async () => {
+test("a plain copy of .env.example lists missing values and the opt-in, not configured origins", async () => {
   const result = await doctor(exampleText);
   assert.equal(result.code, 1);
+  const example = parseDotenv(exampleText);
   for (const name of readComposeContract(composeText).required) {
-    assert.match(result.text, new RegExp(`\\b${name}\\b`), name);
+    const missing = new RegExp(`Falta ${name}:`);
+    if (example.get(name)) assert.doesNotMatch(result.text, missing, name);
+    else assert.match(result.text, missing, name);
   }
   assert.match(result.text, /RUNTIME_ENVIRONMENT/);
   assert.match(result.text, /ALLOW_INSECURE_LOCAL_DATABASE/);
+});
+
+test("document storage variables remain required when absent, empty or emptied by the environment", async () => {
+  for (const name of ["MINIO_ROOT_USER", "MINIO_ROOT_PASSWORD", "DOCUMENT_S3_ACCESS_KEY",
+    "DOCUMENT_S3_SECRET_KEY", "DOCUMENT_CORS_ORIGINS"]) {
+    const missing = { ...VALID };
+    delete missing[name];
+    for (const [vars, options] of [[missing, {}], [{ ...VALID, [name]: "" }, {}],
+      [VALID, { env: { [name]: "" } }]]) {
+      const result = await doctor(dotenv(vars), options);
+      assert.equal(result.code, 1, name);
+      assert.match(result.text, new RegExp(`Falta ${name}:`));
+      assert.equal(result.lines.filter(({ level }) => level === "error").length, 1, result.text);
+      assertNoSecrets(result.text);
+    }
+  }
+});
+
+test("the MinIO host port is checked for invalid values, collisions and occupancy", async () => {
+  const invalid = await doctor(dotenv({ ...VALID, MINIO_HOST_PORT: "70000" }));
+  assert.equal(invalid.code, 1);
+  assert.match(invalid.text, /MINIO_HOST_PORT no es un puerto valido/);
+  const duplicated = await doctor(dotenv({ ...VALID, MINIO_HOST_PORT: "5433" }));
+  assert.equal(duplicated.code, 1);
+  assert.match(duplicated.text, /MINIO_HOST_PORT y PGVECTOR_PORT.*5433/);
+  const occupied = await doctor(dotenv({ ...VALID, MINIO_HOST_PORT: "19000" }), {
+    isPortFree: async (port) => port !== 19000,
+  });
+  assert.equal(occupied.code, 1);
+  assert.match(occupied.text, /MINIO_HOST_PORT.*19000.*127\.0\.0\.1/);
+  for (const result of [invalid, duplicated, occupied]) assertNoSecrets(result.text);
 });
 
 test("a missing .env is reported and never created", async () => {

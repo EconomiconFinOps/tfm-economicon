@@ -19,7 +19,8 @@ Contrato que se valida:
   datasource se conecta al primer uso), sin puertos nuevos y con el resto del servicio y de `postgres-pgvector`
   idénticos.
 * `.env.example`: la línea `GRAFANA_EVALUATION_DB_PASSWORD=` (sin valor) justo después de
-  `GRAFANA_ADMIN_PASSWORD=`, una sola vez; lo demás no cambia.
+  `GRAFANA_ADMIN_PASSWORD=`, una sola vez; se conservan las variables previas relevantes y se permiten
+  ampliaciones independientes.
 * La guía `docs/validation/evaluation-dashboard.md` nombra la variable y el datasource `evaluation-postgres`.
 
 Rutas: por defecto los ficheros reales del repositorio. `EVALUATION_COMPOSE_YML`, `EVALUATION_ENV_EXAMPLE`,
@@ -99,19 +100,14 @@ GRAFANA_BLOCK_TODAY = [
 POSTGRES_BLOCK_SHA256 = "6e91e98f0ed2ec1dc8dd321c3079361431d3d488c151372a3e8423fc8cae8aab"
 TECHNICAL_DASHBOARD_SHA256 = "d9560fdca39be806fa66268a4950de7a3f1a2bb94adabeeda0534b2b8ee70976"
 
-# Cinco líneas representativas del `.env.example` de hoy, y su número total de líneas antes de añadir la nueva.
-ENV_LITERALS_TODAY = [
+# Declaraciones previas relevantes: se conservan sin limitar ampliaciones independientes de `.env.example`.
+ENV_REQUIRED_LITERALS = [
     "GRAFANA_ADMIN_PASSWORD=",
     "POSTGRES_PASSWORD=",
     "RABBITMQ_ERLANG_COOKIE=",
     "PGVECTOR_PORT=5433",
     "EMBEDDING_PROVIDER=mock",
 ]
-# Actualizado tras integrar develop: eran 85 líneas; develop añadió al final de `.env.example` el bloque del chat de
-# JUP-035 (18 líneas: una en blanco, comentarios y variables `CHAT_*`/`SUMMARY_*`/`PROCESSOR_CHAT_*`), así que sin
-# nuestra línea hay 103. Las cinco líneas representativas de arriba no cambian: el recuento total sigue detectando
-# que se borre o se añada cualquier otra línea.
-ENV_LINES_TODAY = 103
 
 
 def _leer(ruta):
@@ -455,12 +451,11 @@ class EnvExampleTests(unittest.TestCase):
         posicion = self.lineas.index("GRAFANA_ADMIN_PASSWORD=")
         self.assertEqual(self.lineas[posicion + 1 : posicion + 2], [ENV_LINE])
 
-    def test_las_demas_lineas_no_cambian(self):
-        # Se fijan cinco líneas representativas y el número total de líneas (las de hoy + la nueva).
-        for linea in ENV_LITERALS_TODAY:
+    def test_las_variables_previas_relevantes_se_conservan(self):
+        # Cada declaración relevante sigue siendo única; otras funcionalidades pueden añadir variables.
+        for linea in ENV_REQUIRED_LITERALS:
             with self.subTest(linea=linea):
                 self.assertEqual(self.lineas.count(linea), 1)
-        self.assertEqual(len([l for l in self.lineas if VARIABLE not in l]), ENV_LINES_TODAY)
 
 
 class DocumentacionTests(unittest.TestCase):
