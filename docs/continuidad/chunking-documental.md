@@ -3,7 +3,7 @@
 Actualización documental: 2026-10-16. [JUP-125](https://trello.com/c/H0RUnArf),
 rama `feat/JUP-125-deterministic-document-chunking`. Formalización retrospectiva
 de la implementación experimental y sus correcciones; no OpenSpec pre-code.
-Dependencia JUP-124/PR #133 en borrador, sin integración confirmada en develop.
+Dependencia JUP-124/PR #133 integrada en develop (`466b083a`, 17/10/2026) e incorporada a esta rama en `4888625e`.
 [Matriz de quince criterios](../evidence/JUP-125-validation.md),
 [OpenSpec archivado](../../openspec/changes/archive/2026-10-16-jup-125-deterministic-document-chunking/proposal.md)
 y [ADR-0023 Proposed](../adr/ADR-0023-deterministic-document-chunking.md).
