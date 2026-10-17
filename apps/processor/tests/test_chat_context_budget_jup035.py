@@ -2,6 +2,7 @@
 import asyncio
 import hashlib
 import json
+import time
 
 import httpx
 import pytest
@@ -10,6 +11,7 @@ from tokenizers import Tokenizer
 
 from test_chat_private_jup035 import private,signed,claim
 from test_chat_resources_jup035 import resources,canonical,digest
+from app.core.chat_resources import decision_schema
 
 
 async def exercise(resources,change=None,large=False,recount=False):
@@ -27,10 +29,11 @@ async def exercise(resources,change=None,large=False,recount=False):
         counted=len(counter.encode(canonical(messages[1:]).decode(),add_special_tokens=False).ids)
         if large: assert counted>8192
         context={'prompt_version':version,'messages':messages,'authorized_evidence':[],
-                 'financial_metrics_allowed':False,'tool_protocol':'required-documentation-v1',
+                 'financial_metrics_allowed':False,'tool_protocol':'server-documentation-v4',
                  'manifest':{'prompt_version':version,'tokenizer_sha256':manifest['tokenizer']['sha256'],
                     'response_schema_sha256':manifest['response_schema_sha256'],
                     'input_contract_sha256':manifest['input_contract_sha256'],'assembler_sha256':manifest['assembler_sha256'],
+                    'decision_schema_sha256':digest(canonical(decision_schema({'messages':messages}))),
                     'variable_tokens':counted,'context_budget':application.state.chat_resources.context_budget}}
         if change: change(context)
         if recount:
@@ -39,11 +42,16 @@ async def exercise(resources,change=None,large=False,recount=False):
         frozen={'request':{'content':'pregunta sintética'},'context':context}
         frozen_raw=canonical(frozen)
         input_hash=hashlib.sha256(frozen_raw).hexdigest()
+        # Building/tokenizing the real fixture can exceed the ten-second gap
+        # between private()'s SQL deadline and claim()'s default. Start this
+        # synthetic attempt after preparation and use the exact same SQL fence;
+        # otherwise a404 tests stale claims instead of the intended context409.
+        deadline=time.time()+120
         with private[2].begin() as connection:
             connection.execute(text('ALTER TABLE chat_operations ADD COLUMN canonical_input JSONB'))
-            connection.execute(text('UPDATE chat_operations SET input_hash=:hash,canonical_input=:frozen'),
-                               {'hash':input_hash,'frozen':frozen_raw.decode()})
-        payload=claim(input_hash=input_hash,context=context)
+            connection.execute(text('UPDATE chat_operations SET input_hash=:hash,canonical_input=:frozen,attempt_deadline=:deadline'),
+                               {'hash':input_hash,'frozen':frozen_raw.decode(),'deadline':deadline})
+        payload=claim(input_hash=input_hash,context=context,deadline=deadline)
         raw=canonical(payload)
         async with httpx.AsyncClient(transport=httpx.ASGITransport(app=application),base_url='http://private') as client:
             response=await client.post('/internal/chat/v2/attempts',content=raw,headers=signed('POST','/internal/chat/v2/attempts',raw))
@@ -65,6 +73,8 @@ def test_actual_tokens_over_configured_budget_never_dispatch_even_with_matching_
 
 
 @pytest.mark.parametrize('change',[
+    lambda context: context.update(tool_protocol='required-documentation-v1'),
+    lambda context: context.pop('tool_protocol'),
     lambda context: context['manifest'].update(tokenizer_sha256='0'*64),
     lambda context: context['manifest'].update(response_schema_sha256='0'*64),
     lambda context: context['manifest'].update(input_contract_sha256='0'*64),
@@ -121,7 +131,8 @@ def summary_context_change(context, defect=None):
 
 
 def test_v3_summary_over768_dispatches_under_real_chat_budget(resources,monkeypatch):
-    monkeypatch.setenv('CHAT_CONTEXT_TOKENS','32768')
+    # Includes both phase inputs and the bounded re-encoded private plan.
+    monkeypatch.setenv('CHAT_CONTEXT_TOKENS','65536')
     response,counted=asyncio.run(exercise(resources,change=summary_context_change,recount=True))
     assert counted>768
     assert response.status_code==200,response.text

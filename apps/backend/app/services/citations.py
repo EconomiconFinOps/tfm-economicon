@@ -73,6 +73,26 @@ class DocumentCitations:
         index = bisect_right(self.offsets, start) - 1
         return self.sections[index] if index >= 0 else None
 
+    def section_spans(self, content: str) -> list[dict]:
+        """Exact ranges in the normalized chunk, derived from original Markdown.
+
+        An initial section never overrides a later heading inside the fragment.
+        Ambiguous/reformatted fragments have no authoritative section ranges.
+        """
+        if not content or content != " ".join(content.split()):
+            return []
+        start = self.normalized.find(content)
+        if start < 0 or self.normalized.find(content, start + 1) >= 0:
+            return []
+        boundaries = [0] + [offset - start for offset in self.offsets if start < offset < start + len(content)] + [len(content)]
+        result = []
+        for left, right in zip(boundaries, boundaries[1:]):
+            index = bisect_right(self.offsets, start + left) - 1
+            result.append({"start": left, "end": right, "document_start": start + left,
+                           "section_start": self.offsets[index] if index >= 0 else None,
+                           "section": self.sections[index] if index >= 0 else None})
+        return result
+
 
 def heading(text: str) -> str | None:
     return DocumentCitations(text).title

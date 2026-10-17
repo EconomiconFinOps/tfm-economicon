@@ -29,11 +29,11 @@ def test_split_rule_uses_real_immediate_neighbors_and_original_citations(monkeyp
         chunk(8), chunk(5, content=' amber for delayed delivery.'), chunk(3)]
     service, calls = context(monkeypatch, candidates)
     evidence, citations, _ = service.retrieve({'tenant_id': 't'}, 'Explain dispatch rules')
-    assert [item['id'] for item in evidence] == ['manual:4', 'manual:3', 'manual:5']
+    assert [item['id'] for item in evidence] == ['manual:4', 'manual:5', 'manual:3']
     assert evidence[0]['content'] == candidates[0]['content']
-    assert evidence[2]['content'] == candidates[2]['content']
+    assert evidence[1]['content'] == candidates[2]['content']
     assert [item['evidence_id'] for item in citations] == [item['id'] for item in evidence]
-    assert citations[2]['reference'] == 'document:manual/chunk:5'
+    assert citations[1]['reference'] == 'document:manual/chunk:5'
     assert calls == [('t', [1.0], {'top_k': 20, 'max_distance': .4, 'provider': 'synthetic-provider'})]
 
 

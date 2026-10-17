@@ -20,6 +20,28 @@ from app.schemas.chat import canonical
 from app.services.citations import resolve_citations, validate_context
 
 
+def contiguous_priority(chunks, primary):
+    """Keep selected immediate neighbors next to their hit before tail trimming.
+
+    This only reorders already authorized selections. It neither expands the
+    retrieval pool nor recursively walks a document. Prefer continuation before
+    preceding context because chunk tails may cut a rule/table mid-sentence.
+    """
+    locations = {(x['document_id'], x['chunk_index']): x for x in chunks}
+    selected = {x['chunk_id'] for x in chunks}
+    ordered, seen = [], set()
+    def append(item):
+        if item is not None and item['chunk_id'] in selected and item['chunk_id'] not in seen:
+            ordered.append(item); seen.add(item['chunk_id'])
+    for seed in primary:
+        append(seed)
+        for index in (seed['chunk_index'] + 1, seed['chunk_index'] - 1):
+            append(locations.get((seed['document_id'], index)))
+    for item in chunks:
+        append(item)
+    return ordered
+
+
 _retrieval_correlation=ContextVar('chat_retrieval_correlation',default=(None,None))
 _retrieval_logger=logging.getLogger(__name__)
 
@@ -102,8 +124,8 @@ class ChatContext:
     async def __call__(self, scope, payload, descriptor):
         self.resources.verify_descriptor(descriptor)
         context=await asyncio.to_thread(self.build, scope, payload)
-        protocol=descriptor.get('tool_protocol','required-documentation-v1')
-        if protocol not in ('required-documentation-v1','mock-direct-v1'):
+        protocol=descriptor.get('tool_protocol')
+        if protocol not in ('server-documentation-v4','mock-direct-v1'):
             raise ChatError(503,'tool_contract_mismatch')
         context['tool_protocol']=protocol
         return context
@@ -191,6 +213,12 @@ class ChatContext:
             stage='vector_query'
             from app.services.vector_store import PgVectorQueryStore
             bounded={'deadline':deadline,'cancelled':cancelled} if deadline is not None and isinstance(store,PgVectorQueryStore) else {}
+            if isinstance(store,PgVectorQueryStore):
+                bounded['neighbor_seed_count']=min(settings.retrieval_top_k,evidence_limit,20)
+                from app.core.chat_policy_sections import policy_topic, SECTIONS
+                section = SECTIONS.get(policy_topic(question))
+                if section is not None:
+                    bounded['policy_section'] = section
             candidates = store.search_chunks(scope['tenant_id'],vector,top_k=20,
                                          max_distance=settings.retrieval_max_distance,provider=provider.name,**bounded)
             stage='candidate_validation'
@@ -205,7 +233,11 @@ class ChatContext:
                     raise ValueError('Invalid candidate location.')
                 locations[(document, index)] = item
             current()
-            chunks = list(candidates[:min(settings.retrieval_top_k,evidence_limit)])
+            policy = [item for item in candidates if item.get('policy_priority') is True]
+            ordinary = [item for item in candidates if item.get('policy_priority') is not True]
+            count = min(evidence_limit, max(settings.retrieval_top_k, len(policy)))
+            chunks = (policy + ordinary)[:count]
+            primary = list(chunks)
             selected = {item['chunk_id'] for item in chunks}
             omitted = set()
             # Expand only primary hits, never recursively or beyond this scoped pool.
@@ -219,12 +251,17 @@ class ChatContext:
                         continue
                     chunks.append(neighbor)
                     selected.add(neighbor['chunk_id'])
+            chunks = contiguous_priority(chunks, primary)
             stage='citations'
             citations = resolve_citations([item['chunk_id'] for item in chunks],chunks,scope['tenant_id'])
             evidence = [{'id':item['chunk_id'],'kind':'corpus','title':item['title'],'source':item['source'],
-                         'content':item['content']} for item in chunks]
+                         'content':item['content'], 'provenance':{
+                             'document_id':item['document_id'], 'chunk_index':item['chunk_index'],
+                             'sections':item.get('section_spans',[])}} for item in chunks]
             omission = {'collection':'corpus','reason':'contiguous_context_bounded',
                         'candidate_limit':20,'omitted_neighbors':len(omitted)} if candidates else None
+            if omission is not None and policy:
+                omission['omitted_policy_chunks'] = sum(item['chunk_id'] not in selected for item in policy)
             return evidence, citations, omission
         except TimeoutError as failure:
             _retrieval_diagnostic(stage,failure)
@@ -236,25 +273,27 @@ class ChatContext:
 
     async def tool_extension(self, scope, context, assistant, deadline):
         from app.core.chat_resources import validate_search_call
-        identifier,query=validate_search_call(assistant)
-        if context.get('tool_protocol')!='required-documentation-v1': raise ValueError('Tool not admitted.')
+        identifier,query=validate_search_call(assistant,context)
+        if context.get('tool_protocol')!='server-documentation-v4': raise ValueError('Tool not admitted.')
         initial=context.get('authorized_evidence',[])
         if any(item['kind']!='cost_query' for item in initial): raise ValueError('Initial corpus not allowed.')
         cancelled=threading.Event();holder={}
         try:
             remaining=deadline-time.time()
             if remaining<=0: raise TimeoutError('Retrieval deadline.')
-            corpus,citations,omission=await asyncio.wait_for(asyncio.to_thread(self.retrieve,scope,query,
-                evidence_limit=max(0,20-len(initial)),deadline=deadline,cancelled=cancelled,holder=holder),remaining)
+            corpus,citations,omission=[],[],None
+            if assistant['action']=='search':
+                corpus,citations,omission=await asyncio.wait_for(asyncio.to_thread(self.retrieve,scope,query,
+                    evidence_limit=max(0,20-len(initial)),deadline=deadline,cancelled=cancelled,holder=holder),remaining)
             original=len(corpus)
             while True:
                 omissions=[omission] if omission else []
                 if len(corpus)<original:
                     omissions.append({'collection':'corpus','reason':'context_budget','omitted':original-len(corpus)})
                 content=escaped({'evidence':corpus,'omissions':omissions})
-                messages=context['messages']+[assistant,{'role':'tool','tool_call_id':identifier,'content':content}]
+                messages=context['messages']+[{'role':'user','content':'UNTRUSTED_RETRIEVAL_CONTEXT\n'+content}]
                 try:
-                    counted=self.resources.count_messages(messages,financial_metrics_allowed=context['financial_metrics_allowed'])
+                    counted=self.resources.count_messages(messages,financial_metrics_allowed=context['financial_metrics_allowed'], authorized_evidence=initial+corpus)
                     result={'tool_call_id':identifier,'content':content,'variable_tokens':counted}
                     if len(content.encode())>1024*1024 or len(canonical({'claim_context':context,'tool_result':result}).encode())>2097152-8192:
                         raise ChatError(413,'tool_body_limit')
@@ -408,14 +447,14 @@ class ChatContext:
         # Essentials must fit before considering optional history or details.
         used_payload = summary.get('payload') if summary['used'] else None
         def measure(messages,current):
-            counted=self.resources.count_messages(messages, financial_metrics_allowed=financial_metrics_allowed)
-            manifest=self.resources.metadata(counted)
+            counted=self.resources.count_messages(messages, financial_metrics_allowed=financial_metrics_allowed, authorized_evidence=authorized)
+            manifest=self.resources.metadata(counted,messages)
             manifest.update(summary=summary,essential_tokens=0,screen_snapshot_sha256=screen_hash,
                 omissions=current['omissions'],evidence_ids=[item['id'] for item in authorized])
             probe={'prompt_version':self.resources.prompt_version,'messages':messages,'manifest':manifest,
                 'authorized_evidence':authorized,'source_citations':citations,'verification_records':records,
                 'response_period':verified_response_period(records), 'response_subscriptions':subscriptions,
-                'financial_metrics_allowed':financial_metrics_allowed,'tool_protocol':'required-documentation-v1'}
+                'financial_metrics_allowed':financial_metrics_allowed,'tool_protocol':'server-documentation-v4'}
             # The actual private claim is checked again by ChatTransport. Reserve
             # its bounded controls and the subsequently attached revision fence.
             if len(canonical(probe).encode())>2097152-8192:
@@ -443,14 +482,14 @@ class ChatContext:
             except ChatError:
                 high = middle-1
         messages,current = assemble(low,retained_recent,used_payload)
-        counted = self.resources.count_messages(messages, financial_metrics_allowed=financial_metrics_allowed)
-        manifest = self.resources.metadata(counted)
+        counted = self.resources.count_messages(messages, financial_metrics_allowed=financial_metrics_allowed, authorized_evidence=authorized)
+        manifest = self.resources.metadata(counted,messages)
         manifest.update(summary=summary,essential_tokens=essential_tokens,screen_snapshot_sha256=screen_hash,omissions=current['omissions'],
                         evidence_ids=[item['id'] for item in authorized])
         context = {'prompt_version':self.resources.prompt_version,'messages':messages,'manifest':manifest,
                    'authorized_evidence':authorized,'source_citations':citations,'verification_records':records,
                    'response_period':verified_response_period(records), 'response_subscriptions':subscriptions,
-                   'financial_metrics_allowed':financial_metrics_allowed,'tool_protocol':'required-documentation-v1'}
+                   'financial_metrics_allowed':financial_metrics_allowed,'tool_protocol':'server-documentation-v4'}
         # Leave space for authenticated claim controls within the private2MiB body.
         if len(canonical(context).encode()) > 2097152-8192:
             raise ChatError(413,'context_body_limit')
