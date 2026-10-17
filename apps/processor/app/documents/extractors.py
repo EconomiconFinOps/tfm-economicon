@@ -16,6 +16,7 @@ def markdown(data):
     parser = MarkdownIt('js-default').enable('table')
     tokens = parser.parse(value)
     blocks = []
+    lines = value.split('\n')
     for token in tokens:
         if token.type in {'heading_open', 'paragraph_open', 'bullet_list_open', 'ordered_list_open',
                           'list_item_open', 'table_open', 'fence', 'code_block'}:
@@ -25,7 +26,7 @@ def markdown(data):
             block = {'kind': kind, 'level': int(token.tag[1:]) if kind == 'heading' else token.level,
                      'source_lines': [token.map[0] + 1, token.map[1]] if token.map else None}
             if token.map:
-                block['text'] = '\n'.join(value.splitlines()[token.map[0]:token.map[1]])
+                block['text'] = '\n'.join(lines[token.map[0]:token.map[1]])
             if kind == 'code':
                 block['language'] = token.info
             blocks.append(block)
