@@ -9,6 +9,207 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 17/10/2026
 
+### Reanudado y candidato técnico preparado — 17/10/2026
+
+La orden humana «Retoma las tareas», trasladada desde Sala de Control, revoca la
+pausa de reinicio. Se comprobó HEAD 4c833e1d y el mismo árbol sucio sin reaplicar
+patch/ZIP ni descartar cambios. Feedback fresco: Lucía aprobó presupuesto sobre
+4c833e1d; Víctor mantiene sus cinco puntos hasta dictamen del nuevo delta.
+
+La autorización humana de archivo ya consta: «Tienes autorizacion para registrar
+la excepcion y seguir procediendo». Se completó el archivo técnico de 035 y 123,
+con 11 tareas de 43 pendientes en 035 y aceptación/reviews expresamente abiertas.
+El ADDED duplicado de evidencia se convirtió a MODIFIED, conservando y alineando
+el escenario previo de rechazo de llamadas nativas. Enlaces movidos reconciliados.
+
+El mutante superviviente se resolvió mediante una entrada adversaria de líneas
+vacías y 512 números, y una mejora del algoritmo: prefijos en el ancho real de
+unidad, anclas en su entrada y nombres de 51 caracteres como máximo, separadores
+localizados directamente. Se conservan spans, unidades, cuotas y las dos copias.
+No depende de patrones possessive ni reduce arbitrariamente el texto admitido.
+
+Verificación final: 16/16 contrafactuales detectados, baseline y restauración
+34 PASS, checkout intacto y temporales retirados. Windows focal 78 PASS;
+Linux 174 processor + 1 backend PASS sin red, con hashes y limpieza comprobada.
+Por servicio: 6.000 comparaciones aleatorias, 140 contenidos completos y variantes
+de unidades/prefijos idénticos frente a 4c. Sesenta sondas hasta 16.384 caracteres;
+máximos 0,732 s backend y 0,615 s processor. No garantía de carga o latencia universal.
+Las pasadas amplias anteriores y sus omisiones/fallos de entorno mantienen su
+identidad; la CI del SHA publicado comprobará las suites completas finales.
+
+Documento vigente: [correcciones de Víctor](../evidence/JUP-123-victor-corrections.md).
+Contiene disposición de los cinco puntos y notas no bloqueantes, configuración
+N5 sin secretos y límites upstream. Archivo técnico no acepta tareas pendientes.
+El paquete de 497 archivos, N5 f3ec de 140/825, ledger, reservas, claves y contadores
+siguen intactos. RF-123-001 continúa Open; CI SQL es CockroachDB, no pgvector real.
+
+Evidencia externa en PR140-victor-20261017: final-mutations.json,
+quantity-work-final-backend/processor.json, windows-final.json/log/xml,
+linux-resumed-final.json y sus arneses. El corte PAUSED y los rojos iniciales
+se conservan como historia, superada por este bloque.
+
+Pendiente inmediato: commit/push normal de la misma PR140, paquete por SHA,
+CI/SQL del commit y respuesta tabla punto→cambio→pruebas→evidencia. Controles
+finales: OpenSpec 77/77, trazabilidad, higiene y diff conformes.
+Después pedir Revision a Víctor y revalidación focal a Lucía sobre ese SHA,
+sin atribuir su aprobación presupuestaria previa al delta. No merge ni Discord aquí.
+
+### PAUSADO por orden humana para reiniciar Codex — 17/10/2026
+
+Orden recibida de Sala de Control: «Pídeles a todos los agentes que pausen la
+ tarea, necesitamos reiniciar CODEX». No reanudar por reinicio, heartbeat o
+ iniciativa propia: hace falta petición humana expresa. Este bloque supera los
+ estados de preparación y archivo pendientes de los apartados anteriores.
+
+**Checkout:** `tfm-economicon-jup123-b-delivery`, rama
+`feat/JUP-123-chat-quality-delivery`, HEAD local/remoto conocido
+`4c833e1dee2eda624e5a1e4eb565f82f88f0cf21`. Árbol SUCIO, sin commit ni push del
+nuevo delta. Se conservan modificaciones, archivos nuevos y movimientos de archivo;
+no se ha descartado ni guardado en stash ningún cambio. No hubo publicaciones,
+comentarios ni peticiones GitHub/Trello/Discord durante este encargo de cinco puntos.
+La aprobación presupuestaria de Lucía 5559936283 es sobre 4c833e1d; Víctor mantiene
+CHANGES_REQUESTED 5559901207. No trasladar esa aprobación al delta sin revisar.
+
+**Cambios locales:** ambas copias de quantities tienen MAX_MATCHES=512,
+rechazo completo con 513 candidatos y patrones possessive para evitar retroceso
+con espacios. La etiqueta izquierda limita el blanco inicial a horizontal para
+no recorrer reiteradamente líneas vacías. Se añadieron tres suites (barreras,
+trabajo acotado y todos los módulos compartidos); esquema de ahorro exige forma
+cerrada exacta. ADR Grafana reparado, ADR-0023/informe/configuración N5 auditados,
+OpenSpec v4 alineado y tasks reconciliadas; RF-123-001 sigue Open.
+
+**Autorización de archivo posterior:** el usuario respondió a la consulta de
+archivo: «Tienes autorizacion para registrar la excepcion y seguir procediendo».
+Se interpretó y anunció archivo técnico con aceptación/reviews pendientes, sin
+merge, activación ni campañas. La autoridad y límites ya están en ambas listas
+de tareas. `jup-123-chat-semantic` se archivó técnicamente como
+`openspec/changes/archive/2026-10-17-jup-123-chat-semantic/`, creando la spec
+`openspec/specs/chat-semantic-evaluation/spec.md` (24 requirements). El archivo de
+`jup-035-auto-documentation` ABORTÓ sin cambios: su ADDED «Evidencia generada limitada
+al contexto efectivo» ya existe en la spec consolidada. No está archivado aún.
+
+**Pruebas terminadas:**
+- Primera versión de barreras: 13 contrafactuales detectados y baseline/restauración
+  29 PASS. Ese `mutations.json` corresponde a la fuente ANTERIOR al ajuste adicional
+  de regex; no acredita la matriz final.
+- Matriz final ampliada a 16 contrafactuales: `mutation-check.py` terminó con fallo
+  de su aserción porque ANCHOR-backtracking SOBREVIVE: su prueba pasa en 1,29 s,
+  menor que el timeout de 3 s. No se ha demostrado sensibilidad de esa última
+  guarda. Baseline final: 34 pruebas; demás resultados en logs por mutante. Todo se
+  hizo en una copia propia; `finally` restauró esa copia y el temporal se retiró.
+- Regresión Windows sobre el parche de candidatos anterior a regex adicional:
+  backend 696 PASS/52 SKIP/2 fallos de privilegio symlink; processor 1397 PASS/
+  6 SKIP/2 fallos symlink. No verde global Windows. Logs/XML conservados.
+- Linux amplio (`linux-affected-v2.json`), mismo parche anterior: backend
+  698 PASS/52 SKIP y processor 1399 PASS/6 SKIP por lotes, sin fallos. No SQL ni
+  pgvector real; no se suman omisiones como pruebas cubiertas.
+- Linux focal sobre la fuente FINAL de regex (`linux-focal-final.json`): 1 backend
+  y 174 processor PASS, cero fallos. Entrada adversaria de un solo número y 16.000
+  espacios/líneas vacías cubierta. Temporales e imágenes de pruebas propios retirados;
+  ambos recibos declaran temporary_removed=true. Sin red durante pytest, sin servicios.
+- Windows focal: 78 PASS antes del último ajuste horizontal (prueba de trabajo
+  posterior 22 PASS); Linux focal sí contiene ese ajuste y el assert de 513.
+- `verify-quantity-work-v2.py`: por servicio, 6.000 comparaciones aleatorias, 140
+  entradas y 55 sondas de 11 familias hasta 16.384 caracteres; máximos backend
+  1,383 s y processor 1,294 s. La sonda previa de espacio/prefijo sin ajuste tardó
+  1,29 s con 2.000 espacios y superó el timeout de 3 s con 4.000.
+- Replay del contenido COMPLETO de las 140 preguntas realmente enviadas en plan
+  3fd573f5: 280 comparaciones entre modos, catálogo idéntico; copias iguales.
+- OpenSpec 78/78, trazabilidad e higiene pasaron ANTES del archivo y de la última
+  spec añadida. Deben repetirse tras concluir archivo; no se atribuyen al árbol final.
+
+**Auditoría N5 terminada:** 497 archivos congelados intactos. Fuente f3ec760d
+SHA071c50c2 envía high/exclude y order FP4; gateway histórico SHA592674df fija
+DeepInfra FP8/enabled=false. 140 recibos correlacionados con sus hashes exportados;
+289 hashes de fase únicos en informes de 139 operaciones (145 draft/144 final),
+incluidos intentos anteriores. 008-r5 sin informe. No cuerpos HTTP upstream ni
+prueba de reasoning interno desactivado. No modificar ledger/reservas/claves ni
+repetir campañas; el repo/gateway de ejemplo no reproducen solos esa N5.
+
+**Evidencia y recuperación:**
+`../materiales/07-evidencias/JUP-123-collector/PR140-victor-20261017/` guarda arneses,
+logs, XML, lecturas GitHub y metadatos. `PAUSED-state.json` contiene inventario,
+SHA y hashes; `PAUSED-working-tree.patch` y `PAUSED-working-tree-files.zip` son
+respaldo de los cambios sin confirmar al pausar. El ZIP incluye los nuevos archivos
+archivados y la spec; el árbol vivo conserva además este bloque final. No aplicar
+el patch a ciegas ni sobrescribir cambios concurrentes.
+
+**Operaciones propias:** todas las operaciones de pruebas iniciadas tienen salida
+terminal. Sesiones exec antiguas pueden conservar handles, no son campañas a
+relanzar: Linux amplio60646 y focal21269 terminaron exit0; Windows backend90160 y
+processor46844 exit1 por symlinks; matriz55357 exit1 por mutante superviviente.
+No hay inferencias ni despliegues vivos de este encargo. Ningún subagente creado
+ni automatización propia añadida que pausar. No tocar las automatizaciones ajenas.
+El primer arnés Linux OOM137/dependencia/recurso ausente y los errores de preparación
+se conservan; no son fallos del producto ni resultados PASS.
+
+**Próximo paso exacto, sólo tras autorización humana para reanudar:**
+1. Leer este corte y git status; preservar cambios nuevos de otros agentes.
+2. Reconciliar el delta035: convertir la sección ADDED ya existente a MODIFIED,
+   conservando el escenario consolidado «Proveedor emite varias herramientas»
+   (no aparece en el delta). El requirement principal tiene los mismos escenarios
+   en ambos textos. Reintentar el archivo técnico validado; actualizar referencias
+   a ambos archivos y sus rutas relativas. No usar --no-validate ni --skip-specs.
+3. Hacer sensible la prueba de ANCHOR-backtracking. Siguiente sonda propuesta,
+   NO ejecutada: líneas vacías + texto inválido + muchos candidatos repetidos
+   dentro de 16.384 caracteres; una sola cantidad no supera el timeout actual.
+   Verificar semántica y coste antes de decidir si ajustar la prueba o el algoritmo.
+   Repetir la matriz aislada hasta que todos los mutantes relevantes mueran y se
+   comprueben restauración/hashes. No declarar 16/16 aún.
+4. Actualizar JUP-123-victor-corrections.md y continuidad: ahora están DESFASADOS
+   los valores 13/29, 40 sondas, archivo pendiente y máximos anteriores; sustituirlos
+   sólo por resultados finales comprobados. Registrar excepción de archivo real.
+5. Completar focales Windows/Linux que cambien, validación OpenSpec/trazabilidad/
+   higiene y enlaces; inspeccionar todas las reviews/comentarios frescos antes del push.
+6. Consolidar un commit normal en PR140, paquete por SHA, descripción honesta y tabla
+   punto→cambio→prueba→evidencia; esperar CI técnica/SQL del nuevo SHA. No incorporar
+   RAG/develop ni mergear. Sólo con cinco puntos resueltos pedir oficialmente a
+   Víctor Revision JUP-123 y a Lucía revalidación del delta afectado, reconociendo
+   su aprobación presupuestaria previa. No enviar Discord desde este chat.
+
+
+### Cinco correcciones de Víctor en PR140 — 17/10/2026
+
+Origen: encargo expreso trasladado desde Sala de Control a este chat
+`01a143ae-b740-7043-aedb-1a8a65b4b585`, revisión 5559901207 sobre 4c833e1d.
+Se leyeron las reviews, conversación e inline. Lucía levantó después su bloqueo
+presupuestario con APPROVED 5559936283 sobre 4c833e1d; no acredita el delta nuevo.
+
+Preparado: tope fail-closed de 512 candidatos en quantities, también repetidos e
+inválidos y explicit_only; enlace ADR de Grafana; contrato consolidado/delta v4;
+procedencia real N5 y ADR-0023; pruebas sensibles a quitar guardas y paridad completa.
+Detalle vigente en [correcciones de Víctor](../evidence/JUP-123-victor-corrections.md).
+Código de chat cambia frente a f3ec760d: no se le atribuyen 140/140 ni 825 PASS nuevos.
+
+13 contrafactuales detectados en copia temporal, baseline/restauración 29 PASS.
+Por servicio: 6.000 comparaciones aleatorias y replay de 140 entradas sin cambiar
+catálogos admitidos; 40 sondas hasta 16.384 caracteres, máximo 1,200 s backend y
+1,099 s processor. Pruebas de rendimiento no son una garantía de carga/latencia.
+
+N5: los 497 archivos congelados siguen intactos. Fuente processor high/exclude y
+order FP4; gateway aislado only DeepInfra FP8/enabled=false. 289 hashes de fase
+en informes de 139 operaciones; 008-r5 sin informe. No payload upstream observado
+ni prueba de razonamiento interno desactivado. Configuración sin secretos y
+metadatos por fase versionados; el gateway de ejemplo no reproduce solo la N5.
+Sin cambios en recibos, ledger, reservas, claves, contadores ni servicios históricos.
+
+Archivo OpenSpec: decisión elevada al usuario por contradicción entre condición
+de archivo de CONTRIBUTING y tareas que lo condicionaban a aceptación. No consta
+excepción; no se finge aceptación ni se archiva mientras la pregunta siga pendiente.
+La corrección puede publicarse, pero no se solicita dictamen de cinco puntos
+resueltos ni se declara mergeable si continúa ese bloqueo.
+
+Evidencia nueva: `../materiales/07-evidencias/JUP-123-collector/PR140-victor-20261017/`.
+Primer arnés Linux conservado con OOM 137 en backend y recursos/jsonschema ausentes
+en processor; se prepara repetición con fuente completa y lotes aislados. Fallos
+de preparación/permisos de temporales en Windows no son pruebas ejecutadas.
+Los resultados finales de regresión, commit, CI y peticiones se añadirán al cierre.
+No integrar otras PR ni actualizar develop por rutina. RF-123-001 sigue Open;
+pgvector real no está en CI y CockroachDB no lo sustituye. Sin merge ni Discord.
+
+Los apartados siguientes son cortes anteriores y quedan superados por esta sección.
+
+
 ### Corrección focal solicitada por Sala de Control — 17/10/2026
 
 Origen: instrucción humana «Adelante, manda a sus chats retomar la revalidación
@@ -3159,7 +3360,7 @@ Ningún mensaje Discord. OpenSpec estricto del bloque conforme.
 En este corte, aún sin medir ni transferir: compilador de secciones
 completas `chat_policy_sections.py`, integrado en esquema privado, streaming y
 renderer de ambos servicios. No cambia el runtime c7 ni sus recibos. Ver el
-[diseño](../../openspec/changes/jup-123-chat-semantic/design.md#compilador-local-de-secciones-completas--2026-10-14).
+[diseño](../../openspec/changes/archive/2026-10-17-jup-123-chat-semantic/design.md#compilador-local-de-secciones-completas--2026-10-14).
 Lee listas/tablas y conserva literalmente todas las reglas, valores y modalidades
 del corpus autorizado; no copia las cinco etiquetas del banco a Python. Las
 preguntas conceptuales de tagging y operación de budgets se enrutan por tema;

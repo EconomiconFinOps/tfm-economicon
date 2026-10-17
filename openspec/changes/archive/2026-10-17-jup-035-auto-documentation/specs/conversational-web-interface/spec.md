@@ -16,10 +16,10 @@ evidencia insuficiente sin inventar cifras.
 #### Scenario: Plan privado y revisión final dentro del mismo intento
 
 - **WHEN** termina la única recuperación documental autenticada
-- **THEN** el sistema SHALL generar un plan privado con esquema cerrado y máximo1000tokens, sin emitir su contenido al cliente
+- **THEN** el sistema SHALL generar un plan privado con esquema cerrado y máximo 1.000 tokens, sin emitir su contenido al cliente
 - **AND** SHALL validar forma, fuentes autorizadas y cotas; un plan truncado o inválido SHALL fallar sin tercera llamada ni reparación opaca
-- **AND** una segunda generación SHALL revisar ese plan como dato no confiable contra el contexto original y producir la única respuesta final incremental, con máximo2200tokens
-- **AND** ambas fases SHALL compartir120segundos, cancelación y máximo conjunto3200tokens, sin reintentos locales ni nueva recuperación
+- **AND** una segunda generación SHALL revisar ese plan como dato no confiable contra el contexto original y producir la única respuesta final incremental, con máximo 2.200 tokens
+- **AND** ambas fases SHALL compartir 120 segundos, cancelación y máximo conjunto 3.200 tokens, sin reintentos locales ni nueva recuperación
 - **AND** SHALL contar contexto real y esquema por fase, reservar ambas entradas y conservar hashes de request y uso observado correlacionados, sin publicar el plan ni razonamiento
 - **AND** el uso completo SHALL sumarse y el parcial SHALL identificarse como incompleto, incluso si la fase final falla o se cancela; no se registrará como cero ni como total completo
 
@@ -31,22 +31,22 @@ evidencia insuficiente sin inventar cifras.
 #### Scenario: Decision documental automatica dentro del mismo intento
 
 - **WHEN** el chat IA inicia un intento autorizado
-- **THEN** SHALL usar server-documentation-v4 y derivar la consulta de los primeros2048 caracteres de la pregunta canonica, sin peticion de decision al modelo; SHALL ejecutar como maximo una recuperacion existente con scope autenticado, una operacion y un intento; SHALL conservar contexto/hash inicial congelado y no recuperar antes de iniciar el deadline del intento
+- **THEN** SHALL usar server-documentation-v4 y derivar la consulta de los primeros 2.048 caracteres de la pregunta canonica, sin peticion de decision al modelo; SHALL ejecutar como maximo una recuperacion existente con scope autenticado, una operacion y un intento; SHALL conservar contexto/hash inicial congelado y no recuperar antes de iniciar el deadline del intento
 
-#### Scenario: Decision sin herramienta y finalizacion estricta
+#### Scenario: Finalización estricta tras recuperación del servidor
 
 - **WHEN** termina la recuperacion unica, incluso sin fuentes pertinentes
-- **THEN** SHALL realizar una sola generacion FinOpsResponse estricta y sin herramientas nativas; SHALL permitir saludos, aclaraciones, definiciones documentadas y ejercicios hipoteticos utiles sin confundir ausencia de costes reales con imposibilidad de responder; SHALL mantener estados/evidencia y autoridad financiera existentes, deadline comun y uso real de esa unica generacion
+- **THEN** SHALL realizar un plan privado validado y una segunda generación final FinOpsResponse estricta, sin herramientas nativas; SHALL permitir saludos, aclaraciones, definiciones documentadas y ejercicios hipoteticos utiles sin confundir ausencia de costes reales con imposibilidad de responder; SHALL mantener estados/evidencia y autoridad financiera existentes, deadline común y uso real de ambas fases, identificando el uso parcial o desconocido sin contarlo como cero
 
 #### Scenario: Resultado privado y continuacion final
 
 - **WHEN** el backend obtiene fuentes para el control de recuperacion vigente
-- **THEN** SHALL devolver la extension mediante HMAC vinculada al intento, tenant y digest de consulta canonica; SHALL rechazar una consulta que difiera de la derivada del contexto, y continuar con user UNTRUSTED_RETRIEVAL_CONTEXT sin mensajes assistant/tool fabricados; SHALL contar el contexto y esquema final efectivo identicos en ambos servicios y conservar FinOpsResponse1.0 y autoridad exclusiva de billing
+- **THEN** SHALL devolver la extension mediante HMAC vinculada al intento, tenant y digest de consulta canonica; SHALL rechazar una consulta que difiera de la derivada del contexto, y continuar con user UNTRUSTED_RETRIEVAL_CONTEXT sin mensajes assistant/tool fabricados; SHALL contar el contexto y esquema final efectivo identicos en ambos servicios y conservar FinOpsResponse 1.0 y autoridad exclusiva de billing
 
 #### Scenario: Cancelacion, resultado ajeno o segunda herramienta
 
 - **WHEN** vence el plazo comun, se cancela el intento o llega un resultado ajeno, repetido, desconocido o una segunda llamada
-- **THEN** SHALL rechazar la continuacion sin segunda inferencia ni persistencia; la recuperacion y espera SHALL compartir el deadline del intento, sin reiniciarlo; una recuperacion vacia SHALL permitir una abstencion validada y nunca inventar fuentes; el modo mock SHALL seguir disponible sin llamadas pagadas
+- **THEN** SHALL rechazar la continuación sin nuevas inferencias ni persistencia; la recuperacion y espera SHALL compartir el deadline del intento, sin reiniciarlo; una recuperacion vacia SHALL permitir una abstencion validada y nunca inventar fuentes; el modo mock SHALL seguir disponible sin llamadas pagadas
 
 #### Scenario: Consulta documental SQL acotada realmente
 
@@ -159,8 +159,6 @@ evidencia insuficiente sin inventar cifras.
 - **THEN** el backend rechaza esas referencias al validar el final, antes de guardar la respuesta como confirmada o presentar sus citas como verificadas; la evidencia de entrada se autoriza antes de generar y los fragmentos de texto visibles siguen siendo provisionales
 
 
-## ADDED Requirements
-
 ### Requirement: Evidencia generada limitada al contexto efectivo
 
 La respuesta final SHALL generarse con un esquema derivado de la evidencia del
@@ -192,6 +190,20 @@ persistir texto parcial.
 #### Scenario: Operadores y datos numericos ausentes
 - **WHEN** un calculo hipotetico evalua un umbral o combina monedas
 - **THEN** SHALL conservar el operador estricto o inclusivo de la fuente, evaluar cada condicion antes de combinar AND u OR y no redondear antes de comparar; SHALL no inventar cotizaciones numericas ni siquiera como ejemplo cuando falta tipo, fecha o destino autorizado
+
+
+#### Scenario: Proveedor emite varias herramientas
+- **WHEN** el proveedor emite una o varias llamadas nativas en una generación del protocolo server-documentation-v4
+- **THEN** el intento SHALL fallar antes de ejecutar cualquiera, sin ignorar llamadas extra ni iniciar otra generación de reparación; el diagnóstico SHALL identificar rechazo de la envoltura nativa sin registrar argumentos
+
+# Native tool stream normalization
+
+## Requirement: Opciones de driver y diagnostico de recuperacion
+La recuperacion acotada MUST conservar las opciones Python del driver para la
+conexion real y excluirlas exclusivamente de la comprobacion conninfo libpq.
+
+
+## ADDED Requirements
 
 ### Requirement: Aritmetica hipotetica calculada y proyectada
 
@@ -311,7 +323,7 @@ no SHALL conferir autoridad financiera a datos del usuario o documentos.
 - **WHEN** el proveedor selecciona un extracto literal y una interpretación
 - **THEN** el texto público incluye extracto, fuente e interpretación rotulada
 - **AND** el stream, la respuesta final y el historial persistido coinciden
-- **AND** FinOpsResponse1.0 conserva sus campos y límites existentes
+- **AND** FinOpsResponse 1.0 conserva sus campos y límites existentes
 
 #### Scenario: Fuente ajena, pasaje alterado o cita decorativa
 - **WHEN** se envía una fuente ajena, un pasaje no seleccionado o evidence raíz no vacía

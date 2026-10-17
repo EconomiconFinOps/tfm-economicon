@@ -34,8 +34,10 @@ su integración; se prepara una PR separada de #131 y #138 bajo el flujo ordinar
 Producto `f3ec760d3c483e8798df2be32ea90bb901ebe36d`, HEAD documental `800775ef`.
 Nueva N5:140 completed/conformes,825 comprobaciones PASS, C1/C3 conformes y
 C2 asistido por revisor y validador separados conforme a autorización humana.
-DeepSeek V4.1 Flash/DeepInfra FP8, banco1.0.1/corpus54, temperatura0 y razonamiento
-desactivado, ZDR sin fallback. Comparación de139 pares semánticos sin regresiones;
+Gateway DeepSeek V4.1 Flash/DeepInfra FP8, banco 1.0.1/corpus 54 y temperatura 0.
+La configuración del gateway declara enabled=false, pero processor envía high/exclude
+y order FP4; no se acredita razonamiento interno desactivado. Véase la auditoría
+versionada JUP-123-n5-request-provenance.json. ZDR y ausencia de fallback configurados. Comparación de139 pares semánticos sin regresiones;
 fallos y reservas históricos intactos. No aceptación humana oficial ni causalidad.
 
 La reconciliación de integración con develop `1de41b90` requiere verificar la

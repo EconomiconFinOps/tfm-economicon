@@ -7,7 +7,7 @@ y, desde revisión28, un plan privado de1000tokens y una generación final revis
 de2200tokens con expresiones locales autocontenidas. Las dos fases comparten
 plazo120s, uso y máximo total3200tokens; sólo la final emite SSE. Sustituye la
 decisión none/search del modelo y el plan de índices. Véase el
-[ADR](../../../docs/adr/JUP-035-server-retrieval-expressions.md) para los límites,
+[ADR](../../../../docs/adr/JUP-035-server-retrieval-expressions.md) para los límites,
 origen de cantidades, coste/privacidad de recuperación en saludos, esquema
 finito con $defs, deadline, HMAC y aceptación pendiente.
 

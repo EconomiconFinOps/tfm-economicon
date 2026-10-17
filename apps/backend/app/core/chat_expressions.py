@@ -5,6 +5,7 @@ the point where they are rendered, with no generated result IDs or executable
 code. Keep this module byte-identical in backend and processor.
 """
 import copy
+import itertools
 import json
 import re
 from decimal import Decimal, DecimalException, localcontext
@@ -13,6 +14,8 @@ from app.core.chat_rules import QuantityCatalog, documentary_rules, concept, num
 MAX_OPERATIONS = 12
 MAX_DEPTH = 4
 MAX_QUANTITIES = 128
+# Bound candidate work as well as distinct results, including repeated/invalid values.
+MAX_MATCHES = 512
 CARDINALS = dict(zip(
     ('cero uno dos tres cuatro cinco seis siete ocho nueve diez once doce trece catorce quince dieciséis diecisiete dieciocho diecinueve veinte').split(),range(21)))
 CARDINALS.update(dict(zip(('zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty').split(),range(21))))
@@ -75,6 +78,38 @@ UNIT_RE = re.compile(UNIT_PATTERN+r'(?![\w/])',re.IGNORECASE)
 COUNT_RE = re.compile(r'\b(?:'+'|'.join(re.escape(x) for x in COUNTS)+r')\b',re.IGNORECASE)
 DATE_RE = re.compile(r'\b(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre|año|year|periodo|período)\b',re.IGNORECASE)
 
+# A prefix can start only within one unit's width before its last non-space
+# character (excluding the optional terminal ':'/'='). Search the original text
+# so source spans and lookbehind boundaries remain exact.
+MAX_UNIT_CHARS = max(map(len, CURRENCIES+COUNTS+MEASURES+('%',))) + len('/month')
+PREFIX_RE = re.compile(r'(?<!\w)('+UNIT_PATTERN+r')\s*[:=]?\s*$',re.IGNORECASE)
+ANCHOR_RE = re.compile(r'([A-Za-zÁÉÍÓÚáéíóúÑñ_][A-Za-zÁÉÍÓÚáéíóúÑñ_ -]{0,50})')
+
+
+def _entry_tail(text, delimiters):
+    return text[max(text.rfind(char) for char in delimiters)+1:]
+
+
+def _entry_head(text, delimiters):
+    return text[:min((index for char in delimiters if (index:=text.find(char))>=0),default=len(text))]
+
+
+def _quantity_prefix(before):
+    tail=before.rstrip()
+    if tail.endswith((':','=')):tail=tail[:-1].rstrip()
+    return PREFIX_RE.search(before,max(0,len(tail)-MAX_UNIT_CHARS))
+
+
+def _quantity_anchor(left):
+    tail=left.rstrip()
+    if tail.endswith((':','=')):tail=tail[:-1].rstrip()
+    # A name cannot cross an entry delimiter or exceed 51 characters. Leading
+    # and trailing whitespace is immaterial to concept(), including blank lines.
+    start=max(tail.rfind(';'),tail.rfind(':'),tail.rfind('\n'))+1
+    name=tail[start:].strip()
+    return ANCHOR_RE.fullmatch(name) if len(name)<=51 else None
+
+
 
 def normalized_unit(unit):
     aliases={
@@ -112,14 +147,16 @@ def quantities(question, *, explicit_only=False):
         r'(?<!\w)(?:'+'|'.join(re.escape(x) for x in CURRENCIES)+r')(?!\w)',question,re.IGNORECASE)}
     result={}
     numeric_or_word=NUMERIC+r'|\b(?:'+'|'.join(CARDINALS)+r')\b'
-    for match in re.finditer(numeric_or_word,question,re.IGNORECASE):
+    candidates=list(itertools.islice(re.finditer(numeric_or_word,question,re.IGNORECASE),MAX_MATCHES+1))
+    if len(candidates)>MAX_MATCHES:return {}
+    for match in candidates:
         raw=match.group();before=question[:match.start()];after=question[match.end():]
         word=raw.casefold() in CARDINALS
         try:value=canonical_decimal(str(CARDINALS[raw.casefold()]) if word else raw)
         except (ValueError,DecimalException):continue
         if len(value)>26 or ('.' in value and len(value.split('.')[1])>12):continue
         suffix=re.match(r'\s*('+UNIT_PATTERN+r')(?![\w/])',after,re.IGNORECASE)
-        prefix=re.search(r'(?<!\w)('+UNIT_PATTERN+r')\s*[:=]?\s*$',before,re.IGNORECASE)
+        prefix=_quantity_prefix(before)
         unit='';kind='bare';span=raw
         if suffix:
             unit=suffix.group(1);kind='adjacent';span=raw+suffix.group()
@@ -128,15 +165,15 @@ def quantities(question, *, explicit_only=False):
         else:
             # Scope exclusions use the local entry, not an arbitrary distant
             # currency. A count near a bare number cannot become money.
-            clause=re.split(r'[;\n]',before)[-1][-80:]+raw+re.split(r'[;\n]',after)[0][:80]
+            clause=_entry_tail(before,';\n')[-80:]+raw+_entry_head(after,';\n')[:80]
             date=((len(raw)==4 and raw.isdecimal() and 1900<=int(raw)<=2200 and DATE_RE.search(clause))
                   or re.search(r'\b(?:fecha|date|día|dia|day)\s*$',before,re.IGNORECASE)
                   or re.match(r'\s+de\s+(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\b',after,re.IGNORECASE))
             count=COUNT_RE.search(clause)
             threshold=re.search(r'%|porcent|umbral|threshold',clause,re.IGNORECASE)
             monetary=r'\b(?:costes?|costos?|gastos?|costs?|spend|budget|presupuesto|forecast|allocated|shared|unallocated|excluded)\b'
-            local_before=re.split(r'[;\n.!?]',before)[-1][-80:]
-            sentence=re.split(r'[.!?\n]',before)[-1]
+            local_before=_entry_tail(before,';\n.!?')[-80:]
+            sentence=_entry_tail(before,'.!?\n')
             heading=sentence.rsplit(':',1)[0] if ':' in sentence else ''
             monetary_scope=(re.search(monetary+r'\s*(?:actual|mensual|diario|total|de\s+\w+)?\s*[:=]?\s*$',local_before,re.IGNORECASE)
                             or (heading and re.search(monetary,heading,re.IGNORECASE)
@@ -157,11 +194,11 @@ def quantities(question, *, explicit_only=False):
         # Time dimensions scope an entry. Only an explicitly named observed
         # value may inherit the immediately preceding daily baseline's rate;
         # a budget elsewhere in the question is a different quantity.
-        entries=re.split(r'[;\n]',before)
-        local=entries[-1]
+        entry_start=max(before.rfind(';'),before.rfind('\n'))+1
+        local=before[entry_start:]
         daily=re.search(r'\b(?:diari[oa]s?|daily|por día|por dia|per day)\b',local,re.IGNORECASE)
-        if not daily and len(entries)>1 and re.search(r'\b(?:observad[oa]|observed|actual)\b',local,re.IGNORECASE):
-            prior=entries[-2]
+        if not daily and entry_start>0 and re.search(r'\b(?:observad[oa]|observed|actual)\b',local,re.IGNORECASE):
+            prior=_entry_tail(before[:entry_start-1],';\n')
             if re.search(r'\b(?:baseline|base)\b',prior,re.IGNORECASE):
                 daily=re.search(r'\b(?:diari[oa]s?|daily|por día|por dia|per day)\b',prior,re.IGNORECASE)
         mixed=re.search(r'\b(?:total|mensual|monthly|horari[oa]|hourly|semanal|weekly)\b',local,re.IGNORECASE)
@@ -173,7 +210,7 @@ def quantities(question, *, explicit_only=False):
             left=before[:prefix.start()] if prefix else before
             right=after[suffix.end():] if suffix else after
             anchors=[]
-            left_match=re.search(r'(?:^|[;:\n])\s*([A-Za-zÁÉÍÓÚáéíóúÑñ_][A-Za-zÁÉÍÓÚáéíóúÑñ_ -]{0,50})\s*[:=]?\s*$',left)
+            left_match=_quantity_anchor(left)
             right_match=re.match(r'\s+([A-Za-zÁÉÍÓÚáéíóúÑñ_][A-Za-zÁÉÍÓÚáéíóúÑñ_ -]{0,50})\s*(?=;|[.!?](?:\s|$)|$)',right)
             for match_anchor in (left_match,right_match):
                 if match_anchor and concept(match_anchor.group(1)):

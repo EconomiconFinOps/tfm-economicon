@@ -20,6 +20,12 @@ de recopilación existentes y verificar detección de una regresión sin inferen
 No se modifica CI/package ni se amplía la arquitectura en este delta; no se cierra
 el finding por haber ejecutado las pruebas manualmente.
 
+Precisión de cobertura confirmada por Víctor en su revisión de PR140 del 17/10:
+`Chat engineering SQL` cubre CockroachDB; ningún workflow ejecuta pgvector real.
+Sus 30 pruebas nativas pgvector son evidencia manual con alcance/SHA propios,
+no cobertura CI ni nuevas ejecuciones de cada delta posterior. Incorporar esa
+brecha a la priorización del pipeline; sigue Open y no se modifica CI aquí.
+
 ## RF-021-001 — Dimension desde fichero de entorno
 
 Fecha: 2026-10-01. Origen: JUP-021, [validacion de Victor en PR #53](https://github.com/EconomiconFinOps/tfm-economicon/pull/53#pullrequestreview-5383443171).

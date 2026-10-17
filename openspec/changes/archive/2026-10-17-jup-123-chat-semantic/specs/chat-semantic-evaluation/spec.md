@@ -1,5 +1,20 @@
 ## ADDED Requirements
 
+### Requirement: Trabajo acotado del catálogo de cantidades
+El análisis de cantidades MUST contar candidatos antes del trabajo semántico,
+incluidos valores repetidos, cardinales y números finalmente rechazados.
+El límite MUST aplicarse por igual en backend y processor y con explicit_only.
+
+#### Scenario: Una entrada supera el presupuesto de candidatos
+- **WHEN** una pregunta o fuente tiene más de 512 candidatos numéricos o cardinales
+- **THEN** se devuelve un catálogo vacío, sin conservar una selección parcial
+- **AND** no se ejecuta el análisis semántico repetido de todos los candidatos
+
+#### Scenario: Una entrada está dentro del presupuesto
+- **WHEN** existen hasta 512 candidatos
+- **THEN** se conservan unidades, procedencia, precisión y semántica de las entradas admitidas
+- **AND** se mantiene el límite independiente de 128 cantidades distintas y el rechazo de dimensiones incompatibles
+
 ### Requirement: Premisas numéricas y reglas consumidas como declaraciones completas
 Los terminales de umbrales y denominador cero MUST validar la petición completa
 y los roles de cantidades mediante una gramática explícita. La mera mención de

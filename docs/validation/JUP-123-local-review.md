@@ -1,5 +1,15 @@
 # JUP-123: candidato local y validación conservada
 
+## Correcciones de PR140 posteriores a la N5 — 17/10/2026
+
+[Correcciones, pruebas y límites](../evidence/JUP-123-victor-corrections.md).
+La N5 de f3ec760d conserva su identidad y no mide el nuevo delta de análisis.
+La afirmación histórica «razonamiento desactivado» queda corregida: los
+[metadatos de petición](../evidence/JUP-123-n5-request-provenance.json) identifican
+high/exclude y order FP4 del processor, frente a only FP8/enabled=false del gateway.
+Sin cuerpos HTTP upstream no se afirma su combinación efectiva ni reasoning interno.
+El repositorio y su gateway de ejemplo no reproducen solos la N5 histórica.
+
 ### Reproducción presupuestaria corregida tras la validación de PR140 — 17/10/2026
 
 La N5 final usó los operadores externos currency api-step-v2/v3/v4, que elevaron
@@ -28,8 +38,9 @@ un juez calibrado ni evaluación ciega. El banco conocido se utilizó para corre
 el sistema, por lo que no se afirma generalización o superioridad del modelo.
 
 Modelo configurado: DeepSeek V4.1 Flash / DeepInfra FP8; banco1.0.1,
-plan `3fd573f5cc55a4d50cbc83b65d1af6a1b414102edfeb21a173f2b0352ec4b776`, corpus sintético54, temperatura0 y razonamiento
-desactivado, ZDR sin fallback. La ruta está configurada y vigilada; no hay traza
+plan `3fd573f5cc55a4d50cbc83b65d1af6a1b414102edfeb21a173f2b0352ec4b776`, corpus sintético 54 y temperatura 0. El gateway configuraba enabled=false, ZDR
+y ausencia de fallback; processor enviaba high/exclude y order FP4. No se
+acredita razonamiento interno desactivado ni el payload efectivo upstream. La ruta está configurada y vigilada; no hay traza
 independiente del proveedor upstream. La corrección024 conserva monedas separadas
 y solicita destino, tipo autorizado/dirección y fecha. Pruebas focales Linux y
 Windows:106 processor+4 backend;2 builds y226 archivos verificados. No se repiten

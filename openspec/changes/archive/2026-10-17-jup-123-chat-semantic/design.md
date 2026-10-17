@@ -1,10 +1,11 @@
 JUP: JUP-123
 
-Decisión de modelo documentada en [ADR-0023](../../../docs/adr/ADR-0023-chat-model-selection.md)
-(Proposed): DeepSeek V4.1 Flash/CoreWeave FP8 para el candidato local; no sustituye
+Decisión de modelo documentada en [ADR-0023](../../../../docs/adr/ADR-0023-chat-model-selection.md)
+(Proposed): gateway histórico DeepSeek V4.1 Flash/DeepInfra FP8, con forwarding
+high/exclude y order FP4 del processor documentados; no sustituye
 ADR-0002 ni activa B. Análisis para memoria trazado a JUP-063/JUP-109.
 
-## Verificación actual y límites — 16/10/2026
+## Verificación histórica y límites — 16/10/2026
 
 N3 separada de a7f9502d/banco1.0.1/corpus54, DeepSeek/CoreWeave:84completed,
 84respuestas localmente conformes y495comprobaciones(327banco/168calidad).
@@ -57,7 +58,7 @@ consolida1793 identidades chat conformes, sin omisiones nativas pendientes. No i
 reviews ni sustituye su CI. La reconciliación A11f/Bab66f90c queda como antecedente.
 Compatibilidad de disponibilidad/slots comprobada en API, frontend y CD; los rangos
 libres siguen siendo prerrequisito de despliegue y el navegador final de B queda
-para el candidato completo. Ver [continuidad A/B](../../../docs/continuidad/chat-entregas-a-b.md).
+para el candidato completo. Ver [continuidad A/B](../../../../docs/continuidad/chat-entregas-a-b.md).
 
 1. Reconciliar A por bloques usando la base Paris f63c150 para adiciones paralelas;
    mantener semántica B y controles de activación, cancelación y fecha de A.
@@ -282,7 +283,7 @@ Ver continuidad para evidencia, pruebas Linux y pendientes001/009/021/004/022.
 Supera los estados «pendiente de medir» de los cortes históricos inferiores.
 La medición de c7 terminó: 83 respuestas y 1 fallo técnico; revisión local
 70 conformes, 7 inciertas y 6 fallos de contenido. No permite aceptación.
-Ver [informe y comparación](../../../docs/validation/JUP-123-c7e2d561-N3-local-review.md).
+Ver [informe y comparación](../../../../docs/validation/JUP-123-c7e2d561-N3-local-review.md).
 
 El siguiente contrato debe separar tres responsabilidades: extraer hechos
 con fuente y ámbito, determinar resultados/reglas que deben cubrirse y redactar
@@ -390,7 +391,7 @@ después de preparar/tokenizar datos y usa el mismo fenceSQL ypayload; expectati
 Corte actual N3 e23e495b:84recibos,78respuestas/6fallos técnicos. Revisión local
 de todas las respuestas terminada:68conformes/8inciertas/2fallosdecontenido.
 014r2/r3 omite el exceso relativo;022 falla3veces por soporte visible propio
-de recomendaciones. Ver [informe local](../../../docs/validation/JUP-123-N3-local-review.md).
+de recomendaciones. Ver [informe local](../../../../docs/validation/JUP-123-N3-local-review.md).
 La reserva se revisó después de congelar calibración, sin ajustes intermedios;
 era históricamente conocida. Ajustarla después exige nueva evidencia independiente.
 

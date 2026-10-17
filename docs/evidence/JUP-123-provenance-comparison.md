@@ -56,6 +56,6 @@ de acceso normal a su propio temporal. Se conserva ese incidente y los logs
 de la pasada completa; no se relajan aserciones por el entorno.
 
 Guía y contrato: [evaluación de recibos](../validation/JUP-035-receipt-evaluation.md)
-y [OpenSpec](../../openspec/changes/jup-123-chat-semantic/specs/chat-semantic-evaluation/spec.md).
+y [OpenSpec](../../openspec/changes/archive/2026-10-17-jup-123-chat-semantic/specs/chat-semantic-evaluation/spec.md).
 Los resultados de ingeniería/API/UI previos mantienen su fuente y alcance;
 no se presentan como una nueva batería de las aplicaciones.

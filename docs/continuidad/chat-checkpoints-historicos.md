@@ -299,4 +299,3 @@ Nuevo corte23:18UTC sigue0%5m/30m; ledger1458/serviciossin cambios.
 Objetivo `blocked` confirmado tras3turnos del mismo proveedor; corte23:21UTC0%5m/30m,
 93recibos/1458filas/sinhandleV11. Auditoría provider-blocked-goal-v1. Seguimiento
 activo para recuperación, sin nuevas inferencias ni repetir preparación ya conforme.
-

@@ -5,8 +5,10 @@ y estado operativo; GitHub conserva código y revisiones; OpenSpec conserva
 requisitos y diseño. Este índice enlaza evidencia, no sustituye esas fuentes.
 Leer la [convención](convencion-compartida.md) y sólo los temas pertinentes.
 Las fechas indican la última actualización documental, no una nueva ejecución de pruebas.
-B: candidato local validado y reconciliado con develop `1de41b90` en
-`feat/JUP-123-chat-quality-delivery`; [PR140](https://github.com/EconomiconFinOps/tfm-economicon/pull/140) con Request changes de Lucía sobre7e7a294b. Corrección focal de reproducibilidad presupuestaria probada; publicación del delta y dictámenes pendientes.
+B: **Reanudado por orden humana (17/10)**. Candidato técnico de las cinco
+correcciones de PR140 preparado sobre 4c833e1d: archivo técnico autorizado,
+16 contrafactuales detectados, Windows 78 y Linux 175 focales PASS. Publicación, CI del
+SHA final y dictámenes pendientes. [Evidencia y estado](chat-evaluacion-local.md).
 El colector #131 está integrado; el seguimiento documental #138 es independiente.
 
 | Tema | Resumen y estado documental | Actualizado |
@@ -15,7 +17,7 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 | [Dashboard de evaluación del asistente](dashboard-evaluacion-asistente.md) | JUP-121: dashboard de Grafana con tres tipos de medida (A calidad con rúbrica, B negocio, C señales en vivo) alimentado desde el esquema `evaluation` de PostgreSQL con un único comando de carga; implementado y validado en local con la pila real; PR #132 con segunda vuelta de Paris y Lucia atendida (changes `jup-121-lectura-dashboard` y `jup-121-anotaciones-y-fuente`), pulido pendiente de tarjeta. Robustez a la espera de JUP-071; revalidación, revisión técnica y despliegue pendientes. | 2026-10-16 |
 | [Consultas de coste Azure](../evidence/JUP-036-validation.md) | PR69: reconciliación local de `1cf4087f` con develop `a3f514f7` (#129), sin cambios de producto. Corpus1.1.1 conservado; los dos casos SQL pendientes pasan en Cockroach24.1.11. Revisión/validación independientes del nuevo candidato y CI posterior pendientes. | 2026-10-15 |
 | [Memoria: modelos](memoria-modelos.md) | Comparación histórica GLM/DeepSeek conservada. Búsqueda posterior al429: rutas DeepSeek/DeepInfraFP8 yNebius, candidatos MistralLarge4ZDR/MiniMaxM3Together compatibles por catálogo; sin inferencias/activación ni calidad probada. Informeac41b83c; JUP063/109existentes. | 2026-10-17 |
-| [Evaluación local del chat](chat-evaluacion-local.md) | PR140: bloqueo CAP20/30 de Lucía atendido en candidato focal con procedencia histórica, cap30 explícito y default20 preservado. 40 pruebas Windows/Linux y185 herramientas PASS; publicación/CI/revalidación pendientes. RF-123-001 fuera de alcance registrado. N5 f3ec y sus497 archivos intactos; sin integración RAG, merge o nuevas inferencias. | 2026-10-17 |
+| [Evaluación local del chat](chat-evaluacion-local.md) | PR140 reanudada: cinco correcciones técnicas verificadas; archivo035/123 autorizado, 16 contrafactuales detectados y 78 Windows/175 Linux focales PASS. Publicación/CI/revalidación pendientes; N5 histórica intacta. | 2026-10-17 |
 | [Chat conversacional](chat-conversacional.md) | PR121: focal28 3PASS/4FAIL, JSONB7PASS. Corrección29 de soporte literal visible e interpretación separada en regresión offline; aceptación/batería real pendientes. Gasto0.957927619/2USD. | 2026-10-13 |
 | [División del chat en A/B](chat-entregas-a-b.md) | División aprobada; B d9b/9e2 corregida,50/84 muestras con47PASS/3técnicas429, sin publicar ni aceptar. Ver evaluación local. Base A8ea/develop0543 y reviews/CI conservan su fecha histórica, sin nueva consulta. | 2026-10-15 |
 | [Pantallas de maqueta ocultas del MVP](pantallas-ocultas-mvp.md) | JUP-116: Coste Detallado, Corte Global y Recomendaciones ya no tienen ruta ni menú (se conservan en el código y se reactivan con dos líneas) y Overview sale del menú pero conserva su ruta; una dirección desconocida lleva a `/`. 797 pruebas del frontend y 16 comprobaciones en navegador; mergeado en `develop` el 2026-10-12 (#124). | 2026-10-13 |

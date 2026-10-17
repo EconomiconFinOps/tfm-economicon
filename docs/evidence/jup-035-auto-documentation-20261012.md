@@ -54,7 +54,7 @@ Ambos servicios, descriptor, contexto, operaciones, prompt, hashes y OpenSpec
 negocian el contrato nuevo. El bundle conserva nombre v3 con hash nuevo; un peer
 antiguo falla cerrado. Mock continúa por su gateway y contrato independientes.
 El archivo OpenSpec anterior queda intacto y la evolución está en el cambio activo
-[jup-035-auto-documentation](../../openspec/changes/jup-035-auto-documentation/proposal.md).
+[jup-035-auto-documentation](../../openspec/changes/archive/2026-10-17-jup-035-auto-documentation/proposal.md).
 
 ## Verificación
 

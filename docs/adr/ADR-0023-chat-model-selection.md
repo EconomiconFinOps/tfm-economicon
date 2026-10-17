@@ -1,68 +1,61 @@
-# ADR-0023: Selección de modelo para el candidato local del chat B
+# ADR-0023: Configuración de evaluación del chat B
 
 - Estado: Proposed
-- Fecha: 2026-10-16
-- Tarea documental: [JUP-063](https://trello.com/c/sRKGpYEy)
-- Evaluación: [JUP-109](https://trello.com/c/orFyeUW2)
+- Fecha de revisión: 2026-10-17
 - Producto: [JUP-123](https://trello.com/c/TqtcumIN)
-- OpenSpec: [jup-123-chat-semantic](../../openspec/changes/jup-123-chat-semantic/design.md)
-- Antecedente aceptado: [ADR-0002](ADR-0002-litellm-openrouter.md), que no se sustituye.
+- Memoria y evaluación: JUP-063 / JUP-109
+- Change: [jup-123-chat-semantic](../../openspec/changes/archive/2026-10-17-jup-123-chat-semantic/design.md)
+- Antecedente: [ADR-0002](ADR-0002-litellm-openrouter.md), sin sustituir.
 
-## Contexto
+## Contexto comprobado
 
-Actualización 17/10/2026: la N5 final de B (`f3ec760d`,140 respuestas conformes,
-825 comprobaciones PASS) usa DeepSeek V4.1 Flash/**DeepInfra FP8**, temperatura0,
-razonamiento desactivado, ZDR sin fallback y banco1.0.1/corpus54. Esta es la
-configuración medida del candidato entregado; no acredita disponibilidad futura
-ni cambia el gateway compartido. Las referencias a CoreWeave de los apartados
-siguientes describen la selección y campañas anteriores, no la ruta de la N5 final.
-Se conserva Proposed hasta la revisión del equipo. El registro se renumera de
-ADR-0022 a ADR-0023 al integrar, porque develop ya utiliza ADR-0022 para Grafana.
-Evidencia actual: [resultado y límites](../validation/JUP-123-local-review.md).
+La N5 histórica de `f3ec760d3c483e8798df2be32ea90bb901ebe36d` produjo
+140 respuestas conformes y 825 comprobaciones PASS sobre el banco conocido.
+Se empleó para corregir el sistema: no mide generalización, evaluación ciega ni
+superioridad del modelo. CoreWeave FP8 corresponde a campañas anteriores;
+la configuración del gateway de esta N5 restringía DeepSeek V4.1 Flash a
+**DeepInfra FP8**. No hay traza independiente del proveedor upstream.
 
-### Contexto y propuesta anteriores — 16/10/2026
+La auditoría de PR140 distingue dos capas que antes se confundían:
 
-La comparación común de 84 pares favoreció GLM 5.2/DeepInfra FP4 en conformidad local
-(82 frente 77 de DeepSeek, con 6 fallos y 1 duda), aunque GLM tuvo una regresión obligatoria.
-DeepSeek V4.1 Flash/CoreWeave FP8 registró menor coste y latencia de generación.
-Posteriormente, la validación API del candidato a7f9502d con GLM quedó parcial 4,
-con 2 completed y 2fallos429. No es una estimación de disponibilidad general.
+| Capa | Configuración comprobada |
+| --- | --- |
+| Processor congelado f3ec760d | `economicon-chat`, temperatura 0, `reasoning={effort: high, exclude: true}`, `provider.order=[deepinfra/fp4]`, sin fallback ni retries locales. |
+| Gateway aislado N5 | `openrouter/deepseek/deepseek-v4.1-flash`, `provider.only=[deepinfra/fp8]`, ZDR, recopilación denegada, sin fallback y `reasoning.enabled=false`. |
+| Gateway de ejemplo del repositorio | GLM-5.2 por DeepInfra FP4; no reproduce esa ruta N5. |
 
-El candidato corregido, con corpus de 54/banco 1.0.1 y DeepSeek/CoreWeave, completó una
-N3 nueva: 84 operaciones, 84 respuestas conformes en revisión local, 327 comprobaciones
-del banco y 168 adicionales. Código, corpus y recorrido cambiaron respecto del
-replay común: no se atribuye la diferencia al modelo de forma causal.
+No se ha demostrado qué combinación de esos campos llegó finalmente a OpenRouter
+ni qué razonamiento interno ejecutó el proveedor. `exclude=true` no desactiva
+el razonamiento interno. Se retira la afirmación anterior de «razonamiento
+desactivado» como propiedad observada de las 140 respuestas. Los hashes identifican
+peticiones; no permiten recuperar su cuerpo. Los comprobantes conservan 289 hashes
+de fase (145 draft, 144 final), incluidos intentos previos, para 139 operaciones;
+008-r5 no tiene ese informe. Los costes desconocidos y reservas siguen intactos.
 
-## Decisión documentada y propuesta
+## Decisión propuesta
 
-Conservar **DeepSeek V4.1 Flash/CoreWeave FP8** como selección operativa del
-candidato local B: identificador `deepseek/deepseek-v4.1-flash`,
-`coreweave/fp8`, temperatura 0, razonamiento desactivado, ZDR, recopilación
-denegada y sin fallback. Se priorizan compatibilidad, requisitos obligatorios
-y finalización de la validación; coste y tiempo son criterios secundarios.
+Conservar **DeepSeek V4.1 Flash / DeepInfra FP8 como configuración histórica del
+gateway de la N5**, con las diferencias de forwarding anteriores expresas. No
+presentar CoreWeave como ruta final ni afirmar equivalencia con el gateway de
+ejemplo. La reproducción requiere el clon aislado y la configuración exacta
+externa; el repositorio por sí solo no reproduce la medición histórica.
 
-La propuesta para el equipo es revisar esta configuración antes de activarla
-como principal de B. **No cambia el gateway compartido, no supersede ADR-0002
-y no afirma aprobación humana.** DeepSeek V4 Pro del ADR aceptado es otra variante.
-Sonnet/Sol no se descartan por capacidad: sus parciales detectaron restricciones
-del contrato, y no hay N3 semántica completa de ambos.
+[Configuración sin secretos](../evidence/JUP-123-n5-gateway.sanitized.json),
+[procedencia por operación y fase](../evidence/JUP-123-n5-request-provenance.json)
+y [auditoría y límites](../evidence/JUP-123-victor-corrections.md) identifican el
+original `gateway.private.json`, SHA256
+`592674dfeaf2ec184ba580af99a820226c327bd1f920c59297bb721d3a4b3044`.
+Las credenciales son referencias de entorno; este artefacto no es una orden de
+despliegue ni una prueba del payload efectivo upstream.
 
-## Consecuencias y revisión
+## Consecuencias y antecedentes
 
-Se mantiene un servidor que recupera evidencia y calcula, con generación
-estructurada y controles de contenido. La calidad se mide por versión completa
-del sistema; un porcentaje medio no compensa un fallo obligatorio.
-La elección queda condicionada al banco conocido, sin conjunto ciego,
-adjudicación independiente o juez calibrado. N5 del candidato actual no ejecutada.
+La propuesta sigue pendiente de ratificación. No cambia el gateway compartido,
+los campos del producto, las claves, el ledger ni activa B. Nuevos cambios de
+producto se verifican por SHA con pruebas offline; no heredan una N5 del código
+anterior. Una medición nueva o una captura de tráfico efectiva requieren su
+propia autorización y presupuesto, ausentes de esta corrección.
 
-Cambios en modelo/proveedor/esquema/prompt/corpus/servidor requieren nueva
-evaluación identificada. Los costes observados y máximos desconocidos se
-conservan separados. No hay fallback automático, campañas nuevas, modificación
-de claves ni cambio de despliegue por aprobar esta documentación.
-
-## Evidencia
-
-[Análisis y preparación para la memoria](../evidence/JUP-063-model-selection.md)
-enlaza comparación, auditoría actual, propuesta fuera de Git y manifiesto de SHA-256.
-La aceptación de B, las revisiones del equipo y la incorporación a la memoria
-continúan pendientes; no se simulan en este ADR.
+El análisis histórico GLM/DeepSeek y CoreWeave permanece en
+[JUP-063](../evidence/JUP-063-model-selection.md) y en el informe local. Esas
+campañas mantienen sus identidades y no sustituyen esta auditoría.

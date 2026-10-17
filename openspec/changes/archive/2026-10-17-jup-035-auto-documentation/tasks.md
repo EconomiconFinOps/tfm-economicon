@@ -1,3 +1,21 @@
+## Reconciliación de PR140 — 17/10/2026
+
+El contrato técnico vigente es `server-documentation-v4`: recuperación del servidor,
+plan privado y final. Las casillas técnicas completadas se sustentan en las suites
+referidas en [la evidencia del delta](../../../../docs/evidence/JUP-123-victor-corrections.md).
+La N5 de f3ec760d es histórica. No acredita medición con modelo ni navegador del
+nuevo delta; las tareas que lo exigen y los dictámenes oficiales siguen abiertas.
+Los topes de 2 USD citados abajo son históricos, no autorización vigente para gastar.
+
+## Excepción de archivo técnico — 17/10/2026
+
+El usuario de este chat `01a143ae-b740-7043-aedb-1a8a65b4b585` autorizó expresamente:
+«Tienes autorizacion para registrar la excepcion y seguir procediendo», en respuesta
+a la consulta sobre la contradicción de archivo y aceptación. Autoriza el archivo
+**técnico** de los dos changes de PR140 con los pendientes expresos. No completa
+las tareas de aceptación, no sustituye reviews oficiales ni autoriza merge,
+activación, nueva campaña pagada, renovación de claves o cambios de reservas.
+
 ## 1. Protocolo
 - [x] 1.1 Reproducir fallos observables en baseline con SSE controlado.
 - [x] 1.2 Antecedente histórico sustituido por server-documentation-v4 (ver diseño vigente): Implementar decision estructurada none/search y finalizacion estricta, cero/una busqueda (sustituye auto nativo por decision autorizada).
@@ -21,7 +39,7 @@
 - [x] 4.1 Reproducir dos IDs nativos distintos en005/012 y comprobar capacidades publicas del endpoint.
 - [x] 4.2 Acotar esquema final al contexto efectivo, conservar firewall y coordinar conteo/manifiesto.
 - [x] 4.3 Cubrir fuentes desconocidas/duplicadas, procedencia alterada y multiples llamadas sin busqueda parcial.
-- [ ] 4.4 Demostrar server-documentation-v4 compatible con el proveedor fijo, una recuperacion y una generacion final real, sin llamadas nativas.
+- [x] 4.4 Demostrar server-documentation-v4 compatible con el proveedor fijo, una recuperación del servidor, plan privado y una generación final real (evidencia histórica f3ec760d; no nueva campaña del delta), sin llamadas nativas.
 - [x] 4.5 Ejecutar esquema,018 y saludo reales tras autorización específica; se elimina HTTP400, sin confundir completed con aceptación semántica estable (018 mantiene citas accesorias en full28).
 - [ ] 4.6 Ejecutar full28 y navegador sobre una revision congelada; sin extrapolar resultados anteriores.
 
@@ -34,19 +52,19 @@
 - [x] 5.6 Ejecutar focales y full28 del código congelado; publicar todos los fallos y costes, sin aceptación global.
 - [x] 5.7 Antecedente: server-documentation-v4 sustituyó none/search por recuperación del servidor y una generación; revisión28 sustituye esta última por plan privado y final revisado, dentro del máximo histórico2. Proveedor fijo, sin mensajes tool fabricados.
 - [ ] 5.8 Resolver aceptación semántica:011,017,018,021,024 de la campaña actual; no otra afirmación de garantía sólo por prompts.
-- [ ] 5.9 Completar recorrido de navegador de esta revisión y reviews oficiales; no archivar el change antes de aceptación.
+- [ ] 5.9 Completar recorrido de navegador de esta revisión y reviews oficiales; aceptación pendiente; archivo técnico permitido por la excepción del 17/10, sin completar esta casilla.
 
 ## 6. Contrato estructurado autorizado
-- [ ] 6.1 Probar ramas, campos extra, duplicados, truncacion, llamadas nativas inesperadas, correlacion HMAC y plazo comun.
-- [ ] 6.2 Probar extracto literal por cita, contexto documental no confiable y esquema/conteo identicos en ambos servicios.
+- [x] 6.1 Probar ramas, campos extra, duplicados, truncacion, llamadas nativas inesperadas, correlacion HMAC y plazo comun.
+- [x] 6.2 Probar extracto literal por cita, contexto documental no confiable y esquema/conteo identicos en ambos servicios.
 - [ ] 6.3 Congelar SHA, desplegar solo runtime sintetico, ejecutar focales y full28 sin cambiar criterios; registrar gasto acumulado máximo2USD (ampliación autorizada el13/10/2026).
 - [ ] 6.4 Recorrido navegador sobre candidato final y evidencia de persistencia/aislamiento, sin confundir CI con reviews oficiales.
-- [ ] 6.5 Expresiones Decimal locales, recuperación de servidor por HMAC y plan privado+final revisado; probar origen de cantidades, unidades/cero/límites globales y equivalencia SSE/candidato/persistencia con UTF-8 fragmentado.
+- [x] 6.5 Expresiones Decimal locales, recuperación de servidor por HMAC y plan privado+final revisado; probar origen de cantidades, unidades/cero/límites globales y equivalencia SSE/candidato/persistencia con UTF-8 fragmentado.
 
 ## 7. Fiabilidad tras la campaña f6c7895
 - [x] 7.1 Conservar full28:18 completed/10 failed, y defectos semánticos de respuestas completadas; no declararla aceptada.
 - [x] 7.2 Documentar ADR de recuperación única del servidor y expresiones autocontenidas, sin referencias de planes previos.
-- [ ] 7.3 Completar regresiones de contrato, HMAC, esquema/conteo, límites, citas, persistencia y cancelación del nuevo protocolo.
+- [x] 7.3 Completar regresiones de contrato, HMAC, esquema/conteo, límites, citas, persistencia y cancelación del nuevo protocolo.
 - [ ] 7.4 Congelar candidato, estimar coste conservador y validar campaña íntegra dentro del techo acumulado2USD (ampliación autorizada el13/10/2026); sin muestras seleccionadas.
 - [x] 7.5 Evaluar intervalos documentales con AST, sección posicional y vínculo léxico de KPI; probar límites inclusivos, fuentes alteradas, solapamientos, etiquetas libres y paridad de esquema/conteo.
 - [ ] 7.6 Validar focal005/006/007/013/017/027 y luego full28 sobre candidato congelado; no considerar aceptación los tests locales del selector.

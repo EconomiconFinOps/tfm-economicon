@@ -184,7 +184,7 @@ narrativa posterior. Fuentes seleccionadas y correspondencia del denominador
 siguen requiriendo comprobación semántica. Las notas enumeradas no declaran
 que los datos del escenario sean facturación verificada.
 
-Véase [diseño OpenSpec](../../openspec/changes/jup-035-auto-documentation/design.md)
+Véase [diseño OpenSpec](../../openspec/changes/archive/2026-10-17-jup-035-auto-documentation/design.md)
 y [continuidad](../continuidad/chat-conversacional.md).
 
 
