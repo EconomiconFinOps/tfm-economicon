@@ -47,8 +47,9 @@ como anteriores, sin rotar valores existentes. Cada ranura usa su puerto MinIO
 [procedimiento CD](../deployment/dockerserver-cd.md) incluye actualización del
 agente y túnel S3; las releases ya preparadas permanecen inmutables.
 
-La admisión DOCX convierte errores de descompresión DEFLATE/BZip2/LZMA en rechazo
-de formato 422, sin publicar un trabajo ni cambiar las reservas o sus plazos.
+La admisión DOCX conserva el rechazo 422 sin publicar un trabajo: ahora sólo
+acepta ZIP sin compresión/DEFLATE, verifica los bytes efectivos por bloques y
+rechaza BZip2/LZMA antes de descomprimir, además de DTD también en UTF-16.
 Las dos copias del contrato de formatos permanecen idénticas. Las regresiones
 están en `tools/cd/test_deploy.py` y `test_document_uploads.py`: preparación real
 con Compose de ambas ranuras y raíz anterior, preservación de secretos y
@@ -79,3 +80,46 @@ recursos, red, escritura y archivos ajenos; no se admiten `/opt` ni el prefijo
 completo. Las 18 pruebas de extracción y las siete de checkpoint pasan en un
 contenedor aislado sin red con el runtime oficial de CI y usuario no privilegiado.
 Este resultado local no sustituye la CI remota ni acredita un despliegue.
+
+## Corrección del feedback de pairing de PR #133
+
+Sobre `eb4453f9`, se corrigen el pico de memoria del contenedor DOCX falseado y
+el trabajo huérfano tras revocar membresía. Las transiciones running/failed y
+terminal requieren propietario vigente; una entrega manipulada no muta estado.
+El fallo terminal libera dedup y recupera la limpieza con la retención existente.
+El panel distingue un formato inválido de un fallo transitorio y no lo reintenta.
+El ensayo propio con CockroachDB, RabbitMQ y MinIO reales confirma DOCX válido,
+revocación, nueva subida por otro usuario y limpieza sin borrar su checkpoint;
+los proveedores son mock y no hay gasto. Se conservan los fallos de preparación.
+La [evidencia incremental](../evidence/JUP-124-validation.md#correcciones-del-pairing-de-pr-133)
+separa pruebas, límites y evaluaciones independientes todavía pendientes.
+
+## Reconciliación local con develop — 17/10/2026
+
+Se prepara la combinación de `fd732f76de9a507935559d847d50b9467d19084b` con
+`ffdd8ee9895d95e085ef31f18064fd55d56fe4e5`, comprobado por el liderazgo.
+La rama conserva ingesta, formatos/OCR, texto manual, límites y concurrencia,
+limpieza durable y los arreglos del pairing. No incorpora las fases 2/3.
+Los conflictos de los índices ADR/continuidad conservan ambas aportaciones,
+incluidas las dos rutas ADR-0022 ya identificadas en los padres; no se renumeran
+ni se ratifican. La fixture de doctor conserva variables documentales y suma
+la contraseña de evaluación requerida por Compose.
+
+La nueva obligación `GRAFANA_EVALUATION_DB_PASSWORD` exponía una incompatibilidad
+del generador CD: la preparación real fallaba tanto en raíz nueva como heredada.
+Por delimitación del liderazgo se añade sólo la clave ausente mediante el
+generador seguro existente. No se cambian valores configurados, permisos,
+roles de base de datos ni accesos operativos. Las pruebas generan exclusivamente
+secretos sintéticos temporales. Preparación de ambas raíces/ranuras y repetición
+idempotente correctas; se comprueba también la conservación de un valor existente.
+
+[Evidencia incremental](../evidence/JUP-124-validation.md#reconciliación-local-con-develop--17102026):
+127 casos de herramientas correctos y un fallo inicial propio de resolución de
+la expectativa S3, corregido y repetido focalmente; 29 casos del consumidor
+assistant y 76 OpenSpec correctos. Los errores CD originales se conservan,
+separados del resultado corregido. No se repiten OCR, multiusuario o campañas
+RAG cuyos archivos mantienen identidad, ni se usan proveedores reales.
+
+Se entrega el árbol de trabajo para staging/commit del liderazgo, sin commit
+ni push propios. Evaluaciones independientes y CI del futuro commit pendientes;
+no se presenta la CI histórica de fd732f76 como comprobación de esta combinación.

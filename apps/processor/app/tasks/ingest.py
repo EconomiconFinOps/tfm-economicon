@@ -8,7 +8,7 @@ from app.repositories.jobs import JobRepository
 
 
 class InvalidJobMessage(ValueError):
-    """A permanent delivery rejection that must not change persisted state."""
+    """An untrusted delivery never changes state; verified revoked files close first."""
 
 
 class IngestionFailed(RuntimeError):
@@ -117,6 +117,8 @@ class IngestTask:
         scope = {"tenant_id": job["tenant_id"], "created_by": job["created_by"]}
         stored = self.repository.fetch_authorized_job(job_id, **scope)
         if stored is None:
+            if self.documents is not None and 'upload_id' in incoming:
+                self.documents.reject_unauthorized(job, incoming)
             raise InvalidJobMessage("Invalid job message.")
         payload = _payload(stored, persisted=True)
         if (
@@ -138,11 +140,14 @@ class IngestTask:
             return result
 
         if self.documents is not None:
+            if self.documents.is_terminal(stored, payload):
+                raise InvalidJobMessage("Invalid job message.")
             self.documents.claim(stored, payload)
         elif 'upload_id' in payload:
             raise InvalidJobMessage('Document processing is not configured.')
+        execution_scope = {**scope, 'document_owner': self.documents.owner} if self.documents is not None and 'upload_id' in payload else scope
         try:
-            self.repository.mark_running(job_id, **scope)
+            self.repository.mark_running(job_id, **execution_scope)
         except Exception:
             if self.documents is not None:
                 self.documents.release(stored)
@@ -179,10 +184,10 @@ class IngestTask:
                 self.documents.completed(stored, payload)
             return result
         except ProviderError:
-            self.repository.mark_failed(job_id, "ingestion_failed", **scope)
+            self.repository.mark_failed(job_id, "ingestion_failed", **execution_scope)
             raise
         except Exception as exc:
-            self.repository.mark_failed(job_id, "ingestion_failed", **scope)
+            self.repository.mark_failed(job_id, "ingestion_failed", **execution_scope)
             # Si `mark_failed` falla, su excepcion se propaga tal cual (reencolable): no se
             # sabe que quedo escrito y descartar la entrega podria perder el fallo.
             # `permanent` se calcula aqui, donde aun se ve la causa, y no se deja que el

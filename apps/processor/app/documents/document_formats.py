@@ -1,4 +1,5 @@
 """Non-executing admission checks shared as a contract by both deployments."""
+import copy
 import io
 import lzma
 from pathlib import PurePosixPath
@@ -12,6 +13,33 @@ FORMATS = {'md', 'txt', 'pdf', 'docx', 'doc'}
 
 class FormatError(ValueError):
     pass
+
+
+class _DocumentTreeBuilder(ElementTree.TreeBuilder):
+    def doctype(self, name, pubid, system):
+        raise FormatError('unsafe_document_xml')
+
+
+def _read_member(archive, member, remaining, *, retain=False):
+    # ZipExtFile otherwise clips output to the untrusted declared length. Read
+    # one actual byte beyond it, with bounded DEFLATE output and CRC checking.
+    limit = min(member.file_size, 20_000_000, remaining)
+    bounded = copy.copy(member)
+    bounded.file_size = limit + 1
+    size, parts = 0, []
+    with archive.open(bounded) as stream:
+        while True:
+            block = stream.read(min(65536, limit - size + 1))
+            if not block:
+                break
+            size += len(block)
+            if size > limit:
+                raise FormatError('document_expansion_limit')
+            if retain:
+                parts.append(block)
+    if size != member.file_size:
+        raise FormatError('invalid_document_container')
+    return size, b''.join(parts)
 
 
 def filename_format(filename):
@@ -51,6 +79,7 @@ def validate_format(data, extension):
                 if (len(members) > 2000 or len(set(names)) != len(names)
                         or sum(member.file_size for member in members) > 80_000_000):
                     raise FormatError('document_expansion_limit')
+                extracted, actual_total = {}, 0
                 for member in members:
                     path = PurePosixPath(member.filename)
                     if (path.is_absolute() or '..' in path.parts or '\\' in member.filename
@@ -58,14 +87,18 @@ def validate_format(data, extension):
                             or member.file_size > max(1, member.compress_size) * 1000
                             or 'vbaproject' in member.filename.lower()):
                         raise FormatError('unsafe_document_container')
-                    # Reading each member checks actual CRC and bounded decompression.
-                    if len(archive.read(member)) != member.file_size:
-                        raise FormatError('invalid_document_container')
-                document = archive.read('word/document.xml')
-                content_types = archive.read('[Content_Types].xml')
-                if b'<!DOCTYPE' in document.upper() or b'<!ENTITY' in document.upper():
-                    raise FormatError('unsafe_document_xml')
-                root = ElementTree.fromstring(document)
+                    # OPC uses stored/DEFLATE entries. BZip2/LZMA in older
+                    # ZipExtFile runtimes can allocate unbounded output per read.
+                    if member.compress_type not in {zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED}:
+                        raise FormatError('invalid_docx_document')
+                    retain = member.filename in {'word/document.xml', '[Content_Types].xml'}
+                    size, value = _read_member(archive, member, 80_000_000 - actual_total, retain=retain)
+                    actual_total += size
+                    if retain:
+                        extracted[member.filename] = value
+                document = extracted['word/document.xml']
+                content_types = extracted['[Content_Types].xml']
+                root = ElementTree.fromstring(document, parser=ElementTree.XMLParser(target=_DocumentTreeBuilder()))
                 if (root.tag != '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}document'
                         or b'wordprocessingml.document.main+xml' not in content_types):
                     raise FormatError('document_format_mismatch')

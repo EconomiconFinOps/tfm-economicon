@@ -1,0 +1,10 @@
+{
+  "manifest_version": 1,
+  "runs": [
+    { "path": "docs/evidence/JUP-070-run-1-report.json", "format": "jup-070-report-v1", "milestone": true },
+    { "path": "docs/evidence/JUP-070-run-2-report.json", "format": "jup-070-report-v1", "milestone": true },
+    { "path": "docs/evidence/JUP-078-benchmark-results.json", "format": "jup-078-benchmark-v1", "milestone": true },
+    { "path": "docs/spikes/JUP-022-retrieval-calibration.json", "format": "jup-022-calibration-v1", "milestone": true },
+    { "path": "docs/validation/JUP-068-example.json", "format": "jup-068-input-v1", "milestone": true }
+  ]
+}

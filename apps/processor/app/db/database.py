@@ -49,8 +49,8 @@ class Database:
         self, job_id: str, status: str, result: dict | None = None,
         *, tenant_id: str, created_by: str, document_owner: str | None = None,
     ) -> None:
-        if document_owner is not None and status != 'completed':
-            raise ValueError('Document ownership fence is only for completion')
+        if document_owner is not None and status not in {'running', 'completed', 'failed'}:
+            raise ValueError('Invalid fenced document transition')
         ownership = """ AND EXISTS (SELECT 1 FROM document_execution_claims c
             WHERE c.job_id=jobs.id AND c.tenant_id=jobs.tenant_id
                 AND c.owner=:document_owner AND c.expires_at>:updated_at)""" if document_owner is not None else ''
