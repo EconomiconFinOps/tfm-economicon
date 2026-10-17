@@ -12,10 +12,10 @@ Contrato que se valida:
   va entre comillas dobles: el intérprete de comandos de pnpm en Windows no entiende las simples y, sin comillas,
   `*` se expandiría. El patrón cubre todos los ficheros `test_evaluation_*.py` y deja fuera el módulo auxiliar
   `evaluation_pg_helper.py` (no es un test).
-* Los cuatro scripts son contiguos y van entre `assistant-eval:test` y `synthetic-demo:test`; el resto de scripts
-  no se toca (se fijan seis representativos con su valor de hoy como literales).
+* Los cuatro scripts son contiguos y van entre `chat-collector:test` y `synthetic-demo:test`; el resto de scripts
+  no se toca (se fijan siete representativos con su valor de hoy como literales).
 * La CI ejecuta `corepack pnpm evaluation-dashboard:test` UNA sola vez, en el paso «Validate governance tooling»,
-  justo después de `assistant-eval:test` y antes de `synthetic-demo:test`, con la misma sangría; el resto del
+  después de colector y robustez y antes de `synthetic-demo:test`, con la misma sangría; el resto del
   bloque no cambia.
 * La guía nombra los cuatro scripts.
 
@@ -33,7 +33,7 @@ Decisiones donde el enunciado admitía más de una lectura:
   ejecución exigen que todo lo anterior a la salida de la herramienta sean líneas de esa cabecera (empiezan por
   `>` o están vacías) y comprueban lo que viene después.
 * Los cuatro scripts nuevos deben ser contiguos en cualquier orden entre sí, pero ocupar exactamente el hueco
-  entre `assistant-eval:test` y `synthetic-demo:test`.
+  entre `chat-collector:test` y `synthetic-demo:test`.
 """
 
 import fnmatch
@@ -60,11 +60,12 @@ NEW_SCRIPTS = {
     "evaluation-dashboard:test": 'python -m unittest discover -s scripts/tests -p "test_evaluation_*.py"',
 }
 
-# Valores de hoy (antes de la tarea 3.4) de seis scripts representativos que no deben cambiar.
+# Scripts representativos que deben conservarse al reconciliar JUP-121 y JUP-123.
 UNTOUCHED_SCRIPTS = {
     "jup:check": "node tools/jup-check.mjs",
     "assistant-metrics:test": "python -m unittest discover -s scripts/tests -p test_assistant_metrics.py",
     "assistant-eval:test": "python -m unittest discover -s scripts/tests -p test_assistant_eval.py",
+    "chat-collector:test": "python -m unittest discover -s tools -p test_chat_eval_collect*.py -v",
     "retrieval-calibration:test": "python -m unittest discover -s scripts/tests -p test_retrieval_calibration.py",
     "docker:validate": "node --test tools/docker-topology.test.mjs",
     "business-metrics:test": "node --test tools/business-metrics.test.mjs",
@@ -95,6 +96,7 @@ CI_BLOCK_TODAY = [
     "corepack pnpm retrieval-calibration:test",
     "corepack pnpm assistant-metrics:test",
     "corepack pnpm assistant-eval:test",
+    "corepack pnpm chat-collector:test",
     "corepack pnpm assistant-robustness:validate",
     "corepack pnpm assistant-robustness:test",
     "corepack pnpm synthetic-demo:test",
@@ -218,13 +220,14 @@ class PackageJsonTests(unittest.TestCase):
             with self.subTest(script=nombre):
                 self.assertEqual(scripts.get(nombre), valor)
 
-    def test_los_cuatro_scripts_son_contiguos_entre_assistant_eval_y_synthetic_demo(self):
-        # Van junto a los de assistant-* / retrieval-*: ocupan exactamente el hueco entre `assistant-eval:test`
+    def test_los_cuatro_scripts_son_contiguos_entre_chat_collector_y_synthetic_demo(self):
+        # Van junto a los de assistant-* / retrieval-*: ocupan exactamente el hueco entre `chat-collector:test`
         # y `synthetic-demo:test` (en cualquier orden entre sí) y no hay otros scripts intercalados.
         claves = list(_scripts())
         self.assertIn("assistant-eval:test", claves)
         self.assertIn("synthetic-demo:test", claves)
-        desde = claves.index("assistant-eval:test") + 1
+        self.assertLess(claves.index("assistant-eval:test"), claves.index("chat-collector:test"))
+        desde = claves.index("chat-collector:test") + 1
         hasta = claves.index("synthetic-demo:test")
         self.assertEqual(sorted(claves[desde:hasta]), sorted(NEW_SCRIPTS))
 
