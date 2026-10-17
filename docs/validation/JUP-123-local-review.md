@@ -4,7 +4,41 @@ Verificado el 17/10/2026. Origen: chat
 `01a1270c-e332-7462-9c90-706d49ade92c`.
 **Código preparado para revisión; B no aceptada, publicada ni activada de forma permanente.**
 
-### Objetivo bloqueado por disponibilidad externa — 17/10/2026
+### Corte vigente — 17/10/2026, 08:29 UTC
+
+V12 terminó011r4 por4HTTP429 upstream de CoreWeave, sin Retry-After, pese a900s
+de espera ypreflightPASS. Sin respuesta final/RAG de011 para evaluar.95recogidas:
+91completed conformes538PASS,4técnicas/21checks no evaluables,45sin despachar.
+Ledger1460SHAc34e5ca2/prefijo1459intacto;4máximos0.0889632retenidos,
+desconocidos14.34637330USD/cota22.11767032de30USD(conservadora,no factura).
+Auditoría parcial095 verifica terminal/PIDausente/parkingexit0/0activas/old6sanos;
+los diagnósticosv2 conservan elerrorreal. No campaña pagada viva ni relanzamiento
+por tiempo/catálogo saludable. Nuevo impedimento429, distinto del histórico0%.
+C1/C3sin cumplir; cierres anteriores noaplican a4fallos, no se relajan etiquetas.
+Hardware24GB/RAMdisponible14GB/swaplibre; raíz225G55libres/disco400GiB visibles.
+Detalles en `../continuidad/chat-evaluacion-local.md`; mismo producto d965.
+Dictamen095JSON3a68e2b1/21noevaluables y paquete248archivos/manifest6c8e658d
+congelados; notasd495/91juicios intactos. Trello07510638 actualizado por puente,
+sin alterar lista/miembros/fechas. No significa aceptación o fin de la N5.
+
+### Histórico: corte de reanudación — 17/10/2026, 08:27 UTC
+
+V11 reanudó010r4 tras recuperación de la ruta, pero terminó por HTTP429 de
+CoreWeave: limitación temporal upstream sin Retry-After. Se conservan sus4intentos,
+la reserva máxima0.0889632 y el borrador parcial; no hay respuesta final evaluable.
+Corte094:91completed conformes/538PASS,3técnicas/16noevaluables; paquete239archivos
+manifest7ec1b677, ledger1459SHA7b3dffd0 y desconocidos14.25741010USD intactos.
+V12 vivoPID3295534/start3740953/prepared713aee87 continúa sólo desde011r4:
+900s desde cierreV11, separación60s trascompleted, mismos4intentos internos,
+stop ante siguiente técnico. Preflight08:26:51PASS;1460filas/94recibos/011en curso.
+No declarar recuperación real del modelo por metadatos públicos o por esa espera.
+Revisión73e0e029 yvalidaciónf7705652 independientes conformes al arnés, no al resultado
+futuro. Cadenas finales estricta y técnica de2fallos ahora inaplicables; C1/C3sin cumplir.
+Hardware verificado24GB,disco400GiB/raíz225G55libres, sin resize por este agente.
+Cap30/mismasclaves4.5/.1hasta17oct18París/sin liberar reservas/publicar B.
+Detalle y siguientes acciones en `../continuidad/chat-evaluacion-local.md`.
+
+### Histórico: objetivo bloqueado por disponibilidad externa — 17/10/2026
 
 Estado del objetivo confirmado `blocked` tras tres turnos consecutivos con la
 misma ruta no disponible; no es el antiguo bloqueo presupuestario ni una pausa.
@@ -19,7 +53,7 @@ inferencias/renovación de claves/campañas nuevas mientras falte disponibilidad
 Próxima010r4 con mismas guardas y30USD; claves sólo hasta17oct18París. No nuevas
 preguntas ni documentación repetitiva ante estado idéntico. B local/noaceptada.
 
-## Corte vigente:93 recogidas; ruta no disponible — 17/10/2026
+## Histórico:93 recogidas; ruta no disponible — 17/10/2026
 
 N5 d965/plan8af94f71: **93/140 recogidas:91completed conformes y2failed técnicos**.
 538PASS(356banco+182calidad),11comprobaciones no evaluables;47sin despachar desde010r4.

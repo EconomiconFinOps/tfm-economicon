@@ -9,7 +9,76 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 17/10/2026
 
-### Objetivo bloqueado por disponibilidad externa — 17/10/2026
+### Corte vigente095: persiste HTTP429 upstream — 17/10/2026, 08:29 UTC
+
+V12 terminó011r4 con4errores de transporte HTTP429: CoreWeave vuelve a indicar
+limitación temporal upstream, sin Retry-After. Ocurrió tras esperar900s desde
+el terminalV11 y superar el preflight real. Esa espera no resolvió la limitación;
+no relanzarV12 ni crearV13 por mero paso del tiempo o catálogo público100%.
+Operación7a1910b2-4cdb-4aca-8e3f-866e5cef3233, sin respuesta final/RAG evaluables.
+
+Estado95/140:91completed conformes538PASS,4técnicas/21checks no evaluables,
+45sin despachar desde012r4. Ledger1460SHA
+`c34e5ca2555d25f5a298b9e6980d888e915aa5ac0db63c5c5b07877c87a59a04`;
+prefijo1459 intacto. Cada fallo conserva0.0889632, desconocidos14.34637330USD,
+cota conservadora22.11767032/30USD(no factura). Auditoría
+`B-role-n5-partial095-technical-stop-audit-v1.json` verifica estado durable,
+proceso terminado, parkingexit0/0activas/old6sanos/new3parados y contabilidad.
+Diagnósticos `B-role-n5-rate-limit-diagnostic-v2.json` y
+`B-role-n5-provider-error-body-diagnostic-v2.json` conservan4HTTP429 y el error
+acotado del proveedor sin secretos/logs completos. No son fallos semánticos.
+
+Validación asistida095JSON3a68e2b1 conserva91juicios/538PASS y21noevaluables
+(13banco+8calidad), batch013sinuso/notasd495íntegras. Paquete parcial095248archivos,
+manifest`6c8e658d2bd51863dbec59208a9e236d74dc05135e14d964991ded4080121ce7`;
+conserva094y093 y no contiene credenciales/rawlogs. Aun45respuestas conformes
+adicionales darían136completed+4failed/804PASS+21noevaluables, no140éxitos.
+Trello actualizado por puente conlecturafresca/concurrencia/historia preservada,
+descSHA07510638/15807chars; sin cambiar lista/miembros/fechas/nombre.
+
+No queda campaña pagada viva. El bloqueo de esta fase es la limitación upstream,
+distinto del antiguo0% de disponibilidad; no reutilizar sus3turnos para marcar
+el objetivo bloqueado. No cambiar ruta/modelo/producto ni repetir muestras para
+fingir continuidad. Hace falta nueva evidencia accionable de recuperación o un
+cambio de estrategia explícito y separado de la N5 congelada. Cap30/mismasclaves
+4.5/.1hasta17oct18París; no renovar/ampliar/resetear/liberar por inferencia.
+C1/C3sin cumplir; B local, sin publicación/merge/aceptación/activación permanente.
+Ambas cadenas finales anteriores son inaplicables a4fallos y se preservan.
+
+### Histórico: reanudación real y límite del proveedor — 17/10/2026, 08:27 UTC
+
+El bloqueo de disponibilidad del corte anterior quedó superado al recuperarse
+la ruta pública el17oct08:09UTC. V11 arrancó una vez y010r4 terminó fallida:
+4intentos, borrador inicial observado y4errores de transporte HTTP429; CoreWeave
+indica limitación temporal upstream, sin Retry-After. No es prueba de fallo
+semántico ni de exclusión ZDR. La ruta figura en el listado ZDR oficial.
+V11 terminó STOPPED_AFTER_NEW_TECHNICAL_FAILURE, parkingexit0/old6sanos.
+
+Corte congelado094:94recogidas,91completed conformes/538PASS,3técnicas008/009/010r4
+y16comprobaciones no evaluables;46sin despachar. Ledger1459SHA7b3dffd0,
+desconocidos14.25741010USD íntegros, cota22.02870160/30USD conservadora, no factura.
+Auditoría `B-role-n5-partial094-technical-stop-audit-v1.json`; paquete094239archivos,
+manifest7ec1b677. Los paquetes anteriores y etiquetas se conservan.
+
+V12 está REALMENTE vivo, PID3295534/start3740953, controllerSHAb14e5f45,
+prepared713aee87/policy1e61979a: protege1459/94/346artefactos. Tras900s desde
+el terminalV11 activó los mismos3contenedores/imágenes; preflight08:26:51PASS.
+011r4 ya está reservado/en curso:1460filas,94recibos, no respuesta aún en este corte.
+No relanzar; observar `observe-B-role-n5-v12.py --compact` y handles/terminal reales.
+60s entre operaciones completadas,4intentos internos sin cambiar producto;
+detención ante nuevo fallo técnico, sin nuevo lanzamiento por mero paso del tiempo.
+V12 tiene dictámenes independientes: revisor73e0e029/28contrafactuales,
+validadorf7705652/11tests; no inferencias de los agentes. Batch013 sigue libre.
+
+Comprobación actual del host:24032MiB RAM,14041MiB disponibles,swap0usada;
+disco huésped429496729600bytes(400GiB), raíz225G/55Glibres. El aviso humano dice
+500GB, pero esa capacidad no es la visible dentro del huésped. No se ejecutó resize.
+Mismasclaves4.5/.1hasta17oct18París; cap30/reservas sin cambios. B local/noaceptada.
+Las cadenas finales estricta y técnica de2fallos NOaplican ahora a3fallos:
+preservarlas y preparar cierre honesto según resultado real al terminar.
+Los cortes de93/bloqueo y sus instrucciones de lanzarV11 son HISTÓRICOS.
+
+### Histórico: objetivo bloqueado por disponibilidad externa
 
 Estado del objetivo confirmado `blocked` tras tres turnos consecutivos con la
 misma ruta no disponible; no es el antiguo bloqueo presupuestario ni una pausa.
@@ -24,7 +93,7 @@ inferencias/renovación de claves/campañas nuevas mientras falte disponibilidad
 Próxima010r4 con mismas guardas y30USD; claves sólo hasta17oct18París. No nuevas
 preguntas ni documentación repetitiva ante estado idéntico. B local/noaceptada.
 
-## Corte vigente:93 recogidas; ruta no disponible — 17/10/2026
+## Histórico:93 recogidas; ruta no disponible — 17/10/2026
 
 N5 d965/plan8af94f71: **93/140 recogidas:91completed conformes y2failed técnicos**.
 538PASS(356banco+182calidad),11comprobaciones no evaluables;47sin despachar desde010r4.

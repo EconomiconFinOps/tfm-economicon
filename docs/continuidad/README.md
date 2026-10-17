@@ -38,7 +38,7 @@ B antiguo backend/processor temporalmente pausados, restauración v7 al terminar
 Cap30/reservas y límites4.5/.1/vigencia17oct18París intactos. Cierre v4 preparado,
 NO ejecutado; no N5 completa ni aceptación. Antiguo impedimento humano superado.
 
-Último estado17/10:93/140 recogidas,91conformes538PASS y2técnicas008r4/009r4;
+Histórico superado por el corte095 de la tabla/tema:93/140 recogidas,91conformes538PASS y2técnicas008r4/009r4;
 11noevaluables/47pendientes desde010r4. V9/V10terminales/parkingexit0/old6sanos.
 Ledger1458SHA60fdb0d3/holds14.16844690íntegros, cota21.909256304/30USD.
 CoreWeaveFP8status-5/uptime5m0%: no inferencias hasta disponibilidad fresca; V11
@@ -57,7 +57,7 @@ activo para recuperación, sin nuevas inferencias ni repetir preparación ya con
 | --- | --- | --- |
 | [Consultas de coste Azure](../evidence/JUP-036-validation.md) | PR69: reconciliación local de `1cf4087f` con develop `a3f514f7` (#129), sin cambios de producto. Corpus1.1.1 conservado; los dos casos SQL pendientes pasan en Cockroach24.1.11. Revisión/validación independientes del nuevo candidato y CI posterior pendientes. | 2026-10-15 |
 | [Memoria: modelos](memoria-modelos.md) | Análisis de GLM/DeepSeek y parciales Sonnet/Sol; elección operativa DeepSeek para B, ADR-0022 Proposed y propuesta e/g/h fuera de Git. JUP-063/JUP-109 existentes, sin nueva tarjeta ni incorporación al Doc. | 2026-10-17 |
-| [Evaluación local del chat](chat-evaluacion-local.md) |93recogidas:91conformes538PASS,2técnicas/11noevaluables,47pendientes. V9/V10parados yrestaurados; rutaindisponible, V11preparación010r4. Cap30/reservasíntegras,C1/C3pendientes,Blocal. | 2026-10-17 |
+| [Evaluación local del chat](chat-evaluacion-local.md) |95recogidas:91conformes538PASS,4técnicas/21noevaluables,45pendientes. V12terminó011HTTP429tras900s;parkingexit0/old6sanos. Ledger1460/cota22.11767032de30USD/reservasíntegras. RAM24GB/disco400GiB/raíz225G55libres. No relanzar por tiempo,C1/C3pendientes,Blocal. | 2026-10-17 |
 | [Chat conversacional](chat-conversacional.md) | PR121: focal28 3PASS/4FAIL, JSONB7PASS. Corrección29 de soporte literal visible e interpretación separada en regresión offline; aceptación/batería real pendientes. Gasto0.957927619/2USD. | 2026-10-13 |
 | [División del chat en A/B](chat-entregas-a-b.md) | División aprobada; B d9b/9e2 corregida,50/84 muestras con47PASS/3técnicas429, sin publicar ni aceptar. Ver evaluación local. Base A8ea/develop0543 y reviews/CI conservan su fecha histórica, sin nueva consulta. | 2026-10-15 |
 | [Pantallas de maqueta ocultas del MVP](pantallas-ocultas-mvp.md) | JUP-116: Coste Detallado, Corte Global y Recomendaciones ya no tienen ruta ni menú (se conservan en el código y se reactivan con dos líneas) y Overview sale del menú pero conserva su ruta; una dirección desconocida lleva a `/`. 797 pruebas del frontend y 16 comprobaciones en navegador; mergeado en `develop` el 2026-10-12 (#124). | 2026-10-13 |
