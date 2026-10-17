@@ -12,6 +12,9 @@ import re
 
 # User raised the cumulative limit to USD20 on 2026-10-15; prior spend remains.
 CAP = Decimal('20.00')
+# The later USD30 authorization is opt-in per admission, never a new default.
+# Supplying this value records caller configuration, not permission to spend.
+MAX_AUTHORIZED_CAP = Decimal('30.00')
 HISTORICAL_FLOOR = Decimal('0.957927619')
 
 
@@ -99,7 +102,22 @@ def operation_bound(*, input_tokens_per_attempt, input_price_per_million,
             + money(auxiliary_bound_usd))
 
 
-def admit(snapshot, reservations, operation_id, bound, now):
+def admission_cap(authorized_cap_usd):
+    if authorized_cap_usd is None:
+        return CAP
+    cap = money(authorized_cap_usd)
+    if not 0 < cap <= MAX_AUTHORIZED_CAP:
+        raise ValueError('Explicit authorized cap must be positive and at most USD30')
+    return cap
+
+
+def admit(snapshot, reservations, operation_id, bound, now, *, authorized_cap_usd=None):
+    """Pure admission; an explicit cap needs prior authorization outside this module.
+
+    The default stays USD20. No option renews keys, resets accounting, releases
+    holds or authorizes a POST. Callers must still persist before dispatch.
+    """
+    cap = admission_cap(authorized_cap_usd)
     if (not isinstance(now, (int, float)) or not math.isfinite(now)
             or type(snapshot.get('observed_at')) not in (int, float)
             or not math.isfinite(snapshot['observed_at'])
@@ -110,7 +128,7 @@ def admit(snapshot, reservations, operation_id, bound, now):
     spent = money(snapshot['cumulative_usd'])
     if spent < HISTORICAL_FLOOR:
         raise ValueError('Accounting below confirmed historical spend')
-    if not operation_id or operation_id in reservations:
+    if not isinstance(operation_id, str) or not operation_id.strip() or operation_id in reservations:
         raise ValueError('Operation already reserved or unidentified')
     if not isinstance(bound, Decimal) or not bound.is_finite() or bound <= 0:
         raise ValueError('Require a positive bounded operation cost')
@@ -129,7 +147,7 @@ def admit(snapshot, reservations, operation_id, bound, now):
                        if value.get('state') == 'COST_OBSERVED'), Decimal(0))
         outstanding -= settled
         spent = max(spent, HISTORICAL_FLOOR + settled)
-    if spent + outstanding + bound > CAP:
+    if spent + outstanding + bound > cap:
         raise ValueError('Insufficient budget for worst-case operation')
     return {**reservations, operation_id: {'reserved_usd': str(bound),
                                          'accounting_evidence_sha256': snapshot['evidence_sha256'],

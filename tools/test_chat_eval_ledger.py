@@ -24,6 +24,52 @@ class LedgerTests(unittest.TestCase):
     def reserve(self, sample='case:r1', bound='0.60'):
         return self.ledger.reserve('plan', sample, self.snapshot, Decimal(bound), 100)
 
+    def currency_fixture(self):
+        import hashlib
+        fixture = json.loads((Path(__file__).parent / 'fixtures/chat-eval/currency-n5-budget.json').read_text(encoding='utf-8'))
+        with self.ledger.connect() as db:
+            for request_id, reservation in fixture['reservations'].items():
+                db.execute('INSERT INTO attempts VALUES (?,?,?,?,?,?,?)',
+                           (request_id, 'synthetic-prior-plan', request_id, json.dumps(reservation),
+                            reservation['state'], None, None))
+        snapshot = l.budget.accounting_snapshot(fixture['upstream'], fixture['keys'], fixture['now'])
+        snapshot['complete_ledger_history'] = {
+            'historical_floor_usd': str(l.budget.HISTORICAL_FLOOR),
+            'request_ids_sha256': hashlib.sha256(json.dumps(sorted(fixture['reservations'])).encode()).hexdigest()}
+        return snapshot
+
+    def test_explicit_30_cap_reaches_persistent_admission_without_changing_defaults_or_holds(self):
+        snapshot = self.currency_fixture()
+        before = self.ledger.pending()
+        with self.assertRaisesRegex(ValueError, 'Insufficient budget'):
+            self.ledger.reserve('synthetic-plan', 'new:r1', snapshot, Decimal('0.01'), 100)
+        self.assertEqual(self.ledger.pending(), before)
+        request_id = self.ledger.reserve('synthetic-plan', 'new:r1', snapshot, Decimal('0.01'), 100,
+                                         authorized_cap_usd='30.00')
+        after = l.Ledger(self.path).pending()
+        self.assertEqual(after[:-1], before)
+        self.assertEqual(after[-1]['request_id'], request_id)
+        self.assertEqual(json.loads(after[-1]['reservation'])['reserved_usd'], '0.01')
+        self.assertEqual(after[-1]['state'], 'RESERVED')
+        self.assertIsNone(after[-1]['operation_id'])
+        self.assertEqual(l.budget.CAP, Decimal('20.00'))
+        with self.assertRaisesRegex(ValueError, 'already reserved'):
+            self.ledger.reserve('synthetic-plan', 'new:r1', snapshot, Decimal('0.01'), 100,
+                                authorized_cap_usd='30.00')
+        self.assertEqual(self.ledger.pending(), after)
+
+    def test_invalid_or_stale_explicit_30_admission_never_writes_a_reservation(self):
+        snapshot = self.currency_fixture()
+        before = self.ledger.pending()
+        for patch, cap, bound in (({'observed_at': 69}, '30.00', Decimal('0.01')),
+                                  ({'scope': 'gateway-only'}, '30.00', Decimal('0.01')),
+                                  ({}, '30.01', Decimal('0.01')),
+                                  ({}, '30.00', Decimal('0'))):
+            with self.subTest(patch=patch, cap=cap, bound=bound), self.assertRaises(ValueError):
+                self.ledger.reserve('synthetic-plan', 'new:r1', {**snapshot, **patch}, bound, 100,
+                                    authorized_cap_usd=cap)
+            self.assertEqual(self.ledger.pending(), before)
+
     def test_restart_keeps_reservation_and_duplicate_sample_is_rejected(self):
         request_id = self.reserve()
         reopened = l.Ledger(self.path)

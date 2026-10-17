@@ -41,7 +41,7 @@ class Ledger:
         finally:
             db.close()
 
-    def reserve(self, plan_hash, sample_id, snapshot, bound, now):
+    def reserve(self, plan_hash, sample_id, snapshot, bound, now, *, authorized_cap_usd=None):
         if not plan_hash or not sample_id:
             raise ValueError('Plan and sample identity required')
         with self.connect() as db:
@@ -52,7 +52,8 @@ class Ledger:
             pending = {r['request_id']: json.loads(r['reservation'])
                        for r in db.execute('SELECT * FROM attempts')}
             request_id = str(uuid4())
-            reservation = budget.admit(snapshot, pending, request_id, bound, now)[request_id]
+            reservation = budget.admit(snapshot, pending, request_id, bound, now,
+                                       authorized_cap_usd=authorized_cap_usd)[request_id]
             db.execute('INSERT INTO attempts VALUES (?,?,?,?,?,?,?)',
                        (request_id, plan_hash, sample_id, json.dumps(reservation), 'RESERVED', None, None))
         return request_id

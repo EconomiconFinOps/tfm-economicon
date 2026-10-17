@@ -1,5 +1,22 @@
 # JUP-123: candidato local y validación conservada
 
+### Reproducción presupuestaria corregida tras la validación de PR140 — 17/10/2026
+
+La N5 final usó los operadores externos currency api-step-v2/v3/v4, que elevaron
+de20 a30 USD ambas instancias importadas de budget/admisión y ledger. No ejecutó
+la nueva opción versionada `authorized_cap_usd`; tampoco corresponde a las
+políticas de las campañas N3/d965 anteriores citadas en los cortes históricos.
+Los originales y los497 archivos congelados siguen intactos, con sus hashes.
+
+La herramienta actual conserva20 por defecto y admite hasta30 sólo mediante
+una opción explícita por admisión/reserva, previa autorización ajena a este módulo.
+[Reproducción y límites](../evidence/JUP-123-budget-reproduction.md) y
+[procedencia exacta de los tres segmentos](../evidence/JUP-123-budget-provenance.json).
+Las pruebas usan importes agregados e identidades sintéticas; no modifican la
+cuenta, los1744 asientos, las reservas ni las claves reales. El producto medido
+`f3ec760d`, el plan y la N5 conservan su identidad: no se reetiquetan como campaña
+del nuevo HEAD ni se mide otra combinación de corpus/modelo/prompt.
+
 ### Resultado final de las pruebas B — 17/10/2026
 
 La nueva N5 del producto `f3ec760d3c483e8798df2be32ea90bb901ebe36d` terminó: **140 respuestas

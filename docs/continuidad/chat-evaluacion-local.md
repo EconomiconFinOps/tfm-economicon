@@ -9,6 +9,86 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 17/10/2026
 
+### Corrección focal solicitada por Sala de Control — 17/10/2026
+
+Origen: instrucción humana «Adelante, manda a sus chats retomar la revalidación
+de PR133 y corregir lo pendiente de PR140», comprobada en chat Sala de Control
+`01a1270c-e332-7462-9c90-706d49ade92c`, turno
+`01a14b71-9f47-7b50-84dc-6b2aa8325368`. Corrección y publicación en la misma PR;
+sin merge, aprobaciones propias, otras PR, campañas, claves o cambios de cuenta.
+La aclaración posterior pide un único paquete por SHA y revalidación del delta
+de integración después de consolidar dependencias, sin repetir validaciones generales.
+
+Leídos HEAD7e7a294b y todas las reviews, conversación e inline: único dictamen
+formal actual, [Lucía CHANGES_REQUESTED](https://github.com/EconomiconFinOps/tfm-economicon/pull/140#pullrequestreview-5559649459).
+Víctor sigue solicitado; su anuncio de revisión no es un dictamen ya publicado.
+Bloqueo: fuente CAP20 frente al máximo30 usado por la N5. Se verificaron sin
+ejecutar operadores los tres step/common/controller y políticas currency de la
+N5 final: todos modificaban ambas instancias de CAP a30 y fijaban sus políticas
+por SHA. Plan f3ec760d y497 archivos congelados verificados sin alterarlos.
+Se distinguen las políticas de N3/d965 anteriores.
+
+Solución mínima: `admit` y `Ledger.reserve` reciben `authorized_cap_usd` opcional;
+default20 intacto, cadena decimal positiva finita y como máximo30. No es permiso
+para gastar ni renueva nada. Se conservan guardas de coste máximo por operación,
+frescura30s, identidad/historial, reservas pendientes, duplicados y persistencia
+antes del dispatch. La opción nueva no se presenta como ejecutada en la N5 histórica.
+Cuenta8.077111746 + reservas15.04040862 = cota23.117520366; no factura ni coste N5.
+Fixture con identidades sintéticas y prueba literal de la cifra planteada por Lucía.
+
+Evidencia versionada: [reproducción](../evidence/JUP-123-budget-reproduction.md),
+[procedencia](../evidence/JUP-123-budget-provenance.json) y nota en el informe local.
+Pruebas propias:27 budget +13 ledger PASS en Windows y Linux3.12.3;185 herramientas
+chat PASS en Windows, incluyendo las40 focales. OpenSpec78/78, trazabilidad e
+higiene conformes. Linux sólo creó/retiró su temporal acotado; sin contenedores
+ni servicios. Error inicial del arnés anterior a tests conservado como tal.
+Evidencia externa `JUP-123-collector/PR140-budget-20261017/`, incluidos logs,
+recibos, sonda antes/después y auditoría estática por hashes.
+
+Finding fuera de alcance de Lucía registrado como RF-123-001: las suites de
+herramientas no están seleccionadas por CI/package. Se propone acordar su
+conexión después; no se crea tarea/PR ni se altera CI aquí.
+La base del producto/chat y la N5 no cambian; no se incorporan RAG133/134/139.
+Secuencia de merge propuesta en coordinación, no acuerdo externo:135→138;
+133→134→139;140;63 y RC para071/065. La revalidación del delta de integración
+queda para esa base consolidada. Faltan publicación del único delta, CI por SHA
+y dictámenes oficiales; sólo Lucía puede levantar su Request changes.
+
+### Publicación de B completada; reviews oficiales pendientes — 17/10/2026
+
+[PR #140](https://github.com/EconomiconFinOps/tfm-economicon/pull/140) lista para
+revisión, cabeza `7e7a294b4003e49ce2687fdea285b6d1cf43f01b`.
+[CI técnica final 39050284267](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39050284267)
+terminada SUCCESS en los siete jobs. [SQL nativo 39050207720](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39050207720)
+SUCCESS sobre ese mismo SHA:54 backend y8 processor. La primera CI completa
+de6ae48b10 también fue conforme;7e7a294b sólo modifica dos documentos, sin
+cambios de producto ni pruebas tras la solicitud de revisión.
+
+Solicitudes oficiales verificadas en reviewRequests: Victorh1397 para
+Revision JUP-123 y lmatsan para Validacion JUP-123. Aún cero reviews en #140;
+JUP reviews bloquea la integración. C2 asistido de la campaña no sustituye
+estos dictámenes. No merge, despliegue, activación permanente ni archivo del chat.
+
+Tablero actualizado por DockerServer: JUP-123 pasó de30 a40 En revisión,
+con comentario `6ad3a6385ce906d3dc639497` y prefijo de estado que enlaza PR140;
+los15920 caracteres previos de su descripción se conservan íntegros detrás.
+JUP-071 mantiene su lista, con comentario `6ad3a6390f9a5f2a708f1c9e`.
+Roles, fechas, miembros y demás metadatos verificados sin cambios; ninguna Done.
+Recibo externo `B-integration-20261017/update-board-review.json`.
+
+Diagnóstico Windows confirmado con una sonda de PID: el launcher del venv
+produce PID distinto del hijo que comunica ready; el intérprete real coincide.
+Los50 casos del processor que fallaron por esa guarda pasan al repetirlos con
+el intérprete real y tokenizers0.22.1 aislado. Quedan dos casos symlink por
+servicio sin privilegios en Windows, cubiertos en la CI Linux conforme.
+No se relaja la guarda ni se modifica producto para ocultar fallos. Los JUnit
+y resúmenes originales/repetidos se conservan, sin sumar identidades duplicadas.
+
+Siguiente paso: atender los dictámenes oficiales de B y, cuando estén conformes
+y no haya pendientes, integrar y actualizar Trello. PR138 sigue siendo el
+seguimiento documental independiente del colector; sus reviews no acreditan B.
+Esta actualización final se guarda localmente para conservar la cabeza solicitada.
+
 ### Traspaso y preparación de integración de B — 17/10/2026
 
 Origen: usuario pide trasladar el candidato a «Implementa cambios de PR131» para

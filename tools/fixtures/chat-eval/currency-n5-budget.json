@@ -1,0 +1,16 @@
+{
+  "purpose": "Offline aggregate fixture with the final monetary totals; synthetic identities and credentials, not the historical ledger or authorization to resume it.",
+  "authorized_cap_usd": "30.00",
+  "now": 100,
+  "upstream": {"usage": "8.077111746"},
+  "keys": {
+    "backend": {"spend": "0.1", "max_budget": "1", "expires": "2030-01-01T00:00:00+00:00"},
+    "processor": {"spend": "0.2", "max_budget": "1", "expires": "2030-01-01T00:00:00+00:00"}
+  },
+  "reservations": {
+    "synthetic-observed": {"state": "COST_OBSERVED", "reserved_usd": "7.119184127"},
+    "synthetic-pending": {"state": "RESERVED", "reserved_usd": "15.04040862"}
+  },
+  "covered_upper_usd": "23.117520366",
+  "operation_bound_usd": "0.01"
+}

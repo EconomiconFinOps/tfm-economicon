@@ -1,0 +1,109 @@
+{
+  "verified_date": "2026-10-17",
+  "measured_product_commit": "f3ec760d3c483e8798df2be32ea90bb901ebe36d",
+  "integrated_head_before_budget_fix": "7e7a294b4003e49ce2687fdea285b6d1cf43f01b",
+  "plan_sha256": "3fd573f5cc55a4d50cbc83b65d1af6a1b414102edfeb21a173f2b0352ec4b776",
+  "original_tool_sha256_git_lf": {
+    "tools/chat-eval-budget.py": "045e120a8f7c97c5806b15624c10716f9a8bfae09f066503c491540d08f1059e",
+    "tools/chat-eval-ledger.py": "07d7589aba611497cc36d8e30df92535ceb5f55cfaff979a57c2347b6009222a"
+  },
+  "evidence_directory_relative_to_workspace": "materiales/07-evidencias/PR121-local-evaluation",
+  "frozen_package_directory": "currency-024-f3ec760d-n5-full140-frozen-v1",
+  "frozen_manifest_sha256": "4838711dac437ce7f63f5e68aa382dc9e8dd0343c4e8f3024579d39346c32984",
+  "frozen_package_files_verified": 497,
+  "historical_default_cap_usd": "20.00",
+  "historical_effective_cap_usd": "30.00",
+  "stages": [
+    {
+      "samples": "001r1-028r3:84",
+      "cap_usd": "30.00",
+      "historical_override": "_budget.CAP = _ledger.budget.CAP = Decimal('30.00')",
+      "files": [
+        {
+          "file": "currency-024-api-step-v2.py",
+          "sha256": "22285c839707b2eac87c4823271d4fa1038e499ab77890faedbfd1d5ca6d42e1",
+          "frozen_package_path": "operators/currency-024-api-step-v2.py"
+        },
+        {
+          "file": "currency-024-api-common-v2.py",
+          "sha256": "41837fd178ac08452917b0ed0bcd6570ed095327fe8e6d0057fec555610de2d6",
+          "frozen_package_path": "operators/currency-024-api-common-v2.py"
+        },
+        {
+          "file": "currency-024-policy-v2.json",
+          "sha256": "1bd86921538a3d4a74dcaff8173e4ae122c173df9fa673a6e1edece7033bd97c",
+          "frozen_package_path": "proofs/currency-024-policy-v2.json"
+        },
+        {
+          "file": "currency-024-api-controller-v1.py",
+          "sha256": "c6390bc76c1e55c31a93e56832d82e9872a83a7a856bc582855c5e12e8f6522d",
+          "frozen_package_path": "operators/currency-024-api-controller-v1.py"
+        }
+      ]
+    },
+    {
+      "samples": "001r4-008r5:36; final receipt recovered by GET",
+      "cap_usd": "30.00",
+      "historical_override": "_budget.CAP = _ledger.budget.CAP = Decimal('30.00')",
+      "files": [
+        {
+          "file": "currency-024-api-step-v3.py",
+          "sha256": "3cf75d390a8eac8e85b64420f060bc35dc5eb765a061505d83084b8dc63f0e7e",
+          "frozen_package_path": "resume-operators/currency-024-api-step-v3.py"
+        },
+        {
+          "file": "currency-024-api-common-v3.py",
+          "sha256": "98bf8bc5f396ac64a20c5a082f8ce47c67446f8d3d9b9a4ecac3394c980322cf",
+          "frozen_package_path": "resume-operators/currency-024-api-common-v3.py"
+        },
+        {
+          "file": "currency-024-resume-policy-v3.json",
+          "sha256": "480f6d1acd1535b7cfa26e02f3dc43790431199fffd598804b84c23206ebaaad",
+          "frozen_package_path": "resume-operators/currency-024-resume-policy-v3.json"
+        },
+        {
+          "file": "currency-024-api-controller-v2.py",
+          "sha256": "f9736a6f37228878f44b4a78efe075ee810346c21152d0bac1075ed8dd710598",
+          "frozen_package_path": "resume-operators/currency-024-api-controller-v2.py"
+        }
+      ]
+    },
+    {
+      "samples": "009r5-028r5:20",
+      "cap_usd": "30.00",
+      "historical_override": "_budget.CAP = _ledger.budget.CAP = Decimal('30.00')",
+      "files": [
+        {
+          "file": "currency-024-api-step-v4.py",
+          "sha256": "2b7d5a9d30323d7a214ae7a656e0fb357e23bf55a51691f2184d0c86a7b7ca5a",
+          "frozen_package_path": "operators/currency-024-api-step-v4.py"
+        },
+        {
+          "file": "currency-024-api-common-v4.py",
+          "sha256": "2064503d75d9476a51cca456d5e5f7462d4f5f8958ce19a1c2cd1bdd9b3b7401",
+          "frozen_package_path": "operators/currency-024-api-common-v4.py"
+        },
+        {
+          "file": "currency-024-resume-policy-v4.json",
+          "sha256": "8c63f9ceabb9c30ada031e37791b7f8ab3f94285c3f2de82b21ce322abb21b40",
+          "frozen_package_path": "resume-proof/currency-024-resume-policy-v4.json"
+        },
+        {
+          "file": "currency-024-api-controller-v3.py",
+          "sha256": "5f2b77365e69d3ddbe38fac689ccba914a8e1d13ba2581806fcce7b7dd46e24f",
+          "frozen_package_path": "operators/currency-024-api-controller-v3.py"
+        }
+      ]
+    }
+  ],
+  "accounting": {
+    "cumulative_account_upper_usd": "8.077111746",
+    "all_unknown_holds_usd": "15.04040862",
+    "covered_upper_usd": "23.117520366",
+    "not_invoice_or_task_cost": true
+  },
+  "historical_operators_terminal_do_not_relaunch": true,
+  "new_inferences": 0,
+  "new_interface": "admit(..., authorized_cap_usd=\"30.00\") and Ledger.reserve(..., authorized_cap_usd=\"30.00\")",
+  "new_interface_was_not_used_to_collect_historical_N5": true
+}
