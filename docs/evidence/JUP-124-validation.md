@@ -184,3 +184,38 @@ Autorrevisión y pruebas propias no sustituyen los nuevos dictámenes independie
 ni las reviews humanas. Fuentes, recibos originales, manifiesto de bytes y
 recursos temporales quedan identificados fuera del producto bajo custodia del
 liderazgo. Commit, evaluación independiente, CI remota y publicación pendientes.
+
+
+## Corrección del test del contrato de Grafana — 17/10/2026
+
+Los runs de CI 39027180642 (fase1) y 39030609218 (fase2) fallaron en
+`EnvExampleTests.test_las_demas_lineas_no_cambian`: 127/129 líneas frente a103,
+debido a extensiones legítimas de ingesta/chunking. Los logs originales se
+conservan bajo custodia del liderazgo. Reproducción local previa:29PASS/1FAIL
+en el archivo de30casos; no se atribuye el fallo a Grafana ni se retiran variables.
+
+Cambio mínimo: retirar la constante/recuento total y mantener las cinco
+declaraciones previas únicas; los otros dos casos ya comprueban declaración
+exacta/vacía/única y posición inmediatamente después de la contraseña admin.
+Se ajustan nombre y comentarios a su contrato. Configuración, Compose,
+datasource, workflows y aplicaciones conservan sus bytes.
+
+Comprobaciones propias posteriores:
+- Archivo afectado:30/30PASS en Python3.10.11/Windows.
+- Descubrimiento del mismo archivo en Python3.12/Linux, fuente/rootfs RO,
+  sin red y usuario no privilegiado:30/30PASS.
+- Override existente `EVALUATION_ENV_EXAMPLE`:17escenarios externos, tres
+  aceptados y catorce rechazados por aserciones, sin errores de ejecución.
+  Positivos: configuración actual, variable/comentario independientes y
+  configuración actual de fase2 utilizada sólo como dato.
+  Negativos: contraseña de evaluación no vacía, duplicada, ausente o desplazada;
+  ausencia y duplicación de cada una de las cinco declaraciones previas.
+  No se añaden tests duplicados ni helpers al producto.
+
+Las ejecuciones usan la biblioteca estándar y no necesitan servicios ni
+proveedores; ningún gasto. La selección focal no se presenta como nueva
+ejecución de toda `evaluation-dashboard:test` ni como CI remota favorable.
+Candidato aún sin commit propio; requiere referencias PM nuevas y revisión/
+validación independientes del impacto. Sólo después de aceptación el liderazgo
+conservará e incorporará el fix a fase2, con sus comprobaciones afectadas.
+La base developffdd ya reconciliada permanece estable y no se añade otro merge.
