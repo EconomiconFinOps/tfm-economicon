@@ -144,3 +144,11 @@ No cambia configuración de runtime; el paquete/CI descubre el mismo archivo.
 [Evidencia de esta corrección](../evidence/JUP-124-validation.md#corrección-del-test-del-contrato-de-grafana--17102026).
 Evaluación independiente del candidato, aceptación y posterior incorporación por
 el liderazgo a fase2 siguen pendientes; fase2 no se edita anticipadamente.
+
+## Respuesta a la Revision JUP-124 — 17/10/2026
+
+Víctor pidió dos cambios sobre `381c55fb` (base develop `1de41b90`). El primero: `markdown()` volvía a partir el texto en líneas con `str.splitlines()` dentro del bucle de tokens, con coste cuadrático en documentos con muchos bloques y con texto vacío o truncado en los bloques posteriores a `\f`, U+2028 o U+0085, que markdown-it no cuenta como saltos de línea. Ahora el texto se parte una sola vez por `\n`, como numera markdown-it; `tests/test_document_markdown_lines.py` recoge sus cuatro pruebas (rojas antes del arreglo, verdes después). El TXT conserva su único `splitlines()` para el recuento de líneas: no es cuadrático y no lo pidió la revisión.
+
+El segundo, OCR frente a `DOCUMENT_EXTRACTION_SECONDS`: Lucía eligió la opción (a), documentar. El runbook explica la capacidad efectiva con los valores por defecto (unas 28 páginas escaneadas densas con 180 s, unos 6 s por página OCR, cifras medidas por Víctor) y cómo dimensionar el plazo y `DOCUMENT_MAX_PAGES`. No cambia el comportamiento: un escaneado mayor sigue terminando en `document_extraction_limit`, y el motivo explicable en la UI queda como mejora posible.
+
+De las notas no bloqueantes, el runbook suma `crypto.subtle` (sólo HTTPS o localhost) y el plazo de 1200 s del build del CD con la compilación de MinIO desde fuente. Los índices de mantenimiento quedan anotados en la revisión para cuando crezca la tabla. Pendientes: nueva revisión de Víctor y revalidación de Alejandro limitada a la extracción de Markdown.

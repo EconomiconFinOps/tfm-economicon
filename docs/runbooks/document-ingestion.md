@@ -54,6 +54,8 @@ existentes. Deriva el puerto S3, su endpoint público y CORS por ranura para que
 la release actual y el candidato puedan coexistir durante el relevo. En arranque
 manual, `DOCUMENT_S3_PUBLIC_ENDPOINT` debe usar el `MINIO_HOST_PORT` elegido.
 
+El agente CD limita cada build de Compose a 1200 s (`tools/cd/deploy.py`). La primera compilación de MinIO y mc desde fuente tarda entre 8 y 26 minutos según el equipo, así que el primer despliegue de esta versión puede fallar por ese plazo. Antes del primer despliegue, construir `minio` y `minio-init` a mano en el mismo host Docker, desde un clon de esa versión (`docker compose build minio minio-init`), para que el build del agente reutilice las capas en caché.
+
 ## Contrato HTTP y autorización
 
 Todas las rutas requieren Bearer y un único `X-Tenant-Id` que corresponda a una
@@ -73,6 +75,8 @@ cabecera de tenant de la aplicación**. El navegador calcula SHA256 como ayuda;
 el servidor verifica los bytes reales. Cambiar un nombre o Content-Type no
 convierte contenido inválido en un formato admitido. Nunca se registra el texto
 del documento, la firma o las credenciales como evidencia técnica.
+
+El panel calcula ese SHA256 con `crypto.subtle`, que el navegador sólo ofrece en contexto seguro (HTTPS o `localhost`/`127.0.0.1`). Abrir el frontend por `http://<ip>` hace fallar la subida con el mensaje genérico de conexión; usar `localhost`, el túnel a `127.0.0.1` que documenta el CD o HTTPS.
 
 El backend comprueba extensión y contenido. TXT admite UTF-8 estricto, BOM
 opcional y normaliza CRLF; no sustituye errores de codificación. DOCX exige ZIP
@@ -186,6 +190,10 @@ directorio temporal. El sandbox necesita Linux amd64/arm64 con Landlock y
 libseccomp: restringe lectura/escritura al temporal y a recursos de ejecución de
 sólo lectura; deniega sockets de Internet y operaciones de privilegio. Si no
 está disponible falla cerrado como problema de entorno; no cae a ejecución libre.
+
+**Capacidad efectiva con OCR.** `DOCUMENT_EXTRACTION_SECONDS` es el plazo total de la extracción de un documento (y el tope de CPU del subproceso), no un plazo por página. El OCR de una página escaneada llena de texto (unas 45 líneas a 200 DPI) cuesta unos 6 s en un equipo de 8 CPU; un PDF digital de 100 páginas se extrae en unos 35 s. Con los valores por defecto (`DOCUMENT_MAX_PAGES=100`, `DOCUMENT_EXTRACTION_SECONDS=180`) caben unas **28 páginas escaneadas densas**: 5 páginas tardan unos 33 s, 20 unos 124 s y 40 terminan en `document_extraction_limit` a los 185 s. Ese fallo es terminal: el panel muestra «Fallido» y un reintento vuelve a agotar el plazo. El límite de 100 páginas sólo se cumple, por tanto, para PDF digitales o con pocas páginas OCR.
+
+Para dimensionarlo, fijar `DOCUMENT_EXTRACTION_SECONDS` en al menos 6 s × páginas OCR esperadas por documento más un margen de 30 s, medido en el equipo de despliegue con un escaneado representativo. El máximo admitido (600 s) da para unas 95 páginas densas; si se esperan escaneados mayores, reducir `DOCUMENT_MAX_PAGES` para que el extractor rechace el PDF al abrirlo, antes de gastar el plazo en OCR. `DOCUMENT_OCR_PAGE_SECONDS` sólo limita cada página y no amplía el plazo total.
 
 La biblioteca estándar y los paquetes de Python se habilitan en sólo lectura
 mediante sus rutas de instalación `sysconfig` (`stdlib`, `platstdlib`, `purelib`
