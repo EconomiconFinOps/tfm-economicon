@@ -9,6 +9,7 @@ import re
 
 import structlog
 from sqlalchemy import bindparam, create_engine, text
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.pool import NullPool
 
@@ -216,17 +217,35 @@ class PgVectorQueryStore:
         text_hash = hashlib.sha256(question.encode('utf-8')).hexdigest()
         params = {'tenant': tenant_id, 'space': plan['space_id'], 'hash': text_hash}
         statement = text('SELECT embedding::text FROM embedding_cache WHERE tenant_id=:tenant AND space_id=:space AND text_hash=:hash')
+        def check_deadline():
+            if cancelled is not None and cancelled.is_set():
+                raise TimeoutError('Retrieval deadline.')
+            if deadline is not None and time.time() >= deadline:
+                raise TimeoutError('Retrieval deadline.')
+        cached = None
         def lookup(connection):
-            cached = connection.execute(statement, params).scalar()
-            if cached is not None:
-                self._verified_vector(json.loads(cached))
+            nonlocal cached
+            value = connection.execute(statement, params).scalar()
+            if value is not None:
+                cached = self._verified_vector(json.loads(value))
+                # A busy maintenance row must not delay a valid immutable hit.
                 connection.execute(text('''UPDATE embedding_cache SET last_used_at=clock_timestamp()
-                    WHERE tenant_id=:tenant AND space_id=:space AND text_hash=:hash'''), params)
+                    WHERE ctid IN (SELECT ctid FROM embedding_cache
+                        WHERE tenant_id=:tenant AND space_id=:space AND text_hash=:hash
+                        FOR UPDATE SKIP LOCKED)'''), params)
                 connection.commit()
             return cached
-        cached = self._execute_query(lookup, deadline, cancelled)
+        try:
+            self._execute_query(lookup, deadline, cancelled)
+        except DBAPIError as failure:
+            # REPEATABLE READ can still see a row updated after its snapshot.
+            # _execute_query has rolled back/closed that transaction. Only the
+            # auxiliary touch is disposable; invalid vectors and other errors fail.
+            if cached is None or getattr(failure.orig, 'sqlstate', None) != '40001':
+                raise
+        check_deadline()
         if cached is not None:
-            return self._verified_vector(json.loads(cached))
+            return cached
         verified = copy.copy(provider)
         verified.expected_model = descriptor['model_id']
         vector = self._verified_vector(verified.embed(question))
@@ -237,7 +256,15 @@ class PgVectorQueryStore:
             value = connection.execute(statement, params).scalar_one()
             connection.commit()
             return self._verified_vector(json.loads(value))
-        return self._execute_query(insert, deadline, cancelled)
+        # Retry only the SQL transaction, retaining this one inference result.
+        # A concurrent winner is read in a fresh snapshot and remains canonical.
+        for attempt in range(3):
+            check_deadline()
+            try:
+                return self._execute_query(insert, deadline, cancelled)
+            except DBAPIError as failure:
+                if getattr(failure.orig, 'sqlstate', None) != '40001' or attempt == 2:
+                    raise
 
     @staticmethod
     def _verified_vector(vector):

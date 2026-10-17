@@ -28,10 +28,19 @@ def query_policy(question):
     # Complete technical identifiers; a lone number/common word is never an anchor.
     anchors += [value for value in re.findall(r'(?<![\w./-])[A-Za-z0-9]+(?:[-_./][A-Za-z0-9]+)+(?![\w./-])', question)
                 if not re.fullmatch(r'[0-9]+\.[0-9]+', value)]
-    expressions = re.findall(r'\b[\w]+\s*(?:>=|<=|!=|==|>|<|=)\s*[0-9]+(?:[.,][0-9]+)?(?:\s*(?:%|(?:USD|EUR|GiB|GB|ms|s)\b))?', question)
-    anchors += expressions
+    # Consume a supported unit greedily before checking the numeric suffix.
+    # A terminal full stop is punctuation, not a reason to backtrack and drop
+    # EUR/%; malformed decimals and exponents still close lexical rescue.
+    expressions = [match for match in re.finditer(r'\b[\w]+\s*(?:>=|<=|!=|==|>|<|=)\s*[0-9]+(?:[.,][0-9]+)?(?:\s*(?:%|(?:USD|EUR|GiB|GB|ms|s)\b))?', question)
+                   if not re.match(r'[\w%]|\s*[.,][\s.,]*[0-9]', question[match.end():])]
+    anchors += [match.group() for match in expressions]
     anchors = list(dict.fromkeys(' '.join(value.split()) for value in anchors))
     supported = len(anchors) <= 4 and all(len(value) <= 128 for value in anchors)
+    # Every comparator must belong to a complete supported expression. An ID
+    # elsewhere cannot rescue a dropped sign, exponent or malformed comparison.
+    supported = supported and all(any(expression.start() <= operator.start() and operator.end() <= expression.end()
+                                         for expression in expressions)
+                                  for operator in re.finditer(r'>=|<=|!=|==|>|<|=', question))
     # Unsupported comparative/alternative syntax cannot rescue a lexical hit.
     supported = supported and not re.search(r'\b(?:versus|vs|frente|alternativamente|either)\b', question, re.I)
     remaining = question

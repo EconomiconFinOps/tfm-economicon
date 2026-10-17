@@ -453,3 +453,188 @@ def test_concurrent_cache_misses_return_one_canonical_winner_and_do_not_cross_te
     assert foreign != results[0]
     with store.engine.connect() as connection:
         assert connection.execute(text('SELECT count(*) FROM embedding_cache')).scalar_one() == 2
+
+
+
+@pytest.mark.parametrize('old_fails', [False, True])
+@pytest.mark.parametrize('new_finishes_first', [False, True])
+def test_superseded_build_cannot_finish_or_fail_new_execution(setup, backend_query_store, old_fails, new_finishes_first):
+    from concurrent.futures import ThreadPoolExecutor
+    import threading
+    store, generations, identity = setup
+    publish(store)
+    old_started, old_release = threading.Event(), threading.Event()
+    new_started, new_release = threading.Event(), threading.Event()
+    class Gated(MockEmbeddingProvider):
+        def __init__(self, started, release, fails=False):
+            super().__init__(1536)
+            self.started, self.release, self.fails = started, release, fails
+        def embed_batch(self, values, **kwargs):
+            self.started.set()
+            assert self.release.wait(8), 'Controlled provider was not released'
+            if self.fails: raise RuntimeError('Original executor failed late')
+            return super().embed_batch(values, **kwargs)
+    def snapshot(identifier):
+        with store.engine.connect() as connection:
+            return dict(connection.execute(text('SELECT state,manifest,retired_at FROM rag_generations WHERE tenant_id=:tenant AND id=:id'),
+                                           {'tenant':'a','id':identifier}).mappings().one())
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        first = pool.submit(generations.build, 'a', identity, Gated(old_started, old_release, old_fails))
+        try:
+            assert old_started.wait(5)
+            with store.engine.connect() as connection:
+                identifier = connection.execute(text("SELECT id FROM rag_generations WHERE state='building'")).scalar_one()
+            old_token = snapshot(identifier)['manifest']['build_execution_id']
+            second = pool.submit(generations.resume, 'a', identifier, Gated(new_started, new_release))
+            assert new_started.wait(5)
+            new_state = snapshot(identifier)
+            assert new_state['manifest']['build_execution_id'] != old_token
+            if new_finishes_first:
+                new_release.set()
+                assert second.result(timeout=8) == identifier
+                generations.activate('a', identifier, expected_head=None, expected_version=0)
+                new_state = snapshot(identifier)
+            old_release.set()
+            with pytest.raises(RuntimeError if old_fails else StaleGeneration):
+                first.result(timeout=8)
+            assert snapshot(identifier) == new_state
+            if not new_finishes_first:
+                new_release.set()
+                assert second.result(timeout=8) == identifier
+                generations.activate('a', identifier, expected_head=None, expected_version=0)
+        finally:
+            old_release.set()
+            new_release.set()
+    final = snapshot(identifier)
+    assert final['state'] == 'ready' and 'build_execution_id' not in final['manifest']
+    query = backend_query_store(store.database_url)
+    try:
+        plan = query.resolve_retrieval_plan('a', enabled=True)
+        assert plan['generation_id'] == identifier
+        assert query.search_chunks('a', MockEmbeddingProvider(1536).embed('Original evidence.'),
+                                   provider='mock', plan=plan, question='Original evidence.', max_distance=2)
+    finally:
+        query.close()
+
+
+@pytest.mark.parametrize('cold', [False, True])
+def test_backend_query_cache_concurrency_keeps_canonical_sources_without_inference_retry(setup, backend_query_store, cold):
+    from concurrent.futures import ThreadPoolExecutor
+    import threading
+    import time
+    from sqlalchemy import event
+    from sqlalchemy.engine import Engine
+    store, generations, identity = setup
+    publish(store)
+    candidate = generations.build('a', identity, MockEmbeddingProvider(1536))
+    generations.activate('a', candidate, expected_head=None, expected_version=0)
+    query = backend_query_store(store.database_url)
+    providers = []
+    provider_barrier, sql_barrier = threading.Barrier(2), threading.Barrier(2)
+    class Controlled(MockEmbeddingProvider):
+        def __init__(self, axis): super().__init__(1536); self.axis=axis; self.calls=[]
+        def embed(self, question):
+            self.calls.append(question)
+            assert cold, 'A valid hit must not call inference'
+            provider_barrier.wait(timeout=5)
+            return [float(index == self.axis) for index in range(1536)]
+    question = 'One exact concurrent query'
+    try:
+        assert query.ping()
+        plan = query.resolve_retrieval_plan('a', enabled=True)
+        if not cold:
+            query.embed_query('a', question, MockEmbeddingProvider(1536), plan)
+        def synchronize(connection, cursor, statement, parameters, context, executemany):
+            prefix = 'INSERT INTO embedding_cache' if cold else 'UPDATE embedding_cache SET last_used_at'
+            if statement.startswith(prefix):
+                # Both insert transactions must have an established RR snapshot.
+                if cold: connection.execute(text('SELECT txid_current_snapshot()'))
+                if not getattr(context, '_bm0_synchronized', False):
+                    context._bm0_synchronized=True
+                    # Only the initial pair, never the fresh SQL retry.
+                    with guard:
+                        count[0]+=1
+                        initial=count[0] <= 2
+                    if initial: sql_barrier.wait(timeout=5)
+        count, guard = [0], threading.Lock()
+        event.listen(Engine, 'before_cursor_execute', synchronize)
+        try:
+            providers=[Controlled(0),Controlled(1)]
+            def execute(provider):
+                bounded={'deadline':time.time()+10, 'cancelled':threading.Event()}
+                vector=query.embed_query('a', question, provider, plan, **bounded)
+                sources=query.search_chunks('a', vector, provider='mock', plan=plan,
+                                            question=question, max_distance=2, **bounded)
+                return vector, sources
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                results=list(pool.map(execute,providers))
+        finally:
+            event.remove(Engine,'before_cursor_execute',synchronize)
+        assert results[0][0] == results[1][0]
+        assert all(len(sources)==1 for _,sources in results)
+        assert [len(provider.calls) for provider in providers] == ([1,1] if cold else [0,0])
+        assert query.embed_query('a',question,providers[0],plan) == results[0][0]
+        cancelled=threading.Event(); cancelled.set()
+        with pytest.raises(TimeoutError):
+            query.embed_query('a',question,providers[0],plan,deadline=time.time()+1,cancelled=cancelled)
+    finally:
+        query.close()
+
+
+def test_query_cache_busy_touch_does_not_wait_for_row_lock(setup, backend_query_store):
+    import threading, time
+    store, generations, identity = setup
+    publish(store)
+    candidate=generations.build('a',identity,MockEmbeddingProvider(1536))
+    generations.activate('a',candidate,expected_head=None,expected_version=0)
+    query=backend_query_store(store.database_url)
+    try:
+        assert query.ping()
+        plan=query.resolve_retrieval_plan('a',enabled=True)
+        expected=query.embed_query('a','Busy touch',MockEmbeddingProvider(1536),plan)
+        with store.engine.begin() as locked:
+            locked.execute(text('UPDATE embedding_cache SET last_used_at=clock_timestamp()'))
+            started=time.time()
+            assert query.embed_query('a','Busy touch',MockEmbeddingProvider(1536),plan,
+                                     deadline=started+1,cancelled=threading.Event()) == expected
+            assert time.time()-started < 1
+    finally:
+        query.close()
+
+
+@pytest.mark.parametrize('comparison', ['> -20%', '> +20%', '> 20e3%', '> .20%', '> 20..5%', '> 20,,5%'])
+def test_unsupported_comparison_cannot_rescue_by_another_identifier(setup, backend_query_store, comparison):
+    store,generations,identity=setup
+    publish(store,content='JUP-125 utilization >= 200 USD')
+    provider=MockEmbeddingProvider(1536)
+    candidate=generations.build('a',identity,provider,retrieval_mode='hybrid')
+    generations.activate('a',candidate,expected_head=None,expected_version=0)
+    query=backend_query_store(store.database_url)
+    try:
+        plan=query.resolve_retrieval_plan('a',enabled=True,hybrid=True)
+        opposite=[-value for value in provider.embed('JUP-125 utilization >= 200 USD')]
+        assert query.search_chunks('a',opposite,provider='mock',plan=plan,max_distance=.2,
+                                   question='JUP-125 utilization '+comparison) == []
+        assert query.search_chunks('a',opposite,provider='mock',plan=plan,max_distance=.2,
+                                   question='JUP-125 utilization >= 200 USD')
+    finally:
+        query.close()
+
+
+
+@pytest.mark.parametrize('question,wrong', [
+    ('JUP-125 cost > 20 EUR.', 'JUP-125 cost > 20 USD with EUR'),
+    ('JUP-125 utilization >= 20 %.', 'JUP-125 utilization >= 20 USD'),
+])
+def test_terminal_unit_punctuation_never_rescues_wrong_unit_in_real_fts(setup, backend_query_store, question, wrong):
+    store,generations,identity=setup
+    publish(store,content=wrong)
+    provider=MockEmbeddingProvider(1536)
+    candidate=generations.build('a',identity,provider,retrieval_mode='hybrid')
+    generations.activate('a',candidate,expected_head=None,expected_version=0)
+    query=backend_query_store(store.database_url)
+    try:
+        plan=query.resolve_retrieval_plan('a',enabled=True,hybrid=True)
+        opposite=[-value for value in provider.embed(wrong)]
+        assert query.search_chunks('a',opposite,provider='mock',plan=plan,max_distance=.2,question=question)==[]
+    finally:query.close()

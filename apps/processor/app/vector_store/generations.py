@@ -105,15 +105,17 @@ class GenerationStore:
             authorize()
         self.register_space(space)
         identifier = str(uuid.uuid4())
+        execution = str(uuid.uuid4())
         captured = []
         with self.engine.begin() as connection:
             head = lock_head(connection, tenant)
             if authorize is not None:
                 authorize()
             documents = connection.execute(text('SELECT id,source,text_content,metadata FROM knowledge_documents WHERE tenant_id=:tenant ORDER BY id'), {'tenant': tenant}).mappings().all()
-            connection.execute(text('''INSERT INTO rag_generations(tenant_id,id,space_id,state,catalog_revision,retrieval_config)
-                VALUES(:tenant,:id,:space,'building',:revision,CAST(:config AS jsonb))'''),
+            connection.execute(text('''INSERT INTO rag_generations(tenant_id,id,space_id,state,catalog_revision,retrieval_config,manifest)
+                VALUES(:tenant,:id,:space,'building',:revision,CAST(:config AS jsonb),CAST(:manifest AS jsonb))'''),
                 {'tenant': tenant, 'id': identifier, 'space': space.id, 'revision': head['catalog_revision'],
+                 'manifest': canonical({'build_execution_id': execution}),
                  'config': canonical({'mode': retrieval_mode, 'rrf_k': rrf_k, 'candidate_limit': 20, 'lexical_policy': 'literal_context_v1'})})
             for row in documents:
                 chunks = [dict(item) for item in connection.execute(text('''SELECT id AS chunk_id,chunk_index,content,metadata FROM document_chunks
@@ -124,10 +126,11 @@ class GenerationStore:
                 connection.execute(text('INSERT INTO rag_generation_members(tenant_id,generation_id,document_id,revision_id) VALUES(:tenant,:generation,:document,:revision)'),
                                    {'tenant': tenant, 'generation': identifier, 'document': row['id'], 'revision': revision})
                 captured.append((revision, document, chunks))
-        return self._finish_build(tenant, identifier, space, provider, captured, authorize)
+        return self._finish_build(tenant, identifier, space, provider, captured, authorize, execution)
 
     def resume(self, tenant, identifier, provider, *, authorize=None):
         if authorize is not None: authorize()
+        execution = str(uuid.uuid4())
         captured = []
         with self.engine.begin() as connection:
             head = lock_head(connection, tenant)
@@ -143,10 +146,11 @@ class GenerationStore:
                 chunks = [dict(item) for item in connection.execute(text('SELECT chunk_id,chunk_index,content,metadata FROM rag_revision_chunks WHERE tenant_id=:tenant AND revision_id=:revision ORDER BY chunk_index'),
                     {'tenant': tenant, 'revision': document['id']}).mappings()]
                 captured.append((document['id'], {**dict(document), 'id': document['document_id']}, chunks))
-            connection.execute(text("UPDATE rag_generations SET state='building',retired_at=NULL WHERE tenant_id=:tenant AND id=:id"), {'tenant': tenant, 'id': identifier})
-        return self._finish_build(tenant, identifier, space, provider, captured, authorize)
+            connection.execute(text("UPDATE rag_generations SET state='building',retired_at=NULL,manifest=CAST(:manifest AS jsonb) WHERE tenant_id=:tenant AND id=:id"),
+                               {'tenant': tenant, 'id': identifier, 'manifest': canonical({'build_execution_id': execution})})
+        return self._finish_build(tenant, identifier, space, provider, captured, authorize, execution)
 
-    def _finish_build(self, tenant, identifier, space, provider, captured, authorize):
+    def _finish_build(self, tenant, identifier, space, provider, captured, authorize, execution):
         try:
             warnings = []
             for revision, document, chunks in captured:
@@ -160,12 +164,20 @@ class GenerationStore:
             with self.engine.begin() as connection:
                 if authorize is not None:
                     authorize()
+                # Serialize only the final transition, never the remote work.
+                owner = connection.execute(text("SELECT state,manifest->>'build_execution_id' AS execution FROM rag_generations WHERE tenant_id=:tenant AND id=:id FOR UPDATE"),
+                                           {'tenant': tenant, 'id': identifier}).mappings().one()
+                if owner['state'] != 'building' or owner['execution'] != execution:
+                    raise StaleGeneration('Build execution was superseded')
                 self._check_complete(connection, tenant, identifier, space.id, manifest['chunk_count'])
-                connection.execute(text("UPDATE rag_generations SET state='ready',manifest=CAST(:manifest AS jsonb) WHERE tenant_id=:tenant AND id=:id AND state='building'"),
-                                   {'tenant': tenant, 'id': identifier, 'manifest': canonical(manifest)})
+                updated = connection.execute(text("UPDATE rag_generations SET state='ready',manifest=CAST(:manifest AS jsonb) WHERE tenant_id=:tenant AND id=:id AND state='building' AND manifest->>'build_execution_id'=:execution"),
+                                   {'tenant': tenant, 'id': identifier, 'manifest': canonical(manifest), 'execution': execution})
+                if updated.rowcount != 1:
+                    raise StaleGeneration('Build execution was superseded')
         except Exception:
             with self.engine.begin() as connection:
-                connection.execute(text("UPDATE rag_generations SET state='failed',retired_at=clock_timestamp() WHERE tenant_id=:tenant AND id=:id"), {'tenant': tenant, 'id': identifier})
+                connection.execute(text("UPDATE rag_generations SET state='failed',retired_at=clock_timestamp() WHERE tenant_id=:tenant AND id=:id AND state='building' AND manifest->>'build_execution_id'=:execution"),
+                                   {'tenant': tenant, 'id': identifier, 'execution': execution})
             raise
         return identifier
 

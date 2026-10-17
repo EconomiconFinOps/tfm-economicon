@@ -1,6 +1,6 @@
 # Índices de embeddings
 
-Actualización documental: 2026-10-16. Implementación experimental en curso sobre
+Actualización documental: 2026-10-17. Implementación experimental en curso sobre
 la base de chunking documental, pendiente de identificador oficial de la entrega
 y formalización. No implica aceptación, activación estable ni publicación.
 
@@ -35,3 +35,36 @@ conserva el banco original y exige capturas sintéticas válidas y evidencia rea
 del tool result; los ejercicios hipotéticos no se convierten en autoridad financiera
 del servidor. No considera `/evidence` como captura completa.
 Los resultados locales no acreditan una mejora de recuperación o de respuestas.
+
+
+La revisión adversarial posterior detectó tres defectos adicionales: un constructor
+obsoleto podía invalidar una generación reanudada y activada; dos hits de caché
+podían perder recuperación por el mantenimiento concurrente; y una comparación
+no soportada conservaba rescate por otro identificador. Se corrigen con cercado
+de ejecución, mantenimiento auxiliar no bloqueante/reintento exclusivamente SQL
+y cierre conservador de comparaciones incompletas. Pasan 35 pruebas de
+generaciones con PostgreSQL y 27 de política; los consumidores directos añaden
+82 comprobaciones del lector/contexto y 13 del operador de reprocesado.
+Son pruebas propias, pendientes de evaluación independiente de estos bytes.
+
+La campaña anterior conserva sus 272 casos terminales y evidencia externa.
+Un ensayo posterior compara recuperación plain densa e híbrida con vectores y
+consultas efectivos guardados, sin nuevas llamadas. Sus resultados y límites se
+entregan aparte; no reescriben la campaña, su ranking histórico ni el dictamen
+adverso original. No implica aceptación, cambio de opciones por defecto ni
+activación estable.
+
+
+La revisión incremental detectó además retroceso del análisis ante puntuación
+final tras EUR o %. Se conserva su dictamen adverso y se corrige consumiendo la
+unidad antes de validar el sufijo numérico; se añaden dos positivos/negativos
+unitarios y dos regresiones FTS reales. La reevaluación corresponde a los mismos
+evaluadores sobre referencias independientes nuevas.
+
+
+La reevaluación v2 corrigió los casos de puntuación, pero mostró aceptación
+parcial de números con separadores repetidos. Su dictamen adverso se conserva;
+v3 cierra la continuación numérica repetida, mixta o espaciada y añade dos
+regresiones FTS y cinco variantes de política. No cambia el lector, F1/F2 ni la
+estrategia experimental. Las evidencias previas no afectadas se reutilizan por
+identidad, sin presentarlas como ejecuciones nuevas de cada versión.

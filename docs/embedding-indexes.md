@@ -162,3 +162,33 @@ antes de la operación que alcanza el 75 % y el límite impide nuevas reservas.
 
 Los bancos, rúbricas y reglas financieras permanecen iguales. Las pruebas locales
 de protocolo/SQL no acreditan beneficio del modelo ni aceptación experimental.
+
+
+## Concurrencia de construcción y lectura
+
+Cada construcción o reanudación toma una identidad de ejecución temporal en el
+manifiesto de `building`. Sólo esa ejecución puede finalizar como `ready` o
+`failed`; una ejecución sustituida no cambia el estado, el manifiesto ni la
+cabecera vigente. Al finalizar se reemplaza el manifiesto temporal por el
+canónico, sin incluir la identidad operativa en su fingerprint. La reanudación
+admite generaciones incompletas anteriores sin ese campo. No es un lease ni
+garantiza una sola petición de embeddings; al cambiar de versión deben terminar
+o detenerse los trabajadores que aún ejecuten la implementación anterior.
+
+En la caché de consultas, la actualización de `last_used_at` omite filas ocupadas.
+Un conflicto de serialización de ese mantenimiento no invalida un vector ya
+leído y verificado, una vez cerrada su transacción. La primera inserción puede
+reintentar hasta tres transacciones SQL ante `40001`, conservando un único
+resultado de inferencia y devolviendo el ganador canónico. Ambos recorridos
+conservan cancelación y plazo de recuperación; no se reintenta la inferencia.
+
+El rescate léxico se cierra si algún comparador no pertenece a una expresión
+completa soportada, incluso si la consulta contiene otro identificador válido.
+Las comparaciones con signo, exponente o sintaxis numérica no reconocida no
+activan ese rescate. Las expresiones soportadas conservan operador, magnitud,
+unidad e identificador como literales completos, también ante puntuación final.
+La unidad se consume antes de comprobar sufijos numéricos, evitando que un punto
+final haga retroceder el análisis y la elimine. Una continuación numérica tras
+separadores repetidos, mixtos o espaciados cierra también el rescate, sin aceptar
+un prefijo numérico parcial. Esto no interpreta fórmulas
+ni recupera restricciones que una reformulación haya omitido.

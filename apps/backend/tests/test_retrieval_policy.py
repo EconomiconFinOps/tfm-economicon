@@ -36,3 +36,32 @@ def test_rrf_ranks_start_at_one_missing_lane_zero_and_stable_ties():
     assert [item['chunk_id'] for item in result] == ['a', 'b']
     assert result[0]['rrf_score'] == 1/61 + 1/62
     assert fuse([a], [])[0]['rrf_score'] == 1/61
+
+
+
+@pytest.mark.parametrize('comparison', ['> -20%', '> +20%', '> 20e3%', '> .20%', '> 20.5.1%', '> 20..5%', '> 20,,5%', '> 20.,5%', '> 20. .5%', '> 20 , ,5%'])
+def test_unsupported_comparison_closes_rescue_even_with_identifier(comparison):
+    policy=query_policy('JUP-125 utilization '+comparison)
+    assert 'JUP-125' in policy['anchors'] and not policy['rescue']
+    assert not lexical_eligible('JUP-125 utilization >= 200 USD',policy)
+
+
+@pytest.mark.parametrize('expression', ['cost > 20 EUR','utilization >= 20 %','latency <= 20 ms','limit = 20 GB'])
+def test_supported_comparison_with_identifier_preserves_all_literals(expression):
+    question='JUP-125 '+expression
+    policy=query_policy(question)
+    assert policy['rescue'] and lexical_eligible(question,policy)
+    assert not lexical_eligible(question.replace('20','200'),policy)
+    assert not lexical_eligible(question.replace('JUP-125','JUP-1250'),policy)
+
+
+
+@pytest.mark.parametrize('question,wrong', [
+    ('JUP-125 cost > 20 EUR.', 'JUP-125 cost > 20 USD with EUR'),
+    ('JUP-125 utilization >= 20 %.', 'JUP-125 utilization >= 20 USD'),
+])
+def test_terminal_punctuation_cannot_backtrack_and_drop_complete_unit(question, wrong):
+    policy=query_policy(question)
+    assert policy['rescue'] and lexical_eligible(question,policy)
+    assert len(policy['anchors'])==2 and policy['anchors'][1]==question.removeprefix('JUP-125 ').removesuffix('.')
+    assert not lexical_eligible(wrong,policy) and not anchors_match(wrong,policy)
