@@ -6,6 +6,18 @@ la memoria y abrir una JUP sólo si resulta necesaria.
 
 ## Actualización de validación — 17/10/2026
 
+Continuación posterior autorizada: los smokes separados DeepSeek/DeepInfraFP8 y
+MistralLarge4/ZDR devolvieron HTTP200. El arnés rechazó footers SSE vacíos;
+replay con consumidor d965 y esquema real acepta ambos drafts y rechaza el
+contrafactual con texto posterior. Evidencia `B-assisted-validation-route-smoke-v4-replay-20261017-v1.json`
+SHA6c17c5d0, sin nuevas respuestas pagadas para el replay. Esto demuestra sólo
+compatibilidad del borrador guardado, no calidad, fase final, API ni N5.
+Nueva N5 DeepInfra separada del CoreWeave histórico (plan a12e5d1a) activa desde
+11:34:41UTC, PID99133/start4887333, primeras operaciones API completas y coste
+observado, sin juicio semántico final ni aceptación. La comparación histórica
+no se reetiqueta. Elección de esta ruta para mantener modelo/FP8 y evitar la
+limitación CoreWeave observada; no demuestra superioridad general o causalidad.
+
 Petición humana posterior: localizar otro modelo compatible para evitar429.
 Investigación pública de470modelos y catálogo ZDR, sin inferencias/gasto/envío
 de corpus/cambio de gateway. Shortlist `B-model-alternatives-20261017-v1.json`

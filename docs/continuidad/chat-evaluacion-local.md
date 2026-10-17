@@ -9,6 +9,51 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 17/10/2026
 
+### Continuación autorizada: ruta alternativa, sin integración — 11:35 UTC
+
+El humano ordenó continuar las pruebas autónomamente y, después, «Olvídate de
+la integración, la esta haciendo otro agente. Termina las pruebas de B».
+PR131/integración queda fuera de este trabajo. El bloqueo08:33 se conserva como
+corte histórico, no como impedimento frente a esta nueva instrucción.
+
+Dos ensayos de transporte separados (`route-smoke-20261017-v3` y `v4`) terminaron
+y restauraron sus recursos. V3 no guardaba la condición de AssertionError; V4
+capturó HTTP200/SSE y `Content after finish` en ambas rutas (DeepSeek/DeepInfraFP8
+y MistralLarge4/ZDR). El validador reprodujo los frames con el consumidor real
+d965: los eventos posteriores eran footers vacíos, los dos drafts son válidos.
+Contrafactual con contenido real posterior rechazado. Dictamen externo
+`B-assisted-validation-route-smoke-v4-replay-20261017-v1.json`, SHA6c17c5d0.
+No son pruebas de final/API/RAG/N5 ni una comparación semántica de modelos.
+Los resultados originales fallidos del arnés no se reescriben.
+
+Ledger1464 SHA`bb8519900e870657834c97cf6ce37cf55d5f7d7f0c8ecdf170631a30e020bc75`:
+las cuatro reservas de smoke quedan completas (2×0.00473086 y2×0.01918152USD).
+No se liberaron reservas ni se modificaron los95recibos/N3 históricas. Viejos6
+y gateway compartido intactos/sanos; originales3 y clones parados tras los ensayos.
+
+N5 separada `route-api-d965-deepinfra-n5-v1`, lanzada una sola vez a11:34:41UTC:
+140muestras nuevas, producto d965/banco1.0.1/corpus54 intactos, DeepSeekV4.1Flash
+por DeepInfraFP8, ZDR/sin fallback. Plan `B-route-api-d965-deepinfra-n5-plan-v1.json`
+SHAa12e5d1a y política `B-route-api-policy-v1.json` SHAe5f1a2ff,353artefactos
+protegidos. Guardas de ledger, historia SQL completa de los95, corpus y DNS de
+ambas apps. Revisor APPROVE e8c93743 y validador112a1cc7/12focales conformes,
+sin aceptación de producto inferida de esas pruebas. PID99133/start4887333,
+controlador0d334e49: NO RELANZAR. Observador `observe-B-route-api-v1.py`.
+Gateway clone ef5f0509/puerto44004 con alias original sólo mientras el gateway
+anterior está parado; fuente/IDs/imágenes backend/processor intactos. Dos primeras
+operaciones completas con coste observado y tercera completa exportada; revisión
+semántica aún en curso y separada. No son140éxitos ni prueba de disponibilidad futura.
+Handoff `B-route-api-handoff-v1.json` SHA4f840821 conserva arranque inicial;
+actualizarlo por un nuevo corte significativo, no sobrescribir la evidencia.
+No se atribuirá esta ruta a la N5CoreWeave. Follow-up actualizado a20min, silencioso
+sin novedades, con el handle exacto y exclusión de PR131/integración.
+
+La misma clave processor pasa4.5→6USD de margen, conforme al permiso humano
+expreso de realizar lo necesario para continuar, sin nueva clave, reset o prórroga.
+`B-route-api-key-margin-v1.json` conserva antes/después y autorización. Backend0.1,
+contadores y vencimientos17oct15:59:59UTC intactos; máximo global30USD y todas las
+reservas siguen vigentes. El presupuesto global es una cota conservadora, no factura.
+
 Nueva instrucción humana posterior al bloqueo: buscar otro modelo compatible.
 Investigación completada sin llamadas pagadas: alternativas de ruta DeepSeek por
 DeepInfraFP8/NebiusFP8 y modelos distintos MistralLarge4ZDR/MiniMaxM3Together.

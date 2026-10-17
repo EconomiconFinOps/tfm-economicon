@@ -5,9 +5,14 @@ y estado operativo; GitHub conserva código y revisiones; OpenSpec conserva
 requisitos y diseño. Este índice enlaza evidencia, no sustituye esas fuentes.
 Leer la [convención](convencion-compartida.md) y sólo los temas pertinentes.
 Las fechas indican la última actualización documental, no una nueva ejecución de pruebas.
-Estado17oct08:33UTC: objetivo bloqueado por upstream429 tras tres turnos reales;
-95recibos/1460filas, V12terminado y0activas. Auditoría38381c87; detalle en evaluación
-local. Sin nuevas inferencias, cierre incompleto; seguimiento sólo ante novedad útil.
+Estado17oct11:35UTC: el humano ordenó terminar sólo las pruebas B; integración
+fuera de alcance. Dos smokes terminados: replay del consumidor real confirma
+footers vacíos rechazados por el arnés, no fallos demostrados de ambos proveedores.
+N5 separada DeepInfra activa, PID99133/start4887333: no relanzar. Plan a12e5d1a/
+política e5f1a2ff, revisión APPROVE y12focales conforme; primeras respuestas API
+completas con coste observado, semántica en revisión, no aceptación ni140éxitos.
+Ledger1464/95recibos históricos intactos; cap30/reservas completas. Misma clave
+processor6/backend0.1, caducidad intacta. Detalle y alcance en evaluación local.
 Actualización15/10: colector extraído y adaptado para071 en PR131abierta,
 revisión solicitada a Lucía (`lmatsan`),
 31tests y compatibilidad con su evaluador comprobados; B no se ha publicado.
