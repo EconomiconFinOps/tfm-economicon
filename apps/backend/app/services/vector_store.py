@@ -111,10 +111,16 @@ class PgVectorQueryStore:
             )
             documents = {row.id:row for row in documents}
             locations = {key:DocumentCitations(row.text_content) for key,row in documents.items()}
+            def manual(row):
+                return documents[row.document_id].metadata.get('original_format') == 'manual-text'
             def location(row):
                 if row.metadata:
-                    return structured_location(row.metadata, documents[row.document_id].metadata,
-                                               documents[row.document_id].text_content)
+                    value = structured_location(row.metadata, documents[row.document_id].metadata,
+                                                documents[row.document_id].text_content)
+                    if manual(row):
+                        # Manual text has no structured blocks: keep the Markdown reading it had before.
+                        value['section'] = locations[row.document_id].section(row.content)
+                    return value
                 return {'section':locations[row.document_id].section(row.content)}
             return [
                 {
@@ -122,7 +128,7 @@ class PgVectorQueryStore:
                     "document_id": row.document_id,
                     "tenant_id": row.tenant_id,
                     "title": documents[row.document_id].metadata.get("title") or (
-                        None if documents[row.document_id].metadata.get('chunking') else locations[row.document_id].title
+                        None if documents[row.document_id].metadata.get('chunking') and not manual(row) else locations[row.document_id].title
                     ) or row.source.strip(),
                     "chunk_index": row.chunk_index,
                     **location(row),

@@ -1,5 +1,6 @@
 """Parent document facts stay separate from per-chunk metadata."""
 import hashlib
+import re
 
 
 def manual_document(state):
@@ -16,6 +17,9 @@ def parent_metadata(document, manifest):
     if not title:
         title = next((block.get('text') for block in document['blocks']
                       if block.get('kind') == 'heading' and block.get('text')), None)
+        if title and document.get('original_format') == 'md':
+            # The Markdown extractor keeps the raw ATX line; a title is the heading text.
+            title = re.sub(r'^[ ]{0,3}#{1,6}[ \t]+|[ \t]+#+[ \t]*$', '', title).strip() or None
     return {'schema_version':1, 'original_format':document['original_format'],
             'title':title, 'content_hash':hashlib.sha256(document['text'].encode('utf-8')).hexdigest(),
             'origin':document.get('origin', {}), 'file_metadata':document.get('file_metadata', {}),
