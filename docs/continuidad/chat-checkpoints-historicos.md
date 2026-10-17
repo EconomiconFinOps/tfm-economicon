@@ -235,3 +235,68 @@ Full28f paro tras cinco completadas/006 fallida. financialschema3200 restringe
 metrics en esquema privado sin autoridad financiera servidor, conserva costes
 cero validos y guard publico; nueva revision y aceptacion real siguen pendientes.
 
+
+
+## Cortes del índice de B trasladados al preparar su PR — 17/10/2026
+
+Estos estados son históricos; el estado de integración actual se encuentra en
+[Evaluación local del chat](chat-evaluacion-local.md).
+
+Rama024f3ec: pruebas locales B terminadas. N5 nueva140/140 completadas y
+conformes;825 comprobaciones PASS; C1/C2 asistido/C3 conformes. Cero activas,
+propios3 parados, otros servicios intactos. Cota 23.117520366/30 USD,
+conservadora; reservas íntegras. Paquete497 archivos/manifest
+4838711dac437ce7f63f5e68aa382dc9e8dd0343c4e8f3024579d39346c32984. Sin publicar, integrar, activar permanentemente o Done.
+Los cortes siguientes de la rama de procedencia son históricos.
+Estado2026-10-17 12:26 UTC: sólo pruebasB. V2terminó023r2técnica(4EOF/logs500, raíz
+noatribuida),51recibos intactos. V3ACTIVO PID505182/start5164432 sólo89noenviadas
+desde024r2,prefijo1515SHA037bee6e. Corte56:55conformes324PASS+1técnica/6noevaluables;
+C1/C3strict no cumplidos. Handoff15a1477c, cap30/holds/expiryintactos. No integración.
+Actualización15/10: colector extraído y adaptado para071 en PR131abierta,
+revisión solicitada a Lucía (`lmatsan`),
+31tests y compatibilidad con su evaluador comprobados; B no se ha publicado.
+Detalle en evaluación local y en la continuidad propia de la rama del colector.
+Actualización16/10: N3 DeepSeek de a7f9502d completa84/84 y localmente conforme,
+495comprobaciones/84costes observados. Claves prorrogadas24h hasta17/10a18:00París,
+mismos límites/contadores/reservas; sólo se completaron025–028r3. UI conforme,
+B anterior restaurado sano y temporales parados. Cota21.4488/30USD, sin aceptación.
+Paquete203archivos/handoffv8; parcial80 y campañas históricas preservadas.
+Continuación16/10: comparador entre revisiones de procedencia implementado,
+12pruebas nuevas y17anterioresPASS. Comparación84pares sin regresiones observadas;
+Resumen Discord publicado una sola vez en #general tras autorización explícita
+del texto y canal; mensaje1560728370025730078 verificado. No volver a enviarlo.
+Auditoría local posterior:388archivos congelados,213identidades JUnit, builds y
+entradas de comparación conformes; corregida tabla obsoleta80/84 del informe.
+Preparación técnica completa, criterios/adjudicación/alcanceN5 actual pendientes.
+Objetivo marcado `blocked` tras tres turnos del mismo impedimento de cierre;
+retomar sólo ante decisiones nuevas o evidencia accionable. No presupuesto agotado.
+Propuesta C1/C2/C3 para revisores y borrador Discord preparados por petición humana;
+no enviados ni acordados. Detalle en evaluación local e informe de revisión.
+Estado posterior vigente16/10: C1/C3 aceptados y C2 sustituido por subagentes
+separados. Producto d965 revisado,197identidades nativas por herencia,110variantes,
+84esquemas/69renders offline y2builds/224hashes conformes; rojos preservados.
+N5 nueva140 autorizada. V5 terminó por OOM backend tras40/234checks conformes,
+B anterior restaurado sano y paquete parcial103archivos/manifestf9290ccf congelado.
+V7 continúa sólo100faltantes desde013r2, PID1601495/start78342579, mismos IDs/
+imágenes/plan/modelo; backend768MiB y margen384, segmentos operacionales explícitos.
+Preflight realPASS/primera continuación completa(corte41/140). V6 no se lanzó
+por discrepancia LF/CRLF de preparación, preservada y corregida por bytes.
+B antiguo backend/processor temporalmente pausados, restauración v7 al terminar.
+Cap30/reservas y límites4.5/.1/vigencia17oct18París intactos. Cierre v4 preparado,
+NO ejecutado; no N5 completa ni aceptación. Antiguo impedimento humano superado.
+
+Histórico superado por el corte095 de la tabla/tema:93/140 recogidas,91conformes538PASS y2técnicas008r4/009r4;
+11noevaluables/47pendientes desde010r4. V9/V10terminales/parkingexit0/old6sanos.
+Ledger1458SHA60fdb0d3/holds14.16844690íntegros, cota21.909256304/30USD.
+CoreWeaveFP8status-5/uptime5m0%: no inferencias hasta disponibilidad fresca; V11
+prepara47 sin cambiarproducto/modelo. Paquete093230archivos/manifest82517598.
+C1/C3sin cumplir; cierre6noaplicable talcual. Hardware24GB verificado.
+V11instalado61d810fd/revisado+validado; launcherWAITsinintent/PID/llamadas/reservas,
+proofv11-wait confirma1458yold6/new3intactos. No hay campaña pagada viva.
+Cierre técnico separado preparado1e12a53a/revisado+validado(13tests), no ejecutado.
+Exige140recogidas/138completed+2failed/11noevaluables; flagsC1/C3/aceptaciónfalsos.
+Nuevo corte23:18UTC sigue0%5m/30m; ledger1458/serviciossin cambios.
+Objetivo `blocked` confirmado tras3turnos del mismo proveedor; corte23:21UTC0%5m/30m,
+93recibos/1458filas/sinhandleV11. Auditoría provider-blocked-goal-v1. Seguimiento
+activo para recuperación, sin nuevas inferencias ni repetir preparación ya conforme.
+

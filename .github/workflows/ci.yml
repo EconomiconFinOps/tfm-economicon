@@ -41,7 +41,7 @@ jobs:
   governance:
     name: OpenSpec
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - name: Check out the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -80,6 +80,10 @@ jobs:
           corepack pnpm retrieval-calibration:test
           corepack pnpm assistant-metrics:test
           corepack pnpm assistant-eval:test
+          corepack pnpm chat-collector:test
+          corepack pnpm assistant-robustness:validate
+          corepack pnpm assistant-robustness:test
+          corepack pnpm evaluation-dashboard:test
           corepack pnpm synthetic-demo:test
           corepack pnpm demo-dataset:test
           corepack pnpm demo-data:test

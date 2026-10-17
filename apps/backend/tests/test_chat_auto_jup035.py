@@ -149,7 +149,7 @@ def test_rendered_arithmetic_stream_candidate_and_saved_pair_are_identical(api, 
         document=None
         if classification=='boolean-corpus':
             question='¿Se cumple la regla?\n\nBaseline 80 EUR/día; observado 96 EUR/día.'
-            document='# Policy\n## Changes\nrelative_delta >20 % AND absolute_delta >12 EUR/day'
+            document='# Policy\n## Changes\nrelative_delta >20 % AND absolute_delta >12 EUR/day\n## Next\nOther policy.'
         catalog=boolean_catalog(question,document)
         authorized=catalog.rule_sources
         segments=answer(catalog)

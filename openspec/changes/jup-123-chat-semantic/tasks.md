@@ -1,5 +1,23 @@
 ## Estado vigente — 17/10/2026
 
+Pruebas locales terminadas en producto `f3ec760d3c483e8798df2be32ea90bb901ebe36d`:
+N5 nueva de 140 respuestas completed/conformes, 825 comprobaciones PASS y cero
+fallos/dudas. C1/C3 conformes; C2 asistido por revisor y validador separados,
+según autorización humana. Configuración DeepSeek V4.1 Flash/DeepInfra FP8,
+temperatura 0, reasoning disabled, ZDR sin fallback; banco 1.0.1/corpus 54.
+Los dictámenes asistidos no son reviews oficiales de GitHub ni una evaluación ciega.
+Comparación descriptiva: 139 pares semánticos sin regresiones, fallos históricos
+preservados. Informe y límites en `docs/validation/JUP-123-local-review.md`.
+
+Traspaso autorizado a este chat para preparar la integración, desde HEAD documental
+`800775ef`. Rama `feat/JUP-123-chat-quality-delivery`: reconciliación con develop
+`1de41b90` sin conflictos. La publicación y los controles de integración se
+registran en continuidad; no se atribuye una nueva N5 al SHA resultante.
+Reviews oficiales, integración y activación permanente son pasos separados.
+No relanzar campañas, renovar claves ni liberar reservas para esta entrega.
+
+## Histórico anterior a la campaña final y al traspaso
+
 Objetivo bloqueado confirmado08:33UTC por upstream429 tras3turnos consecutivos;
 auditoría38381c87/relectura95recibos1460filas, sin proceso vivo ni inferencias nuevas.
 
@@ -96,7 +114,8 @@ externa `B-local-readiness-audit-v1.json`; no nuevas campañas o gasto.
   - Comparación offline de84pares 5119→a7:327PASS→PASS del banco;165PASS→PASS/2FAIL→PASS/1incierto→PASS de calidad. Sin regresiones observadas en el banco conocido; producto/corpus/modelo distintos, no causalidad o aceptación humana.
 
 ## 3. Correcciones y entrega
-- [ ] 3.1 Corregir defectos medidos con lógica determinista.
+- [x] 3.1 Corregir defectos medidos con lógica determinista.
+  - Cierre local f3ec760d: N5 final 140/140 conformes, incluidos los cinco casos024; no sustituye la revisión oficial del código completo.
   - Correcciones conjuntas de 002/014 del 16/10: comparación mensual cerrada evita el método documental sin soporte; forecast conserva acumulado/proyección/presupuesto. 258 pruebas locales conformes, incluidas 57 nuevas. Paridad fría de 56 contextos por servicio; frente a `9513e930`, 52 esquemas iguales y cambios sólo en 002/014 con y sin RAG. Primer intento de colección pytest falló por nombre reservado, conservado; Linux, build y API/UI del candidato nuevo pendientes. Los fallos de la comparación de modelos no se reetiquetan.
   - Corrección local del 16/10 para GLM014r2: terminal de forecast fechado conserva acumulado, proyección y presupuesto, y evita política añadida sin soporte. 179 pruebas locales conformes (incluyen 28 nuevas) y paridad de recursos en 56 contextos por servicio; fechas/monedas/roles ambiguos y autoridad financiera no se sobrescriben. N3 de comparación sigue congelada; Linux, build y medición del candidato corregido pendientes. No cerrar 3.1 por estas pruebas offline.
   - Corte vigente15/10a19:11UTC d9b/9e2:027/020 implementados y conformesr1,287LinuxPASS y UIr1PASS. N3 detenida50/84 con47conformes/3técnicas429 y34pendientes; no contenido fallido entre respuestas observadas.020r2sin respuesta,027r2/r3 aún no ejecutadas. No cerrar por una sola repetición ni por el replay. Snapshots597filas/50recibos y juicios congelados; claves ampliadas hasta16/10a18:00París, reservas5.761136 intactas, cota9.543795305/10USD. Seguimiento único para023r2 con admisión fresca y sin reenvíos. Detalle/hash en continuidad.
@@ -111,11 +130,13 @@ externa `B-local-readiness-audit-v1.json`; no nuevas campañas o gasto.
   - Calificadores004 y consejo022 en2c79b32d:468 focales processor/32 backend PASS; definiciones completas, modalidad literal y premisas en tres valores. Replay de sus seis muestras conforme al contrato nuevo, sin adjudicar las etiquetas históricas. Sin medición real; casillas3.1/3.2 siguen abiertas hasta validar el conjunto y sus variantes.
   - Corte técnico histórico, anterior a la ampliación y medición posteriores: correcciones015/003/013 implementadas en producto d2f8a440, corte de pruebas/build72a2f767:1793 identidades únicas chat PASS,0FAIL/ERROR/SKIP tras cubrir6pgvector y52CockroachDB nativos. Colección y JUnit por hash, herencia explícita de módulos idénticos y fallos previos preservados. Imágenes y365 fuentes más tokenizer verificadas. Activadas sólo en B con365 hashes, descriptor HMAC conforme y bases/frontend/estados intactos; sin nueva N3 por claves caducadas12:02París, extensión hasta18:00 pendiente. Reservas3.201520 y379 filas intactas; cota6.134754199/10USD a12:23UTC. No cerrar3.1 por técnica; falta medir y comparar con84anteriores.
   - Medición posterior:003/013/015PASS3/3 en72 y a545.025 corregido en producto30596942,238tests incrementales LinuxPASS/0SKIP y025PASS3/3 en a545; imágenes/HMAC/UI verificados.027r2 mezcla etiquetas de coste unitario con expresiones de gasto total; reparación tipada pendiente.020r1/r3 requieren adjudicación del riesgo genérico. No cerrar3.1 por resolver los tres defectos originales.
-- [ ] 3.2 Comparar por requisito/repetición y descartar regresiones obligatorias.
+- [x] 3.2 Comparar por requisito/repetición y descartar regresiones obligatorias.
+  - Cierre local:139 pares semánticos,818 PASS→PASS/1 FAIL→PASS y cero regresiones; pareja técnica histórica separada. Comparación descriptiva, sin inferencia causal.
   - Corte9e2parcial50:47PASS/3técnicas429,278requisitos conformes/18no evaluables y34muestras pendientes. No se concluye ausencia de regresiones ni N3 completa. Snapshot597filas y252recibos históricos intactos. Cota19:16UTC9.57494663/10USD con5.761136retenidos, sin nuevas llamadas tras022r2. Seguimiento16/10a08:00 desde023r2 sólo con admisión fresca; no sustituir los tres fallos ni cerrar3.2.
   - N3 finales72 y a545 completas84/84 y congeladas. En a545:80PASS/1FAIL027r2/2inciertas020r1/r3/1técnica022r1 por429;003/013/015/025PASS3/3. Requisitos486PASS/1FAIL/2inciertos/6no evaluables. Frente72:3FAIL→PASS,2inciertos→PASS,1PASS→FAIL y2PASS→inciertos; técnicos aparte. No cumple ausencia de regresiones,3.2 permanece abierta.547filas y252recibos de últimas tres campañas intactos; reservas4.161376 conservadas, cota7.7121919645/10USD. UI003/013/015/025 de historial/recarga conformes, sin nueva inferencia.
   - Comparación c7/e23 registrada:438 pass→pass,7 pass→fail,7 uncertain→uncertain,6 uncertain→pass,2 fail→pass; técnicos aparte. No se cumple ausencia de regresiones; casilla abierta.
-- [ ] 3.3 Confirmar N5 según alcance acordado y presupuesto.
+- [x] 3.3 Confirmar N5 según alcance acordado y presupuesto.
+  - Cierre local:140 nuevas completed,825 PASS, C1/C2 asistido/C3 conformes. Cota23.117520366/30 USD y reservas15.04040862 íntegras; cero operaciones activas y recursos propios parados.
   - Vigente17/10: N5 NUEVA140 de d965 autorizada; mismo plan8af94f71/corpus54/DeepSeekCoreWeaveFP8. Corte095:91completedconformes+4técnicas,45sin enviar; V12terminado por HTTP429upstream, sin proceso vivo. C3abierto hasta la medición/auditoría acordadas; 21checks técnicos no evaluables no se convierten en PASS. Criterios C1/C3 aceptados y excepción C2 asistida vigente: no falta otra decisión humana de alcance.
   - Histórico5119:140/140recogidas16/10,138PASS/1FAIL012r5/1técnico010r3,paquete310archivos preservado. Ese cierre no acredita d965 ni sustituye sus muestras pendientes.
 - [x] 3.4 Preparar candidato local con pruebas, evidencias y limitaciones.

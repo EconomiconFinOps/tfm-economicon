@@ -62,7 +62,7 @@ def test_final_schema_contains_only_effective_authenticated_evidence(monkeypatch
             elif isinstance(node,list):
                 for item in node:yield from selections(item)
         choices=list(selections(schema));assert choices
-        assert all(choice['properties']['source_id']['const']==source['id'] and choice['properties']['passage']['enum']==[source['content']] for choice in choices)
+        assert all(choice['properties']['source_id']['enum']==[source['id']] and choice['properties']['passage']['enum']==[source['content']] for choice in choices)
         assert all(branch['properties']['evidence']['maxItems']==0 for branch in schema['anyOf'])
         assert schema['$defs']['SourceQuantity']['properties']['quantity']['enum']==['document:corpus:current:0:17 %']
     else:
@@ -70,8 +70,12 @@ def test_final_schema_contains_only_effective_authenticated_evidence(monkeypatch
         assert all(branch['properties']['evidence']['maxItems']==0 for branch in schema['anyOf'])
         assert all('status' in branch['required'] and 'basis' in branch['required'] for branch in schema['anyOf'])
     for branch in schema.get('anyOf',[schema]):assert branch['properties']['metrics']['maxItems']==0
-    for field in ('estimated_savings','currency'):
-        assert schema['$defs']['Recommendation']['properties'][field]=={'type':'null'}
+    if with_source:
+        for field in ('estimated_savings','currency'):
+            assert schema['$defs']['Recommendation']['properties'][field]=={'type':'null'}
+    else:
+        assert all(branch['properties']['recommendations']['maxItems']==0 for branch in schema['anyOf'])
+        assert 'Recommendation' not in schema['$defs']
 
 
 def test_final_failure_diagnostic_never_contains_candidate_or_secret(monkeypatch,caplog):

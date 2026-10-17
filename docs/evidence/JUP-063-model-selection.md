@@ -27,7 +27,7 @@ peores. El banco solo no detectaba todos los defectos: la rúbrica adicional y l
 revisión del contexto son necesarias, aunque aún provisionales. N5 actual no
 ejecutada; N5 histórica no se hereda. No hay nuevo gasto para este análisis.
 
-El [ADR-0022](../adr/ADR-0022-chat-model-selection.md) está Proposed. El ADR-0002
+El [ADR-0023](../adr/ADR-0023-chat-model-selection.md) está Proposed. El ADR-0002
 aceptado y el modelo del gateway compartido no cambian. V4 Pro no es V4.1 Flash.
 
 ## Entregables preparados fuera de Git

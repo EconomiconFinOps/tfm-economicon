@@ -9,6 +9,53 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 17/10/2026
 
+### Traspaso y preparación de integración de B — 17/10/2026
+
+Origen: usuario pide trasladar el candidato a «Implementa cambios de PR131» para
+continuar con el commit validado y las evidencias. Instrucción comprobada en chat
+`01a1270c-e332-7462-9c90-706d49ade92c`, turno
+`01a14aa5-66e9-7580-859a-b2561552acc3`; este seguimiento en chat
+`01a143ae-b740-7043-aedb-1a8a65b4b585`.
+
+Worktree de entrega `tfm-economicon-jup123-b-delivery`, rama
+`feat/JUP-123-chat-quality-delivery`, desde HEAD documental `800775ef`.
+Se combina develop real de GitHub `1de41b90` sin conflictos. El remoto origin
+del worktree fuente era otro checkout local: se usó fetch explícito de GitHub,
+sin confundir su origin/develop antiguo con la base real. Candidato fuente intacto.
+
+Verificación offline: seis hashes de traspaso/informe/auditoría/dictámenes y los
+497 archivos del paquete congelado conformes. Comparados245 archivos de producto,
+dependencias, corpus/banco y recursos: el único cambio de aplicación frente a
+f3ec760d es inicializar a cero las categorías de la métrica del asistente legado,
+heredado del dashboard en develop; chat, prompts y evaluador de B medidos intactos.
+Compose añade la contraseña requerida del datasource Grafana, sin activarlo.
+No se atribuye una nueva campaña al commit de integración ni se renuevan claves.
+
+Se preserva íntegra la especificación de A en develop (la rama B la recortaba) y
+se renumera el ADR propuesto del modelo a ADR-0023, pues ADR-0022 ya corresponde
+al dashboard. El ADR conserva la historia CoreWeave y distingue la N5 final
+DeepInfra. OpenSpec semántico actualizado al cierre real de las pruebas locales.
+
+La primera regresión amplia usó Python3.14/tokenizers0.23.1, incompatible con el
+pin0.22.1 del contrato; sus logs/JUnit se conservan. Se prepara entorno aislado
+con el pin correcto, sin cambiar Python global ni aplicación. Se actualizan sólo
+tres pruebas heredadas: sección documental cerrada, constantes equivalentes en
+el esquema transmitido y definición Recommendation ausente cuando inalcanzable.
+Se conserva rechazo de respuestas libres/identidades falsas y autoridad financiera.
+Focal de esquema/stream:59PASS; carga de bundle/moneda:4PASS; gobernanza/CI/topología:
+108PASS; reglas completas de ambos cores:7PASS; herramientas chat/evaluación:170PASS.
+Regresión amplia con el pin correcto en curso. OpenSpec estricto, trazabilidad,
+corpus e higiene conformes. No inferencias nuevas, servicios activados ni Discord.
+
+Evidencia adicional externa en
+`../materiales/07-evidencias/JUP-123-collector/B-integration-20261017/`:
+`verify-candidate.py/.json`, `run-regressions.py`, logs/JUnit y lectura fresca de
+Trello. Roles conservados según tarjeta: Alejandro/Paris/Víctor/Lucía.
+Colector #131 y PR documental #138 conservan sus dictámenes propios; no se
+trasladan a B. #138 sigue pendiente de Víctor al recibir el traspaso.
+Faltan concluir los checks, publicar la PR de B, pedir sus reviews oficiales y
+registrar el enlace en Trello. Sin merge ni activación permanente automática.
+
 ### Resultado final de las pruebas B — 17/10/2026
 
 La nueva N5 del producto `f3ec760d3c483e8798df2be32ea90bb901ebe36d` terminó: **140 respuestas

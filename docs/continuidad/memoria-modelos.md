@@ -62,7 +62,7 @@ lista, fechas y estado. JUP-123 conserva evidencias del producto. No Done.
 ## Entregables y comprobación
 
 - [Registro técnico](../evidence/JUP-063-model-selection.md) con fuentes y límites.
-- [ADR-0022](../adr/ADR-0022-chat-model-selection.md), Proposed: no cambia el
+- [ADR-0023](../adr/ADR-0023-chat-model-selection.md), Proposed: no cambia el
   gateway compartido ni sustituye ADR-0002 aceptado; V4 Pro no es V4.1 Flash.
 - Fuera de Git: `../materiales/07-evidencias/PR121-local-evaluation/tfm-model-analysis-20261016-v1.{md,json}`.
 - Propuesta nueva e/g/h: `../materiales/06-entregables/JUP-063-modelos/propuesta-modelos-2026-10-16.md`.

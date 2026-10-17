@@ -142,7 +142,11 @@ def test_gateway_review_and_stream_use_closed_terminal_without_weakening_equatio
     assert len(searches)==1 and len(requests)==2
     assert all('tools' not in request and request['num_retries']==0 for request in requests)
     schema=requests[-1]['response_format']['json_schema']['schema']
-    assert schema['properties']['answer']=={'const':response(q)['answer']}
+    from jsonschema import Draft202012Validator
+    answer_validator=Draft202012Validator(schema['properties']['answer'])
+    assert answer_validator.is_valid(response(q)['answer'])
+    assert not answer_validator.is_valid({'savings_realization':'another-scenario'})
+    assert not answer_validator.is_valid([{'inference':'80 / 200 × 100 = 40'}])
     if invalid:
         assert records[-1]['type']=='error' and records[-1]['category']=='invalid_response'
         assert not any(r['type']=='candidate' for r in records)

@@ -1,6 +1,6 @@
 JUP: JUP-123
 
-Decisión de modelo documentada en [ADR-0022](../../../docs/adr/ADR-0022-chat-model-selection.md)
+Decisión de modelo documentada en [ADR-0023](../../../docs/adr/ADR-0023-chat-model-selection.md)
 (Proposed): DeepSeek V4.1 Flash/CoreWeave FP8 para el candidato local; no sustituye
 ADR-0002 ni activa B. Análisis para memoria trazado a JUP-063/JUP-109.
 

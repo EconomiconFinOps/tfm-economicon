@@ -1,4 +1,4 @@
-# ADR-0022: Selección de modelo para el candidato local del chat B
+# ADR-0023: Selección de modelo para el candidato local del chat B
 
 - Estado: Proposed
 - Fecha: 2026-10-16
@@ -9,6 +9,18 @@
 - Antecedente aceptado: [ADR-0002](ADR-0002-litellm-openrouter.md), que no se sustituye.
 
 ## Contexto
+
+Actualización 17/10/2026: la N5 final de B (`f3ec760d`,140 respuestas conformes,
+825 comprobaciones PASS) usa DeepSeek V4.1 Flash/**DeepInfra FP8**, temperatura0,
+razonamiento desactivado, ZDR sin fallback y banco1.0.1/corpus54. Esta es la
+configuración medida del candidato entregado; no acredita disponibilidad futura
+ni cambia el gateway compartido. Las referencias a CoreWeave de los apartados
+siguientes describen la selección y campañas anteriores, no la ruta de la N5 final.
+Se conserva Proposed hasta la revisión del equipo. El registro se renumera de
+ADR-0022 a ADR-0023 al integrar, porque develop ya utiliza ADR-0022 para Grafana.
+Evidencia actual: [resultado y límites](../validation/JUP-123-local-review.md).
+
+### Contexto y propuesta anteriores — 16/10/2026
 
 La comparación común de 84 pares favoreció GLM 5.2/DeepInfra FP4 en conformidad local
 (82 frente 77 de DeepSeek, con 6 fallos y 1 duda), aunque GLM tuvo una regresión obligatoria.

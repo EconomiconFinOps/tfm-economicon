@@ -24,8 +24,25 @@ Dependencia: JUP-122, PR https://github.com/EconomiconFinOps/tfm-economicon/pull
 
 ## Impact
 
-Backend, processor y evaluación. B sigue local, chat desactivado por defecto;
-ninguna publicación, merge o activación permanente autorizada por la medición.
+Backend, processor y evaluación. Chat desactivado por defecto. La medición por
+sí sola no autoriza publicación, merge o activación permanente. El 17/10 el
+usuario trasladó expresamente el candidato validado a este chat para continuar
+su integración; se prepara una PR separada de #131 y #138 bajo el flujo ordinario.
+
+## Resultado local vigente — 17/10/2026
+
+Producto `f3ec760d3c483e8798df2be32ea90bb901ebe36d`, HEAD documental `800775ef`.
+Nueva N5:140 completed/conformes,825 comprobaciones PASS, C1/C3 conformes y
+C2 asistido por revisor y validador separados conforme a autorización humana.
+DeepSeek V4.1 Flash/DeepInfra FP8, banco1.0.1/corpus54, temperatura0 y razonamiento
+desactivado, ZDR sin fallback. Comparación de139 pares semánticos sin regresiones;
+fallos y reservas históricos intactos. No aceptación humana oficial ni causalidad.
+
+La reconciliación de integración con develop `1de41b90` requiere verificar la
+identidad del producto medido y los controles afectados; no hereda automáticamente
+la validación de f3ec760d. No se reabre la campaña ni se cambia el gateway compartido.
+
+## Histórico anterior a la campaña final
 
 Candidato actual **d965e2cd9c0de3cd4b7efaf224841c93a94cd8c8**, sobre integración
 53b43/A, tras corregir012 y los defectos de premisas/reglas descubiertos por la
