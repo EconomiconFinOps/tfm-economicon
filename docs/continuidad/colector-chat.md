@@ -24,11 +24,17 @@ Script y recibo fuera de Git, en `materiales/07-evidencias/JUP-123-collector/`
 del directorio de trabajo padre: `verify-run-info-guide-20261017.py` y `.json`.
 Sólo documentación; no se modifican adaptadores, validadores ni checks.
 
-La publicación de la PR documental, las solicitudes a Víctor/Lucía y la nota de
-seguimiento en ambas tarjetas se verifican al publicar. La revisión y validación
-de esta nueva PR deben existir antes de integrar, según AGENTS/CONTRIBUTING;
-las aprobaciones de #131 no se trasladan a otra PR. Archivo del chat condicionado
-a completar ese seguimiento, sin cerrar las campañas de B/JUP-071.
+Publicada [PR #138](https://github.com/EconomiconFinOps/tfm-economicon/pull/138),
+con la corrección en `b0d705a1`. Ambas tarjetas actualizadas por el puente de
+DockerServer: comentarios `6ad35ad6fab437de8e2fcd81` (JUP-123) y
+`6ad35ad61d3b13f2419a4b3c` (JUP-071), recibo externo
+`pr138-board-followup-20261017.json`; listas y descripciones preservadas.
+Se solicita Revision JUP-123 a Víctor y Validacion JUP-123 a Lucía en GitHub
+después del último push documental. La revisión y validación de esta nueva PR
+deben existir antes de integrar, según AGENTS/CONTRIBUTING; las aprobaciones de
+#131 no se trasladan a otra PR. Pendientes CI, ambos dictámenes e integración.
+El chat sigue abierto hasta completar ese seguimiento, sin cerrar las campañas
+de B/JUP-071.
 
 ## Integración y actualización de tablero — corte anterior del 17/10/2026
 
