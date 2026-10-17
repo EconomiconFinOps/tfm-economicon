@@ -83,6 +83,30 @@ class RuntimeTests(unittest.TestCase):
         self.assertTrue(secrets["DATABASE_URL"].startswith("cockroachdb+psycopg://"))
         self.assertTrue(secrets["VECTOR_DATABASE_URL"].startswith("postgresql+psycopg://"))
 
+    def test_evaluation_password_is_added_once_and_preserves_configured_values(self):
+        name = "GRAFANA_EVALUATION_DB_PASSWORD"
+        path = self.root / "secrets.json"
+        initial = json.loads(path.read_text())
+        self.assertTrue(name in initial)
+        self.assertIsInstance(initial[name], str)
+        self.assertGreaterEqual(len(initial[name]), 32)
+
+        legacy = {key: value for key, value in initial.items() if key != name}
+        deploy.atomic_json(path, legacy)
+        upgraded = deploy.document_secrets(self.root)
+        self.assertTrue(all(upgraded[key] == value for key, value in legacy.items()))
+        self.assertGreaterEqual(len(upgraded[name]), 32)
+        after_upgrade = path.read_bytes()
+        deploy.document_secrets(self.root)
+        self.assertTrue(path.read_bytes() == after_upgrade)
+
+        configured = dict(upgraded, **{name: "synthetic-existing-evaluation-password"})
+        deploy.atomic_json(path, configured)
+        before = path.read_bytes()
+        for _ in range(2):
+            self.assertTrue(deploy.document_secrets(self.root) == configured)
+            self.assertTrue(path.read_bytes() == before)
+
     def test_invalid_port_base_rejected_before_creating_files(self):
         for port in (0, 1023, 65425, 65535):
             with self.assertRaises(ValueError):
@@ -328,13 +352,13 @@ class ComposeIntegrationTests(unittest.TestCase):
                     if legacy:
                         values = json.loads((root / "secrets.json").read_text())
                         for key in tuple(values):
-                            if key.startswith(("MINIO_", "DOCUMENT_")):
+                            if key.startswith(("MINIO_", "DOCUMENT_")) or key == "GRAFANA_EVALUATION_DB_PASSWORD":
                                 del values[key]
                         deploy.atomic_json(root / "secrets.json", values)
                     # Environment must not hide missing generated values or override the slot.
                     clean = {key: value for key, value in os.environ.items()
                              if not key.startswith(("MINIO_", "DOCUMENT_", "COMPOSE_"))
-                             and key not in deploy.PORTS and key not in {"CHAT_HMAC_FILE", "CORS_ALLOWED_ORIGINS"}}
+                             and key not in deploy.PORTS and key not in {"CHAT_HMAC_FILE", "CORS_ALLOWED_ORIGINS", "GRAFANA_EVALUATION_DB_PASSWORD"}}
                     ports = []
                     with patch.dict(os.environ, clean, clear=True):
                         for sha, slot in (("a" * 40, 0), ("b" * 40, 1)):
@@ -345,6 +369,12 @@ class ComposeIntegrationTests(unittest.TestCase):
                                 self.assertEqual(str(services['backend']['environment'][flag]).lower(), 'false')
                             self.assertEqual(services['backend']['environment']['EMBEDDING_MAPPING_SHA256'], '')
                             self.assertEqual(services['processor']['environment']['EMBEDDING_MAPPING_SHA256'], '')
+                            stored = json.loads((root / "secrets.json").read_text())
+                            self.assertTrue(services["grafana"]["environment"]["GRAFANA_EVALUATION_DB_PASSWORD"]
+                                            == stored["GRAFANA_EVALUATION_DB_PASSWORD"])
+                            secret_bytes = (root / "secrets.json").read_bytes()
+                            self.assertEqual(deploy.prepare(root, source, sha, slot), release)
+                            self.assertTrue((root / "secrets.json").read_bytes() == secret_bytes)
                             port = str(19252 + slot * 100 + 11)
                             self.assertEqual(str(services["minio"]["ports"][0]["published"]), port)
                             self.assertEqual(services["backend"]["environment"]["DOCUMENT_S3_PUBLIC_ENDPOINT"],

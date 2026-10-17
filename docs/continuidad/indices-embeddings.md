@@ -1,8 +1,10 @@
 # Índices de embeddings
 
-Actualización documental: 2026-10-17. Implementación experimental en curso sobre
-la base de chunking documental, pendiente de identificador oficial de la entrega
-y formalización. No implica aceptación, activación estable ni publicación.
+Actualización documental: 2026-10-17. Entrega técnica local completada sobre
+la base de chunking documental. JUP-127 formaliza la tercera entrega incremental
+con [tarjeta oficial](https://trello.com/c/AG5fAbl3), [change](../../openspec/changes/archive/2026-10-17-jup-127-contextual-hybrid-retrieval/proposal.md)
+y [evidencia](../evidence/JUP-127-validation.md). Cierre local aprobado por Paris;
+no acredita activación estable, CI remota, participación humana ni publicación.
 
 La [guía técnica](../embedding-indexes.md) describe identidad del espacio, preparación
 contextual limitada, lotes, caché PostgreSQL por tenant/espacio/texto, snapshots
@@ -68,3 +70,46 @@ v3 cierra la continuación numérica repetida, mixta o espaciada y añade dos
 regresiones FTS y cinco variantes de política. No cambia el lector, F1/F2 ni la
 estrategia experimental. Las evidencias previas no afectadas se reutilizan por
 identidad, sin presentarlas como ejecuciones nuevas de cada versión.
+
+
+Paris selecciona D para el cierre de fase 3 el 2026-10-17: chunking estructural
+600/800/60, contexto determinista e híbrido FTS/GIN/RRF k60. Se incorpora una
+[guía de activación y retorno](../rag-d-activation.md), ejemplos de entorno y
+descriptor; conserva OFF general hasta verificar los índices de todos los tenants.
+Base reconciliada con develop `1de41b90` mediante `3dc2268a`; F1/F2/F3 conservadas.
+El delta de calculadora/proyección privada exclusivo de E se conserva fuera del
+producto y queda excluido de RAG. E permanece cancelada. Las cifras de D histórica
+no acreditan este candidato nuevo. Revisión/validación independientes y mensaje
+PR se preparan para Paris antes de publicación; identificador oficial JUP-127
+y rama normativa confirmados por PM. No hay activación compartida ni nueva campaña por estos cambios.
+
+
+JUP-127 queda formalizada con doce criterios, ADR-0024 Proposed y evidencia
+versionada. La preparación CD real detectó la contraseña Grafana ausente; se
+porta el fix mínimo ya autorizado con preservación/idempotencia y aserciones RAG
+intactas. Las tres omisiones iniciales quedan cubiertas:61 pruebas CD en Windows
+con Compose real y2 POSIX en Linux. Las30 del datasource pasan tras retirar su
+conteo global rígido, conservando las comprobaciones semánticas. No se despliega,
+no se modifican secretos compartidos y no hay nuevas llamadas o gasto.
+
+
+Cierre local JUP-127: D-v2 recibió REVIEW_PASS y VALIDATION_PASS de evaluadores
+distintos, originales y límites íntegros en la evidencia. Ambos roles y BM-0
+verificaron 1820 huellas sin diferencias y las MISMAS referencias originales PM;
+PM confirmó retorno independiente a las 13:58:53/57 UTC y prearchivo a las
+14:06:33/38 UTC, sin violaciones. Recursos propios retirados, cero nuevas
+llamadas/gasto y E cancelada. Las cifras históricas no miden calidad nueva.
+
+Paris aprobó el cierre y ordenó archivo, commit y PR (PM, 17/10/2026 15:06:24
+Atlantic/Canary). Este ajuste sólo actualiza tareas/estado/evidencia después de
+los controles originales; no cambia motor, perfil ni pruebas. El PM ejecutará
+archivo/Git/CI/PR y comprobará las rutas resultantes; los mismos evaluadores
+resolverán vigencia por adenda documental. No se declaran todavía realizados
+archivo, publicación, CI remota, pairing o revisiones humanas.
+
+
+Archivo ejecutado por PM mediante OpenSpec 1.8 el 17/10/2026, comunicado a las
+15:10:10 Atlantic/Canary: change trasladado a la ruta archivada enlazada arriba
+y doce requisitos promovidos a `openspec/specs/verified-contextual-retrieval/spec.md`.
+Se corrigen sólo enlaces afectados y este estado documental. No equivale a commit,
+CI remota, publicación, integración de dependencias o participación humana.

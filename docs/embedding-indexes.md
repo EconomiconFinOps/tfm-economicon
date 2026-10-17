@@ -6,6 +6,10 @@ opciones `RAG_VERIFIED_ENABLED`, `RAG_CONTEXTUAL_ENABLED` y `RAG_HYBRID_ENABLED`
 son independientes y están desactivadas por defecto. No se cambia el modelo de
 generación, sus prompts, el banco de preguntas ni la validación financiera.
 
+La receta D y su promoción explícita, con legacy disponible hasta verificar todos
+los tenants, se detallan en [Configuración D](rag-d-activation.md). El perfil no
+cambia los valores de arranque generales ni activa un runtime por sí solo.
+
 ## Identidad y preparación
 
 `EmbeddingSpace` identifica proveedor, modelo resuelto, dimensión 1536, coseno,

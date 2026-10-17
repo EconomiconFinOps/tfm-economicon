@@ -91,12 +91,13 @@ def chat_hmac_file(root):
 
 
 def document_secrets(root):
-    """Upgrade only missing document settings under the deployment root lock."""
+    """Upgrade only missing document/evaluation settings under the deployment root lock."""
     path = root / "secrets.json"
     values = json.loads(path.read_text())
     original = dict(values)
     for name, size in (("MINIO_ROOT_USER", 10), ("MINIO_ROOT_PASSWORD", 24),
-                       ("DOCUMENT_S3_ACCESS_KEY", 10), ("DOCUMENT_S3_SECRET_KEY", 24)):
+                       ("DOCUMENT_S3_ACCESS_KEY", 10), ("DOCUMENT_S3_SECRET_KEY", 24),
+                       ("GRAFANA_EVALUATION_DB_PASSWORD", 24)):
         if name not in values:
             values[name] = secrets.token_hex(size)
         if not isinstance(values[name], str) or not values[name]:

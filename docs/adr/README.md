@@ -54,6 +54,8 @@ benchmarks de ADR-0002 conservan su fecha; no son precios actuales.
 | [0023 · Chunks estructurales reproducibles](ADR-0023-deterministic-document-chunking.md) | 16/10 · Proposed, retrospectivo | Normalizado canónico, límites en tokens y metadata reconstruible; conserva legacy y publicación atómica sin decisiones de corte mediante modelos. | JUP-125; [diseño](../../openspec/changes/archive/2026-10-16-jup-125-deterministic-document-chunking/design.md) y [matriz de quince criterios](../evidence/JUP-125-validation.md). Implementación previa y correcciones evaluadas; ratificación documental y reviews humanas separadas. |
 | [0022 · Resultados de evaluación del asistente en Grafana desde PostgreSQL](ADR-0022-assistant-evaluation-results-in-grafana.md) | 14/10 · Proposed | Guardar los resultados de evaluación en un esquema `evaluation` de `postgres-pgvector` y leerlos con el datasource PostgreSQL de Grafana (rol de solo lectura), con carga reproducible desde los informes y lo no medido como `NULL`; sin Pushgateway, TestData ni plugin Infinity. | JUP-121; [diseño](../../openspec/changes/archive/2026-10-15-jup-121-assistant-evaluation-dashboard/design.md). |
 
+| [0024 · Espacios verificados y recuperación contextual/híbrida](ADR-0024-verified-contextual-retrieval.md) | 17/10 · Proposed | Descriptor/cache aislada, generaciones CAS y receta D con legado recuperable; ratificación humana pendiente. | [JUP-127](https://trello.com/c/AG5fAbl3); evaluación local/publicación separadas. |
+
 ### Decisiones ya explicadas fuera de un ADR
 
 Estas fuentes se reutilizan; no se copian en registros nuevos ni se atribuye a sus
