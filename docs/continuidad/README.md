@@ -5,6 +5,9 @@ y estado operativo; GitHub conserva código y revisiones; OpenSpec conserva
 requisitos y diseño. Este índice enlaza evidencia, no sustituye esas fuentes.
 Leer la [convención](convencion-compartida.md) y sólo los temas pertinentes.
 Las fechas indican la última actualización documental, no una nueva ejecución de pruebas.
+Estado17oct08:33UTC: objetivo bloqueado por upstream429 tras tres turnos reales;
+95recibos/1460filas, V12terminado y0activas. Auditoría38381c87; detalle en evaluación
+local. Sin nuevas inferencias, cierre incompleto; seguimiento sólo ante novedad útil.
 Actualización15/10: colector extraído y adaptado para071 en PR131abierta,
 revisión solicitada a Lucía (`lmatsan`),
 31tests y compatibilidad con su evaluador comprobados; B no se ha publicado.

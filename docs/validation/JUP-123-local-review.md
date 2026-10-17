@@ -4,6 +4,11 @@ Verificado el 17/10/2026. Origen: chat
 `01a1270c-e332-7462-9c90-706d49ade92c`.
 **Código preparado para revisión; B no aceptada, publicada ni activada de forma permanente.**
 
+Objetivo confirmado `blocked` a17oct08:33UTC tras tres turnos de upstream429.
+Auditoría38381c87 y observación remota actual: V12terminado/PIDausente,
+95recibos/1460filas,0activas; no inferencias nuevas ni recuperación verificada.
+Este bloqueo no hereda los tres turnos del antiguo0% de disponibilidad.
+
 ### Corte vigente — 17/10/2026, 08:29 UTC
 
 V12 terminó011r4 por4HTTP429 upstream de CoreWeave, sin Retry-After, pese a900s

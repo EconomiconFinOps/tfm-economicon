@@ -9,6 +9,14 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 17/10/2026
 
+Objetivo confirmado `blocked` a17oct08:33UTC tras tres turnos consecutivos del
+mismo impedimento upstream429, contando el turno original y dos continuaciones.
+No se reutilizó el bloqueo anterior0%/presupuesto. Auditoría
+`B-role-n5-upstream429-blocked-goal-audit-v1.json`/SHA38381c87: relectura real
+deV12terminado/PIDausente/95recibos/1460filas sin cambios y ninguna llamada nueva.
+No queda trabajo independiente que resuelva la medición pendiente. Seguimiento
+conservado sólo para una novedad accionable; no relanzar por tiempo/metadatos.
+
 ### Corte vigente095: persiste HTTP429 upstream — 17/10/2026, 08:29 UTC
 
 V12 terminó011r4 con4errores de transporte HTTP429: CoreWeave vuelve a indicar

@@ -1,5 +1,8 @@
 ## Estado vigente — 17/10/2026
 
+Objetivo bloqueado confirmado08:33UTC por upstream429 tras3turnos consecutivos;
+auditoría38381c87/relectura95recibos1460filas, sin proceso vivo ni inferencias nuevas.
+
 N5 NUEVA140 d965/plan8af94f71/corpus54/DeepSeekCoreWeaveFP8 autorizada. C1/C3
 aceptados, C2dos subagentes.95recogidas:91conformes538PASS,4técnicas008–011r4,
 21noevaluables;45sin dispatch desde012r4. No heredar84a7 ni repetir fallos.
