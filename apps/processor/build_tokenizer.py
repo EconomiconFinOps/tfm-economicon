@@ -24,7 +24,7 @@ def verified(path, digest=SHA256, size=SIZE):
         return checksum.hexdigest() == digest
 
 
-def fetch(path=DEFAULT, *, opener=urllib.request.urlopen, digest=SHA256, size=SIZE):
+def fetch(path=DEFAULT, *, opener=urllib.request.urlopen, digest=SHA256, size=SIZE, url=None):
     path = Path(path)
     if verified(path, digest, size):
         return path
@@ -32,7 +32,7 @@ def fetch(path=DEFAULT, *, opener=urllib.request.urlopen, digest=SHA256, size=SI
     temporary = None
     try:
         deadline = time.monotonic() + 300
-        request = urllib.request.Request(URL, headers={"User-Agent": "economicon-tokenizer-build"})
+        request = urllib.request.Request(url or URL, headers={"User-Agent": "economicon-tokenizer-build"})
         with opener(request, timeout=30) as response:
             with tempfile.NamedTemporaryFile(dir=path.parent, delete=False) as output:
                 temporary = Path(output.name)
@@ -55,5 +55,18 @@ def fetch(path=DEFAULT, *, opener=urllib.request.urlopen, digest=SHA256, size=SI
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, default=DEFAULT)
-    fetch(parser.parse_args().output)
+    parser.add_argument("--embedding-output", type=Path, help="Generated cl100k_base asset, outside the repository")
+    parser.add_argument("--embedding-only", action="store_true", help="Prepare embeddings without changing the GLM artifact")
+    args = parser.parse_args()
+    if not args.embedding_only:
+        fetch(args.output)
+    if args.embedding_output is not None or args.embedding_only:
+        from app.embeddings.tokenizer_resource import (
+            RESOURCE_URL, RESOURCE_SHA256, RESOURCE_BYTES, resource_path, assert_external_resource_path,
+        )
+        target = args.embedding_output if args.embedding_output is not None else resource_path()
+        assert_external_resource_path(target)
+        if target.is_symlink():
+            raise ValueError('Embedding tokenizer destination must not be a symlink')
+        fetch(target, url=RESOURCE_URL, digest=RESOURCE_SHA256, size=RESOURCE_BYTES)
     print("Pinned tokenizer verified")

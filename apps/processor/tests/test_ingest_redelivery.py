@@ -144,16 +144,28 @@ def assert_no_effects(case, before):
     assert persisted_rows(case.database) == before
 
 
-def test_redelivery_after_real_processing_returns_same_result_without_repeating_effects(redelivery):
+@pytest.mark.parametrize("batch", [True, False], ids=["batch", "single-only"])
+def test_redelivery_after_real_processing_returns_same_result_without_repeating_effects(redelivery, batch):
+    if not batch:
+        del redelivery.embeddings.embed_batch
     # Primer procesamiento real: el trabajo pasa a completed y escribe vectores una vez.
     first = redelivery.task.execute(redelivery.job)
     [after_first] = persisted_rows(redelivery.database)
     assert after_first["status"] == "completed"
     assert json.loads(after_first["result"]) == first
     provider_calls = redelivery.provider.invoke.call_count
-    embed_calls = redelivery.embeddings.embed.call_count
     assert (provider_calls, redelivery.vector.store_document.call_count) == (1, 1)
-    assert embed_calls > 1
+    saved = redelivery.vector.store_document.call_args.kwargs
+    assert len(saved["chunks"]) > 1
+    assert saved["embeddings"] == [MockEmbeddingProvider(8).embed(chunk) for chunk in saved["chunks"]]
+    if batch:
+        redelivery.embeddings.embed_batch.assert_called_once_with(saved["chunks"])
+        redelivery.embeddings.embed.assert_not_called()
+    else:
+        assert [call.args for call in redelivery.embeddings.embed.call_args_list] == [
+            (chunk,) for chunk in saved["chunks"]
+        ]
+    embedding_calls = list(redelivery.embeddings.mock_calls)
     before = persisted_rows(redelivery.database)
     redelivery.repository.calls.clear()
 
@@ -165,7 +177,7 @@ def test_redelivery_after_real_processing_returns_same_result_without_repeating_
     assert redelivery.repository.calls == ["fetch_authorized_job"]
     # Sin efectos repetidos: ni proveedor, ni embeddings, ni escritura vectorial.
     assert redelivery.provider.invoke.call_count == provider_calls
-    assert redelivery.embeddings.embed.call_count == embed_calls
+    assert redelivery.embeddings.mock_calls == embedding_calls
     assert redelivery.vector.store_document.call_count == 1
     assert persisted_rows(redelivery.database) == before
 
@@ -178,6 +190,9 @@ def test_repeated_redeliveries_stay_idempotent(redelivery):
     results = [redelivery.task.execute(deepcopy(redelivery.job)) for _ in range(3)]
 
     assert results == [first, first, first]
+    saved = redelivery.vector.store_document.call_args.kwargs
+    redelivery.embeddings.embed_batch.assert_called_once_with(saved["chunks"])
+    redelivery.embeddings.embed.assert_not_called()
     assert redelivery.provider.invoke.call_count == 1
     assert redelivery.vector.store_document.call_count == 1
     assert persisted_rows(redelivery.database) == before

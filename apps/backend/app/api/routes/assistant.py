@@ -267,8 +267,15 @@ def send_message(
     alias = getattr(embedding_provider, "alias", provider_name)
     trace = {"tenant_id": tenant_id, "user_message_id": user_message["id"], "provider": provider_name, "alias": alias}
     started = perf_counter()
+    plan = None
+    from app.services.vector_store import PgVectorQueryStore
     try:
-        query_embedding = embedding_provider.embed(payload.content)
+        if isinstance(vector_store, PgVectorQueryStore):
+            plan = vector_store.resolve_retrieval_plan(tenant_id, enabled=settings.rag_verified_enabled,
+                contextual=settings.rag_contextual_enabled, hybrid=settings.rag_hybrid_enabled)
+            query_embedding = vector_store.embed_query(tenant_id, payload.content, embedding_provider, plan)
+        else:
+            query_embedding = embedding_provider.embed(payload.content)
         if (
             len(query_embedding) != embedding_provider.dimension
             or not all(math.isfinite(value) for value in query_embedding)
@@ -283,6 +290,7 @@ def send_message(
         retrieved_chunks = vector_store.search_chunks(
             tenant_id, query_embedding, top_k=settings.retrieval_top_k,
             max_distance=settings.retrieval_max_distance, provider=embedding_provider.name,
+            **({'plan': plan, 'question': payload.content} if plan is not None else {}),
         )
     except Exception:
         _retrieval_failed("vector_store", trace, started)

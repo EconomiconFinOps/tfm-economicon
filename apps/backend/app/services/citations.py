@@ -74,6 +74,32 @@ class DocumentCitations:
         return self.sections[index] if index >= 0 else None
 
 
+def structured_location(metadata: dict, parent: dict, document: str) -> dict:
+    """Use declared source positions; never guess locations for a new generation."""
+    spans = metadata.get('source_spans', [])
+    pages = {span.get('original', {}).get('page') for span in spans
+             if span.get('original', {}).get('page') is not None}
+    page = next(iter(pages)) if len(pages) == 1 else None
+    if page is not None:
+        # Separators may have no page. Every non-whitespace primary character
+        # must nevertheless have a reliable annotation on that same page.
+        known = sorted(span['normalized_range'] for span in spans if span.get('original', {}).get('page') == page)
+        for primary in metadata.get('primary_spans', []):
+            start,end = primary['normalized_range']
+            cursor = start
+            for left,right in known:
+                if right <= cursor or left >= end:
+                    continue
+                if document[cursor:min(left,end)].strip():
+                    page = None; break
+                cursor = max(cursor,min(right,end))
+            if document[cursor:end].strip():
+                page = None
+    path = metadata.get('section_path')
+    return {'section':' / '.join(path) if path else None, 'page':page,
+            'source_spans':spans, 'position_contract':parent.get('chunking', {}).get('position_contract')}
+
+
 def heading(text: str) -> str | None:
     return DocumentCitations(text).title
 
@@ -92,7 +118,7 @@ def resolve_citations(references: list[str], chunks: list[dict], tenant_id: str)
     citations = []
     for ref in references:
         chunk = records[ref]
-        citations.append(SourceCitation(
+        citation = SourceCitation(
             evidence_id=ref,
             kind="corpus",
             document_id=chunk["document_id"],
@@ -102,5 +128,8 @@ def resolve_citations(references: list[str], chunks: list[dict], tenant_id: str)
             section=chunk.get("section"),
             page=chunk.get("page"),
             excerpt=chunk["content"][:140],
-        ).model_dump())
+            **({'source_spans':chunk['source_spans'], 'position_contract':chunk.get('position_contract')}
+               if 'source_spans' in chunk else {}),
+        ).model_dump(exclude_unset=True)
+        citations.append(citation)
     return citations

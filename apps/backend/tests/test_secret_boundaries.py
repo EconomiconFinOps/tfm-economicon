@@ -60,14 +60,18 @@ def test_rf053_002_active_secrets_in_nested_mapping_keys_are_redacted(monkeypatc
 
 @pytest.fixture
 def resource_mocks():
-    with ExitStack() as stack:
-        yield [stack.enter_context(patch(target)) for target in RESOURCE_TARGETS]
+    return [MagicMock() for _ in RESOURCE_TARGETS]
 
 
 @pytest.fixture
 def main_module(monkeypatch, resource_mocks):
     monkeypatch.delitem(sys.modules, "app.main", raising=False)
-    return importlib.import_module("app.main")
+    module = importlib.import_module("app.main")
+    # Mock constructors where startup uses them; keep service classes intact for
+    # runtime type checks and for consumers injecting their own boundary doubles.
+    for target, constructor in zip(RESOURCE_TARGETS, resource_mocks):
+        monkeypatch.setattr(module, target.rsplit(".", 1)[1], constructor)
+    return module
 
 
 @pytest.fixture(autouse=True)
@@ -92,8 +96,12 @@ def test_import_without_secrets_does_not_load_settings_or_construct_resources(mo
         monkeypatch.delenv(name, raising=False)
     get_settings.cache_clear()
     monkeypatch.delitem(sys.modules, "app.main", raising=False)
-    with patch("app.core.config.get_settings", wraps=get_settings) as loader:
-        module = importlib.import_module("app.main")
+    # Import itself is checked separately, before app.main has bound its names.
+    with ExitStack() as resources:
+        for target, constructor in zip(RESOURCE_TARGETS, resource_mocks):
+            resources.enter_context(patch(target, new=constructor))
+        with patch("app.core.config.get_settings", wraps=get_settings) as loader:
+            module = importlib.import_module("app.main")
     assert module.app is not None
     assert loader.call_count == 0, "Import must not require runtime settings"
     assert all(mock.call_count == 0 for mock in resource_mocks), "Import constructed service resources"

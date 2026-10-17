@@ -44,6 +44,12 @@ def retrieval(monkeypatch):
                 connection.execute(text("INSERT INTO knowledge_documents VALUES (:id, :id, :tenant, :content, NULL, :content, 1, :now, :now)"), params)
                 connection.execute(text("INSERT INTO document_chunks VALUES (:id, :id, 0, :content, 20, :now)"), params)
                 connection.execute(text("INSERT INTO chunk_embeddings VALUES (:id, :id, CAST(:vector AS vector), 8, 'mock', :now)"), params)
+        # Exercise the additive upgrade over already populated legacy rows.
+        metadata_spec = importlib.util.spec_from_file_location('chunking_metadata_schema', path.with_name('003_chunking_metadata.py'))
+        metadata_module = importlib.util.module_from_spec(metadata_spec)
+        metadata_spec.loader.exec_module(metadata_module)
+        with store.engine.begin() as connection:
+            metadata_module.upgrade(connection)
         yield store
     finally:
         if store is not None:
@@ -126,3 +132,75 @@ def test_reingestion_does_not_mix_document_versions_between_queries(retrieval):
     finally:
         event.remove(retrieval.engine, "after_cursor_execute", replace_after_retrieval)
     assert result["title"] == result["source"] == result["content"] == "own-source-content"
+
+
+def test_preexisting_legacy_and_real_structured_chunks_coexist_without_reindexing(retrieval):
+    """Keep pre-003 vectors and recover old/new evidence through the current SQL path."""
+    import json
+    import subprocess
+    import sys
+    def legacy_snapshot():
+        with retrieval.engine.connect() as connection:
+            return [tuple(row) for row in connection.execute(text('''
+                SELECT kd.id,kd.tenant_id,kd.text_content,kd.metadata,dc.id,dc.content,dc.metadata,
+                       ce.embedding::text,ce.provider
+                FROM knowledge_documents kd JOIN document_chunks dc ON dc.document_id=kd.id
+                JOIN chunk_embeddings ce ON ce.chunk_id=dc.id WHERE kd.id IN ('own','foreign')
+                ORDER BY kd.id,dc.chunk_index
+            '''))]
+    before=legacy_snapshot()
+    body='# New evidence\n\nExact new normalized evidence.\n'
+    processor=Path(__file__).resolve().parents[2]/'processor'
+    # Separate deployment namespace; no module stubs, helper files or source mutation.
+    program='''
+import json,sys
+from app.documents.extractors import markdown
+from app.embeddings.structural_chunker import StructuredChunker
+from app.embeddings.normalized import parent_metadata
+body=json.load(sys.stdin)
+value,blocks,metadata,warnings,method=markdown(body.encode('utf-8'))
+document={'schema_version':1,'document_id':'new-structured','tenant_id':'tenant-a',
+          'original_format':'md','text':value,'blocks':blocks,'file_metadata':metadata}
+result=StructuredChunker().chunk_document(document)
+print(json.dumps({'document':document,'result':result,'parent':parent_metadata(document,result['manifest'])}))
+'''
+    execution=subprocess.run([sys.executable,'-B','-c',program],input=json.dumps(body),
+        capture_output=True,text=True,check=True,cwd=processor,
+        env={**os.environ,'PYTHONPATH':str(processor),'PYTHONDONTWRITEBYTECODE':'1'})
+    generated=json.loads(execution.stdout)
+    now=datetime.now(timezone.utc)
+    with retrieval.engine.begin() as connection:
+        connection.execute(text('''INSERT INTO knowledge_documents
+            (id,job_id,tenant_id,source,artifact_uri,text_content,chunk_count,created_at,updated_at,metadata)
+            VALUES ('new-structured','new-structured','tenant-a','new.md',NULL,:body,:count,:now,:now,CAST(:metadata AS jsonb))'''),
+            {'body':body,'count':len(generated['result']['chunks']),'now':now,'metadata':json.dumps(generated['parent'])})
+        for chunk in generated['result']['chunks']:
+            params={'id':chunk['chunk_id'],'index':chunk['chunk_index'],'content':chunk['content'],
+                    'count':len(chunk['content']),'metadata':json.dumps(chunk['metadata']),'now':now}
+            connection.execute(text('''INSERT INTO document_chunks
+                (id,document_id,chunk_index,content,char_count,created_at,metadata)
+                VALUES (:id,'new-structured',:index,:content,:count,:now,CAST(:metadata AS jsonb))'''),params)
+            connection.execute(text('''INSERT INTO chunk_embeddings
+                (id,chunk_id,embedding,dimension,provider,created_at)
+                VALUES (:id,:id,'[0,1,0,0,0,0,0,0]'::vector,8,'mock',:now)'''),params)
+    # The exact query vector is closest to the foreign tenant: filtering must precede retrieval.
+    records=retrieval.search_chunks('tenant-a',[1.0]+[0.0]*7,top_k=10,provider='mock')
+    assert {record['document_id'] for record in records}=={'own','new-structured'}
+    legacy=next(record for record in records if record['document_id']=='own')
+    assert legacy['content']=='own-source-content'
+    new=next(record for record in records if record['document_id']=='new-structured')
+    assert new['content']==generated['result']['chunks'][0]['content']
+    citations=resolve_citations([record['chunk_id'] for record in records],records,'tenant-a')
+    by_document={citation['document_id']:citation for citation in citations}
+    assert by_document['own']['reference']=='document:own/chunk:0'
+    assert by_document['own']['excerpt']=='own-source-content'
+    assert 'source_spans' not in by_document['own']
+    assert by_document['new-structured']['excerpt']==new['content']
+    for span in by_document['new-structured']['source_spans']:
+        assert body[slice(*span['normalized_range'])].strip() in new['content']
+        if span['block_ref'] is not None:
+            block=generated['document']['blocks'][int(span['block_ref'].split('/')[1])]
+            assert body[slice(*span['normalized_range'])].rstrip('\n')==block['text']
+    assert [record['document_id'] for record in retrieval.search_chunks('tenant-b',[1.0]+[0.0]*7,top_k=10)]==['foreign']
+    assert retrieval.search_chunks('no-documents',[1.0]+[0.0]*7,top_k=10)==[]
+    assert legacy_snapshot()==before  # IDs, text, metadata, vectors/provider remain byte-equivalent.

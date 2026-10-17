@@ -55,9 +55,10 @@ def test_dockerfiles_resolve_locks_together_and_validate_bundled_assets(service)
         assert 'COPY apps/processor/app/agents/prompt_resources/jup035/summary /opt/economicon/summary' in dockerfile
     else:
         assert 'COPY build_tokenizer.py /tmp/build_tokenizer.py' in dockerfile
-        assert 'RUN python /tmp/build_tokenizer.py --output /app/app/agents/prompt_resources/jup035/chat/v2/tokenizer.json' in dockerfile
+        assert 'RUN PYTHONPATH=/app python /tmp/build_tokenizer.py --output /app/app/agents/prompt_resources/jup035/chat/v2/tokenizer.json --embedding-output /opt/economicon/tokenizers/cl100k_base.tiktoken' in dockerfile
     assert 'COPY apps/processor/app/agents/prompt_resources/jup035/chat/v2/tokenizer.json' not in dockerfile
-    assert dockerfile.index('RUN python /tmp/build_tokenizer.py') < dockerfile.index('RUN python -c "from app.core.chat_resources')
+    tokenizer_command = 'RUN python /tmp/build_tokenizer.py' if service == 'backend' else 'RUN PYTHONPATH=/app python /tmp/build_tokenizer.py'
+    assert dockerfile.index(tokenizer_command) < dockerfile.index('RUN python -c "from app.core.chat_resources')
 
 
 def test_explicit_mock_chat_is_valid_and_does_not_open_network(monkeypatch):
