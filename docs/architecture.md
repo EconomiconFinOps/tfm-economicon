@@ -474,7 +474,10 @@ Fuentes: [monitorización](../apps/monitoring),
 /health/status exige auth; diagnóstico de proveedor es explícito.
 Salud HTTP de processor no confirma progreso del worker (worker_status puede
 ser unknown). Calidad offline del asistente se documenta por separado en
-[JUP-067](validation/JUP-067-metrics.md) y [JUP-070](validation/JUP-070-evaluation.md).
+[JUP-067](validation/JUP-067-metrics.md) y [JUP-070](validation/JUP-070-evaluation.md);
+sus resultados se ven en un dashboard de Grafana aparte, alimentado desde el esquema
+`evaluation` de PostgreSQL ([guía](validation/evaluation-dashboard.md),
+[ADR-0022](adr/ADR-0022-assistant-evaluation-results-in-grafana.md)).
 
 [CI](../.github/workflows/ci.yml) ejecuta gobernanza/OpenSpec, pruebas y sintaxis
 de tres servicios Python, lint/test/build/typecheck frontend.
