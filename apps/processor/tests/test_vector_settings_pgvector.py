@@ -83,6 +83,7 @@ def backend_query_store(monkeypatch):
     load("app.schemas", "schemas/__init__.py")
     load("app.schemas.assistant", "schemas/assistant.py")
     load("app.services.citations", "services/citations.py")
+    load("app.services.retrieval_policy", "services/retrieval_policy.py")
     return load("jup102_backend_vector_store", "services/vector_store.py").PgVectorQueryStore
 
 
@@ -152,7 +153,7 @@ def test_new_schema_settings_sources_and_real_retrieval(
         before = snapshot(store)
         store.initialize()
         assert snapshot(store) == before
-        assert [version for version, _ in before["ledger"]] == ["001", "002", "003"]
+        assert [version for version, _ in before["ledger"]] == ["001", "002", "003", "004"]
         assert {row[3] for row in before["embeddings"]} == {expected}
         assert len(before["embeddings"]) == 2
         assert any(name == "knowledge_documents_tenant_id_idx" for name, _ in before["indexes"])

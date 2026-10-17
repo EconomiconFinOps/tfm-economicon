@@ -7,6 +7,8 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { parse } from 'yaml';
+
 import { parseDotenv, readComposeContract, runDoctor } from "./local-doctor.mjs";
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
@@ -74,6 +76,20 @@ function assertNoSecrets(text) {
   for (const sentinel of SENTINELS) assert.ok(!text.includes(sentinel), "secret leaked");
   assert.doesNotMatch(text, /SENTINEL/i);
 }
+
+test('verified retrieval checks identity and independent OFF flags before startup', async () => {
+  for (const values of [{ RAG_VERIFIED_ENABLED: 'true' }, { RAG_HYBRID_ENABLED: 'true' },
+    { RAG_CONTEXTUAL_ENABLED: 'true' }, { EMBEDDING_MAPPING_SHA256: 'unknown' }, { RAG_VERIFIED_ENABLED: 'perhaps' }]) {
+    const result = await doctor(dotenv({ ...VALID, ...values }));
+    assert.equal(result.code, 1);
+    assert.match(result.text, /RAG_|EMBEDDING_MAPPING_SHA256/);
+    assertNoSecrets(result.text);
+  }
+  const good = await doctor(dotenv({ ...VALID, RAG_VERIFIED_ENABLED: 'true', RAG_HYBRID_ENABLED: 'true',
+    EMBEDDING_DIMENSION: '1536', EMBEDDING_PROVIDER: 'litellm', EMBEDDING_MAPPING_SHA256: 'a'.repeat(64),
+    EMBEDDING_DEPLOYMENT_ID: 'deployment-1' }));
+  assert.equal(good.code, 0, good.text);
+});
 
 test("parses dotenv lines the way Compose does", () => {
   const vars = parseDotenv([
@@ -625,4 +641,28 @@ test("keeps the backend rule lists and the diagnostic in step", async () => {
     assert.ok(source.includes('username == password == "guest"'), `${service}: guest/guest rule`);
     assert.ok(source.includes('password == "postgres"'), `${service}: default pgvector password rule`);
   }
+});
+
+
+test('deployment binding is wired to both Compose consumers and declared in the example', () => {
+  const compose = parse(composeText);
+  for (const service of ['backend', 'processor']) {
+    assert.equal(compose.services[service].environment.EMBEDDING_DEPLOYMENT_ID, '${EMBEDDING_DEPLOYMENT_ID:-}');
+  }
+  assert.equal(parseDotenv(exampleText).get('EMBEDDING_DEPLOYMENT_ID'), '');
+});
+
+test('deployment binding doctor matches verified Settings and preserves OFF legacy', async () => {
+  const verified = { ...VALID, RAG_VERIFIED_ENABLED: 'true', EMBEDDING_PROVIDER: 'litellm',
+    EMBEDDING_DIMENSION: '1536', EMBEDDING_MAPPING_SHA256: 'a'.repeat(64) };
+  for (const value of ['', 'bad/id', 'x'.repeat(129)]) {
+    const result = await doctor(dotenv({ ...verified, EMBEDDING_DEPLOYMENT_ID: value }));
+    assert.equal(result.code, 1);
+    assert.match(result.text, /EMBEDDING_DEPLOYMENT_ID/);
+    assertNoSecrets(result.text);
+  }
+  const complete = await doctor(dotenv({ ...verified, EMBEDDING_DEPLOYMENT_ID: 'deployment-1' }));
+  assert.equal(complete.code, 0, complete.text);
+  const legacy = await doctor(dotenv({ ...verified, RAG_VERIFIED_ENABLED: 'false', EMBEDDING_MAPPING_SHA256: '' }));
+  assert.equal(legacy.code, 0, legacy.text);
 });

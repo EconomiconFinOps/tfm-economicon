@@ -78,6 +78,7 @@ class PgVectorStore:
         provider_name: str,
         document_metadata: dict | None = None,
         expected_publication=_UNGUARDED,
+        prepared_index=None,
     ) -> dict:
         if len(chunks) != len(embeddings):
             raise ValueError("chunks and embeddings must have the same length")
@@ -108,6 +109,13 @@ class PgVectorStore:
         document_id = job_id
 
         with self.engine.begin() as connection:
+            from app.vector_store.generations import lock_head
+            index_head = lock_head(connection, tenant_id)
+            if index_head['generation_id'] is not None and prepared_index is None:
+                raise StalePublication('An active verified generation requires a prepared index publication')
+            if prepared_index is not None and (index_head['generation_id'] != prepared_index['generation_id']
+                    or index_head['version'] != prepared_index['version']):
+                raise StalePublication('The active verified generation changed during preparation')
             # A placeholder insert serializes simultaneous first publications too.
             inserted = connection.execute(text("""INSERT INTO knowledge_documents
                 (id,job_id,tenant_id,source,text_content,chunk_count,created_at,updated_at)
@@ -215,6 +223,16 @@ class PgVectorStore:
                     },
                 )
 
+            index_generation = None
+            if index_head['generation_id'] is not None:
+                from app.vector_store.generations import GenerationStore, publication_chunks
+                index_generation = GenerationStore(self.engine).publish_prepared(connection, tenant_id, index_head,
+                    {'tenant_id': tenant_id, 'id': document_id, 'source': source, 'content': text_content,
+                     'metadata': metadata, 'publication_id': metadata['publication_id']},
+                    publication_chunks(document_id, chunks), prepared_index)
+            connection.execute(text('UPDATE tenant_rag_head SET catalog_revision=catalog_revision+1 WHERE tenant_id=:tenant'),
+                               {'tenant': tenant_id})
+
         return {
             "document_id": document_id,
             "chunk_count": len(chunks),
@@ -222,7 +240,18 @@ class PgVectorStore:
             "vector_store": self.store_name,
             "provider": provider_name,
             "publication_id": metadata["publication_id"],
+            "index_generation_id": index_generation,
         }
+
+    def prepare_index_publication(self, *, tenant_id, job_id, source, text_content, chunks, document_metadata, provider):
+        from app.embeddings.tokenization import EmbeddingTokenCounter
+        from app.vector_store.generations import GenerationStore
+        # Lazy resource load preserves the legacy/mock path until an index is active.
+        store = GenerationStore(self.engine)
+        if store.active_plan(tenant_id)['generation_id'] is None:
+            return None
+        store.counter = EmbeddingTokenCounter()
+        return store.prepare_publication(tenant_id, job_id, source, text_content, chunks, document_metadata, provider)
 
     def close(self) -> None:
         self.engine.dispose()

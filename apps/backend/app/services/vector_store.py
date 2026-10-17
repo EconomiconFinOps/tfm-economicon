@@ -2,6 +2,10 @@ import asyncio
 import ipaddress
 import math
 import time
+import hashlib
+import json
+import copy
+import re
 
 import structlog
 from sqlalchemy import bindparam, create_engine, text
@@ -45,6 +49,7 @@ class PgVectorQueryStore:
     def search_chunks(
         self, tenant_id: str, query_embedding: list[float], top_k: int = 4, max_distance: float | None = None,
         provider: str | None = None, *, deadline: float | None = None, cancelled=None,
+        plan=None, question=None,
     ) -> list[dict]:
         if isinstance(top_k, bool) or not isinstance(top_k, int) or not 1 <= top_k <= MAX_TOP_K:
             raise ValueError(f"top_k must be an integer between 1 and {MAX_TOP_K}")
@@ -53,6 +58,9 @@ class PgVectorQueryStore:
             or not math.isfinite(max_distance) or not 0 < max_distance <= MAX_COSINE_DISTANCE
         ):
             raise ValueError("max_distance must be greater than 0 and at most 2")
+        if plan is not None:
+            return self._search_generation(tenant_id, query_embedding, top_k, max_distance, provider,
+                                           plan, question, deadline, cancelled)
         vector = "[" + ",".join(f"{value:.6f}" for value in query_embedding) + "]"
         threshold = "WHERE distance <= :max_distance" if max_distance is not None else ""
         provider_filter = "AND ce.provider = :provider" if provider is not None else ""
@@ -141,6 +149,176 @@ class PgVectorQueryStore:
         with self.engine.connect().execution_options(isolation_level="REPEATABLE READ") as connection:
             self._capture_peer(connection)
             return query(connection)
+
+    def _execute_query(self, query, deadline=None, cancelled=None):
+        if deadline is not None:
+            if not isinstance(deadline, (int, float)) or not math.isfinite(deadline) or cancelled is None:
+                raise ValueError('Invalid retrieval deadline.')
+            return self._bounded_query(query, deadline, cancelled)
+        with self.engine.connect().execution_options(isolation_level='REPEATABLE READ') as connection:
+            self._capture_peer(connection)
+            return query(connection)
+
+    def resolve_retrieval_plan(self, tenant_id, *, enabled=False, contextual=False, hybrid=False,
+                               deadline=None, cancelled=None):
+        if not enabled:
+            return None
+        def query(connection):
+            row = connection.execute(text('''SELECT h.generation_id,h.version,g.space_id,g.retrieval_config,s.descriptor
+                FROM tenant_rag_head h JOIN rag_generations g ON g.tenant_id=h.tenant_id AND g.id=h.generation_id
+                JOIN embedding_spaces s ON s.id=g.space_id WHERE h.tenant_id=:tenant AND g.state='ready' '''),
+                {'tenant': tenant_id}).mappings().first()
+            if row is None:
+                raise ValueError('No verified active index; legacy identity is unknown')
+            plan = {**dict(row), 'tenant_id': tenant_id}
+            descriptor = plan['descriptor']
+            fingerprint = hashlib.sha256(json.dumps(descriptor, ensure_ascii=False, sort_keys=True,
+                separators=(',', ':'), allow_nan=False).encode()).hexdigest()
+            fields = {'provider', 'model_id', 'mapping_sha256', 'tokenizer_id', 'preparation', 'dimension', 'distance',
+                      'config_version', 'query_preparation', 'context_tokens', 'max_input_tokens', 'max_input_bytes', 'storage_format'}
+            if (set(descriptor) != fields or fingerprint != plan['space_id'] or type(descriptor.get('dimension')) is not int or descriptor.get('dimension') != 1536
+                    or descriptor.get('distance') != 'cosine' or descriptor.get('query_preparation') != 'plain_query_v1'
+                    or descriptor.get('storage_format') != 'decimal6_v1'
+                    or descriptor.get('preparation') not in {'plain_v1', 'contextual_embedding_v1'}
+                    or descriptor.get('config_version') != 'embedding_config_v1'):
+                raise ValueError('Unsupported index identity')
+            expected_model = {'mock': 'mock/sha256_v1', 'litellm': 'openai/text-embedding-3-small'}.get(descriptor['provider'])
+            tokenizer = 'tiktoken/0.14.0:cl100k_base:223921b76ee99bde995b7ff738513eef100fb51d18c93597a113bcffe865b2a7'
+            if (expected_model is None or descriptor['model_id'] != expected_model or descriptor['tokenizer_id'] != tokenizer
+                    or not isinstance(descriptor['mapping_sha256'], str) or not re.fullmatch(r'[0-9a-f]{64}', descriptor['mapping_sha256'])
+                    or type(descriptor['context_tokens']) is not int or not 0 <= descriptor['context_tokens'] <= 512
+                    or type(descriptor['max_input_tokens']) is not int or not 800 <= descriptor['max_input_tokens'] <= 8192
+                    or type(descriptor['max_input_bytes']) is not int or not 4096 <= descriptor['max_input_bytes'] <= 1048576):
+                raise ValueError('Unsupported embedding space identity')
+            config = plan['retrieval_config']
+            if (config.get('mode') not in {'dense', 'hybrid'} or type(config.get('rrf_k')) is not int or not 1 <= config['rrf_k'] <= 1000
+                    or config.get('candidate_limit') != 20 or config.get('lexical_policy') != 'literal_context_v1'):
+                raise ValueError('Unsupported retrieval recipe')
+            if descriptor['preparation'] == 'contextual_embedding_v1' and not contextual:
+                raise ValueError('Contextual retrieval is disabled')
+            if config['mode'] == 'hybrid' and not hybrid:
+                raise ValueError('Hybrid retrieval is disabled')
+            return plan
+        return self._execute_query(query, deadline, cancelled)
+
+    def embed_query(self, tenant_id, question, provider, plan, *, deadline=None, cancelled=None):
+        if plan is None:
+            return provider.embed(question)
+        descriptor = plan['descriptor']
+        if (plan['tenant_id'] != tenant_id or provider.name != descriptor.get('provider')
+                or provider.dimension != descriptor.get('dimension')
+                or (provider.name == 'litellm' and getattr(provider, 'mapping_sha256', None) != descriptor.get('mapping_sha256'))):
+            raise ValueError('Question provider and index space are incompatible')
+        if (not isinstance(question, str) or not question.strip() or len(question.encode('utf-8')) > 8192):
+            # UTF-8 bytes conservatively bound cl100k tokens, without approximating
+            # an exact token count or adding a second runtime tokenizer dependency.
+            raise ValueError('Question exceeds verified embedding limits')
+        text_hash = hashlib.sha256(question.encode('utf-8')).hexdigest()
+        params = {'tenant': tenant_id, 'space': plan['space_id'], 'hash': text_hash}
+        statement = text('SELECT embedding::text FROM embedding_cache WHERE tenant_id=:tenant AND space_id=:space AND text_hash=:hash')
+        def lookup(connection):
+            cached = connection.execute(statement, params).scalar()
+            if cached is not None:
+                self._verified_vector(json.loads(cached))
+                connection.execute(text('''UPDATE embedding_cache SET last_used_at=clock_timestamp()
+                    WHERE tenant_id=:tenant AND space_id=:space AND text_hash=:hash'''), params)
+                connection.commit()
+            return cached
+        cached = self._execute_query(lookup, deadline, cancelled)
+        if cached is not None:
+            return self._verified_vector(json.loads(cached))
+        verified = copy.copy(provider)
+        verified.expected_model = descriptor['model_id']
+        vector = self._verified_vector(verified.embed(question))
+        def insert(connection):
+            connection.execute(text('''INSERT INTO embedding_cache(tenant_id,space_id,text_hash,embedding,token_count)
+                VALUES(:tenant,:space,:hash,CAST(:vector AS vector),NULL) ON CONFLICT DO NOTHING'''),
+                {**params, 'vector': '[' + ','.join(f'{value:.6f}' for value in vector) + ']'})
+            value = connection.execute(statement, params).scalar_one()
+            connection.commit()
+            return self._verified_vector(json.loads(value))
+        return self._execute_query(insert, deadline, cancelled)
+
+    @staticmethod
+    def _verified_vector(vector):
+        if (not isinstance(vector, list) or len(vector) != 1536
+                or not all(type(value) in {int, float} and math.isfinite(value) for value in vector)
+                or not any(float(f'{value:.6f}') != 0 for value in vector)):
+            raise ValueError('Invalid verified query vector')
+        return [float(f'{value:.6f}') for value in vector]
+
+    def _search_generation(self, tenant, vector, limit, threshold, provider, plan, question, deadline, cancelled):
+        from app.services.retrieval_policy import anchors_match, fuse, lexical_eligible, query_policy
+        self._verified_vector(vector)
+        if plan['tenant_id'] != tenant or provider != plan['descriptor']['provider']:
+            raise ValueError('Retrieval plan scope mismatch')
+        policy = query_policy(question or '')
+        params = {'tenant': tenant, 'generation': plan['generation_id'], 'space': plan['space_id'],
+                  'vector': '[' + ','.join(f'{value:.6f}' for value in vector) + ']',
+                  'question': ' '.join(policy['anchors'] + policy['terms'])}
+        base = '''SELECT c.chunk_id,c.revision_id,c.chunk_index,c.content,c.metadata,m.document_id,r.source,
+            (e.embedding <=> CAST(:vector AS vector)) AS distance
+            FROM rag_generation_members m
+            JOIN rag_document_revisions r ON r.tenant_id=m.tenant_id AND r.id=m.revision_id
+            JOIN rag_revision_chunks c ON c.tenant_id=m.tenant_id AND c.revision_id=m.revision_id
+            JOIN rag_chunk_vectors v ON v.tenant_id=c.tenant_id AND v.revision_id=c.revision_id AND v.chunk_id=c.chunk_id AND v.space_id=:space
+            JOIN embedding_cache e ON e.tenant_id=v.tenant_id AND e.space_id=v.space_id AND e.text_hash=v.text_hash
+            WHERE m.tenant_id=:tenant AND m.generation_id=:generation'''
+        def query(connection):
+            def timeout():
+                if deadline is not None:
+                    remaining = deadline - time.time()
+                    if remaining <= 0 or cancelled.is_set(): raise TimeoutError('Retrieval deadline.')
+                    connection.execute(text("SELECT set_config('statement_timeout',:ms,true),set_config('lock_timeout',:ms,true)"),
+                                       {'ms': str(max(1, int(remaining * 1000)))})
+            timeout()
+            generation = connection.execute(text('SELECT space_id,state FROM rag_generations WHERE tenant_id=:tenant AND id=:generation'), params).mappings().first()
+            if not generation or generation['state'] not in {'ready', 'retired'} or generation['space_id'] != plan['space_id']:
+                raise ValueError('Captured retrieval generation is unavailable')
+            timeout()
+            dense = [dict(row) for row in connection.execute(text('SELECT * FROM (' + base + ') candidates '
+                + ('WHERE distance<=:threshold ' if threshold is not None else '')
+                + 'ORDER BY distance,chunk_id LIMIT 20'), {**params, 'threshold': threshold}).mappings()]
+            mode = plan['retrieval_config']['mode']
+            if mode == 'hybrid':
+                dense = [item for item in dense if anchors_match(item['content'], policy)]
+                timeout()
+                lexical_sql = base.replace('(e.embedding <=> CAST(:vector AS vector)) AS distance',
+                    '(e.embedding <=> CAST(:vector AS vector)) AS distance,ts_rank_cd(c.search_vector,plainto_tsquery(\'pg_catalog.simple\',:question)) AS lexical_score')
+                phrases = ''
+                for index, phrase in enumerate(policy['phrases']):
+                    params['phrase' + str(index)] = phrase
+                    phrases += " AND c.search_vector @@ phraseto_tsquery('pg_catalog.simple',:phrase" + str(index) + ')'
+                lexical = [dict(row) for row in connection.execute(text(lexical_sql
+                    + " AND c.search_vector @@ plainto_tsquery('pg_catalog.simple',:question)" + phrases
+                    + ' ORDER BY lexical_score DESC,c.chunk_id LIMIT 20'), params).mappings()]
+                dense_ids = {(item['revision_id'], item['chunk_id']) for item in dense}
+                lexical = [item for item in lexical if (item['revision_id'], item['chunk_id']) in dense_ids or lexical_eligible(item['content'], policy)]
+                rows = fuse(dense, lexical, limit=limit, k=plan['retrieval_config']['rrf_k'])
+            else:
+                rows = dense[:limit]
+            timeout()
+            parents = {}
+            if rows:
+                parents = {row['id']: row for row in connection.execute(text('''SELECT id,content,metadata FROM rag_document_revisions
+                    WHERE tenant_id=:tenant AND id IN :revisions''').bindparams(bindparam('revisions', expanding=True)),
+                    {'tenant': tenant, 'revisions': sorted({row['revision_id'] for row in rows})}).mappings()}
+            result = []
+            for row in rows:
+                document = parents[row['revision_id']]
+                parent = document['metadata']
+                citation = DocumentCitations(document['content'])
+                location = (structured_location(row['metadata'], parent, document['content']) if row['metadata']
+                            else {'section': citation.section(row['content'])})
+                result.append({'chunk_id': row['chunk_id'], 'document_id': row['document_id'], 'tenant_id': tenant,
+                    'chunk_index': row['chunk_index'], 'title': parent.get('title') or (None if parent.get('chunking') else citation.title) or row['source'].strip(),
+                    'source': row['source'], 'content': row['content'], 'distance': float(row['distance']), **location,
+                    **({'chunk_metadata': row['metadata']} if row['metadata'] else {}),
+                    'retrieval': {'generation_id': plan['generation_id'], 'space_id': plan['space_id'], 'mode': mode,
+                        'rrf_k': plan['retrieval_config']['rrf_k'],
+                        **{key: row[key] for key in ('dense_rank', 'lexical_rank', 'lexical_score', 'rrf_score') if key in row}}})
+            return result
+        return self._execute_query(query, deadline, cancelled)
 
     def _bounded_query(self, query, deadline, cancelled):
         """Request-owned async IO: no shared pool checkout or synchronous read."""

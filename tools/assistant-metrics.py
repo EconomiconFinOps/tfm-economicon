@@ -33,7 +33,7 @@ PROVIDER_FAILURES = (
     "timeout", "connection", "transport", "authentication", "request",
     "redirect", "rate_limit", "upstream", "invalid_response",
 )
-FAILURE_CATEGORIES = PROVIDER_FAILURES + ("schema_validation",)
+FAILURE_CATEGORIES = PROVIDER_FAILURES + ("schema_validation", "operation_failed", "operation_cancelled", "operation_paused")
 FIGURE_ORIGINS = ("context", "evidence", "question", "untraceable")
 CHECK_CLASSES = ("objective", "judged")
 COVERAGE_WITH_SECTIONS = ("direct", "partial")
@@ -45,12 +45,12 @@ ALLOWED = {
     "run": {"commit", "date", "bank", "corpus", "provider", "alias", "retrieval", "generation", "availability"},
     "bank": {"suite_version", "suite_sha256"},
     "corpus": {"sha256", "documents", "chunks"},
-    "retrieval": {"top_k", "max_distance", "chunk_size", "chunk_overlap"},
+    "retrieval": {"top_k", "max_distance", "chunk_size", "chunk_overlap", "mode", "chunking_unit", "preparation", "space_id", "rrf_k"},
     "generation": {"model_alias", "temperature", "top_p", "max_tokens", "seed", "system_prompt_sha256"},
     "availability": {"requests", "server_errors"},
     "case": {"case", "outcome", "checks", "retrieved", "citations", "figures", "latency_ms", "failure_category", "failure_stage", "structured_ok", "evidence_refs"},
     "check": {"id", "class", "result", "decided_by"},
-    "fragment": {"chunk_id", "source", "heading", "distance"},
+    "fragment": {"chunk_id", "source", "heading", "distance", "admission"},
     "figure": {"origin"},
     "refs": {"total", "dangling"},
 }
@@ -245,6 +245,16 @@ def validate_run(run: dict, bank: dict) -> None:
         fail("run.retrieval.max_distance", "a cosine distance never exceeds 2")
     if retrieval["chunk_overlap"] >= retrieval["chunk_size"]:
         fail("run.retrieval.chunk_overlap", "must be smaller than chunk_size")
+    if retrieval.get('mode', 'dense') not in {'dense', 'hybrid'}:
+        fail('run.retrieval.mode', 'dense or hybrid is required')
+    if 'rrf_k' in retrieval and (type(retrieval['rrf_k']) is not int or not 1 <= retrieval['rrf_k'] <= 1000):
+        fail('run.retrieval.rrf_k', 'an integer between 1 and 1000 is required')
+    if retrieval.get('chunking_unit', 'characters') not in {'characters', 'tokens'}:
+        fail('run.retrieval.chunking_unit', 'characters or tokens is required')
+    if retrieval.get('preparation', 'plain_v1') not in {'plain_v1', 'contextual_embedding_v1'}:
+        fail('run.retrieval.preparation', 'a known embedding preparation is required')
+    if 'space_id' in retrieval and retrieval['space_id'] is not None and not re.fullmatch(r'[0-9a-f]{64}', str(retrieval['space_id'])):
+        fail('run.retrieval.space_id', 'verified fingerprint or null for unknown legacy identity')
     if corpus["documents"] > corpus["chunks"]:
         fail("run.corpus.documents", "cannot exceed the chunks")
     generation = require(run, "generation", "run", lambda value: isinstance(value, dict))
@@ -314,7 +324,11 @@ def validate_case(item: dict, index: int, bank_case: dict, run: dict) -> None:
         require(fragment, "source", where, short(100))
         require(fragment, "heading", where, lambda value: isinstance(value, str) and len(value) <= 200 and value.isprintable())
         distance = require(fragment, "distance", where, lambda value: is_number(value) and 0 <= value <= 2)
-        if retrieval["max_distance"] is not None and distance > retrieval["max_distance"]:
+        admission = fragment.get('admission', 'dense')
+        if admission not in {'dense', 'lexical', 'both'} or (retrieval.get('mode', 'dense') == 'dense' and admission != 'dense'):
+            fail(f'{where}.admission', 'admission must match the configured retrieval mode')
+        if (retrieval["max_distance"] is not None and distance > retrieval["max_distance"]
+                and not (retrieval.get('mode') == 'hybrid' and admission == 'lexical')):
             fail(f"{where}.distance", "exceeds the maximum distance of the run")
     if retrieved and run["corpus"]["chunks"] == 0:
         fail(f"{path}.retrieved", "a corpus without fragments retrieves nothing")
@@ -598,6 +612,10 @@ def render_markdown(report: dict, catalogue: dict) -> str:
     definitions = {metric["id"]: metric for metric in catalogue["metrics"]}
     metrics = report["metrics"]
     run = report["run"]
+    retrieval = run['retrieval']
+    distance_label = 'umbral denso' if retrieval.get('mode') == 'hybrid' else 'distancia maxima'
+    chunk_label = ('objetivo de ' + str(retrieval['chunk_size']) + ' tokens' if retrieval.get('chunking_unit') == 'tokens'
+                   else 'fragmentos de ' + str(retrieval['chunk_size']))
     lines = ["# Informe de metricas tecnicas del asistente", ""]
     lines += [
         f"Catalogo {report['catalogue_version']} · generado {md(report.get('generated_at', 'sin fecha'))}",
@@ -605,7 +623,7 @@ def render_markdown(report: dict, catalogue: dict) -> str:
         f"Generacion: {md(json.dumps(run['generation'], sort_keys=True))}",
         f"Huellas: corpus {run['corpus']['sha256']} · bateria {md(run['suite_version'])} {run['suite_sha256']}",
         f"Corpus: {run['corpus']['documents']} documentos y {run['corpus']['chunks']} fragmentos · top_k {run['retrieval']['top_k']}"
-        f" · distancia maxima {'sin umbral' if run['retrieval']['max_distance'] is None else run['retrieval']['max_distance']} · fragmentos de {run['retrieval']['chunk_size']} con solape {run['retrieval']['chunk_overlap']}",
+        f" · {distance_label} {'sin umbral' if run['retrieval']['max_distance'] is None else run['retrieval']['max_distance']} · {chunk_label} con solape {run['retrieval']['chunk_overlap']}",
         "",
     ]
     for note in report["notes"]:

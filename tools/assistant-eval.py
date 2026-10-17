@@ -23,6 +23,7 @@ import time
 import unicodedata
 import urllib.error
 import urllib.request
+from uuid import uuid4
 from collections import namedtuple
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from pathlib import Path
@@ -97,7 +98,16 @@ def label_fragments(fragments: list[dict], document_map: dict, chunk_size: int, 
     for fragment in fragments:
         item = dict(fragment)
         document, _, index = item["chunk_id"].partition(":chunk:")
+        document = item.get('document_id') or document
         path = document_map.get(document)
+        if item.get('chunk_metadata') is not None:
+            # Structured positions are persisted evidence, never a 500/50 reconstruction.
+            if path is not None:
+                item['source'] = keys.get(path, corpus_file(path).stem)
+            section = item['chunk_metadata'].get('section_path')
+            item['heading'] = ' / '.join(section) if section else item.get('heading', '')
+            labelled.append(item)
+            continue
         if path is not None and index.isdigit():
             file = corpus_file(path)
             if path not in cache:
@@ -393,7 +403,7 @@ def score_case(case: dict, raw: dict | None, judgments: dict, rules: dict, *, pr
         return blank_entry(case_id, "not_run"), analysis
     if raw.get("failure_category"):
         entry = blank_entry(case_id, "blocked")
-        entry["failure_category"], entry["failure_stage"] = raw["failure_category"], INFRA_STAGE
+        entry["failure_category"], entry["failure_stage"] = raw["failure_category"], raw.get('failure_stage', INFRA_STAGE)
         analysis["reason"] = f"fallo de infraestructura: {raw['failure_category']}"
         return entry, analysis
     expected = case["expected"]
@@ -428,8 +438,14 @@ def score_case(case: dict, raw: dict | None, judgments: dict, rules: dict, *, pr
             analysis["single_decider"] = True
         judged.append({"id": check_id, "class": "judged", "result": "pass" if results == {"pass"} else "fail", "decided_by": people})
     checks.extend(judged)
-    retrieved = [{"chunk_id": item["chunk_id"], "source": item["source"], "heading": item.get("heading") or "", "distance": item["distance"]}
-                 for item in raw["retrieved"]]
+    retrieved = []
+    for item in raw['retrieved']:
+        fragment = {"chunk_id": item["chunk_id"], "source": item["source"], "heading": item.get("heading") or "", "distance": item["distance"]}
+        ranking = item.get('retrieval', {})
+        if ranking.get('mode') == 'hybrid':
+            fragment['admission'] = ('lexical' if ranking.get('dense_rank') is None else
+                                     'dense' if ranking.get('lexical_rank') is None else 'both')
+        retrieved.append(fragment)
     figures = classify_figures(raw["answer"], case, raw["retrieved"])
     untraceable = critical and any(item["origin"] == "untraceable" for item in figures)
     failed = [check["id"] for check in checks if check["result"] == "fail"]
@@ -617,6 +633,116 @@ def collect_cases(base_url: str, email: str, password: str, tenant: str, inputs:
     return {"raw_version": RAW_VERSION, "base_url": base, "tenant": tenant, "cases": cases}
 
 
+def native_request(opener, url, body, headers, timeout):
+    """Read the existing JSON/SSE operation transport; never resubmit a POST."""
+    data = json.dumps(body, allow_nan=False).encode() if body is not None else None
+    req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json', **headers},
+                                 method='POST' if body is not None else 'GET')
+    with opener.open(req, timeout=timeout) as response:
+        raw = response.read(16 * 1024 * 1024 + 1)
+        if len(raw) > 16 * 1024 * 1024: raise ValueError('Native response too large')
+        text = raw.decode('utf-8')
+        if response.headers.get('Content-Type', '').startswith('text/event-stream'):
+            frames = []
+            for block in text.replace('\r\n', '\n').split('\n\n'):
+                lines = [line[5:].lstrip() for line in block.splitlines() if line.startswith('data:')]
+                if lines: frames.append(json.loads('\n'.join(lines)))
+            operations = [frame['operation'] for frame in frames if isinstance(frame.get('operation'), dict)]
+            if not operations: raise ValueError('Missing native operation')
+            return response.status, operations[-1]
+        return response.status, json.loads(text)
+
+
+def collect_native_cases(base_url, email, password, tenant, inputs, *, timeout=650, opener=None,
+                         evidence_reader, budget, account=None, checkpoint=None, sleep=time.sleep):
+    """One conversation/case and one paid operation in flight, with no collector retry.
+
+    evidence_reader reads the separately captured actual retrieval, including
+    tool evidence. /evidence alone contains only the initial frozen context.
+    account must reconcile ALL requests/attempts including query embeddings,
+    and attest operation_finished=True before releasing the reservation.
+    Without that receipt the full reservation remains pending and collection stops.
+    """
+    opener = opener or urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    base = base_url.rstrip('/')
+    if not base.startswith(('http://', 'https://')): raise EvaluationError('Invalid native base URL')
+    cases = inputs.get('cases')
+    if (not isinstance(cases, list) or len({item['id'] for item in cases}) != len(cases)
+            or any(set(item) - {'id', 'prompt', 'screen_context'} for item in cases)):
+        raise EvaluationError('Native inputs require unique cases and prompts without expected answers')
+    _, login = native_request(opener, base + '/auth/login', {'email': email, 'password': password}, {}, timeout)
+    headers = {'Authorization': 'Bearer ' + login['access_token'], 'X-Tenant-Id': tenant}
+    result = {'raw_version': RAW_VERSION, 'transport': 'native-generations-v2', 'base_url': base, 'tenant': tenant, 'cases': []}
+    for item in cases:
+        if not isinstance(item.get('screen_context'), dict): raise EvaluationError('Missing verified synthetic screen fixture')
+        identifier = str(uuid4())
+        entry = {'case': item['id'], 'prompt': item['prompt'], 'status': None, 'failure_category': None,
+                 'failure_stage': None, 'total_ms': None, 'answer': '', 'citations': [], 'retrieved': [],
+                 'requests': 0, 'server_errors': 0, 'request_id': identifier, 'usage': None, 'cost_usd': None}
+        started = time.monotonic()
+        reserved = False
+        try:
+            entry['failure_stage'] = 'generation'
+            entry['requests'] += 1
+            _, conversation = native_request(opener, base + '/assistant/conversations', {'title': 'evaluacion ' + item['id']}, headers, timeout)
+            entry['conversation_id'] = conversation['id']
+            budget.reserve(identifier, Decimal('6.50'), kind='chat')
+            reserved = True
+            entry['requests'] += 1
+            status, operation = native_request(opener, base + '/assistant/conversations/' + conversation['id'] + '/generations',
+                {'request_id': identifier, 'content': item['prompt'], 'screen_context': item['screen_context']}, headers, timeout)
+            entry['status'] = status
+            operation_id = operation['operation_id']
+            endpoint = base + '/assistant/conversations/' + conversation['id'] + '/generations/' + operation_id
+            while operation['state'] not in {'completed', 'failed', 'cancelled', 'paused'}:
+                remaining = timeout - (time.monotonic() - started)
+                if remaining <= 0: raise TimeoutError('Native operation observation deadline')
+                sleep(min(.5, remaining))
+                entry['requests'] += 1
+                _, operation = native_request(opener, endpoint, None, headers, remaining)
+            entry['operation'] = operation
+            if operation['state'] != 'completed':
+                entry['failure_category'] = 'operation_' + operation['state']
+            else:
+                entry['requests'] += 1
+                _, reply = native_request(opener, endpoint + '/result', None, headers, timeout)
+                metadata = reply['metadata']
+                generation = metadata['generation']
+                if generation['operation_id'] != operation_id or not isinstance(reply['content'], str):
+                    raise ValueError('Native result identity mismatch')
+                entry.update(answer=reply['content'], citations=metadata['citations'], generation=generation,
+                    source_citations=metadata['source_citations'], usage=generation.get('usage'),
+                    response=metadata.get('response'), retrieved=evidence_reader(conversation['id'], operation, metadata))
+                corpus_ids = [key for key in generation['context_manifest']['evidence_ids'] if not key.startswith('cost:')]
+                if [record['chunk_id'] for record in entry['retrieved']] != corpus_ids:
+                    raise ValueError('Captured effective retrieval is missing or out of order')
+                if any(not isinstance(record.get('distance'), (int, float)) or isinstance(record['distance'], bool)
+                       or not math.isfinite(record['distance']) or not isinstance(record.get('content'), str) for record in entry['retrieved']):
+                    raise ValueError('Invalid native retrieval capture')
+                entry['failure_stage'] = None
+        except (*TRANSPORT, *MALFORMED) as error:
+            status, category = failure_of(error)
+            if isinstance(error, urllib.error.HTTPError): error.close()
+            entry.update(status=status, failure_category=category)
+            if status is not None and status >= 500: entry['server_errors'] += 1
+        finally:
+            try:
+                if reserved:
+                    receipt = None
+                    try:
+                        receipt = account(identifier, entry) if account is not None else None
+                    finally:
+                        budget.finish(identifier, receipt)
+                    entry['cost_usd'] = receipt.get('cost_usd') if receipt else None
+            finally:
+                entry['total_ms'] = round((time.monotonic() - started) * 1000, 3)
+                result['cases'].append(entry)
+                if checkpoint is not None: checkpoint(result)
+        if entry['failure_category'] or entry['cost_usd'] is None:
+            break  # Do not spend repeatedly on an unresolved external failure/cost.
+    return result
+
+
 def review_sheet(bank: dict, raw: dict) -> str:
     raw_cases = {item["case"]: item for item in raw["cases"]}
     lines = ["# Hoja de revisión (JUP-070)", "",
@@ -689,7 +815,32 @@ def run_collect(args) -> int:
         raise EvaluationError(f"falta la variable de entorno {args.password_env}")
     if not outside_repository(args.output):
         raise EvaluationError(f"{args.output}: el fichero crudo lleva texto y debe quedar fuera del repositorio")
-    raw = collect_cases(args.base_url, args.email, password, args.tenant, read_json(args.inputs), timeout=args.timeout)
+    timeout = args.timeout if args.timeout is not None else (650 if args.transport == 'native' else 60)
+    if args.transport == 'native':
+        if not args.budget_ledger or not args.evidence_directory:
+            raise EvaluationError('Native collection requires an external shared budget ledger and actual retrieval capture directory')
+        if not outside_repository(args.budget_ledger) or not outside_repository(args.evidence_directory):
+            raise EvaluationError('Campaign state and captures must stay outside the repository')
+        from evaluation_budget import BudgetLedger
+        def evidence(conversation, operation, metadata):
+            if not re.fullmatch(r'[0-9a-f-]{36}', conversation): raise ValueError('Invalid conversation identity')
+            path = args.evidence_directory / (conversation + '.json')
+            if path.is_symlink() or path.stat().st_size > 16 * 1024 * 1024: raise ValueError('Unsafe retrieval capture')
+            record = read_json(path)
+            if record['tenant_id'] != args.tenant or record['conversation_id'] != conversation:
+                raise ValueError('Retrieval capture scope mismatch')
+            if record.get('operation_id') is not None and record['operation_id'] != operation['operation_id']:
+                raise ValueError('Retrieval capture operation mismatch')
+            if record.get('attempt_id') is not None and record['attempt_id'] != metadata['generation']['attempt_id']:
+                raise ValueError('Retrieval capture attempt mismatch')
+            records = {item['chunk_id']: item for item in record['retrieved']}
+            ids = metadata['generation']['context_manifest']['evidence_ids']
+            return [records[key] for key in ids if not key.startswith('cost:')]
+        raw = collect_native_cases(args.base_url, args.email, password, args.tenant, read_json(args.inputs),
+            timeout=timeout, evidence_reader=evidence, budget=BudgetLedger(args.budget_ledger),
+            checkpoint=lambda value: write_private(args.output, value))
+    else:
+        raw = collect_cases(args.base_url, args.email, password, args.tenant, read_json(args.inputs), timeout=timeout)
     write_private(args.output, raw)
     blocked = sum(1 for item in raw["cases"] if item["failure_category"])
     print(f"Recogidos {len(raw['cases'])} casos ({blocked} bloqueados por infraestructura).")
@@ -741,7 +892,10 @@ def parser() -> argparse.ArgumentParser:
     collect.add_argument("--tenant", required=True)
     collect.add_argument("--inputs", type=Path, required=True)
     collect.add_argument("--output", type=Path, required=True)
-    collect.add_argument("--timeout", type=float, default=60)
+    collect.add_argument("--timeout", type=float)
+    collect.add_argument('--transport', choices=['legacy', 'native'], default='legacy')
+    collect.add_argument('--budget-ledger', type=Path)
+    collect.add_argument('--evidence-directory', type=Path)
     collect.set_defaults(run=run_collect)
     sheet = commands.add_parser("review-sheet")
     sheet.add_argument("--raw", type=Path, required=True)

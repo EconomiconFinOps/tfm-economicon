@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     embedding_provider: str = "mock"
     embedding_dimension: int = 8
     embedding_model: str = "economicon-embedding"
+    embedding_mapping_sha256: str | None = Field(default=None, pattern=r'^[0-9a-f]{64}$')
+    embedding_deployment_id: str | None = Field(default=None, strict=True, pattern=r'^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$')
     # Character settings remain available for the explicit legacy comparison utility.
     embedding_chunk_target_tokens: int = Field(default=600, ge=8, le=800, strict=True)
     embedding_chunk_max_tokens: int = Field(default=800, ge=8, le=800, strict=True)
@@ -46,6 +48,11 @@ class Settings(BaseSettings):
     azure_cost_api_retry_backoff_seconds: float = 0.25
     azure_cost_api_max_retry_after_seconds: float = 30.0
     azure_cost_api_max_pages: int = 1000
+
+    @field_validator('embedding_mapping_sha256', 'embedding_deployment_id', mode='before')
+    @classmethod
+    def empty_mapping(cls, value):
+        return None if value == '' else value
 
     @field_validator('embedding_chunk_target_tokens', 'embedding_chunk_max_tokens', mode='before')
     @classmethod

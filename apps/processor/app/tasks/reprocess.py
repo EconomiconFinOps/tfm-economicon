@@ -32,7 +32,18 @@ class DocumentReprocessor:
             raise ValueError('Normalized checkpoint identity mismatch')
         result = self.chunker.chunk_document(document)
         # All remote work finishes before the replacement transaction begins.
-        embeddings = [self.embedding_provider.embed(chunk['content']) for chunk in result['chunks']]
+        metadata = parent_metadata(document, result['manifest'])
+        options, prepared = {}, None
+        if hasattr(self.vector_store, 'prepare_index_publication'):
+            prepared = self.vector_store.prepare_index_publication(tenant_id=tenant_id, job_id=document_id,
+                source=stored['source'].strip().lower(), text_content=document['text'], chunks=result['chunks'],
+                document_metadata=metadata, provider=self.embedding_provider)
+            options['prepared_index'] = prepared
+        embeddings = prepared.get('plain_embeddings') if prepared else None
+        if embeddings is None:
+            texts = [chunk['content'] for chunk in result['chunks']]
+            embeddings = (self.embedding_provider.embed_batch(texts) if hasattr(self.embedding_provider, 'embed_batch')
+                          else [self.embedding_provider.embed(value) for value in texts])
         # Recheck the existing authorization after a potentially slow provider call.
         current = self.repository.fetch_authorized_job(document_id, tenant_id=tenant_id, created_by=created_by)
         if current is None or current['status'] != 'completed':
@@ -41,6 +52,6 @@ class DocumentReprocessor:
             job_id=document_id, tenant_id=tenant_id, source=stored['source'].strip().lower(),
             artifact_uri=stored.get('artifact_uri'), text_content=document['text'], chunks=result['chunks'],
             embeddings=embeddings, provider_name=self.embedding_provider.name,
-            document_metadata=parent_metadata(document, result['manifest']), expected_publication=expected)
+            document_metadata=metadata, expected_publication=expected, **options)
         return {**publication, 'chunking_fingerprint':result['manifest']['fingerprint'],
                 'operation':'explicit-reprocess', 'job_status':'completed'}

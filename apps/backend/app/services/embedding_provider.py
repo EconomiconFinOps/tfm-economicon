@@ -3,6 +3,7 @@ import hashlib
 import io
 import json
 import math
+import re
 import socket
 import time
 from functools import partial
@@ -198,6 +199,8 @@ class LiteLLMEmbeddingProvider:
         self.name = "litellm"
         self.dimension = settings.embedding_dimension
         self.alias = settings.embedding_model
+        self.mapping_sha256 = getattr(settings, 'embedding_mapping_sha256', None)
+        self.deployment_id = getattr(settings, 'embedding_deployment_id', None)
         base = settings.litellm_base_url.rstrip("/")
         self._url = (base if base.endswith("/v1") else f"{base}/v1") + "/embeddings"
         self._key = settings.litellm_api_key
@@ -231,6 +234,8 @@ class LiteLLMEmbeddingProvider:
             req._attempt_deadline = _AttemptDeadline(self._timeout)
             with self._transport.open(req, timeout=self._timeout) as response:
                 body = json.loads(_read_body(response, req._attempt_deadline.expires).decode("utf-8"), parse_constant=_reject_constant)
+                gateway = {'model_id': response.headers.get('x-litellm-model-id'),
+                           'model_name': response.headers.get('x-litellm-model-name')}
         except error.HTTPError as exc:
             status = exc.code
             exc.close()
@@ -249,11 +254,25 @@ class LiteLLMEmbeddingProvider:
             return _transport_failure(exc)
         except (ValueError, UnicodeError):
             return "invalid_response", False
-        return self._vector(body), False
+        return self._vector(body, gateway), False
 
-    def _vector(self, body):
+    def _vector(self, body, gateway=None):
         try:
+            expected = getattr(self, 'expected_model', None)
+            if expected is not None:
+                gateway = gateway or {}
+                if (not getattr(self, 'deployment_id', None)
+                        or not re.fullmatch(r'[0-9a-f]{64}', getattr(self, 'mapping_sha256', None) or '')
+                        or gateway.get('model_id') != self.deployment_id
+                        or expected != 'openai/text-embedding-3-small'
+                        or (gateway.get('model_name') is not None
+                            and gateway['model_name'] != 'openrouter/' + expected)
+                        or body.get('model') not in {self.alias, expected, expected.removeprefix('openai/')}):
+                    return 'invalid_response'
             data = body["data"]
+            if expected is not None and (not isinstance(data, list) or len(data) != 1
+                    or type(data[0].get('index')) is not int or data[0]['index'] != 0):
+                return 'invalid_response'
             vector = data[0]["embedding"]
             if (
                 isinstance(data, list) and len(data) == 1
@@ -261,7 +280,7 @@ class LiteLLMEmbeddingProvider:
                 and all(type(value) in {int, float} and math.isfinite(value) for value in vector)
             ):
                 return [float(value) for value in vector]
-        except (KeyError, IndexError, TypeError, OverflowError):
+        except (KeyError, IndexError, TypeError, AttributeError, OverflowError):
             pass
         return "invalid_response"
 
