@@ -1,0 +1,24 @@
+{
+  "jup": "JUP-065",
+  "base_commit": "de0d62e7c0028f35a81c5087f531d19031a90e81",
+  "source_sha256": {
+    "fixtures/azure-cost/EA-Cost-Actual.sample.csv": "7febe8ae833b0e052fa4f8143a85f040b7bfed39937d14362dcbdfffc3cbc3b1",
+    "fixtures/azure-cost/LICENSE.microsoft-finops-toolkit.txt": "7df20dcdf9197e9945c14858d41c60f11b52b93e5b69e2b63416b874d598d322",
+    "fixtures/azure-cost/manifest.json": "c3682b713e08e15d99334c42a206560ebdd149f193e3d4c50c2886a0bb7bbe2b",
+    "docs/validation/JUP-069-questions.json": "0bd8a31792d68ff82c2bb222d42593f139d9596e2d24ad37f77c08d648a9f2e7",
+    "docs/assistant-corpus/manifest.yaml": "871d0481c0eefb345293f6edfb1441bd78f8bc0d54809a15af21b23dd4b1f2eb",
+    "tools/validation-questions.mjs": "93145b613fc0d037d4f10311f9955fd9b1621e3a5d5edc3821aca9de5f4e3f31",
+    "docs/assistant-corpus/business-rules/economicon-mvp-rules.md": "36e05ef2eb6996d6f763512ba5d945a6b0f5c5c1aebeb705e176a185dbcb6ac1",
+    "docs/assistant-corpus/finops/azure-finops-mvp.md": "5b5f9447b4ceaf71e38c4f6e32e11de256b3ffa81cf3db85f6d1d259fa6238d2",
+    "docs/assistant-corpus/product-architecture/economicon-product-context.md": "be2f0c9016b497ead4a201f3f3f2b48e60c7d709117d24fa82b9db4464ff913b",
+    "docs/assistant-corpus/glossary/glossary.md": "b305fadcf700a3c38519c56cc6c24f59143c13d99c464feb2422d5d37735657f"
+  },
+  "selected_cases": [
+    "JUP-069-001",
+    "JUP-069-004",
+    "JUP-069-003",
+    "JUP-069-023",
+    "JUP-069-025"
+  ],
+  "warning": "Preparación offline. No acredita carga, ejecución LLM ni aceptación funcional."
+}
