@@ -5,14 +5,10 @@ y estado operativo; GitHub conserva código y revisiones; OpenSpec conserva
 requisitos y diseño. Este índice enlaza evidencia, no sustituye esas fuentes.
 Leer la [convención](convencion-compartida.md) y sólo los temas pertinentes.
 Las fechas indican la última actualización documental, no una nueva ejecución de pruebas.
-Estado17oct11:35UTC: el humano ordenó terminar sólo las pruebas B; integración
-fuera de alcance. Dos smokes terminados: replay del consumidor real confirma
-footers vacíos rechazados por el arnés, no fallos demostrados de ambos proveedores.
-N5 separada DeepInfra activa, PID99133/start4887333: no relanzar. Plan a12e5d1a/
-política e5f1a2ff, revisión APPROVE y12focales conforme; primeras respuestas API
-completas con coste observado, semántica en revisión, no aceptación ni140éxitos.
-Ledger1464/95recibos históricos intactos; cap30/reservas completas. Misma clave
-processor6/backend0.1, caducidad intacta. Detalle y alcance en evaluación local.
+Estado2026-10-17 12:26 UTC: sólo pruebasB. V2terminó023r2técnica(4EOF/logs500, raíz
+noatribuida),51recibos intactos. V3ACTIVO PID505182/start5164432 sólo89noenviadas
+desde024r2,prefijo1515SHA037bee6e. Corte56:55conformes324PASS+1técnica/6noevaluables;
+C1/C3strict no cumplidos. Handoff15a1477c, cap30/holds/expiryintactos. No integración.
 Actualización15/10: colector extraído y adaptado para071 en PR131abierta,
 revisión solicitada a Lucía (`lmatsan`),
 31tests y compatibilidad con su evaluador comprobados; B no se ha publicado.
@@ -65,7 +61,7 @@ activo para recuperación, sin nuevas inferencias ni repetir preparación ya con
 | --- | --- | --- |
 | [Consultas de coste Azure](../evidence/JUP-036-validation.md) | PR69: reconciliación local de `1cf4087f` con develop `a3f514f7` (#129), sin cambios de producto. Corpus1.1.1 conservado; los dos casos SQL pendientes pasan en Cockroach24.1.11. Revisión/validación independientes del nuevo candidato y CI posterior pendientes. | 2026-10-15 |
 | [Memoria: modelos](memoria-modelos.md) | Comparación histórica GLM/DeepSeek conservada. Búsqueda posterior al429: rutas DeepSeek/DeepInfraFP8 yNebius, candidatos MistralLarge4ZDR/MiniMaxM3Together compatibles por catálogo; sin inferencias/activación ni calidad probada. Informeac41b83c; JUP063/109existentes. | 2026-10-17 |
-| [Evaluación local del chat](chat-evaluacion-local.md) |95recogidas:91conformes538PASS,4técnicas/21noevaluables,45pendientes. V12terminó011HTTP429tras900s;parkingexit0/old6sanos. Ledger1460/cota22.11767032de30USD/reservasíntegras. RAM24GB/disco400GiB/raíz225G55libres. No relanzar por tiempo,C1/C3pendientes,Blocal. | 2026-10-17 |
+| [Evaluación local del chat](chat-evaluacion-local.md) | DeepInfra56recogidas:55conformes324PASS+1técnica/6noevaluables. V3activo desde024r2,prefijo1515SHA037bee6e;cap30/holdsintactos;C1/C3strict pendientes,sóloB. | 2026-10-17 |
 | [Chat conversacional](chat-conversacional.md) | PR121: focal28 3PASS/4FAIL, JSONB7PASS. Corrección29 de soporte literal visible e interpretación separada en regresión offline; aceptación/batería real pendientes. Gasto0.957927619/2USD. | 2026-10-13 |
 | [División del chat en A/B](chat-entregas-a-b.md) | División aprobada; B d9b/9e2 corregida,50/84 muestras con47PASS/3técnicas429, sin publicar ni aceptar. Ver evaluación local. Base A8ea/develop0543 y reviews/CI conservan su fecha histórica, sin nueva consulta. | 2026-10-15 |
 | [Pantallas de maqueta ocultas del MVP](pantallas-ocultas-mvp.md) | JUP-116: Coste Detallado, Corte Global y Recomendaciones ya no tienen ruta ni menú (se conservan en el código y se reactivan con dos líneas) y Overview sale del menú pero conserva su ruta; una dirección desconocida lleva a `/`. 797 pruebas del frontend y 16 comprobaciones en navegador; mergeado en `develop` el 2026-10-12 (#124). | 2026-10-13 |

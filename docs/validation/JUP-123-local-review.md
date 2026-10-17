@@ -4,12 +4,47 @@ Verificado el 17/10/2026. Origen: chat
 `01a1270c-e332-7462-9c90-706d49ade92c`.
 **Código preparado para revisión; B no aceptada, publicada ni activada de forma permanente.**
 
+### Continuación tras fallo técnico — 2026-10-17 12:26 UTC
+
+DeepInfraV2 terminó023r2 tras4intentos sin stream completo: EOF y logs existentes500;
+causa raíz no atribuida.50respuestas conformes/296PASS y6noevaluables del fallo
+conservadas, sin inventar respuesta/RAG. V2 restauró own3/old6/shared,0activas.
+V3ACTIVO PID505182/start5164432, controlador5bc0e333/política57bc0de3, continúa
+sólo89noenviadas desde024r2. Protege1515filas SHA037bee6e/167artefactos/146SQLids;
+51recogidas(50completed+1failed) intactas.12focalesPASS y revisión02dccff3;
+launcher concreto revisadodc0f7bdc, sin nuevas claves/reset/prórroga.
+Corte56:55conformes/324PASS+1técnica/6noevaluables. Otro técnico detiene para
+evaluar. Mismafuente/modelo/ruta/plan/corpus/imágenes; no se relaja C1/C3.
+
+Cuatro máximos0.08077632 retenidos; cota22.560164661/30USD a1521filas, no factura.
+Claves6/.1 hasta17oct15:59:59UTC intactas. Auditores140completed/825PASS previos
+inaplicables. Nuevo auditor TÉCNICO139+1 sólo preparado: C1/C3strict/ReadyFALSE,
+con15gatesfocalesPASS; revisión incremental en curso, sin ejecución.
+Handoff `B-route-api-handoff-v3.json` SHA15a1477c52eb0747f250e3d6d10f9f12c8f5c1a891191c2d22b1b192bfdbc9a5.
+ObservarV3 con `observe-B-route-api-v3.py`/watchreadonlysesión68463; no relanzar.
+Integración/PR131 fuera de alcance; no publicación ni aceptación.
+
+### Histórico — 17oct11:52UTC
+
+Actualización17oct11:52UTC: el humano ordenó terminar sólo las pruebas B,
+excluyendo integración. N5 separada DeepSeek/DeepInfraFP8 del mismo producto d965,
+plan a12e5d1a, activa en V2PID222945/start4979124:16completed,13conformes/75PASS
+revisados. Las95CoreWeave se conservan y no rellenan esta campaña.
+V1 terminó/restauró tras13por ambigüedad del contador, no fallo de generación.
+012/013 mantienen cadauno0.08077632 completos; no se atribuye el exceso a un
+cargo anterior. Retención revisada/14focalesPASS, política63db9f9f protege1477filas
+SHA1177cc4f/49artefactos/108SQLids y sólo permite continuar014–140 con mismos
+contenedores/código/ruta. Revisor APPROVE y10focales de continuaciónPASS;
+conciliación futura estricta, cap30/reservas íntegras. No N5 completa ni aceptación.
+Handoff `B-route-api-handoff-v2.json`/SHA98805de8 en la evidencia externa.
+El corte bloqueado08:33 siguiente es histórico frente a esta nueva instrucción.
+
 Objetivo confirmado `blocked` a17oct08:33UTC tras tres turnos de upstream429.
 Auditoría38381c87 y observación remota actual: V12terminado/PIDausente,
 95recibos/1460filas,0activas; no inferencias nuevas ni recuperación verificada.
 Este bloqueo no hereda los tres turnos del antiguo0% de disponibilidad.
 
-### Corte vigente — 17/10/2026, 08:29 UTC
+### Histórico — 17/10/2026, 08:29 UTC
 
 V12 terminó011r4 por4HTTP429 upstream de CoreWeave, sin Retry-After, pese a900s
 de espera ypreflightPASS. Sin respuesta final/RAG de011 para evaluar.95recogidas:

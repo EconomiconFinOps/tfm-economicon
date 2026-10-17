@@ -9,6 +9,58 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 17/10/2026
 
+### Continuación tras fallo técnico — 2026-10-17 12:26 UTC
+
+DeepInfraV2 terminó023r2 tras4intentos sin stream completo: EOF y logs existentes500;
+causa raíz no atribuida.50respuestas conformes/296PASS y6noevaluables del fallo
+conservadas, sin inventar respuesta/RAG. V2 restauró own3/old6/shared,0activas.
+V3ACTIVO PID505182/start5164432, controlador5bc0e333/política57bc0de3, continúa
+sólo89noenviadas desde024r2. Protege1515filas SHA037bee6e/167artefactos/146SQLids;
+51recogidas(50completed+1failed) intactas.12focalesPASS y revisión02dccff3;
+launcher concreto revisadodc0f7bdc, sin nuevas claves/reset/prórroga.
+Corte56:55conformes/324PASS+1técnica/6noevaluables. Otro técnico detiene para
+evaluar. Mismafuente/modelo/ruta/plan/corpus/imágenes; no se relaja C1/C3.
+
+Cuatro máximos0.08077632 retenidos; cota22.560164661/30USD a1521filas, no factura.
+Claves6/.1 hasta17oct15:59:59UTC intactas. Auditores140completed/825PASS previos
+inaplicables. Nuevo auditor TÉCNICO139+1 sólo preparado: C1/C3strict/ReadyFALSE,
+con15gatesfocalesPASS; revisión incremental en curso, sin ejecución.
+Handoff `B-route-api-handoff-v3.json` SHA15a1477c52eb0747f250e3d6d10f9f12c8f5c1a891191c2d22b1b192bfdbc9a5.
+ObservarV3 con `observe-B-route-api-v3.py`/watchreadonlysesión68463; no relanzar.
+Integración/PR131 fuera de alcance; no publicación ni aceptación.
+
+### Contabilidad conservadora y continuación desde014 — 11:52 UTC
+
+La nueva ruta completó13respuestas:13conformes/75checksPASS (49banco+26calidad),
+sin fallos/dudas de contenido. Dictamen parcial `B-assisted-validation-route-api-partial013-20261017-v1.json`
+SHA9d64dbd9 y notas nuevas4752aa09; no equivalen a N5 completa.
+V1PID99133 terminó por discrepancia contable de013 y restauró own3/old6/shared
+con0operaciones activas. No hubo fallo técnico de generación.012 ya conservaba
+usage incompleta;013 tiene0.0009851128USDreportados frente a0.001203972de delta.
+La diferencia0.0002188592 no se atribuye a012: un cargo tardío es sólo hipótesis.
+
+Retención013 aplicada UNA vez mediante Ledger verificado, revisión APPROVE y
+14contrafactualesPASS:012 y013 conservan CADAUNO0.08077632USD completo. No se
+libera ni reasigna cargo. Proof `B-route-api-counter013-retention-v1.json`;
+1477filas SHA`1177cc4f367d973227d581f1ef4f62690271bb6f8bda6ebfd60084df667c3978`,
+otras1476idénticas.13respuestas/historia SQL intactas, sin inferencias en retención.
+
+V2 ya ACTIVO PID222945/start4979124, controlador51b5d8d/política63db9f9f:
+protege1477filas,49artefactos y108operaciones SQL; copia013preflight congelada,
+scratch actual mutable. Reactiva EXACTAMENTE los mismos contenedores/config/
+imágenes/ruta/producto/plan y continúa desde014, sin repetir13. Step87d4663b y
+conciliación futura ESTRICTA intactos. Revisor952243f1 y validadorca146cb1/10focales
+conformes. Corte16completed:014 y posteriores vuelven a conciliarse, sin quitar
+los dos máximos desconocidos. No140éxitos ni aceptación de B.
+
+Usar `observe-B-route-api-v2.py` y watcherreadonlyv2 (sesiónlocal19761); el
+observadorV1 apunta al segmento terminado y no es el seguimiento vigente.
+Handoff `B-route-api-handoff-v2.json` SHA98805de8. NO RELANZAR V1 oV2 por timeout.
+Estado/terminal/restauración nuevos en `route-api-d965-deepinfra-n5-v1/controller-v2`;
+rootV1/stop013 se conserva. Follow-up actualizado con este handle, silencioso
+sin cambios significativos. Cap30/reservas/mismasclaves6/.1/caducidad intactos;
+integración yPR131 fuera de alcance, sin publicación/merge/permanencia.
+
 ### Continuación autorizada: ruta alternativa, sin integración — 11:35 UTC
 
 El humano ordenó continuar las pruebas autónomamente y, después, «Olvídate de
