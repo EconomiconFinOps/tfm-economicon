@@ -44,6 +44,10 @@ cambio de estrategia explícito y separado de la N5 congelada. Cap30/mismasclave
 4.5/.1hasta17oct18París; no renovar/ampliar/resetear/liberar por inferencia.
 C1/C3sin cumplir; B local, sin publicación/merge/aceptación/activación permanente.
 Ambas cadenas finales anteriores son inaplicables a4fallos y se preservan.
+Handoff vigente `B-role-n5-handoff-v7.json`/SHA7021a5da enlaza auditoría, dictamen,
+paquete y terminal reales. Seguimiento existente actualizado conpromptv8 mediante
+la API de la aplicación: conserva horario/estadoactivo y prohíbe relanzarV12 o
+crearotra campaña por tiempo/catálogo100%. Silencio mientras no haya novedad útil.
 
 ### Histórico: reanudación real y límite del proveedor — 17/10/2026, 08:27 UTC
 
