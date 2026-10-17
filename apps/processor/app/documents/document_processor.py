@@ -143,11 +143,89 @@ class DocumentProcessor:
             connection.execute(text('DELETE FROM document_execution_claims WHERE job_id=:id AND tenant_id=:tenant AND owner=:owner'),
                                {'id': stored['id'], 'tenant': stored['tenant_id'], 'owner': self.owner})
 
+    def is_terminal(self, stored, payload):
+        return 'upload_id' in payload and bool(self.upload(stored, payload['upload_id'])['terminal_failure'])
+
+    def _matching_file(self, job, incoming=None):
+        if not isinstance(job, dict) or not all(isinstance(job.get(key), str) for key in ('id', 'tenant_id', 'created_by')):
+            return None
+        with self.engine.connect() as connection:
+            row = connection.execute(text('''SELECT j.* FROM jobs j
+                JOIN document_uploads u ON u.job_id=j.id AND u.tenant_id=j.tenant_id AND u.user_id=j.created_by
+                WHERE j.id=:id AND j.tenant_id=:tenant AND j.created_by=:user AND u.status='confirmed' '''),
+                {'id': job['id'], 'tenant': job['tenant_id'], 'user': job['created_by']}).mappings().first()
+        if row is None:
+            return None
+        stored = dict(row)
+        try:
+            payload = json_value(stored['payload'])
+            provided = json_value(job.get('payload')) if incoming is None else incoming
+        except (TypeError, ValueError):
+            return None
+        if not isinstance(payload, dict) or not isinstance(provided, dict) or 'upload_id' not in payload:
+            return None
+        payload = {'artifact_uri': None, 'metadata': {}, **payload}
+        provided = {'artifact_uri': None, 'metadata': {}, **provided}
+        if (provided != payload or job.get('job_id', job['id']) != job['id']
+                or any(job.get(key) != stored.get(key) for key in ('source', 'artifact_uri'))):
+            return None
+        # Verify the confirmed object's canonical owner/path before any transition.
+        self.upload(stored, payload['upload_id'])
+        return stored, payload
+
+    def _terminal(self, connection, stored, *, revoked=False):
+        now = datetime.now(timezone.utc)
+        params = {'id': stored['id'], 'tenant': stored['tenant_id'], 'user': stored['created_by'],
+                  'owner': self.owner, 'now': now}
+        fence = '''EXISTS (SELECT 1 FROM document_execution_claims c WHERE c.job_id=:id
+            AND c.tenant_id=:tenant AND c.owner=:owner AND c.expires_at>:now)'''
+        if revoked:
+            # Recheck in the same transaction: restored membership must retry authorization.
+            member = connection.execute(text('SELECT 1 FROM user_tenants WHERE user_id=:user AND tenant_id=:tenant'), params).first()
+            if member is not None:
+                raise RuntimeError('document_authorization_changed')
+            changed = connection.execute(text('''UPDATE jobs SET status='failed',result=:result,updated_at=:now
+                WHERE id=:id AND tenant_id=:tenant AND created_by=:user AND status<>'completed' AND ''' + fence),
+                {**params, 'result': json.dumps({'error': 'document_authorization_rejected'})}).rowcount
+            if changed != 1:
+                raise RuntimeError('document_execution_lease_lost')
+        changed = connection.execute(text('''UPDATE document_uploads SET terminal_failure=true
+            WHERE job_id=:id AND tenant_id=:tenant AND user_id=:user AND status='confirmed'
+              AND EXISTS (SELECT 1 FROM jobs j WHERE j.id=:id AND j.tenant_id=:tenant AND j.status='failed')
+              AND ''' + fence), params).rowcount
+        if changed != 1:
+            raise RuntimeError('document_terminal_transition_rejected')
+        connection.execute(text('DELETE FROM document_content_claims WHERE job_id=:id AND tenant_id=:tenant'), params)
+
+    def reject_unauthorized(self, job, incoming):
+        matched = self._matching_file(job, incoming)
+        if matched is None:
+            return
+        stored, payload = matched
+        if stored['status'] == 'completed' or self.is_terminal(stored, payload):
+            return
+        self.claim(stored, payload)
+        try:
+            with self.engine.begin() as connection:
+                self._terminal(connection, stored, revoked=True)
+        finally:
+            self.release(stored)
+
     def terminal_failure(self, job):
-        with self.engine.begin() as connection:
-            connection.execute(text('''UPDATE document_uploads SET terminal_failure=true
-                WHERE job_id=:id AND tenant_id=:tenant AND user_id=:user AND status='confirmed' '''),
-                {'id': job['id'], 'tenant': job['tenant_id'], 'user': job['created_by']})
+        matched = self._matching_file(job)
+        if matched is None:
+            return
+        stored, payload = matched
+        if stored['status'] != 'failed' or self.is_terminal(stored, payload):
+            return
+        # Task.execute releases its claim before the worker decides whether a
+        # delivery is terminal. Reacquire rather than writing without a fence.
+        self.claim(stored, payload)
+        try:
+            with self.engine.begin() as connection:
+                self._terminal(connection, stored)
+        finally:
+            self.release(stored)
 
     def upload(self, stored, upload_id):
         with self.engine.connect() as connection:

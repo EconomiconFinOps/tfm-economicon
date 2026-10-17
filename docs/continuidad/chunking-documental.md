@@ -149,3 +149,48 @@ el cierre y el archivo; requisitos promovidos y enlaces actualizados en esta ram
 Producto/tests/corpus conservados. Commit/push/CI propia se comprueban después;
 publicación de la PR espera que Paris vea el mensaje. Pairing y reviews humanas
 no se dan por realizados; ADR-0023 continúa Proposed.
+
+
+## Reconciliación de base preparada — 17/10/2026
+
+Se prepara sobre `0d34c06b` el merge de JUP-124 `d4c545e7`, que contiene
+develop `ffdd8ee9` y los arreglos posteriores de ingesta/pairing/CD. Conflictos
+sólo en índices ADR/continuidad, resueltos conservando ambas aportaciones.
+Chunker, metadata, rangos, reconstrucción, atomicidad y citas permanecen iguales;
+el pipeline automático conserva el documento normalizado y añade los controles
+de propiedad/revocación de fase1. El archivo OpenSpec existente no se repite.
+
+Controles propios:128/128 herramientas,2/2CD con Compose real,29/29assistant,
+77/77OpenSpec. Processor:332PASS/6fallos de importación del subproceso/6SKIP SQL;
+visibilidad de dependencias corregida sólo en entorno y seis casos afectados PASS.
+Se preservan ambos recibos; no se afirma otra ejecución completa limpia. Los tests
+reutilizan nueve normalizados de extracción real para chunking/reconstrucción/traza;
+legacy/tenant/citas SQL y el lote de46vectores se reutilizan por identidad, sin OCR
+ni inferencias nuevos. Detalle en la [evidencia](../evidence/JUP-125-validation.md).
+
+Staging/commit y nuevas referencias de integridad corresponden al PM antes de
+evaluación independiente de este candidato. Dictámenes previos, CI del padre,
+aprobación humana, pairing/reviews y publicación permanecen diferenciados.
+
+
+## Incorporación del fix del contrato Grafana — 17/10/2026
+
+Sobre `025a5a48`, el liderazgo inicia la incorporación de fase1 `4cf7782d`,
+que conserva el fix focal del test de CI después de revisión/validación
+independientes y retorno PM. La lógica del test se integra sin conflicto y
+permanece idéntica a la evaluada en fase1. El único conflicto, en el índice de
+continuidad, se resuelve conservando la información de ingesta y chunking.
+No se añade otra reconciliación con develop ni cambia el runtime de fase2.
+
+El archivo afectado se ejecuta **desde este checkout de fase2 con su
+`.env.example` real, sin override externo**:30/30casos correctos y14/14de
+consumidores de package/CI/documentación,44/44en la misma ejecución
+Python3.12/Linux RO/sin red. Los controles negativos previos de fase1 se
+reutilizan con atribución por identidad del test, sin repetirlos por rutina.
+No se presenta como nueva batería1842ni como CI remota favorable.
+
+Candidato local aún pendiente de staging/commit PM y evaluación independiente
+afectada contra referencias PM propias de esta incorporación. El archivo
+OpenSpec previo, chunker/metadata/reconstrucción, modelos/citas y evidencias
+funcionales anteriores permanecen conservados; participación humana y
+publicación se gestionan por separado. Sin servicios o inferencias nuevos.

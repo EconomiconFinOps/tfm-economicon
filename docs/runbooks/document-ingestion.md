@@ -54,6 +54,8 @@ existentes. Deriva el puerto S3, su endpoint público y CORS por ranura para que
 la release actual y el candidato puedan coexistir durante el relevo. En arranque
 manual, `DOCUMENT_S3_PUBLIC_ENDPOINT` debe usar el `MINIO_HOST_PORT` elegido.
 
+El agente CD limita cada build de Compose a 1200 s (`tools/cd/deploy.py`). La primera compilación de MinIO y mc desde fuente tarda entre 8 y 26 minutos según el equipo, así que el primer despliegue de esta versión puede fallar por ese plazo. Antes del primer despliegue, construir `minio` y `minio-init` a mano en el mismo host Docker, desde un clon de esa versión (`docker compose build minio minio-init`), para que el build del agente reutilice las capas en caché.
+
 ## Contrato HTTP y autorización
 
 Todas las rutas requieren Bearer y un único `X-Tenant-Id` que corresponda a una
@@ -74,10 +76,19 @@ el servidor verifica los bytes reales. Cambiar un nombre o Content-Type no
 convierte contenido inválido en un formato admitido. Nunca se registra el texto
 del documento, la firma o las credenciales como evidencia técnica.
 
+El panel calcula ese SHA256 con `crypto.subtle`, que el navegador sólo ofrece en contexto seguro (HTTPS o `localhost`/`127.0.0.1`). Abrir el frontend por `http://<ip>` hace fallar la subida con el mensaje genérico de conexión; usar `localhost`, el túnel a `127.0.0.1` que documenta el CD o HTTPS.
+
 El backend comprueba extensión y contenido. TXT admite UTF-8 estricto, BOM
 opcional y normaliza CRLF; no sustituye errores de codificación. DOCX exige ZIP
 íntegro, XML Word y MIME coherentes, sin macros/cifrado/rutas de escape. Su
-expansión se limita a 80 MB,2000entradas y20 MB por entrada. DOC exige contenedor
+expansión se limita a 80 MB,2000entradas y20 MB por entrada. Sólo se admiten
+miembros ZIP sin compresión o DEFLATE, los métodos de OPC; BZip2 y LZMA se
+rechazan antes de descomprimir. Se verifican los bytes realmente leídos por
+bloques acotados, incluidos tamaños y CRC falseados, sin confiar sólo en las
+cabeceras. Los miembros no usados no se acumulan en memoria. El parser XML
+rechaza DTD independientemente de la codificación, también UTF-16.
+Un 422 de formato muestra el motivo controlado en el panel y exige seleccionar
+otro archivo, en vez de ofrecer un reintento de conexión. DOC exige contenedor
 OLE Word, sin VBA ni paquete cifrado. PDF exige cabecera y final válidos en la
 admisión y un parseo completo posterior. El extractor puede rechazar documentos
 corruptos, cifrados, vacíos o que excedan los límites derivados, aunque su tamaño
@@ -99,12 +110,21 @@ original sea admisible; no declara éxito truncando contenido silenciosamente.
    comprueba de nuevo clave/tamaño/hash. Una reserva SQL excluye otra ejecución
    del mismo archivo. El propietario se comprueba antes de persistir checkpoint
    y antes/después del pipeline; una reserva perdida no puede publicar un nuevo
-   checkpoint ni marcar completed. La persistencia vectorial existente es
+   checkpoint ni marcar completed, running o failed. El descarte terminal
+   también requiere una reserva vigente; si la ejecución ya la liberó, el worker
+   debe adquirir otra antes de modificar el estado. La persistencia vectorial existente es
    idempotente por trabajo. Un proceso muerto se recupera al vencer su reserva.
 5. Se conserva la clasificación de errores/reintentos de la ingesta anterior:
    entradas permanentes se descartan, fallos no clasificados tienen una
    reentrega, fallos al leer/escribir estado se reencolan para no perder trabajo.
    Una interrupción tras checkpoint reutiliza la extracción persistida.
+
+Si un mensaje de archivo coincide íntegramente con el trabajo confirmado pero
+se revocó la membresía, el worker revalida la revocación dentro de la transacción
+y lo marca failed/terminal bajo su reserva. Libera la referencia de deduplicación
+y aplica la retención normal; no procesa el contenido ni deja una cola huérfana.
+Un mensaje manipulado o ajeno no autoriza ninguna transición. Restaurar la
+membresía no reactiva una entrega terminal; una nueva subida crea otro trabajo.
 
 La deduplicación usa tenant+SHA256; otro tenant no comparte trabajo ni objeto.
 Un duplicado devuelve el trabajo existente y un aviso visible, sin reemplazarlo.
@@ -112,6 +132,13 @@ El contrato técnico conserva `force_reprocess=true` para una petición delibera
 de reprocesamiento: crea otro trabajo y sustituye la referencia de dedup futura.
 La interfaz no presenta casilla de reprocesamiento ni fuerza los envíos normales. Un fallo definitivo ofrece un reintento deliberado; un fallo todavía recuperable se muestra como pendiente de reintento y sigue consultándose.
 No hay deduplicación por nombre, ni se confunde hash con ETag multipart.
+La visibilidad del normalizado y la deduplicación son compartidas dentro del
+tenant: un miembro autorizado puede recuperar un documento de otro miembro y
+ver el ID del trabajo duplicado. Las sesiones de subida siguen siendo privadas
+del usuario; otro tenant no puede consultar ninguno de esos recursos. Es el
+modelo de conocimiento compartido actual, no una autorización entre tenants.
+Las referencias heredadas a un fallo terminal no impiden una nueva ingesta del
+mismo contenido: la confirmación las sustituye transaccionalmente.
 
 ## Documento normalizado y persistencia
 
@@ -164,6 +191,10 @@ libseccomp: restringe lectura/escritura al temporal y a recursos de ejecución d
 sólo lectura; deniega sockets de Internet y operaciones de privilegio. Si no
 está disponible falla cerrado como problema de entorno; no cae a ejecución libre.
 
+**Capacidad efectiva con OCR.** `DOCUMENT_EXTRACTION_SECONDS` es el plazo total de la extracción de un documento (y el tope de CPU del subproceso), no un plazo por página. El OCR de una página escaneada llena de texto (unas 45 líneas a 200 DPI) cuesta unos 6 s en un equipo de 8 CPU; un PDF digital de 100 páginas se extrae en unos 35 s. Con los valores por defecto (`DOCUMENT_MAX_PAGES=100`, `DOCUMENT_EXTRACTION_SECONDS=180`) caben unas **28 páginas escaneadas densas**: 5 páginas tardan unos 33 s, 20 unos 124 s y 40 terminan en `document_extraction_limit` a los 185 s. Ese fallo es terminal: el panel muestra «Fallido» y un reintento vuelve a agotar el plazo. El límite de 100 páginas sólo se cumple, por tanto, para PDF digitales o con pocas páginas OCR.
+
+Para dimensionarlo, fijar `DOCUMENT_EXTRACTION_SECONDS` en al menos 6 s × páginas OCR esperadas por documento más un margen de 30 s, medido en el equipo de despliegue con un escaneado representativo. El máximo admitido (600 s) da para unas 95 páginas densas; si se esperan escaneados mayores, reducir `DOCUMENT_MAX_PAGES` para que el extractor rechace el PDF al abrirlo, antes de gastar el plazo en OCR. `DOCUMENT_OCR_PAGE_SECONDS` sólo limita cada página y no amplía el plazo total.
+
 La biblioteca estándar y los paquetes de Python se habilitan en sólo lectura
 mediante sus rutas de instalación `sysconfig` (`stdlib`, `platstdlib`, `purelib`
 y `platlib`). Esto permite el runtime de CI bajo `/opt` y entornos virtuales sin
@@ -205,7 +236,7 @@ como en CI; si se montan fuentes sobre una imagen, no ocultar ese asset generado
 
 ```text
 cd apps/backend
-python -m pytest tests/test_document_uploads.py -q
+python -m pytest tests/test_document_uploads.py tests/test_document_container_limits.py -q
 cd ../processor
 python -m pytest tests/test_document_extraction.py tests/test_document_checkpoint.py -q
 ```
@@ -226,6 +257,13 @@ frontera de20 MB, diferentes usuarios/tenants, expiración, reinicios/redelivery
 fallos de persistencia/borrado y recuperación/citas tras retirar originales.
 Los vectores mock acreditan el recorrido y el aislamiento; no acreditan mejora
 de relevancia o calidad semántica.
+
+Un TXT de 20.000.000 bytes puede producir 44.445 fragmentos con el chunker
+actual. Este arreglo no impone un límite de fragmentos ni altera embeddings;
+hay que considerar ese coste antes de una ingesta real masiva. La fragmentación
+estructural y su presupuesto se coordinan con la etapa siguiente. El formulario
+manual conserva por compatibilidad su texto y la URI como referencia: no es
+una descarga arbitraria desde esa URI.
 
 ## Dependencias y distribución
 

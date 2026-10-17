@@ -211,3 +211,75 @@ Después del traslado se ejecutan las comprobaciones nativas documentales y
 de trazabilidad sobre la disposición archivada, sin fingir una nueva ejecución
 contra el directorio activo desaparecido. ADR-0023 sigue Proposed. Pairing,
 reviews humanas, CI propia, publicación y merge son hitos separados.
+
+
+## Reconciliación con develop mediante la dependencia de fase 1 — 17/10/2026
+
+Preparación local autorizada sobre `0d34c06b1e381e2388bc310e0ba814ad961677e7`
+con `d4c545e7462b4fbd54dfc6e05dc74e20367a9e1b` de JUP-124, que incorpora
+develop `ffdd8ee9895d95e085ef31f18064fd55d56fe4e5`. Se conservan el archivo
+OpenSpec ya existente y ADR-0023 Proposed; no se realiza otro archivo ni se
+atribuye integración en develop. Los hechos oficiales y el feedback proceden
+del paquete fechado del liderazgo: PR134 en borrador, sin comentarios/reviews/hilos
+en el corte; el refresco de la tarjeta falló y no se presenta como lectura nueva.
+
+Sólo hubo conflictos en los índices ADR y continuidad: se unen las filas de
+chunking, ingesta y dashboard. Se conservan los dos ADR-0022 con sus rutas y
+estados originales, sin renumeración. La combinación automática del pipeline
+mantiene `normalized_document` como entrada del grafo y lo retira del resultado,
+junto con los controles de revocación y propiedad de la ejecución de fase 1.
+No cambia el algoritmo de chunking ni sus fixtures, metadata, reconstrucción,
+reprocesado, publicación vectorial o citas. Se incorporan los fixes de pairing
+de fase 1 y la compatibilidad CD de Grafana sin rotación, MinIO y CI combinados.
+
+Comprobaciones propias de este hito, separadas de las campañas históricas:
+
+- Herramientas doctor/smoke/topología/CI: 128/128 PASS, Node24.22.0, yaml2.9.0,
+  candidato y dependencia RO, sin red. El smoke usa adaptadores de prueba;
+  no representa una nueva pila de ingesta.
+- Processor: primera selección 332 PASS, 6 FAIL de subproceso y 6 SKIP SQL
+  optativos. El diagnóstico reprodujo `ModuleNotFoundError: structlog` porque
+  el subproceso sustituye PYTHONPATH y no veía las dependencias externas.
+  Se montaron las mismas dependencias declaradas en site-packages y se añadieron
+  las declaradas del backend necesarias; los seis casos afectados pasan después
+  (6 PASS, 6 variantes SQL no seleccionadas). No se cambia código ni prueba
+  para obtener PASS, ni se presenta una nueva corrida completa de 338.
+- La selección anterior incluye el chunker real sobre nueve normalizados
+  congelados de extracción, reconstrucción sólo desde chunks y negativos,
+  rangos Unicode/subsecciones, límites 600/800/10%, checkpoints y reprocesado.
+  Los 764 avisos iniciales y 38 de la repetición son del adaptador datetime
+  SQLite de Python3.12. No se habilitaron las seis variantes de Cockroach:
+  sus fuentes/contratos SQL no afectados conservan la evidencia real anterior.
+- CD: 2/2 PASS con Compose real, raíces nueva/heredada, ambas ranuras,
+  propagación de contraseña Grafana, preservación/idempotencia y MinIO.
+  Sin up, despliegue o DockerServer.
+- Assistant entrante: 29/29 PASS. OpenSpec estricto: 77/77 PASS.
+  Trazabilidad de los ocho changes activos correcta; higiene correcta.
+  Mientras dos entradas siguen UU para staging PM, el checker cuenta cuatro
+  stages adicionales; el manifiesto final deduplica los archivos.
+- Diff propio frente a d4c545e7 sin avisos. Frente al primer padre conserva
+  dos avisos entrantes de develop (spec de dashboard y test de sus queries),
+  identificados en la evidencia de fase 1; no se reparan por arrastre.
+
+Vigencia de las cuatro comprobaciones expresas: legacy recuperable y coexistencia
+SQL se reutilizan por identidad de stores, migración003, citas y pruebas; no es
+otra consulta SQL real. Los nueve formatos, reconstrucción y traza textual se
+ejercitan de nuevo en los tests existentes sobre sus normalizados congelados,
+sin reextraer ni repetir OCR. Las pruebas históricas SQL de citas/tenant y la
+comparación de 46 vectores mantienen su atribución anterior, sin una nueva
+campaña de calidad ni mejora general inferida.
+
+Python3.12/Linux propio con dependencias declaradas resueltas para este ensayo;
+no se afirma identidad con requirements.lock ni build productivo. Se conserva
+inventario de versiones externo. Tokenizer tiktoken0.14.0/cl100k_base preparado
+con la herramienta existente fuera de Git, 1.681.126 bytes y SHA256
+`223921b76ee99bde995b7ff738513eef100fb51d18c93597a113bcffe865b2a7`;
+runtime sin red. Se conservaron los incidentes de preparación (instalación aún
+copiando archivos, Git ausente en imagen Node y shim Windows inexistente) y sus
+resoluciones de entorno; ninguno se oculta como resultado de producto.
+
+Las resoluciones y documentación esperan staging/commit PM. Después se requieren
+dictámenes nuevos de Revisor y Validador distintos contra referencias PM nuevas,
+sin extender los PASS anteriores. CI propia de 0d34c06b es histórica; la CI del
+futuro commit, aprobación humana, pairing de Víctor y reviews de Lucía/Alejandro
+siguen separados. Sin nuevas inferencias, proveedores, gasto, fase3 o cálculos.

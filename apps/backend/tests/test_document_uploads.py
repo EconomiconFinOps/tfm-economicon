@@ -308,3 +308,55 @@ def test_shared_admission_storage_and_checkpoint_contracts_remain_identical():
         assert (root/'apps/backend/app/services'/name).read_bytes()==(root/'apps/processor/app/documents'/name).read_bytes()
     config=StorageConfig('private','http://internal.invalid','http://browser.invalid','us-east-1','sensitive-access','sensitive-secret')
     assert 'sensitive-access' not in repr(config) and 'sensitive-secret' not in repr(config)
+
+
+def test_terminal_failed_content_claim_does_not_trap_another_users_upload(service):
+    first=begin(service); accepted=service.confirm(first['id'],'alpha','one')
+    with service.engine.begin() as connection:
+        connection.execute(text("UPDATE jobs SET status='failed' WHERE id=:id"),{'id':accepted['job_id']})
+        connection.execute(text('UPDATE document_uploads SET terminal_failure=true WHERE id=:id'),{'id':first['id']})
+    second=begin(service,user='two'); retried=service.confirm(second['id'],'alpha','two')
+    assert not retried['duplicate'] and retried['job_id']!=accepted['job_id']
+    assert retried['job_status']=='queued'
+
+
+def test_cleanup_cannot_finish_while_put_can_recreate_staging(service):
+    row=begin(service);service.confirm(row['id'],'alpha','one')
+    with service.engine.begin() as connection:
+        connection.execute(text("UPDATE jobs SET status='completed'"))
+    service.maintain()
+    assert not service.owned(row['id'],'alpha','one')['cleanup_done']
+    service.storage.objects[row['staging_key']]=b'Recreated before PUT expiry'
+    with service.engine.begin() as connection:
+        connection.execute(text('UPDATE document_uploads SET expires_at=:past'),{'past':utc_timestamp()-timedelta(seconds=1)})
+    service.maintain()
+    assert row['staging_key'] not in service.storage.objects
+    assert service.owned(row['id'],'alpha','one')['cleanup_done']
+
+
+def test_cancel_confirmed_does_not_cancel_job_or_clear_new_active_slot(service):
+    row=begin(service);service.confirm(row['id'],'alpha','one')
+    pending=begin(service)
+    assert service.cancel(row['id'],'alpha','one')['status']=='confirmed'
+    with service.engine.connect() as connection:
+        assert connection.execute(text("SELECT status FROM jobs")).scalar_one()=='queued'
+        assert connection.execute(text("SELECT upload_id FROM document_upload_slots WHERE user_id='one'")).scalar_one()==pending['id']
+
+
+def test_begin_releases_expired_slot_and_status_reports_expiry_without_sweep(service):
+    first=begin(service)
+    with service.engine.begin() as connection:
+        past=utc_timestamp()-timedelta(seconds=1)
+        connection.execute(text('UPDATE document_uploads SET expires_at=:past WHERE id=:id'),{'past':past,'id':first['id']})
+        connection.execute(text("UPDATE document_upload_slots SET expires_at=:past WHERE user_id='one'"),{'past':past})
+    assert service.status(first['id'],'alpha','one')['status']=='expired'
+    assert begin(service)['id']!=first['id']
+
+
+@pytest.mark.parametrize('size,admitted',[(20_000_000,True),(20_000_001,False)])
+def test_service_itself_enforces_exact_size_boundary(service,size,admitted):
+    request=SimpleNamespace(filename='boundary.txt',file_size=size,content_hash='0'*64,force_reprocess=False)
+    if admitted:
+        assert service.begin('alpha','one',request)['max_file_bytes']==20_000_000
+    else:
+        with pytest.raises(UploadError,match='document_size_limit'):service.begin('alpha','one',request)

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SectionCard } from "./SectionCard";
+import { ApiError } from "../services/api";
 
 import type { DocumentTransport, UploadStatus } from "../services/document-contracts";
 export type { DocumentTransport, UploadTicket, UploadStatus } from "../services/document-contracts";
@@ -12,9 +13,33 @@ const labels: Record<string, string> = {
   confirming: "Subido · pendiente de confirmación", publish_pending: "Pendiente de publicación",
   queued: "Encolado", running: "Procesando", completed: "Completado", failed: "Fallido",
   retry_pending: "Pendiente de reintento de procesamiento",
-  expired: "Subida caducada", cancelled: "Subida cancelada"
+  expired: "Subida caducada", cancelled: "Subida cancelada", invalid: "Archivo no válido"
 };
-const terminal = new Set(["completed", "failed", "expired", "cancelled"]);
+const terminal = new Set(["completed", "failed", "expired", "cancelled", "invalid"]);
+
+function permanentFormatError(error: unknown): string | undefined {
+  if (!(error instanceof ApiError) || error.status !== 422) return;
+  const messages: Record<string, string> = {
+    invalid_pdf_document: "El archivo PDF no es válido. Selecciona otro archivo.",
+    invalid_docx_document: "El archivo DOCX no es válido. Selecciona otro archivo.",
+    invalid_doc_document: "El archivo DOC no es válido. Selecciona otro archivo.",
+    invalid_document_encoding: "El texto debe estar codificado en UTF-8. Selecciona un archivo válido.",
+    empty_or_binary_document: "El archivo no contiene texto válido. Selecciona otro archivo.",
+    document_format_mismatch: "El contenido no corresponde al formato del archivo. Selecciona otro archivo.",
+    unsafe_document_xml: "El documento contiene XML no admitido. Selecciona otro archivo.",
+    unsafe_document_container: "El contenedor del documento no es seguro. Selecciona otro archivo.",
+    invalid_document_container: "El contenedor del documento no es válido. Selecciona otro archivo.",
+    document_expansion_limit: "El documento supera los límites de descompresión. Selecciona otro archivo.",
+    active_or_encrypted_document: "El documento contiene macros o está cifrado. Selecciona otro archivo.",
+    unsupported_document_format: "Formato no admitido. Usa MD, TXT, PDF, DOCX o DOC.",
+  };
+  try {
+    const body: unknown = JSON.parse(error.message);
+    if (typeof body === "object" && body !== null && "detail" in body && typeof body.detail === "string") {
+      return Object.hasOwn(messages, body.detail) ? messages[body.detail] : undefined;
+    }
+  } catch { /* Only closed server codes are shown; arbitrary exception text stays hidden. */ }
+}
 
 export function DocumentUploadPanel({ transport }: { transport: DocumentTransport }) {
   const [items, setItems] = useState<Item[]>([]);
@@ -110,12 +135,13 @@ export function DocumentUploadPanel({ transport }: { transport: DocumentTranspor
         const result = await currentTransport.current.confirm(uploadId, signal);
         outstanding.current.delete(uploadId);
         applyStatus(item.id, result);
-      } catch {
+      } catch (failure) {
         if (uploadId) {
           outstanding.current.delete(uploadId);
           void currentTransport.current.cancel(uploadId).catch(() => {});
         }
-        patch(item.id, { state: "failed", error: "No se ha podido completar la subida. Comprueba la conexión o si tienes otra subida activa." });
+        const formatError = permanentFormatError(failure);
+        patch(item.id, { state: formatError ? "invalid" : "failed", error: formatError ?? "No se ha podido completar la subida. Comprueba la conexión o si tienes otra subida activa." });
       }
     }
     active.current = false;

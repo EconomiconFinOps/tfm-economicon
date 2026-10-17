@@ -82,7 +82,7 @@ MinIO usa el último puerto de cada ranura (base + 11): `19263` en A y
 `19363` en B con la base inicial. `init` genera credenciales independientes
 de administrador y de servicio, bucket `document-ingestion` y región `us-east-1`.
 Al preparar una nueva release en una raíz anterior, el agente añade sólo los
-valores documentales ausentes a `secrets.json`, sin rotar ni sobrescribir los
+valores documentales ausentes y `GRAFANA_EVALUATION_DB_PASSWORD` a `secrets.json`, sin rotar ni sobrescribir los
 existentes. No volver a ejecutar `init` sobre esa raíz. Hay que actualizar el
 agente instalado como se indica arriba: el timer no actualiza su propio código.
 Las releases ya preparadas siguen siendo inmutables.
