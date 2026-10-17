@@ -2,8 +2,9 @@
 
 Verificado: 2026-10-17. Origen: encargo de Sala de Control
 `01a1270c-e332-7462-9c90-706d49ade92c`, atendido en
-`01a143ae-b740-7043-aedb-1a8a65b4b585`. Estado: resolución local comprobada;
-publicación y dictámenes del candidato final pendientes de base estable.
+`01a143ae-b740-7043-aedb-1a8a65b4b585`. Estado: resolución comprobada;
+publicación autorizada para desbloquear la revisión de Víctor. CI/SQL y nuevos
+dictámenes del SHA publicado se registrarán en la conversación de PR140.
 
 ## Entradas y alcance
 
@@ -14,11 +15,14 @@ publicación y dictámenes del candidato final pendientes de base estable.
   [PR133](https://github.com/EconomiconFinOps/tfm-economicon/pull/133).
 - Base común: `1de41b907f849082b0676319971775a6560b71b5` (PR131 integrada).
 - Checkout propio: `tfm-economicon-pr140-reconcile`, rama
-  `fix/JUP-123-local-reconcile`. No se modifica la rama publicada de B.
+  `fix/JUP-123-local-reconcile`. Publicación en la rama existente de PR140,
+  `feat/JUP-123-chat-quality-delivery`, mediante avance normal, sin forzar historia.
 
 No se incorpora PR134, PR139 ni el candidato `cd2bab7f` de PR135.
 PR138 es un seguimiento documental independiente; B permanece en PR140.
-No hay push, peticiones de revisión, merge remoto ni campaña de inferencia.
+La primera fase local `f9d376c8` se cerró sin push ni solicitudes de revisión.
+La continuación autoriza publicar esa composición, sin merge a develop ni campaña
+de inferencia. El único cambio posterior a las pruebas focales es esta documentación.
 
 ## Conflictos y resolución
 
@@ -75,17 +79,26 @@ local. Tampoco se trasladan aquí las aprobaciones de PR133 ni la N5 histórica 
 f3ec760d. No se tocan sus 497 evidencias congeladas, ledger, reservas o contadores.
 No se reclama cobertura nueva de pgvector, OCR real, navegador ni calidad con modelo.
 
-Una vez coordinada la base estable tras PR135:
+La espera propuesta tras PR135 queda superada por la petición concreta de Víctor
+de resolver los conflictos para revisar (Discord `1561132947539492875`, 17/10 a
+las 21:44:59 UTC) y la instrucción de coordinación de publicar. No era una
+dependencia técnica ni un orden de merge aceptado. Se verifican de nuevo las
+referencias remotas: PR140 permanece en 09b y develop en 466b; no hay delta nuevo.
 
-1. Comparar esa base con `466b083a`, inventariar sólo el nuevo delta y resolverlo
-   sobre este candidato conservando ambas procedencias. No actualizar por cada push.
-2. Si sigue siendo documental, comprobar enlaces, registros, OpenSpec e higiene;
-   si cambia una dependencia de ejecución, seleccionar su prueba de contrato y las
-   fronteras chat/ingesta afectadas. Los nueve archivos de arriba bastan para la
-   composición comprobada aquí; no acreditan por adelantado un delta futuro.
-3. Publicar una única reconciliación coordinada y ejecutar CI técnica y SQL sobre
-   su SHA final. Solicitar entonces a Víctor revisión y a Lucía revalidación del
-   delta real, con rutas y evidencia. No repetir N5 por cambios documentales.
+1. Publicar la composición ya comprobada tras revisar diff, trazabilidad e higiene.
+   No repetir los nueve archivos focales porque sólo cambia esta documentación;
+   los blobs de producto y pruebas son idénticos a `f9d376c8`.
+2. Ejecutar CI técnica y SQL sobre el SHA publicado y enlazar resultados exactos.
+   El SQL cubre CockroachDB; no pgvector ni calidad de modelo.
+3. Con candidato coherente y checks conformes, conservar la petición oficial a
+   Víctor si sigue abierta y pedir a Lucía revalidar el delta de integración una
+   sola vez. Su APPROVED `5560194926` corresponde a 09b, en mock y sin nueva N5,
+   pgvector ni UI; no se traslada automáticamente al nuevo SHA.
+
+La revisión de integración debe comprobar la conservación de las cinco
+correcciones de 09b, los dos conflictos resueltos y la coexistencia de ingesta/chat
+en configuración, arranque, migraciones, dependencias y cola. No requiere otra N5.
+Un cambio futuro de develop tendrá su propio inventario y selección de pruebas.
 
 La continuidad de B y sus límites de aceptación siguen en
 [evaluación local](chat-evaluacion-local.md); la implementación de PR133 está en

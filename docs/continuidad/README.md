@@ -5,10 +5,10 @@ y estado operativo; GitHub conserva código y revisiones; OpenSpec conserva
 requisitos y diseño. Este índice enlaza evidencia, no sustituye esas fuentes.
 Leer la [convención](convencion-compartida.md) y sólo los temas pertinentes.
 Las fechas indican la última actualización documental, no una nueva ejecución de pruebas.
-B: PR140 publicada en 09b3c8bb, CI/SQL propias conformes. Reconciliación LOCAL
+B: PR140 publicada en 09b3c8bb, CI/SQL propias conformes. Reconciliación
 contra 466b083a en fix/JUP-123-local-reconcile: dos conflictos resueltos,
-67 backend y 92 processor PASS; pendiente de coordinar base estable antes de
-publicar. No hay nuevas reviews ni merge remoto.
+67 backend y 92 processor PASS; publicación autorizada para desbloquear la revisión.
+Checks y nuevos dictámenes del SHA integrado pendientes; sin merge remoto.
 Ver [reconciliación local](pr140-reconciliacion-integracion.md).
 El colector #131 está integrado; el seguimiento documental #138 es independiente.
 
@@ -20,7 +20,7 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 | [Consultas de coste Azure](../evidence/JUP-036-validation.md) | PR69: reconciliación local de `1cf4087f` con develop `a3f514f7` (#129), sin cambios de producto. Corpus1.1.1 conservado; los dos casos SQL pendientes pasan en Cockroach24.1.11. Revisión/validación independientes del nuevo candidato y CI posterior pendientes. | 2026-10-15 |
 | [Memoria: modelos](memoria-modelos.md) | Comparación histórica GLM/DeepSeek conservada. Búsqueda posterior al429: rutas DeepSeek/DeepInfraFP8 yNebius, candidatos MistralLarge4ZDR/MiniMaxM3Together compatibles por catálogo; sin inferencias/activación ni calidad probada. Informeac41b83c; JUP063/109existentes. | 2026-10-17 |
 | [Evaluación local del chat](chat-evaluacion-local.md) | PR140: cinco correcciones publicadas en 09b3c8bb, con CI/SQL propias conformes. Archivo035/123 autorizado; aceptación y nuevos dictámenes pendientes. N5 histórica intacta. | 2026-10-17 |
-| [Reconciliación local de PR140](pr140-reconciliacion-integracion.md) | 09b3c8bb + develop466b083a (PR133), dos conflictos resueltos y 159 pruebas focales PASS; sin publicar, pendiente de base estable coordinada. PR138 independiente. | 2026-10-17 |
+| [Reconciliación de PR140](pr140-reconciliacion-integracion.md) | 09b3c8bb + develop466b083a (PR133), dos conflictos resueltos y 159 pruebas focales PASS; publicación autorizada para revisión de Víctor, CI/SQL y nuevos dictámenes pendientes. PR138 independiente. | 2026-10-17 |
 | [Chat conversacional](chat-conversacional.md) | PR121: focal28 3PASS/4FAIL, JSONB7PASS. Corrección29 de soporte literal visible e interpretación separada en regresión offline; aceptación/batería real pendientes. Gasto0.957927619/2USD. | 2026-10-13 |
 | [División del chat en A/B](chat-entregas-a-b.md) | División aprobada; B d9b/9e2 corregida,50/84 muestras con47PASS/3técnicas429, sin publicar ni aceptar. Ver evaluación local. Base A8ea/develop0543 y reviews/CI conservan su fecha histórica, sin nueva consulta. | 2026-10-15 |
 | [Pantallas de maqueta ocultas del MVP](pantallas-ocultas-mvp.md) | JUP-116: Coste Detallado, Corte Global y Recomendaciones ya no tienen ruta ni menú (se conservan en el código y se reactivan con dos líneas) y Overview sale del menú pero conserva su ruta; una dirección desconocida lleva a `/`. 797 pruebas del frontend y 16 comprobaciones en navegador; mergeado en `develop` el 2026-10-12 (#124). | 2026-10-13 |
