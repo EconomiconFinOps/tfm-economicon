@@ -113,3 +113,14 @@ Archivo ejecutado por PM mediante OpenSpec 1.8 el 17/10/2026, comunicado a las
 y doce requisitos promovidos a `openspec/specs/verified-contextual-retrieval/spec.md`.
 Se corrigen sólo enlaces afectados y este estado documental. No equivale a commit,
 CI remota, publicación, integración de dependencias o participación humana.
+
+Tras publicar `6ba7d299`, CI39040100565 falla en9 casos backend y2 processor.
+La reproducción local conserva ese resultado adverso. La corrección afecta sólo
+a tres archivos de pruebas: constructores simulados donde startup los consume,
+aserciones de lote/vector/reentrega y compatibilidad individual. Motor D y base
+intactos. Pasan129 backend afectados (17 omisiones CockroachDB),179 regresiones
+backend, 651 passed, 151 skipped, 6021 warnings in 49.06s en los demás consumidores directos de la fixture,
+55 ingesta/reentrega y126 contratos processor. Evidencia y límites en
+[JUP-127](../evidence/JUP-127-validation.md). Candidato corregido pendiente de
+nuevas guardas y reevaluación independiente; CI posterior, PR, dependencias y
+roles humanos conservan su fase. Cero llamadas/coste, sin reanudar E.

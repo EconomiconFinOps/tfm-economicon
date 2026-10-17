@@ -181,3 +181,42 @@ Se congelará el estado postarchivo para adenda de vigencia de los mismos roles,
 con dos referencias PM nuevas; las originales anteriores y sus verificaciones
 permanecen conservadas. No se atribuyen todavía commit, push, CI remota, PR o
 participación humana, ni se afirman aplicados fixes posteriores de JUP-124/125.
+
+## Corrección focal tras CI39040100565 — 17/10/2026
+
+PM publicó `6ba7d299c6809408581368bb29fc0394849a9aac`. La CI posterior detectó
+9 fallos backend y 2 processor; se conservan sus logs originales y el dictamen
+adverso. No se creó la PR. Los PASS y adendas anteriores conservan su alcance;
+no se extienden automáticamente al candidato corregido.
+
+Se reproducen exactamente los once fallos sin red: backend 9FAIL/120PASS/17
+omisiones y processor 2FAIL/51PASS. Una traza externa observa `TypeError` en
+`assistant.py:273`: la fixture sustituía la clase de origen usada por `isinstance`.
+Los constructores se simulan ahora en `app.main`, donde startup los utiliza;
+la prueba de importación mantiene su guarda previa y sus aserciones intactas.
+No se modifica el manejo de errores ni la recuperación de producción.
+
+Las otras dos pruebas contaban llamadas individuales aunque el lote generaba y
+persistía los cuatro vectores correctos. Ahora comprueban lote único con los
+chunks exactos, vectores y orden, ausencia de efectos al reentregar y proveedor
+individual compatible. El rechazo de evidencia comprueba ambos métodos sin
+llamadas. No se cambia el pipeline para acomodar las pruebas.
+
+Comprobaciones nuevas, sin sumar reruns como casos únicos:
+
+- Backend, cuatro módulos afectados:129PASS/17omisiones CockroachDB, sin servicio
+  opcional; los nueve casos originalmente fallidos pasan.
+- Backend, límites de secretos e inicio, recuperación/contexto/citas/historial:
+  179PASS.
+- Otros consumidores directos de la fixture compartida:651 passed, 151 skipped, 6021 warnings in 49.06s.
+- Processor, ingesta y reentrega:55PASS, incluidas las dos variantes individuales
+  añadidas; contexto/lotes/reprocesado/chunking/pipeline:126PASS.
+
+Contenedores propios desechables, fuentes de sólo lectura y red deshabilitada;
+sin nuevas llamadas ni coste. Motor F1/F2/F3, receta D, opciones por defecto,
+base y dependencias PR133/134 intactos. Originales, logs y diagnóstico quedan
+custodiados fuera de Git en `ci-fix-39040100565`. Se congela el candidato para
+dos referencias PM nuevas y reevaluación por los mismos roles independientes.
+Commit/push, CI remota posterior y PR por navegador corresponden al PM; todavía
+pendientes. No hay nueva campaña, activación compartida ni participación humana
+acreditada por esta corrección.

@@ -111,7 +111,10 @@ def task(flow, *, route="mock"):
 
 
 @pytest.mark.parametrize("isolation_database", ["sqlite"], indirect=True)
-def test_validated_agent_response_reaches_persisted_completed_job(ingestion):
+@pytest.mark.parametrize("batch", [True, False], ids=["batch", "single-only"])
+def test_validated_agent_response_reaches_persisted_completed_job(ingestion, batch):
+    if not batch:
+        del ingestion.embeddings.embed_batch
     original = deepcopy(ingestion.job)
     result = task(ingestion).execute(ingestion.job)
 
@@ -135,7 +138,13 @@ def test_validated_agent_response_reaches_persisted_completed_job(ingestion):
     assert saved["text_content"] == ingestion.job["payload"]["text_content"]
     assert len(saved["chunks"]) > 1
     assert saved["embeddings"] == [MockEmbeddingProvider(8).embed(chunk) for chunk in saved["chunks"]]
-    assert ingestion.embeddings.embed.call_count == len(saved["chunks"])
+    if batch:
+        ingestion.embeddings.embed_batch.assert_called_once_with(saved["chunks"])
+        ingestion.embeddings.embed.assert_not_called()
+    else:
+        assert [call.args for call in ingestion.embeddings.embed.call_args_list] == [
+            (chunk,) for chunk in saved["chunks"]
+        ]
     assert result["embedding_result"]["chunk_count"] == len(saved["chunks"])
 
 
@@ -161,4 +170,5 @@ def test_agent_evidence_rejection_fails_job_before_embedding_or_vector_persisten
     assert ingestion.events == [("analyze", "running")]
     ingestion.provider.invoke.assert_called_once()
     ingestion.embeddings.embed.assert_not_called()
+    ingestion.embeddings.embed_batch.assert_not_called()
     ingestion.vector.store_document.assert_not_called()
