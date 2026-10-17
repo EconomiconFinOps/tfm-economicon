@@ -73,6 +73,8 @@ sistema de coordenadas, método OCR y fila/columna. `{}` y referencia `null`
 declaran desconocimiento; no inventan metadatos. Un chunk con varias subsecciones
 conserva sus rutas por tramo y sólo un prefijo común cuando lo hay.
 
+Antes de persistir, `StructuredChunker.validate()` recalcula desde la estructura del propio documento las anotaciones de cada tramo (bloque, `original` con página/líneas/bbox, ruta de sección, nivel, tipo y padre) y la ruta de sección del chunk, y rechaza cualquier diferencia. Una referencia que existe pero apunta a otro bloque, una página cambiada, una sección inventada o un `parent_normalized_range` ajeno no se publican aunque su forma sea válida.
+
 En TXT y texto manual, los marcadores de lista con indentación explícita
 conservan profundidad y `parent_normalized_range`. Un tabulador avanza hasta
 la siguiente columna múltiplo de ocho. Los límites de lista priorizan cada

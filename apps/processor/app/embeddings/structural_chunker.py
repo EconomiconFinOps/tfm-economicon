@@ -2,6 +2,7 @@
 from dataclasses import dataclass, field, replace
 from bisect import bisect_right
 import hashlib
+import json
 import re
 from app.embeddings.contracts import (
     CHUNKING_STRATEGY, CHUNKING_VERSION, POSITION_CONTRACT,
@@ -139,6 +140,46 @@ class AnnotationIndex:
                 own.append(item)
             return own + (self.right.intersect(start, end) if self.right else [])
         return self.by_start + (self.left.intersect(start, end) if self.left else []) + (self.right.intersect(start, end) if self.right else [])
+
+
+def source_spans(index, ranges):
+    """Source annotations of the given normalized ranges, derived only from the document structure."""
+    spans = []
+    for start, end in ranges:
+        found = index.intersect(start, end)
+        cursor = start
+        for item in sorted(found, key=lambda value:(value.start,value.end)):
+            if item.start > cursor:
+                spans.append({'normalized_range':[cursor,min(end,item.start)],'block_ref':None,
+                              'original':{},'section_path':[],'heading_level':None})
+            cursor = max(cursor, min(end,item.end))
+        if cursor < end:
+            spans.append({'normalized_range':[cursor,end],'block_ref':None,'original':{},
+                          'section_path':[],'heading_level':None})
+        for item in sorted(found,key=lambda value:(value.start,value.end,value.block_ref or '')):
+            spans.append({'normalized_range':[max(start,item.start),min(end,item.end)],
+                'block_ref':item.block_ref,'original':{key:list(value) if isinstance(value,list) else value for key,value in item.original.items()},'section_path':list(item.section_path),
+                'heading_level':item.heading_level, 'list_depth':item.list_depth,
+                'content_type':item.kind, 'language':item.language,
+                'parent_normalized_range':list(item.parent_normalized_range) if item.parent_normalized_range else None,
+                'parent_block_ref':item.parent_block_ref})
+    return spans
+
+
+def common_section_path(spans, text):
+    paths = [span['section_path'] for span in spans if span['section_path']]
+    common = list(paths[0]) if paths else []
+    for path in paths[1:]:
+        while common and path[:len(common)] != common:
+            common.pop()
+    if any(not span['section_path'] and text[slice(*span['normalized_range'])].strip() for span in spans):
+        common = []
+    return common
+
+
+def _canonical(value):
+    # Compare persisted metadata after a JSON round trip (tuples become lists).
+    return json.dumps(value, sort_keys=True, ensure_ascii=False)
 
 
 class StructuredChunker:
@@ -350,32 +391,8 @@ class StructuredChunker:
                 # A whitespace-only separator can occur between separate sections.
                 ignored.extend(item['normalized_range'] for item in primary)
                 continue
-            ranges = [item['normalized_range'] for item in primary + repetitions]
-            for start, end in ranges:
-                found = index.intersect(start, end)
-                cursor = start
-                for item in sorted(found, key=lambda value:(value.start,value.end)):
-                    if item.start > cursor:
-                        spans.append({'normalized_range':[cursor,min(end,item.start)],'block_ref':None,
-                                      'original':{},'section_path':[],'heading_level':None})
-                    cursor = max(cursor, min(end,item.end))
-                if cursor < end:
-                    spans.append({'normalized_range':[cursor,end],'block_ref':None,'original':{},
-                                  'section_path':[],'heading_level':None})
-                for item in sorted(found,key=lambda value:(value.start,value.end,value.block_ref or '')):
-                    spans.append({'normalized_range':[max(start,item.start),min(end,item.end)],
-                        'block_ref':item.block_ref,'original':{key:list(value) if isinstance(value,list) else value for key,value in item.original.items()},'section_path':list(item.section_path),
-                        'heading_level':item.heading_level, 'list_depth':item.list_depth,
-                        'content_type':item.kind, 'language':item.language,
-                        'parent_normalized_range':list(item.parent_normalized_range) if item.parent_normalized_range else None,
-                        'parent_block_ref':item.parent_block_ref})
-            paths = [span['section_path'] for span in spans if span['section_path']]
-            common = list(paths[0]) if paths else []
-            for path in paths[1:]:
-                while common and path[:len(common)] != common:
-                    common.pop()
-            if any(not span['section_path'] and text[slice(*span['normalized_range'])].strip() for span in spans):
-                common = []
+            spans = source_spans(index, [item['normalized_range'] for item in primary + repetitions])
+            common = common_section_path(spans, text)
             content_type = next(iter(kinds)) if len(kinds) == 1 else 'mixed'
             if content_type in {'heading','text','list_item'}:
                 content_type = 'list' if content_type == 'list_item' else 'paragraph'
@@ -410,11 +427,13 @@ class StructuredChunker:
                 'document_text_sha256':hashlib.sha256(text.encode('utf-8')).hexdigest(),
                 'omitted_spans':[{'normalized_range':[start,end], 'text':text[start:end]}
                                  for start,end in sorted(ignored)]}
-        self.validate(document, result)
+        self.validate(document, result, index)
         return result
 
-    def validate(self, document, result):
+    def validate(self, document, result, index=None):
         text = document['text']
+        if index is None:
+            index = AnnotationIndex(structure(document).annotations)
         covered, ids = [], set()
         expected_generation = fingerprint(generation_identity(document, self.config, self.counter.identity))
         if result['manifest']['fingerprint'] != expected_generation:
@@ -444,6 +463,14 @@ class StructuredChunker:
                         raise ValueError('Source annotation refers to a missing block') from None
                 from app.embeddings.structure import _location
                 _location(span['original'])
+            # A well-formed annotation can still point at the wrong block, page,
+            # section or parent: provenance must be the one the document yields.
+            ranges = [item['normalized_range'] for item in metadata['primary_spans'] + metadata['repetitions']]
+            expected_spans = source_spans(index, ranges)
+            if _canonical(metadata['source_spans']) != _canonical(expected_spans):
+                raise ValueError('Source annotations do not match the document structure')
+            if metadata['section_path'] != (common_section_path(expected_spans, text) or None):
+                raise ValueError('Chunk section path does not match the document structure')
             output_ranges = []
             for key in ('primary_spans','repetitions'):
                 for item in metadata[key]:
