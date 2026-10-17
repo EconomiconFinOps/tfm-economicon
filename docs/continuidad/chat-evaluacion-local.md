@@ -9,6 +9,24 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 17/10/2026
 
+### Corrección024 en rama local separada — 17/10/2026
+
+La campaña DeepInfra/d965 continúa sin cambios.024r4 conserva FAIL por omitir
+moneda destino y023r2 conserva fallo técnico. Esta rama
+`fix/JUP-123-currency-clarification` contiene un candidato nuevo, sin activar:
+terminal servidor para escenarios sintéticos completos de2–20suscripciones y
+varias monedas. Conserva importes/totales por moneda y pide destino, tipo
+autorizado/dirección y fecha; no convierte ni inventa tasas. Toda la entrada
+debe consumirse; ambigüedad, negación, información adicional, tasas aportadas
+o autoridad financiera externa mantienen la ruta general. No es un extractor
+universal. Contrato público intacto, paridad backend/processor y manifest/pin
+actualizados.106pruebas processor únicas y4backend conformes; intento inicial
+bloqueado por permisos del temporal, no fallo de producto. Evidencia
+`currency-024-offline-prepared-v1.json` en materiales. Revisión asistida, replay
+y validación propia del candidato pendientes; no heredar N5de d965 ni integrar.
+
+Los cortes previos siguientes son históricos de la rama de procedencia.
+
 ### Continuación tras fallo técnico — 2026-10-17 12:26 UTC
 
 DeepInfraV2 terminó023r2 tras4intentos sin stream completo: EOF y logs existentes500;

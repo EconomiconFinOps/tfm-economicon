@@ -89,6 +89,7 @@ def quote_choices(content):
 
 
 def scenario_terminals(catalog):
+    from app.core.chat_currency_consolidation import required_currency_consolidation, currency_consolidation_answer
     from app.core.chat_unit_cost import required_unit_cost, unit_cost_answer
     from app.core.chat_cost_breakdown import (required_cost_breakdown, cost_breakdown_answer,
                                              required_monthly_comparison, monthly_comparison_answer)
@@ -98,6 +99,7 @@ def scenario_terminals(catalog):
     from app.core.chat_budget_comparison import (required_budget_variance, budget_variance_answer,
                                                 required_forecast_budget, forecast_budget_answer)
     return [(key, bind(catalog), render) for key, bind, render in (
+        ('currency_consolidation', required_currency_consolidation, currency_consolidation_answer),
         ('unit_cost', required_unit_cost, unit_cost_answer),
         ('cost_breakdown', required_cost_breakdown, cost_breakdown_answer),
         ('monthly_comparison', required_monthly_comparison, monthly_comparison_answer),

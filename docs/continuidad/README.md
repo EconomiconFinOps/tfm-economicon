@@ -5,6 +5,9 @@ y estado operativo; GitHub conserva código y revisiones; OpenSpec conserva
 requisitos y diseño. Este índice enlaza evidencia, no sustituye esas fuentes.
 Leer la [convención](convencion-compartida.md) y sólo los temas pertinentes.
 Las fechas indican la última actualización documental, no una nueva ejecución de pruebas.
+Rama local024: terminal de parámetros FX preparado,106processor+4backendPASS;
+sin activar o medir. N5d965 separada conserva024r4FAIL/023r2técnico. Ver tema.
+Los cortes siguientes de la rama de procedencia son históricos.
 Estado2026-10-17 12:26 UTC: sólo pruebasB. V2terminó023r2técnica(4EOF/logs500, raíz
 noatribuida),51recibos intactos. V3ACTIVO PID505182/start5164432 sólo89noenviadas
 desde024r2,prefijo1515SHA037bee6e. Corte56:55conformes324PASS+1técnica/6noevaluables;

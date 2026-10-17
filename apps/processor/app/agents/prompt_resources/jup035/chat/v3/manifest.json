@@ -199,9 +199,13 @@
       "version": "complete-two-group-user-count-cost-coverage-v1"
     },
     "zero_change": "complete-request-user-zero-baseline-relative-terminal-v2",
-    "zero_percentage": "complete-request-eligible-zero-denominator-terminal-v2"
+    "zero_percentage": "complete-request-eligible-zero-denominator-terminal-v2",
+    "currency_consolidation": {
+      "version": "closed-hypothetical-multi-currency-missing-conversion-v1",
+      "module_sha256": "132cffa5026abeb7450e8807dd4523150ca51c921efd5b1c9495ad36f82f9ac3"
+    }
   },
-  "assembler_sha256": "1ea69a3156f128358149c8cde2b617d17b7597c863a1ca229269860198d7a93a",
+  "assembler_sha256": "bae5ebffaf8705636a2a2ec6d5450277ad3a4b09022f8dc956e3e0c342584c74",
   "budgets": {
     "model_context_tokens": 1048576,
     "output_tokens": 3200,
