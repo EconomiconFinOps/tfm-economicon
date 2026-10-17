@@ -6,7 +6,99 @@ adaptarlo para JUP-071 y publicar PR independiente; chat
 Tarjetas: [JUP-123](https://trello.com/c/TqtcumIN),
 [JUP-071](https://trello.com/c/H0woDubz).
 
-## Segunda reconciliación y nuevo delta — 17/10/2026
+## Aclaración de run-info — 17/10/2026
+
+Origen: «Hazlo», para completar el seguimiento documental tras integrar #131.
+Rama `docs/JUP-123-run-info-guide`, desde develop `1de41b90`.
+La guía `docs/validation/chat-collector.md` sustituye los marcadores inválidos
+por un ejemplo sintético y especifica commit hexadecimal, formato de provider,
+alias y generation, longitud de corpus/retrieval y diagnóstico del error
+genérico. Explica que generation se exporta como model_alias con temperatura
+null y que los metadatos declarados no acreditan proveedor/modelo ejecutados.
+
+Verificación local: el JSON extraído de la guía pasa check_run_info y run_header
+del JUP-071 oficial; se confirma alias/temperatura null. Cinco controles negativos
+rechazan commit no hexadecimal, proveedor con espacios, alias y generation en
+mayúsculas y proveedor con aspecto de credencial. Sin red ni inferencias.
+Script y recibo fuera de Git, en `materiales/07-evidencias/JUP-123-collector/`
+del directorio de trabajo padre: `verify-run-info-guide-20261017.py` y `.json`.
+Sólo documentación; no se modifican adaptadores, validadores ni checks.
+
+La publicación de la PR documental, las solicitudes a Víctor/Lucía y la nota de
+seguimiento en ambas tarjetas se verifican al publicar. La revisión y validación
+de esta nueva PR deben existir antes de integrar, según AGENTS/CONTRIBUTING;
+las aprobaciones de #131 no se trasladan a otra PR. Archivo del chat condicionado
+a completar ese seguimiento, sin cerrar las campañas de B/JUP-071.
+
+## Integración y actualización de tablero — corte anterior del 17/10/2026
+
+Origen: «Mergea, actualiza el tablero y si no queda nada pendiente archiva el chat».
+PR #131 integrada por squash en develop el 17/10/2026 a las 11:08:08 UTC
+(13:08 Europe/Paris), commit `1de41b907f849082b0676319971775a6560b71b5`,
+desde la cabeza aprobada `d73375992a03374cecccb16addd79951bcbe128a`.
+GitHub confirma MERGED; el commit está en origin/develop y su árbol es idéntico
+al de d7337599. La nueva CI disparada por la edición de la descripción
+39027188111 terminó SUCCESS antes de integrar, junto con SQL/reviews conformes.
+No se usó bypass. Auto-merge no está habilitado en el repositorio; se completó
+el merge directo cuando terminaron los checks.
+
+Tablero actualizado exclusivamente por la integración desplegada en DockerServer
+(`/home/danteadmin/economicon-collaboration`): comentarios verificados
+`6ad357547d6b6f9f53da7b1a` en JUP-123 y `6ad357550d13074c9e12d412` en JUP-071.
+Incluyen commit, evidencia, alcance del colector y seguimiento documental.
+Las listas, descripciones, roles y criterios permanecen intactos: B sigue
+En curso y JUP-071 Preparado; la integración del instrumento no acepta sus
+campañas ni cierra B. El intento de añadir detalle a la descripción devolvió
+HTTP 400 invalid value for desc; no se reemplazó ni recortó contenido, se usaron
+comentarios del mismo puente y se verificaron los estados posteriores.
+Recibo externo `JUP-123-collector/pr131-board-merged-20261017.json`.
+
+Pendiente en aquel corte (atendido en la rama documental descrita arriba): trasladar a `docs/validation/chat-collector.md` la
+aclaración de run-info solicitada por Lucía: commit hexadecimal 7–40 caracteres,
+provider/alias `[a-z0-9][a-z0-9./-]{0,63}` y diagnóstico de EvaluationError.
+El formato correcto y ejemplos ya están en la descripción de la PR y se han
+registrado en ambas tarjetas, pero la guía versionada sigue pendiente.
+Por esa condición no se archiva el chat todavía. Sin cambios de producto,
+nuevas inferencias ni publicaciones en Discord en este cierre de integración.
+
+## Comprobación de integración y nueva cabeza — corte anterior del 17/10/2026
+
+Origen: «Revisa si otro agente a mergeado que ya tenemos los ok». PR #131 sigue
+OPEN: merged=false, merged_at=null y sin mergeCommit ni evento merged en el
+timeline. Sí hubo Update branch: `lmatsan`, con committer web-flow, incorporó
+develop `ffdd8ee9` (#137) a la rama de la PR en `d73375992a03374cecccb16addd79951bcbe128a`
+el 17/10 a las 08:51 UTC. Eso no integra la PR en develop y no identifica por
+sí solo al agente o herramienta que operó la cuenta.
+
+Estado remoto CLEAN/MERGEABLE/APPROVED, sin solicitudes pendientes. CI de PR
+39018933691 y push 39018930176, SQL 39018933716 y JUP reviews verdes.
+El backend del run PR pasó tras reejecución del fallo intermitente ya conocido.
+Aprobación de Víctor vigente y [Lucía valida funcionalmente d7337599](https://github.com/EconomiconFinOps/tfm-economicon/pull/131#pullrequestreview-5557222149):
+relectura de cuatro operaciones reales conservadas, sin gasto nuevo, con el
+JUP-071 oficial del árbol. Esta comprobación no vuelve a ejecutar sus pruebas.
+
+Lucía propone una aclaración documental todavía no aplicada: la guía de
+run-info debe indicar commit hexadecimal de 7–40 caracteres y provider/alias
+en formato `[a-z0-9][a-z0-9./-]{0,63}`, además del diagnóstico de exportación.
+Su review es COMMENTED y favorable en lo funcional; no es autorización de merge.
+En esta consulta no se modifica la rama remota ni se integra la PR.
+
+## Consulta de CI y dictámenes del nuevo delta — corte anterior del 17/10/2026
+
+Origen: «Comprueba si la CI de la PR131 ha terminado y si Víctor y Lucía ya han
+revisado y revalidado el nuevo delta». Cabeza remota permanece en
+`2aad3678dc9963d48385760b5e93276a368af032`, OPEN/CLEAN/MERGEABLE.
+CI de PR 38973787547 y de push 38973782164 terminadas favorablemente;
+SQL 38973787504 y JUP reviews también SUCCESS. No hay jobs técnicos pendientes.
+[Víctor aprueba el nuevo delta](https://github.com/EconomiconFinOps/tfm-economicon/pull/131#pullrequestreview-5554430351)
+en review del 16/10 22:40 UTC (17/10 00:40 Europe/Paris), sobre el SHA exacto.
+Confirma prueba con recursos reales conservados y JUP-071 oficial, sin nueva IA.
+No hay revalidación de Lucía sobre 2aad3678; `reviewRequests` mantiene lmatsan y
+su última validación corresponde a 08b597ec. Pendiente únicamente su dictamen
+del nuevo delta para completar el flujo; el estado APPROVED y JUP reviews verde
+no lo sustituyen. No se ha integrado ni cambiado la cabeza revisada.
+
+## Segunda reconciliación y nuevo delta — corte anterior del 17/10/2026
 
 Origen: «Resuelve los nuevos conflictos de la PR131, comprueba las pruebas y pide
 oficialmente la revisión y revalidación del nuevo delta a Víctor y Lucía».
@@ -28,9 +120,19 @@ El primer intento del guion usó --report en rows; corregido a --input, sin camb
 de producto. Prueba sobre árbol reconciliado previo al commit, fijado por hashes
 en plan.json; no acredita despliegue, IA real, juicios o calidad. Nuevo gasto 0.
 
-La publicación del delta requiere una nueva revisión de Víctor y revalidación de
-Lucía, solicitadas expresamente por el usuario para esta entrega. Se comprobarán
-sus solicitudes en GitHub después del push; no se atribuyen ya emitidas aquí.
+Publicado `2aad3678dc9963d48385760b5e93276a368af032`, con segundo padre
+`ee4e80316783fd10918653f231f44f2c174a75ef`. GitHub confirma OPEN/MERGEABLE,
+sin conflictos y REVIEW_REQUIRED. Descripción actualizada con el nuevo alcance
+y pruebas, comprobada con el checker de política antes de publicarla.
+Solicitudes oficiales enviadas y verificadas en reviewRequests: Víctor
+(`Victorh1397`) para revisión del nuevo delta y Lucía (`lmatsan`) para revalidación.
+Son solicitudes pendientes, no nuevos dictámenes. No se empujan más commits
+después de solicitarlas.
+[CI 38973787547](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38973787547)
+y [SQL 38973787504](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/38973787504)
+en curso sobre el nuevo SHA al cierre; JUP reviews SUCCESS no sustituye las
+reviews del delta. Esta actualización local conserva el resultado sin alterar
+la cabeza solicitada para revisión. No se integra la PR ni se publica en Discord.
 
 ## Confirmaciones y nuevo avance de develop — corte anterior del 17/10/2026
 

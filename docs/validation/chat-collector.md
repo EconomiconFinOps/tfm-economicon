@@ -112,8 +112,27 @@ si el operador no dispone del payload exacto, debe mantener ese bloqueo.
 Crear `run-info.json` con **exactamente** seis cadenas descriptivas, sin secretos:
 
 ```json
-{"commit":"SHA_DESPLEGADO_DECLARADO","corpus":"VERSION","provider":"PROVEEDOR_DECLARADO","alias":"ALIAS_DECLARADO","retrieval":"CONFIGURACION","generation":"CONFIGURACION"}
+{"commit":"abcdef1","corpus":"version-corpus","provider":"litellm-openrouter","alias":"economicon-chat","retrieval":"configuracion-declarada","generation":"economicon-chat"}
 ```
+
+El ejemplo es sintético: `abcdef1` es ficticio y debe sustituirse por el SHA del
+código desplegado declarado. Sustituir también los demás valores por los de la
+ejecución; los nombres del ejemplo no acreditan proveedor ni modelo ejecutados.
+
+- `commit`: entre 7 y 40 caracteres hexadecimales en minúscula (`[0-9a-f]{7,40}`).
+- `provider`, `alias` y `generation`: entre 1 y 64 caracteres que cumplan
+  `[a-z0-9][a-z0-9./-]{0,63}`, sin espacios ni mayúsculas. El evaluador rechaza
+  además valores con aspecto de credencial; no incluir claves, tokens ni secretos.
+  En este adaptador, `generation` nombra el alias del modelo y se exporta como
+  `generation.model_alias`, con temperatura desconocida (`null`).
+- `corpus` y `retrieval`: cadenas descriptivas no vacías de hasta 128 caracteres,
+  sin credenciales, que identifiquen la versión y la configuración declaradas.
+
+Si la exportación devuelve `EvaluationError; imported validation or input failed;
+consult preserved sidecars`, comprobar primero el formato de estos seis campos,
+en especial `commit`, `provider`, `alias` y `generation`. Ese mensaje también puede
+indicar otros errores de validación: revisar el plan, los recibos y los originales
+conservados. No publicar excepciones completas ni secretos para diagnosticarlo.
 
 El adaptador vuelve a comprobar originales, hashes, pregunta, estado y evidencia;
 no se fía de una etiqueta `VERIFIED` modificada. Se puede exportar una repetición,
