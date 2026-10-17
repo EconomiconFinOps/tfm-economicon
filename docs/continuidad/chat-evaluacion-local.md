@@ -9,6 +9,75 @@ desde la raíz del proyecto. El entorno remoto aislado está bajo
 
 ## Estado actual — 17/10/2026
 
+### Resultado final de las pruebas B — 17/10/2026
+
+La nueva N5 del producto `f3ec760d3c483e8798df2be32ea90bb901ebe36d` terminó: **140 respuestas
+completadas y conformes; 825 comprobaciones PASS** (545 del banco y 280 de
+calidad). Se cumplen C1, C2 asistido y C3 en el alcance local acordado. Revisor
+y validador separados emitieron PASS sobre el mismo informe final, por la
+sustitución expresamente aceptada por el usuario; no es revisión humana oficial,
+un juez calibrado ni evaluación ciega. El banco conocido se utilizó para corregir
+el sistema, por lo que no se afirma generalización o superioridad del modelo.
+
+Modelo configurado: DeepSeek V4.1 Flash / DeepInfra FP8; banco1.0.1,
+plan `3fd573f5cc55a4d50cbc83b65d1af6a1b414102edfeb21a173f2b0352ec4b776`, corpus sintético54, temperatura0 y razonamiento
+desactivado, ZDR sin fallback. La ruta está configurada y vigilada; no hay traza
+independiente del proveedor upstream. La corrección024 conserva monedas separadas
+y solicita destino, tipo autorizado/dirección y fecha. Pruebas focales Linux y
+Windows:106 processor+4 backend;2 builds y226 archivos verificados. No se repiten
+ni atribuyen suites históricas a este commit.
+
+Se conservan tres segmentos:84 completadas;35 recogidas más la operación120
+completada en SQL; recuperación120 exclusivamente GET sin nueva generación;
+y20 no enviadas desde009r5. Las interrupciones URLError e historia Dockerexec
+quedan registradas sin atribuir una causa no demostrada. Ninguna muestra fue
+repetida o sustituida. Los fallos de campañas anteriores permanecen intactos.
+
+Contabilidad: 138 costes nuevos observados,
+`0.1435598696 USD`; 2 máximos nuevos
+desconocidos íntegros (`0.16155264 USD`). Todas las
+reservas desconocidas: `15.04040862 USD`. Cota conservadora
+`23.117520366/30 USD`, no factura ni atribución exacta a B. Ledger
+1744 filas SHA `b26c247dd81a6abb759cb211b7c1070907f029e33ce6119382214a1bc07e849e`; prefijos1604/1688/1724 y355 historias
+congeladas intactos. Cero operaciones activas, propios3 parados, datos/imágenes
+conservados y otros servicios intactos. Sin claves nuevas, renovación, reset o
+liberación de reservas.
+
+Evidencia:
+
+- [Informe final](../../../materiales/07-evidencias/PR121-local-evaluation/currency-024-final-results-v1.md).
+- [Auditoría final](../../../materiales/07-evidencias/PR121-local-evaluation/currency-024-api-final-audit-v3.json),
+  SHA `3eb85e58c96c8d1ef577a95330d355105d9ab0bdc1e5f7abbd72a160a94e0ba5`.
+- [Paquete reproducible](../../../materiales/07-evidencias/PR121-local-evaluation/currency-024-f3ec760d-n5-full140-frozen-v1/manifest.json):
+  497 archivos, manifest SHA `4838711dac437ce7f63f5e68aa382dc9e8dd0343c4e8f3024579d39346c32984`.
+- [Comparación descriptiva](../../../materiales/07-evidencias/PR121-local-evaluation/currency-024-vs-d965-descriptive-v1.json)
+  con139 pares semánticos y una pareja técnica histórica; sin inferencia causal.
+
+**Las pruebas locales B han terminado.** Integración la realiza otro agente;
+no se publica, integra, activa permanentemente ni marca Done desde este chat.
+Los siguientes cortes son históricos y conservan sus fechas originales.
+
+### Pruebas Linux y preparación del entorno — 17/10/2026
+
+La corrección f3ec760d tiene revisión y validación asistidas favorables en alcance
+offline. Linux:106pruebas processor y4backend conformes;2builds estándar y226hashes
+de archivos de ejecución verificados. Auditoría `currency-024-native-build-audit-v1.json`
+SHA180ba556. No se repiten las suites/builds históricos ni se atribuye la antiguaN5.
+
+La activaciónv1 se detuvo ANTES de crear recursos: su guarda detectó solapamiento
+de126/24 con una redUIexistente126/28. No se modifica esa red; no hubo generaciones,
+pausas o alteraciones de ledger/corpus. Se conserva el intento. V2usa130/24,
+verificada libre en la lectura previa y comprobada otra vez al ejecutar. Setup
+4c34fb8a preparado y validado focalmente, todavía sin lanzar en este corte.
+
+El worker intenta DDL idempotente de tablas de versión. Las versiones processor/
+vector completas y sus applied_at deben coincidir antes/después; no se permiten
+upgrades pendientes. Cola propia ausente antes de arrancar y vacía después;
+SQL235operaciones e historia y corpus54 protegidos. No se denomina al bootstrap
+SQLread-only. Operadores APIv2 preparados, no instalados ni ejecutados; política
+nueva deberá proteger1604/SHA78772c75. Máximo30USD y todas las reservas intactas;
+claves6/.1 hasta17oct15:59:59UTC, sin renovación. Handoffv6 en materiales.
+
 ### Corrección024 en rama local separada — 17/10/2026
 
 La campaña DeepInfra/d965 continúa sin cambios.024r4 conserva FAIL por omitir
