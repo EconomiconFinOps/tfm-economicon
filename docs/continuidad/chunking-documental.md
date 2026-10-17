@@ -194,3 +194,9 @@ afectada contra referencias PM propias de esta incorporación. El archivo
 OpenSpec previo, chunker/metadata/reconstrucción, modelos/citas y evidencias
 funcionales anteriores permanecen conservados; participación humana y
 publicación se gestionan por separado. Sin servicios o inferencias nuevos.
+
+## Corrección de C13 tras la Validacion JUP-125 — 18/10/2026
+
+La `Validacion JUP-125` de Alejandro sobre `4888625e` (no favorable) reprodujo que `StructuredChunker.validate()` aceptaba procedencia bien formada pero incoherente: una referencia de bloque existente cambiada de `blocks/0` a `blocks/1` con página 999 se publicaba y se citaba, igual que una sección inventada o un `parent_normalized_range=[0,999]`. El validador ahora recalcula desde la estructura del documento las anotaciones de cada tramo y la ruta de sección del chunk, compartiendo con el chunker las funciones `source_spans` y `common_section_path`, y rechaza cualquier diferencia. `tests/test_chunk_provenance_integrity.py` cubre el caso de Alejandro, los nueve formatos tras un viaje JSON (control positivo) y la manipulación de sección, padre, nivel y tipo: 10 fallos sin la corrección y 19 correctos con ella.
+
+C10 (cadena original → normalizado) y C14 (paquete congelado de la comparación de recuperación) siguen pendientes de las evidencias que custodia el liderazgo. Pendiente: revalidación del delta y revisión de Víctor.
