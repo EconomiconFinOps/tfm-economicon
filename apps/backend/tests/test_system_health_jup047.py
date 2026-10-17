@@ -101,8 +101,15 @@ def add_job(api, identifier, state, updated, tenant="tenant-a"):
 
 
 @pytest.mark.parametrize("method,path", [("GET", "/health/status"), ("POST", "/health/provider-check")])
-@pytest.mark.parametrize("auth,expected", [([], 401), (headers(tenant=None), 400), (headers(tenant="tenant-b"), 403), (headers(tenant=" tenant-a"), 400)])
-def test_authentication_and_tenant_precede_diagnostics(operational_api, method, path, auth, expected):
+@pytest.mark.parametrize("authenticated,tenant,expected", [
+    pytest.param(False, None, 401, id="auth0-401"),
+    pytest.param(True, None, 400, id="auth1-400"),
+    pytest.param(True, "tenant-b", 403, id="auth2-403"),
+    pytest.param(True, " tenant-a", 400, id="auth3-400"),
+])
+def test_authentication_and_tenant_precede_diagnostics(operational_api, method, path, authenticated, tenant, expected):
+    # Expiring credentials belong to execution, not pytest collection.
+    auth = headers(tenant=tenant) if authenticated else []
     response = call(operational_api, method, path, headers=auth, **({"json": {"idempotency_key": "red-action"}} if method == "POST" else {}))
     assert response.status_code == expected
     operational_api.db.ping.assert_not_called()

@@ -114,3 +114,32 @@ rotos del índice heredados de develop; no se corrigen temas fuera de alcance.
 CI publicada y SQL aún pendientes al preparar este commit; consultar el recibo
 final de PR135. Paris COMMENTED sobre b2ceda79; Víctor DISMISSED sobre e76c4c29,
 nueva validación y pairing pendientes. No merge autorizado en este encargo.
+
+
+## Reconciliación tras integrar PR133 — 17/10/2026
+
+Head anterior `cfd52352072fb8a9a1368c6843675c9487f7954b`; base incorporada
+`466b083a6dae97f418cfb1d9156325749c6d7304`. GitHub confirmó conflicto real.
+Único conflicto: índice de continuidad, resuelto con unión de temas/destinos.
+69 archivos entrantes y15 propios disjuntos preservados. Apps, scripts, workflows,
+package, lockfile y CD son idénticos a develop; JUP-126 funcional y normativo
+mantiene sus blobs. No se modifica producto, política o configuración fuera
+de lo ya integrado en develop. La nueva extracción documental y la corrección
+de tokens de test del backend pertenecen a PR133.
+
+| Ejecución propia nueva | Resultado |
+| --- | --- |
+| `corepack pnpm ci:check:test` | 14/14 PASS, cero omisiones |
+| `corepack pnpm jup:check:all` | 9 cambios activos correctos |
+| `corepack pnpm jup:cleanup:check` | 1764 archivos correctos |
+| `corepack pnpm openspec:validate` | 77/77 PASS estricto |
+| Preservación de ambos padres y `git diff --check` | PASS |
+
+Se reutilizan por identidad las pruebas de política/gobernanza que Víctor validó
+sobre cfd52352; no se presentan como ejecuciones nuevas. No se repiten campañas
+de evaluación, robustez, mutación o inferencias sin cambio de entradas. Pruebas
+de aplicación/build/SQL y gobernanza general: CI obligatoria del SHA publicado,
+pendiente al preparar el commit. No demo, gasto de modelos, claves o despliegue.
+Logs: `materiales/07-evidencias/PR135-base-20261017T2110/` del workspace.
+La aprobación cfd52352 no se atribuye al nuevo candidato; el recibo final de
+PR135 registra su estado y las solicitudes incrementales a Lucía/Víctor.

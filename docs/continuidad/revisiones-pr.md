@@ -78,3 +78,42 @@ backend; PR 38976116287 pasó), revalidar el delta, acreditar pairing y resolver
 aceptación de B/ensayo integrado. Los títulos antiguos no prueban el nuevo SHA.
 La hipótesis de caducidad de tokens del backend procede de la validación de Víctor;
 no se reproduce aquí ni se corrige fuera del alcance de PR135. Sin merge ni demo.
+
+
+## Incorporación de PR133 integrada — 17/10/2026
+
+Reanudación humana desde Sala de Control, chat fuente
+`01a1270c-e332-7462-9c90-706d49ade92c`. GitHub confirma conflicto real
+(`mergeable=false`, dirty) de `cfd52352` tras integrar PR133 a las21:08:29 UTC,
+develop `466b083a6dae97f418cfb1d9156325749c6d7304`.
+Se incorpora esa base una sola vez a la misma rama y worktree limpio.
+
+Único conflicto: índice de continuidad; conservadas filas y destinos de ambos
+padres (política e ingesta documental). Los69 archivos entrantes y15 propios
+disjuntos mantienen su contenido antes de las notas nuevas. `.github`, apps,
+scripts, package, lockfile y herramientas CD coinciden con develop. Se conserva
+el nuevo paso de instalación de extracción documental en CI. El arreglo del test
+backend que crea tokens durante ejecución procede íntegramente de PR133; no se
+reimplementa ni se atribuye a JUP-126. Gate, fixture, contrato, tests de política
+y gobernanza JUP-126 mantienen sus blobs respecto a cfd52352.
+
+Pruebas nuevas focales: workflow14/14 sin omisiones, trazabilidad9 cambios,
+higiene1764 archivos, OpenSpec estricto77/77 y diff-check correctos.
+No se repiten las63 pruebas de política ni las14 de gobernanza previamente
+validadas por Víctor sobre cfd52352: sus entradas pertinentes no cambian y se
+comprueba identidad de blobs. CI del candidato publicado comprobará aplicación,
+extracción documental y SQL con la base nueva. No campañas, inferencias,
+embeddings, claves, demo, despliegues ni cambios en PR63.
+
+Feedback completo reconsultado: cuatro reviews, tres comentarios y cero inline;
+sin nueva Revision de Lucía. Víctor APPROVED cfd52352 el17/10 a las18:16:03 UTC;
+ese dictamen conserva su SHA y deberá verificarse su desestimación tras el push.
+Lucía sustituye a Paris en revisión según Discord y metadatos PR/Trello actuales;
+Paris asignado a pairing, sin trasladarle el pairing histórico de Lucía. Sigue
+pendiente la conciliación de participación real/separación de roles por liderazgo.
+No se alteran dictámenes, excepciones o protecciones para obtener verde.
+
+Publicación, CI y solicitudes de revisión/revalidación del delta: pendientes al
+preparar este commit; se completan por recibo en PR135 sin push documental posterior.
+Evidencia local nueva: `materiales/07-evidencias/PR135-base-20261017T2110/` del
+workspace. Sólo estabilizar135; coordinar63 después por decisión humana.

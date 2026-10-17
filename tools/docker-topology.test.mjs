@@ -19,11 +19,11 @@ const demoServices = ["azure-cost-api-demo", "demo-data"];
 test("declares every MVP application, infrastructure and monitoring service", () => {
   assert.deepEqual(
     Object.keys(compose.services).sort(),
-    [...applicationServices, ...infrastructureServices, ...monitoringServices, ...demoServices, "backend-migrate"].sort(),
+    [...applicationServices, ...infrastructureServices, ...monitoringServices, ...demoServices, "backend-migrate", "minio", "minio-init"].sort(),
   );
   assert.deepEqual(
     Object.keys(compose.volumes).sort(),
-    ["cockroach-data", "pgvector-data", "rabbitmq-data", "prometheus-data", "grafana-data"].sort(),
+    ["cockroach-data", "pgvector-data", "rabbitmq-data", "prometheus-data", "grafana-data", "document-artifacts"].sort(),
   );
 });
 
@@ -104,6 +104,7 @@ function seconds(duration) {
 test("keeps the state of every stateful infrastructure service on its named volume", () => {
   const expected = {
     cockroachdb: "cockroach-data:/cockroach/cockroach-data",
+    minio: "document-artifacts:/data",
     "postgres-pgvector": "pgvector-data:/var/lib/postgresql/data",
     rabbitmq: "rabbitmq-data:/var/lib/rabbitmq",
   };
@@ -128,7 +129,7 @@ test("gives the processor a health window that covers its first migrations", () 
 test("waits for healthy dependencies instead of container start only", () => {
   for (const serviceName of ["backend", "processor", "frontend", ...monitoringServices]) {
     for (const [name, dependency] of Object.entries(compose.services[serviceName].depends_on)) {
-      assert.equal(dependency.condition, name === "backend-migrate" ? "service_completed_successfully" : "service_healthy");
+      assert.equal(dependency.condition, ["backend-migrate", "minio-init"].includes(name) ? "service_completed_successfully" : "service_healthy");
     }
   }
 });
@@ -141,6 +142,7 @@ test("starts the processor only after the backend owns the shared schema", () =>
 test("binds infrastructure and monitoring ports to loopback and permits isolated overrides", () => {
   const expectedVariables = {
     cockroachdb: ["COCKROACH_SQL_PORT", "COCKROACH_HTTP_PORT"],
+    minio: ["MINIO_HOST_PORT"],
     rabbitmq: ["RABBITMQ_PORT", "RABBITMQ_MANAGEMENT_PORT"],
     "postgres-pgvector": ["PGVECTOR_PORT"],
     prometheus: ["PROMETHEUS_PORT"],
@@ -340,4 +342,39 @@ test("JUP-053 login form initializes with the unchanged email and a blank passwo
   const form = vm.runInNewContext("(" + initializer[1] + ")", {}, { timeout: 1000 });
   assert.equal(form.email, "operator@example.com");
   assert.equal(form.password, "");
+});
+
+
+test("document storage starts in the general stack with private initialized bucket and bounded browser access", () => {
+  const storage = compose.services.minio;
+  const init = compose.services["minio-init"];
+  assert.equal(storage.build.dockerfile, "infra/minio/Dockerfile");
+  assert.equal(storage.environment.MINIO_BROWSER, "off");
+  assert.match(storage.environment.MINIO_API_CORS_ALLOW_ORIGIN, /DOCUMENT_CORS_ORIGINS.*required/);
+  assert.ok(storage.healthcheck);
+  for (const service of [storage, init]) {
+    assert.equal(service.profiles, undefined);
+    assert.equal(service.read_only, true);
+    assert.equal(service.init, true);
+    assert.ok(service.security_opt.includes("no-new-privileges:true"));
+  }
+  assert.equal(init.depends_on.minio.condition, "service_healthy");
+  for (const name of ["backend", "processor"]) {
+    assert.equal(compose.services[name].depends_on["minio-init"].condition, "service_completed_successfully");
+    assert.equal(compose.services[name].environment.DOCUMENT_UPLOADS_ENABLED, "true");
+    assert.equal(compose.services[name].environment.MINIO_ROOT_PASSWORD, undefined);
+  }
+  assert.equal(compose.services.processor.pids_limit,256);
+  for (const key of ["DOCUMENT_MAX_PAGES","DOCUMENT_EXTRACTION_SECONDS","DOCUMENT_OCR_PAGE_SECONDS",
+    "DOCUMENT_EXTRACTION_MEMORY_MB","DOCUMENT_OCR_MAX_PIXELS","DOCUMENT_EXECUTION_LEASE_SECONDS"]) {
+    assert.ok(compose.services.processor.environment[key],key);
+    assert.equal(compose.services.backend.environment[key],undefined,key);
+  }
+  const dockerfile=fs.readFileSync(path.join(root,"infra/minio/Dockerfile"),"utf8");
+  assert.equal((dockerfile.match(/ADD --checksum=sha256:[a-f0-9]{64} https:\/\/codeload.github.com\/minio\//g) ?? []).length,2);
+  assert.match(dockerfile,/^USER storage$/m);
+  const initialization=fs.readFileSync(path.join(root,"infra/minio/init.sh"),"utf8");
+  assert.match(initialization,/mc anonymous set none/);
+  assert.match(initialization,/document-staging-expiration-v1/);
+  assert.match(initialization,/"Prefix":"staging\/"/);
 });

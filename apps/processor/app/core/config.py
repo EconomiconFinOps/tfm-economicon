@@ -12,6 +12,8 @@ from app.core.runtime_secrets import StartupError, register_secrets, validate_co
 class Settings(BaseSettings):
     processor_port: int = 8001
     processor_concurrency: int = 2
+    document_s3_access_key: SecretStr | None = None
+    document_s3_secret_key: SecretStr | None = None
     processor_queue_name: str = "processor:jobs"
     summary_timeout_seconds: int = Field(default=180, ge=30, le=300)
     runtime_environment: Literal["production", "development", "test"] = "production"
