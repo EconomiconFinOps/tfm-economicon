@@ -24,10 +24,10 @@ Las "pasadas adversariales" y la auditoría de trazabilidad que se recogen aquí
 Estado del 2026-10-16, Windows, Python 3.14:
 
 - `python tools/assistant-robustness.py validate`: 16 variantes, 29 casos, hashes válidos.
-- `corepack pnpm assistant-robustness:test`: 123 pruebas OK.
+- `corepack pnpm assistant-robustness:test`: 130 pruebas OK (123 al fusionar el PR #136 y 7 añadidas después para la capa de informe).
 - Pruebas de JUP-070 (110) y de métricas de JUP-067 (103): OK.
 - `node --test tools/ci-workflow.test.mjs`: 14 OK (con las dependencias del repositorio principal enlazadas temporalmente, porque el directorio de trabajo no tenía `node_modules`).
-- `corepack pnpm openspec:validate` (74/74), `corepack pnpm jup:check -- --change jup-071-incomplete-data-robustness` y `corepack pnpm jup:cleanup:check`: OK.
+- `corepack pnpm openspec:validate` (74/74; 75/75 tras integrar el change de JUP-121), `corepack pnpm jup:check -- --change jup-071-incomplete-data-robustness` y `corepack pnpm jup:cleanup:check`: OK.
 - Prueba de extremo a extremo con el colector de JUP-123 contra un backend real con modelo simulado: ver la evidencia.
 - Evidencia por criterio en `docs/evidence/JUP-071-validation.md`.
 
@@ -159,6 +159,22 @@ Auditoría automatizada de trazabilidad entre propuesta, diseño, spec, tareas, 
 - Sin cambio: la sección `pairs` del informe no tiene requisito propio (está en el protocolo) y la rama conserva el prefijo `test/` heredado del PR #90.
 
 Estos arreglos no se sometieron a otra auditoría. Ninguna de estas revisiones es la `Revision JUP-071` ni la `Validacion JUP-071` de una persona.
+
+## Revisión y validación del PR #137 (excepción temporal)
+
+Seguimiento del PR #136 con las notas no bloqueantes de su revisión: pruebas de la capa de informe y documentación. Por la excepción temporal, la revisión y la validación se hicieron de forma automatizada y se registran aquí, no como reviews de GitHub: `JUP reviews` queda en rojo y se declara, y la fusión la decide quien lidera con una orden expresa.
+
+Revisión adversarial automatizada sobre `1f0cdb36` (base `ee4e8031`). Veredicto: changes-required (4 MEDIUM, 3 LOW; sin HIGH).
+
+| ID | Sev. | Resolución |
+| --- | --- | --- |
+| P8-1 | MEDIUM | Corregido: el protocolo para re-fijar la batería estaba incompleto (la validación exige que las fuentes de la batería coincidan con las del banco de JUP-069, no existe un subcomando para calcular el hash, `TEMPLATE_SHA256` cambia los hashes de la herramienta y la regla sobre `suite_version` no tenía respaldo). Reescrito con los pasos reales. |
+| P8-2 | MEDIUM | Corregido: la continuidad seguía diciendo «ninguna revisión ni validación de una persona», «listos para revisarse» y la revisión pendiente, aunque ya ocurrieron para el instrumento. |
+| P8-3 | MEDIUM | Corregido: cifras de dos momentos mezcladas (123 y 128 pruebas, 74/74 y 75/75). |
+| P8-4 | MEDIUM | Corregido con pruebas: sobrevivían mutantes vecinos (`not_run` en la evaluación completa, el modo no provisional de la cobertura reducida, el valor de la fila agregada y `unit`, `behavior` y `grp` de las filas numéricas). |
+| P8-5 a P8-7 | LOW | Corregido: filas «Pendiente» y «Límites» de la evidencia ya cumplidas, línea en blanco que partía una lista, y pruebas que dependían de identificadores concretos de la batería (ahora eligen los casos por propiedad). |
+
+Validación: 130 pruebas de robustez, `assistant-robustness:validate`, `openspec:validate` (75/75), `jup:check` y `jup:cleanup:check` en verde, y 11 mutantes propios sobre una copia, todos detectados, con el control sin mutar en verde. No hay stack, backend ni modelo reales en este PR, que no toca código de producción. Los arreglos posteriores a esta revisión no se sometieron a otra. No sustituye a la `Revision JUP-071` ni a la `Validacion JUP-071` de una persona.
 
 ## Pattern sweep
 

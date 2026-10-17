@@ -42,3 +42,39 @@ correctas; OpenSpec75/75, trazabilidad8 e higiene1710. CI del nuevo SHA pendient
 Victor aprobo e76c4c29; Paris comento098c50aa. Los dictamenes conservan su
 alcance original; comprobar su estado tras push y revalidar la nueva combinacion.
 No se modifican dictamenes ni se integra la PR en develop. Pairing pendiente.
+
+## Actualización con el colector de develop — 17/10/2026
+
+Origen: «PR135: actualízala con develop, resuelve los conflictos y pasa las
+pruebas necesarias», chat fuente 01a1270c-e332-7462-9c90-706d49ade92c.
+Se reutiliza el worktree limpio `tfm-economicon-jup-reviews-governance` y la rama
+existente. Base incorporada: `1de41b907f849082b0676319971775a6560b71b5`,
+sobre `b2ceda79aeb7513910e6324cb22dcd42543770a6`.
+
+Único conflicto: `README.md` de continuidad; conservadas la fila propia y la del
+colector. Control de preservación: 25 archivos entrantes y 15 propios disjuntos
+intactos. Workflows, package, scripts, apps y colector idénticos a develop; política,
+fixture, tests y contrato JUP-126 conservan sus blobs. No se altera la política
+para obtener checks verdes. El nuevo comando `chat-collector:test` permanece en CI.
+
+Feedback leído en vivo: tres reviews, conversación y cero inline. Paris COMMENTED
+favorable sobre b2ceda79; Víctor DISMISSED sobre e76c4c29, sin nueva validación.
+Trello leído por el puente DockerServer: JUP-126 en 40 — En revisión, roles y
+criterios conservados; pairing asignado a Lucía sin acreditación. El nuevo SHA
+requiere revalidar lo afectado según CONTRIBUTING; no se trasladan dictámenes.
+
+Pruebas y límites del candidato en [la evidencia](../evidence/JUP-126-validation.md#actualización-con-develop-del-17102026).
+Recibos completos fuera de Git: `materiales/07-evidencias/PR135-actualizacion-20261017/`
+en el workspace. CI del SHA publicado se documentará en la descripción de PR135;
+el estado de publicación/CI de este párrafo aún es pendiente al preparar el commit.
+
+Consulta de PR63, sin cambios: head `2b166be9`, conflicto con develop. Víctor aprobó
+el 17/10 a las 15:13 UTC y levantó su solicitud; limitado a preparación offline,
+no ensayo integrado. Paris COMMENTED favorable sobre ese head; Lucía confirma
+atendidos sus puntos. Falta integrar autorizadamente JUP-126 antes de que la base
+de PR63 tenga la regla nueva, actualizar PR63 con la base vigente conservando filas
+y controles de demo/evaluación, contrastar CI push y PR (push 38976110318 falló
+backend; PR 38976116287 pasó), revalidar el delta, acreditar pairing y resolver
+aceptación de B/ensayo integrado. Los títulos antiguos no prueban el nuevo SHA.
+La hipótesis de caducidad de tokens del backend procede de la validación de Víctor;
+no se reproduce aquí ni se corrige fuera del alcance de PR135. Sin merge ni demo.
