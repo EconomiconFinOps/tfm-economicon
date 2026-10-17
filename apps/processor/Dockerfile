@@ -3,10 +3,12 @@ FROM python:3.12-slim@sha256:d764629ce0ddd8c71fd371e9901efb324a95789d2315a47db7e
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
+RUN apt-get update && apt-get install -y --no-install-recommends libreoffice-writer tesseract-ocr tesseract-ocr-spa tesseract-ocr-eng libseccomp2 fonts-dejavu-core && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
-COPY requirements.txt requirements.lock requirements-chat.lock ./
-RUN pip install --no-cache-dir --require-hashes -r requirements.lock -r requirements-chat.lock \
+COPY requirements.txt requirements.lock requirements-chat.lock requirements-documents.lock requirements-documents.txt ./
+RUN pip install --no-cache-dir --require-hashes -r requirements.lock -r requirements-chat.lock -r requirements-documents.lock \
     && pip check \
     && pip install --dry-run --no-index -r requirements.txt
 

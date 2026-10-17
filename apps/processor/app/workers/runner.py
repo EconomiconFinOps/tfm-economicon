@@ -1,5 +1,6 @@
 from contextlib import ExitStack
 import re
+import os
 import threading
 import uuid
 
@@ -39,7 +40,14 @@ class ProcessorWorker:
                 get_embedding_provider(settings.embedding_provider, settings.embedding_dimension, settings=settings),
                 self.vector_store,
             )
-            self.task = IngestTask(self.repository, self.pipeline)
+            documents = None
+            if os.getenv('DOCUMENT_UPLOADS_ENABLED', 'false').lower() == 'true':
+                from app.documents.document_storage import S3Storage
+                from app.documents.document_processor import DocumentProcessor
+                storage = S3Storage()
+                resources.callback(storage.close)
+                documents = DocumentProcessor(self.database.engine, storage)
+            self.task = IngestTask(self.repository, self.pipeline, documents=documents)
             # Initialize synchronously so combined startup cannot orphan a failing worker.
             self.database.initialize()
             self.vector_store.initialize()
@@ -66,6 +74,15 @@ class ProcessorWorker:
                 logger.error("worker_loop_failed", exception_type=type(exc).__name__)
                 self._stopping.wait(2)
 
+    def _document_terminal_failure(self, job, message):
+        documents = getattr(self.task, 'documents', None)
+        if documents is not None:
+            try:
+                documents.terminal_failure(job)
+            except Exception:
+                self.queue.nack(message.delivery_tag, requeue=True)
+                raise
+
     def _process_message(self, message: QueueMessage) -> None:
         job = message.payload
         request_id = job.get("request_id") if isinstance(job, dict) else None
@@ -84,6 +101,7 @@ class ProcessorWorker:
             logger.warning("job_message_rejected")
             self.queue.nack(message.delivery_tag, requeue=False)
         except ProviderError as exc:
+            self._document_terminal_failure(job, message)
             logger.warning("job_provider_failed", category=exc.category)
             self.queue.nack(message.delivery_tag, requeue=False)
         except IngestionFailed as exc:
@@ -91,6 +109,7 @@ class ProcessorWorker:
                 # Reintentar una entrada rechazada por el guardrail fallaria igual y
                 # retendria la cola: se descarta en una entrega. Evento fijo, sin campos
                 # del trabajo (el `request_id` ya lo aporta el contexto de structlog).
+                self._document_terminal_failure(job, message)
                 logger.warning("job_input_rejected")
                 self.queue.nack(message.delivery_tag, requeue=False)
                 return
@@ -102,6 +121,7 @@ class ProcessorWorker:
                 # Se descarta SIN relanzar: relanzar haria que el bucle registrase
                 # `worker_loop_failed` y esperase 2 s por un mensaje ya resuelto. El evento
                 # es fijo y sin campos propios (ni origen, ni contenido, ni texto de la causa).
+                self._document_terminal_failure(job, message)
                 logger.warning("job_retry_exhausted")
                 self.queue.nack(message.delivery_tag, requeue=False)
                 return

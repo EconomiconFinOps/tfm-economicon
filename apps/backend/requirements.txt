@@ -10,3 +10,4 @@ sqlalchemy-cockroachdb>=2.0.4,<3.0
 structlog>=24.1.0
 tokenizers==0.22.1
 uvicorn>=0.30.1
+-r requirements-documents.txt

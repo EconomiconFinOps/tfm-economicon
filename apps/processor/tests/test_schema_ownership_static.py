@@ -7,7 +7,9 @@ import pytest
 APPS = Path(__file__).resolve().parents[2]
 OWNED_TABLES = {
     "backend": {"tenants", "users", "user_tenants", "jobs", "conversations", "messages",
-                "chat_operations", "anomaly_episodes", "anomaly_detection_state"},
+                "chat_operations", "anomaly_episodes", "anomaly_detection_state",
+                "document_uploads", "document_upload_slots", "document_content_claims",
+                "extracted_documents", "extracted_document_parts", "document_execution_claims"},
     "processor": {"azure_cost_ingestion_runs", "azure_cost_records"},
 }
 NO_DDL_MIGRATIONS = {("processor", "001"), ("backend", "005")}  # 005 verifies the reconciled 002 schemas.
