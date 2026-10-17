@@ -40,10 +40,11 @@ work; update both after meaningful milestones.
 
 ## Pull Request Review And Validation
 
-Process version: 2026-09-30 (JUP-100)
+Process version: 2026-10-16 (JUP-126)
 
-The full rules and the definition of the four roles are in `CONTRIBUTING.md#review-and-validation-flow`. The required check `JUP reviews` only verifies that both titled reviews exist, that neither comes from the author, that no request for changes is pending and, when the same person published both, that the pull request description contains the visible exception line; the rest of these rules depend on you:
+The full rules and the definition of the four roles are in `CONTRIBUTING.md#review-and-validation-flow`. The required check `JUP reviews` only verifies that both titled reviews count under the latest-title rule, that neither comes from the author, that no request for changes is pending and, when the same person supplies both counting titles, that the pull request description contains the visible exception line; the rest of these rules depend on you:
 
+- For each person and review kind, only their latest published title for this card counts; if dismissed, it supplies no role and does not revive an older title. Keep the complete history when resolving requests for changes. This does not verify assigned identities, current-SHA acceptance or review contents.
 - Publish review and validation as two separate reviews titled `Revision JUP-XXX` and `Validacion JUP-XXX`. Towards `develop`, the first one published is a Comment and only the second one approves, when both are satisfied; towards `main`, both approve.
 - A validation records evidence for each acceptance criterion of the Trello card and lists what was not validated and why. Never report as validated something that was not tested.
 - A Comment does not lift a Request changes: once the changes are addressed, whoever requested them approves (or the request is dismissed with a reason).
