@@ -9,7 +9,7 @@ import re
 
 import structlog
 from sqlalchemy import bindparam, create_engine, text
-from sqlalchemy.exc import DBAPIError
+from sqlalchemy.exc import DBAPIError, ProgrammingError
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.pool import NullPool
 
@@ -19,6 +19,7 @@ from app.services.citations import DocumentCitations, structured_location
 MAX_TOP_K = 20
 logger = structlog.get_logger("vector_store")
 MAX_COSINE_DISTANCE = 2.0
+UNDEFINED_COLUMN = '42703'
 
 
 class EmbeddingDimensionMismatch(StartupError):
@@ -70,7 +71,7 @@ class PgVectorQueryStore:
             parameters["provider"] = provider
         if max_distance is not None:
             parameters["max_distance"] = float(max_distance)
-        def query(connection):
+        def query(connection, structured=True):
             def timeout():
                 if deadline is None: return
                 remaining=deadline-time.time()
@@ -79,6 +80,8 @@ class PgVectorQueryStore:
                 connection.execute(text("SELECT set_config('statement_timeout', :timeout, true), "
                     "set_config('lock_timeout', :timeout, true)"),{'timeout':str(milliseconds)})
             timeout()
+            chunk_metadata = 'dc.metadata' if structured else 'NULL'
+            document_metadata = 'metadata' if structured else "CAST('{}' AS jsonb)"
             rows = connection.execute(
                 text(
                     f"""
@@ -91,7 +94,7 @@ class PgVectorQueryStore:
                             dc.chunk_index AS chunk_index,
                             kd.source AS source,
                             dc.content AS content,
-                            dc.metadata AS metadata,
+                            {chunk_metadata} AS metadata,
                             (ce.embedding <=> CAST(:query_embedding AS vector)) AS distance
                         FROM knowledge_documents kd
                         JOIN document_chunks dc ON dc.document_id = kd.id
@@ -112,18 +115,23 @@ class PgVectorQueryStore:
             # transaction snapshot as retrieval (including concurrent reingestion).
             timeout()
             documents = connection.execute(
-                text("""
-                    SELECT id, text_content, metadata FROM knowledge_documents
+                text(f"""
+                    SELECT id, text_content, {document_metadata} AS metadata FROM knowledge_documents
                     WHERE tenant_id = :tenant_id AND id IN :document_ids
                 """).bindparams(bindparam("document_ids", expanding=True)),
                 {"tenant_id": tenant_id, "document_ids": list({row.document_id for row in rows})},
             )
             documents = {row.id:row for row in documents}
             locations = {key:DocumentCitations(row.text_content) for key,row in documents.items()}
+            def manual(row):
+                return documents[row.document_id].metadata.get('original_format') == 'manual-text'
             def location(row):
                 if row.metadata:
-                    return structured_location(row.metadata, documents[row.document_id].metadata,
-                                               documents[row.document_id].text_content)
+                    value = structured_location(row.metadata, documents[row.document_id].metadata,
+                                                documents[row.document_id].text_content)
+                    if manual(row):
+                        value['section'] = locations[row.document_id].section(row.content)
+                    return value
                 return {'section':locations[row.document_id].section(row.content)}
             return [
                 {
@@ -131,7 +139,7 @@ class PgVectorQueryStore:
                     "document_id": row.document_id,
                     "tenant_id": row.tenant_id,
                     "title": documents[row.document_id].metadata.get("title") or (
-                        None if documents[row.document_id].metadata.get('chunking') else locations[row.document_id].title
+                        None if documents[row.document_id].metadata.get('chunking') and not manual(row) else locations[row.document_id].title
                     ) or row.source.strip(),
                     "chunk_index": row.chunk_index,
                     **location(row),
@@ -143,13 +151,28 @@ class PgVectorQueryStore:
                 for row in rows
             ]
 
+        def tolerant(connection):
+            # Backend may serve legacy rows before the processor applies migration 003.
+            try:
+                return query(connection)
+            except ProgrammingError as error:
+                # 42703 supplies a 1-based query character position, not column_name.
+                position = getattr(getattr(error.orig, 'diag', None), 'statement_position', None)
+                missing = (error.statement or '')[int(position)-1:].split(maxsplit=1) if position and position.isdecimal() else []
+                if (getattr(error.orig, 'sqlstate', None) != UNDEFINED_COLUMN
+                        or not missing or missing[0] not in {'dc.metadata', 'metadata'}):
+                    raise
+                connection.rollback()
+                logger.warning('vector_metadata_unavailable', reason='vector_migration_003_pending')
+                return query(connection, structured=False)
+
         if deadline is not None:
             if not isinstance(deadline,(int,float)) or not math.isfinite(deadline) or cancelled is None:
                 raise ValueError('Invalid retrieval deadline.')
-            return self._bounded_query(query,deadline,cancelled)
+            return self._bounded_query(tolerant,deadline,cancelled)
         with self.engine.connect().execution_options(isolation_level="REPEATABLE READ") as connection:
             self._capture_peer(connection)
-            return query(connection)
+            return tolerant(connection)
 
     def _execute_query(self, query, deadline=None, cancelled=None):
         if deadline is not None:
@@ -335,10 +358,13 @@ class PgVectorQueryStore:
                 document = parents[row['revision_id']]
                 parent = document['metadata']
                 citation = DocumentCitations(document['content'])
+                manual = parent.get('original_format') == 'manual-text'
                 location = (structured_location(row['metadata'], parent, document['content']) if row['metadata']
                             else {'section': citation.section(row['content'])})
+                if manual and row['metadata']:
+                    location['section'] = citation.section(row['content'])
                 result.append({'chunk_id': row['chunk_id'], 'document_id': row['document_id'], 'tenant_id': tenant,
-                    'chunk_index': row['chunk_index'], 'title': parent.get('title') or (None if parent.get('chunking') else citation.title) or row['source'].strip(),
+                    'chunk_index': row['chunk_index'], 'title': parent.get('title') or (None if parent.get('chunking') and not manual else citation.title) or row['source'].strip(),
                     'source': row['source'], 'content': row['content'], 'distance': float(row['distance']), **location,
                     **({'chunk_metadata': row['metadata']} if row['metadata'] else {}),
                     'retrieval': {'generation_id': plan['generation_id'], 'space_id': plan['space_id'], 'mode': mode,

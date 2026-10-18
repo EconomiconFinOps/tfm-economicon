@@ -67,3 +67,28 @@ def test_identity_contains_recipe_but_not_tenant_or_generation(counter):
     assert 'tenant' not in original.descriptor() and 'generation' not in original.descriptor()
     with pytest.raises(ValueError):
         replace(original, model_id='unverified-model-with-1536-dimensions')
+
+
+def test_markdown_title_cleaning_changes_only_contextual_input(counter):
+    from app.documents.extractors import markdown
+    from app.embeddings.normalized import parent_metadata
+    from app.embeddings.structural_chunker import StructuredChunker
+    value, blocks, metadata, warnings, method = markdown(b'# FinOps guide ###\n\nCanonical evidence.\n')
+    document = {'schema_version': 1, 'document_id': 'synthetic', 'tenant_id': 'a',
+        'original_format': 'md', 'text': value, 'blocks': blocks, 'file_metadata': metadata}
+    before = deepcopy(document)
+    result = StructuredChunker(counter=counter).chunk_document(document)
+    parent = parent_metadata(document, result['manifest'])
+    assert parent['title'] == 'FinOps guide'
+    assert document == before and parent['content_hash'] == hashlib.sha256(value.encode()).hexdigest()
+    chunk = result['chunks'][0]
+    old = {**parent, 'title': blocks[0]['text']}
+    contextual = prepare_embedding(chunk, parent, space(counter), counter)
+    previous = prepare_embedding(chunk, old, space(counter), counter)
+    assert contextual.text.startswith('Documento: FinOps guide\n')
+    assert contextual.text.endswith(chunk['content']) and contextual.text != previous.text
+    assert contextual.text_hash == hashlib.sha256(contextual.text.encode()).hexdigest()
+    assert contextual.text_hash != previous.text_hash
+    assert contextual.token_count == counter.count(contextual.text)
+    assert prepare_embedding(chunk, parent, space(counter, 'plain_v1'), counter) == prepare_embedding(
+        chunk, old, space(counter, 'plain_v1'), counter)

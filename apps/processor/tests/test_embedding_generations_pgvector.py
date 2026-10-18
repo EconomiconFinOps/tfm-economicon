@@ -32,6 +32,140 @@ def legacy_rows(store):
         return connection.execute(text('SELECT kd.id,dc.id,dc.content,ce.embedding::text FROM knowledge_documents kd JOIN document_chunks dc ON dc.document_id=kd.id JOIN chunk_embeddings ce ON ce.chunk_id=dc.id ORDER BY kd.id')).all()
 
 
+@pytest.mark.parametrize('preparation', ['plain_v1', 'contextual_embedding_v1'])
+def test_corrected_title_keeps_input_vector_cache_and_snapshot_correlated(setup, backend_query_store, preparation):
+    from dataclasses import replace
+    from app.documents.extractors import markdown
+    from app.embeddings.context import prepare_embedding
+    from app.embeddings.normalized import parent_metadata
+    from app.embeddings.structural_chunker import StructuredChunker
+    store, generations, identity = setup
+    value, blocks, metadata, _, _ = markdown(b'# FinOps guide ###\n\nCanonical evidence.\n')
+    document = {'schema_version': 1, 'document_id': 'md-input', 'tenant_id': 'a',
+        'original_format': 'md', 'text': value, 'blocks': blocks, 'file_metadata': metadata}
+    result = StructuredChunker(counter=generations.counter).chunk_document(document)
+    parent = parent_metadata(document, result['manifest'])
+    assert parent['title'] == 'FinOps guide'
+    old_parent = {**parent, 'title': blocks[0]['text']}
+    identity = replace(identity, preparation=preparation)
+    class Recording(MockEmbeddingProvider):
+        def __init__(self):
+            super().__init__(1536)
+            self.inputs = []
+        def embed_batch(self, texts, **kwargs):
+            self.inputs.extend(texts)
+            return super().embed_batch(texts, **kwargs)
+    provider = Recording()
+    plain = [provider.embed(item['content']) for item in result['chunks']]
+    def save(metadata, prepared=None):
+        return store.store_document(job_id='md-input', tenant_id='a', source='guide.md', artifact_uri=None,
+            text_content=value, chunks=result['chunks'], embeddings=plain, provider_name='mock',
+            document_metadata=metadata, prepared_index=prepared)
+    save(old_parent)
+    first = generations.build('a', identity, provider)
+    generations.activate('a', first, expected_head=None, expected_version=0)
+    old_inputs = [prepare_embedding(item, old_parent, identity, generations.counter) for item in result['chunks']]
+    assert provider.inputs == [item.text for item in old_inputs]
+    # Building again reads persisted metadata; code does not retroactively fix old data.
+    generations.build('a', identity, provider)
+    assert provider.inputs == [item.text for item in old_inputs]
+    prepared = generations.prepare_publication('a', 'md-input', 'guide.md', value,
+        result['chunks'], parent, provider)
+    new_inputs = [prepare_embedding(item, parent, identity, generations.counter) for item in result['chunks']]
+    changed = preparation == 'contextual_embedding_v1'
+    assert (old_inputs[0].text_hash != new_inputs[0].text_hash) == changed
+    assert provider.inputs == [item.text for item in old_inputs] + ([item.text for item in new_inputs] if changed else [])
+    # A repeated preparation reuses only the exact input in the same tenant/space.
+    generations.prepare_publication('a', 'md-input', 'guide.md', value, result['chunks'], parent, provider)
+    before = list(provider.inputs)
+    query = backend_query_store(store.database_url)
+    try:
+        old_plan = query.resolve_retrieval_plan('a', enabled=True, contextual=changed)
+        second = save(parent, prepared)['index_generation_id']
+        plan = query.resolve_retrieval_plan('a', enabled=True, contextual=changed)
+        old = query.search_chunks('a', plain[0], max_distance=2, provider='mock', plan=old_plan, question='Canonical evidence')
+        new = query.search_chunks('a', plain[0], max_distance=2, provider='mock', plan=plan, question='Canonical evidence')
+        assert first != second and plan['generation_id'] == second
+        assert {item['title'] for item in old} == {old_parent['title']}
+        assert {item['title'] for item in new} == {'FinOps guide'}
+        assert [item['content'] for item in old] == [item['content'] for item in new]
+        assert [item['chunk_metadata'] for item in old] == [item['chunk_metadata'] for item in new]
+        with store.engine.connect() as connection:
+            cache = {row.text_hash: row for row in connection.execute(text('''SELECT text_hash,embedding::text AS vector,token_count
+                FROM embedding_cache WHERE tenant_id='a' AND space_id=:space'''), {'space': identity.id})}
+        assert set(cache) == {item.text_hash for item in old_inputs + new_inputs}
+        import json
+        for item in old_inputs + new_inputs:
+            assert cache[item.text_hash].token_count == generations.counter.count(item.text)
+            expected = [float(f'{number:.6f}') for number in provider.embed(item.text)]
+            assert json.loads(cache[item.text_hash].vector) == expected
+        generations.cache_embeddings('b', identity, new_inputs, provider)
+        assert provider.inputs == before + [item.text for item in new_inputs]
+    finally:
+        query.close()
+
+
+def test_missing_tokenizer_does_not_replace_an_active_generation(setup, tmp_path, monkeypatch):
+    from app.core.runtime_secrets import StartupError, startup_boundary
+    store, generations, identity = setup
+    publish(store)
+    provider = MockEmbeddingProvider(1536)
+    first = generations.build('a', identity, provider)
+    head = generations.activate('a', first, expected_head=None, expected_version=0)
+    previous = legacy_rows(store)
+    monkeypatch.setenv('EMBEDDING_TOKENIZER_FILE', str(tmp_path/'missing.tiktoken'))
+    @startup_boundary
+    def prepare():
+        return store.prepare_index_publication(tenant_id='a', job_id='doc', source='synthetic',
+            text_content='Replacement.', chunks=['Replacement.'], document_metadata=None, provider=provider)
+    with pytest.raises(StartupError, match='Embedding tokenizer resource is missing.*build_tokenizer.py'):
+        prepare()
+    assert generations.active_plan('a') == head
+    assert legacy_rows(store) == previous
+    assert generations.inspect('a', first)['generations'][0]['state'] == 'ready'
+
+
+def test_publication_check_is_serialized_by_a_row_lock(setup):
+    import threading
+    from sqlalchemy import event
+    store, _, _ = setup
+    original = publish(store)
+    a_read, b_reached = threading.Event(), threading.Event()
+    marker = 'tenant_id, job_id, metadata FROM knowledge_documents'
+    def before(connection, cursor, statement, parameters, context, executemany):
+        if marker in statement and threading.current_thread().name == 'publisher-b':
+            b_reached.set()
+    def after(connection, cursor, statement, parameters, context, executemany):
+        if marker in statement and threading.current_thread().name == 'publisher-a':
+            a_read.set()
+            b_reached.wait(3)
+    event.listen(store.engine, 'before_cursor_execute', before)
+    event.listen(store.engine, 'after_cursor_execute', after)
+    outcomes = {}
+    def save(name, value):
+        if name == 'publisher-b':
+            a_read.wait(5)
+        try:
+            outcomes[name] = store.store_document(job_id='doc', tenant_id='a', source='synthetic',
+                artifact_uri=None, text_content=value, chunks=[value], embeddings=[[1.] + [0.] * 1535],
+                provider_name='mock', expected_publication=original['publication_id'])
+        except Exception as error:
+            outcomes[name] = error
+    threads = [threading.Thread(target=save, args=(name, value), name=name)
+        for name, value in [('publisher-a', 'First new evidence.'), ('publisher-b', 'Second new evidence.')]]
+    try:
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join(30)
+        assert not any(thread.is_alive() for thread in threads)
+    finally:
+        event.remove(store.engine, 'before_cursor_execute', before)
+        event.remove(store.engine, 'after_cursor_execute', after)
+    assert isinstance(outcomes['publisher-a'], dict)
+    assert isinstance(outcomes['publisher-b'], StalePublication)
+
+
 def test_real_adaptive_migration_snapshot_cache_and_atomic_rollback(setup):
     store, generations, identity = setup
     publish(store)

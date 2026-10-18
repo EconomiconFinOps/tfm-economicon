@@ -21,6 +21,59 @@ No fue evaluado: la rama e identificación oficial se incorporan después y el
 candidato final se fija de nuevo antes de recibir referencias PM independientes.
 No atribuir el delta sin commit al SHA base.
 
+## Compatibilidad local con PR #134
+
+Corrección acotada del 18/10/2026 sobre `bc9f6df7641990820696c710642ae9f93efe99f8`,
+en copia auxiliar detached. Referencia de fase 2: `2de57bd0d4cef17556d86a74add4e75776dc52ab`;
+se adaptan los ajustes de `b4783e77` y `d8a3fdf9`, no sus archivos completos.
+El delta posterior de `3591ac7a12419de0780faea167dce44a1536d131` corrige la
+limpieza ATX y limita el fallback a la posición de la columna metadata. Su paquete
+de ocho rutas se comprobó por hash antes de adaptar sólo código/pruebas pertinentes.
+C13 y el extractor Markdown ya coinciden y no se modifican.
+
+Producto: `normalized.py` limpia sólo el título ATX; ambas rutas de `vector_store.py`
+conservan título/sección manual y el recorrido legacy tolera exclusivamente
+ProgrammingError SQL42703 cuya posición señala `dc.metadata` o `metadata` antes
+de 003, tras rollback. Errores de provider u otras columnas no producen warning
+ni reintento. La misma instancia utiliza
+metadata al aparecer la migración. `EmbeddingTokenizerUnavailable` conserva el
+diagnóstico de recurso/versión/hash al cruzar el límite de arranque y sigue siendo
+ValueError. No cambian tokenizador, recursos, modelos, contratos públicos o deadlines.
+
+Primera adaptación, anterior a `3591ac7a`: 100 backend afectados con PostgreSQL/pgvector real y generación
+controlada; 28 processor de tokenizer/contexto/reproceso/publicación; nueve focales
+SQL de correlación input/vector/caché, snapshot y concurrencia. Hay solapamiento de
+módulos entre pasadas: no se suman como una batería única. Se conservan los ocho
+fallos backend y dos processor reproducidos antes de la corrección.
+
+Tras adaptar `3591ac7a`, nuevas comprobaciones focales: 23 de ATX/contexto,
+27 de citas/SQL003/aislamiento y dos SQL de correlación contextual/plain, todas
+conformes. Se conservan también dos rojos adicionales: timeout acotado del título
+hostil y reintento incorrecto ante provider42703. Las cifras anteriores no se
+presentan como repeticiones sobre estos bytes ni como dictamen independiente.
+
+Las nuevas pruebas están en `test_new_document_citation_titles.py`,
+`test_vector_metadata_migration_order.py` y los módulos processor existentes de
+tokenization, space_context, generations_pgvector y reprocess_document. También
+se añade `test_parent_metadata.py` de fase 2 con sus bordes y subproceso acotado.
+Los recorridos backend de MD/manual ejecutan el processor con el mismo intérprete:
+requieren dependencias de ambos servicios y el tokenizer externo. La CI actual
+no define `JUP086_VECTOR_TEST_URL`; sus omisiones no acreditan estas pruebas.
+La ruta legacy usa mock8D y la generación verificada mock1536D. Para SQL
+se requieren las URL de pruebas desechables que documentan las fixtures; el recurso
+cl100k externo debe prepararse con el builder fijado. No apuntar a bases de producto.
+Cubren manual/Markdown sin título precargado en legacy/dense/hybrid, metadatos
+antes/después de 003, cancelación, errores SQL ajenos, caché contextual frente a
+plain y conservación del índice activo ante recurso ausente.
+
+El cambio de título puede producir un nuevo hash contextual; la caché se comprueba
+contra el input exacto, tokens, tenant y espacio. Build sigue leyendo metadata ya
+persistida: no se promete limpieza retroactiva. No hubo llamadas reales, gasto,
+campañas, migración de datos existentes, activación, reconciliación, commit o push.
+Los dictámenes independientes y controles originales de este delta se entregan
+al PM por separado; integración, conflictos con develop y roles humanos conservan
+su fase y no quedan satisfechos por estas pruebas.
+
 ## Ejecuciones nuevas y riesgos cubiertos
 
 | Comprobación | Resultado observado | Alcance |

@@ -1,6 +1,6 @@
 # Índices de embeddings
 
-Actualización documental: 2026-10-17. Entrega técnica local completada sobre
+Actualización documental: 2026-10-18. Entrega técnica local completada sobre
 la base de chunking documental. JUP-127 formaliza la tercera entrega incremental
 con [tarjeta oficial](https://trello.com/c/AG5fAbl3), [change](../../openspec/changes/archive/2026-10-17-jup-127-contextual-hybrid-retrieval/proposal.md)
 y [evidencia](../evidence/JUP-127-validation.md). Cierre local aprobado por Paris;
@@ -124,3 +124,19 @@ backend, 651 passed, 151 skipped, 6021 warnings in 49.06s en los demás consumid
 [JUP-127](../evidence/JUP-127-validation.md). Candidato corregido pendiente de
 nuevas guardas y reevaluación independiente; CI posterior, PR, dependencias y
 roles humanos conservan su fase. Cero llamadas/coste, sin reanudar E.
+
+## Compatibilidad de citas con fase 2
+
+Corrección local del 18/10 sobre `bc9f6df7`, sin reconciliar otras ramas: adapta
+los títulos Markdown y la lectura manual de PR #134 también al índice verificado,
+el fallback legacy sólo ante SQL42703 y el diagnóstico de tokenizer en arranque.
+Se incorpora después el delta corregido de `3591ac7a`: limpieza ATX sin retroceso
+cuadrático y fallback sólo cuando la posición del error señala `metadata` de 003,
+con bordes ATX y límites SQL fijados por pruebas. No se copia el lector de fase 2.
+Conserva cancelación, aislamiento, caché concurrente y snapshots. El título limpio
+puede cambiar input/hash contextual de nuevas ingestas o reprocesos explícitos;
+plain no usa ese título y los datos persistidos no se corrigen retroactivamente.
+No se reindexa ni activa nada. Pruebas y límites en la
+[evidencia existente](../evidence/JUP-127-validation.md#compatibilidad-local-con-pr-134).
+Los dictámenes internos de este delta se entregan por separado; no acreditan
+las revisiones humanas ni resuelven los conflictos actuales con develop.
