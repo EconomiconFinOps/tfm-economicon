@@ -52,8 +52,11 @@ localprovisional ycampañasN3/N5/parciales separadas. Fuentes antiguasintactas.
 OpenSpecestricto80/80, trazabilidad9changes e higiene2146archivos conformes en
 estacapa documental. Elprimercontrolhigiene fuebloqueadoporsubprocesogitdel
 sandbox; la reejecuciónlocalautorizada sípasó, sin alterar elcontrol.
-IntegraciónGrafana, publicaciónremota yCI delcandidato final aúnpendientes en
-estecorte; no se atribuyenreviews ni aceptación humana/cierrede tarjetas.
+El soporte Grafana está integrado localmente:18 filas, panel separado y6 juicios
+locales NULL. La prueba PostgreSQL real y Grafana live permanecen pendientes por
+el bloqueo de transferencia documentado en [su continuidad](dashboard-evaluacion-asistente.md).
+Publicación remota yCI del candidato final pendientes; no se atribuyen reviews
+ni aceptación humana/cierre de tarjetas.
 
 ## Actualización de validación — 17/10/2026
 

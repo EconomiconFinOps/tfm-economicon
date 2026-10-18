@@ -1,5 +1,8 @@
 ## Decisions
 
+JUP: JUP-121
+Trello: https://trello.com/c/aIdxwsXR
+
 1. Mantener los cinco formatos e hitos históricos y añadir un manifiesto separado.
    Una ejecución del agregador contiene dos modelos; no inventar dos runs.
 2. Grupo `paired_local_provisional`, métricas propias y `judgment=null` sólo en

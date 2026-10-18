@@ -2,6 +2,37 @@
 
 Última actualización documental: 2026-10-16. Esta nota no repite el alcance de la tarjeta, que vive en [Trello](https://trello.com/c/aIdxwsXR).
 
+## Comparativa GLM/DeepSeek: soporte preparado — 18/10/2026
+
+Autorización humana excepcional en HAL 9000
+`01a1270c-e332-7462-9c90-706d49ade92c`: publicar cifras históricas,
+incorporarlas a Grafana y regularizar el ADR, sin tocar PR63.
+Integración aislada en `docs/JUP-063-model-comparison-publication`, base
+`6d9e6710`; no cambia roles ni presume dictámenes de los implementadores.
+
+Se añade `jup-063-paired-v1` y un manifiesto suplementario: un run del informe,
+dos modelos y18 filas agregadas. Panel25 separado del resto de campañas;
+los tres contadores de rúbrica local provisional usan `judgment=null`, sólo en
+`paired_local_provisional`. Sus medidas técnicas conservan `automatic`.
+No se inventa adjudicación humana/automática ni aceptación de calidad actual.
+[Datos y procedencia](../evidence/JUP-063/glm-deepseek-20261016/README.md) y
+[guía de carga limitada](../validation/evaluation-glm-deepseek.md).
+
+`sql --preserve-existing` prepara una transacción limitada a la identidad/huella
+de este run, sin DDL, roles, permisos oTRUNCATE; conserva otras ejecuciones.
+No aplicar `load` histórico a un destino compartido: regenera toda la proyección.
+El destino conocido de configuración es `postgres-pgvector:5432`, base
+`embeddings`, esquema `evaluation`, datasource `evaluation-postgres`, dashboard
+`economicon-assistant-evaluation`; esto no identifica un stack remoto vigente.
+
+La prueba PG opt-in preparada comprueba sentinel/rollback/idempotencia yconsulta
+del panel. **No ejecutada en PostgreSQL real ni Grafana live**: la aprobación
+automática rechazó transferir seis archivos públicos de prueba a DockerServer
+por falta de autorización humana específica para ese destino/payload. No se
+transfirió ni arrancó nada, y no se busca una vía alternativa. La publicación
+remota/CI del conjunto siguen pendientes de guardia ROOT; no merge autorizado.
+Los siguientes apartados conservan su corte histórico del16/10.
+
 ## Estado
 
 - Rama `feat/JUP-121-assistant-evaluation-dashboard`, creada desde `develop`; `origin/develop` integrado dos veces (JUP-120 y JUP-122). PR [#132](https://github.com/EconomiconFinOps/tfm-economicon/pull/132) abierta. Paris pidió cambios (`local:doctor` con la variable nueva) y Lucia dejó un comentario de pairing con mejoras de lectura; ambos se atienden en el change `jup-121-lectura-dashboard` ([archivado](../../openspec/changes/archive/2026-10-16-jup-121-lectura-dashboard/)), pendiente de revalidación. Las segundas revisiones (anotaciones de la latencia, estado de casos solo de JUP-070, contrato de clasificación para JUP-071, orden de la sección A, títulos de C y fecha de la matriz) se resuelven en el change `jup-121-anotaciones-y-fuente` ([archivado](../../openspec/changes/archive/2026-10-16-jup-121-anotaciones-y-fuente/)).
