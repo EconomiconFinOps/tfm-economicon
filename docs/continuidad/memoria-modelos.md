@@ -55,8 +55,9 @@ sandbox; la reejecuciónlocalautorizada sípasó, sin alterar elcontrol.
 El soporte Grafana está integrado localmente:18 filas, panel separado y6 juicios
 locales NULL. La prueba PostgreSQL real y Grafana live permanecen pendientes por
 el bloqueo de transferencia documentado en [su continuidad](dashboard-evaluacion-asistente.md).
-Publicación remota yCI del candidato final pendientes; no se atribuyen reviews
-ni aceptación humana/cierre de tarjetas.
+Publicación normal autorizada tras la guardia ROOT; el estado remoto de la rama
+y su CI se consulta en la PR, sin trasladar estos resultados a otro SHA. No se
+atribuyen reviews ni aceptación humana/cierre de tarjetas.
 
 ## Actualización de validación — 17/10/2026
 

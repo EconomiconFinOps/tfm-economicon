@@ -29,9 +29,18 @@ La prueba PG opt-in preparada comprueba sentinel/rollback/idempotencia yconsulta
 del panel. **No ejecutada en PostgreSQL real ni Grafana live**: la aprobación
 automática rechazó transferir seis archivos públicos de prueba a DockerServer
 por falta de autorización humana específica para ese destino/payload. No se
-transfirió ni arrancó nada, y no se busca una vía alternativa. La publicación
-remota/CI del conjunto siguen pendientes de guardia ROOT; no merge autorizado.
-Los siguientes apartados conservan su corte histórico del16/10.
+transfirió ni arrancó nada, y no se busca una vía alternativa.
+
+La guardia integrada completa ejecutó1862 tests y encontró6 fallos de contratos
+nuevos del panel más4 fallos promtool/DockerWindows `invalid mode:/t`. Se corrigió
+el rótulo/mapping de clasificación y se amplió el orden esperado expresamente,
+sin eliminar controles:118 pruebas afectadas PASS en el candidato integrado.
+Los cuatro promtool siguen sin acreditar ejecución: archivo de pruebas y
+expresiones Prometheus idénticos a develop6d9e6710, fallo de mount previo al
+arranque. No se declara toda la suite local verde ni se atribuye un resultadoPG.
+OpenSpec81/81 y trazabilidad10 cambios PASS. Publicación normal autorizada tras
+la guardia ROOT; el estado remoto/CI se consulta en la PR de esta rama. Sin merge
+autorizado. Los siguientes apartados conservan su corte histórico del16/10.
 
 ## Estado
 
