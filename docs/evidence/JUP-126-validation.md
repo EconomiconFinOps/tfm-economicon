@@ -171,3 +171,55 @@ coordinar una sola ronda sobre el candidato estable, con responsabilidades reale
 La lectura técnica de Paris no se convierte en coimplementación o validación;
 los mensajes de oferta/aceptación no se interpretan como relevo formal.
 Logs y snapshots filtrados: `materiales/07-evidencias/PR135-candidato-unico-20261018/`.
+
+
+## Excepción puntual autorizada el 18/10/2026
+
+Origen: PR135/JUP-126, chat custodio `01a14ab7-fc75-7e20-ab29-610d85739b5c`,
+orden humana transmitida por HAL9000 (`01a1270c-e332-7462-9c90-706d49ade92c`):
+«Autorizo la excepción puntual para que Lucía mantenga pairing y revisión en la
+PR135, con Paris en validación. Déjalo documentado y desbloquea el cierre sin
+tocar las demás PR». Esta decisión supera el bloqueo de separación descrito
+antes; no modifica la atribución real ni concede autorización de merge.
+
+El ajuste se activa únicamente con número autoritativo135, repositorio
+`EconomiconFinOps/tfm-economicon`, autor `iber1to`, título e ID JUP-126,
+rama `fix/JUP-126-dismissed-review-titles`, base `develop`, roles exactos
+Alejandro/Lucía/Lucía/Paris y una única declaración visible literal de
+CONTRIBUTING. Sólo `lmatsan` aporta Revision y `ParisArcos` Validacion en este
+caso. Se conserva el último título por persona/tipo y todo el historial para
+resolver Request changes; Comment no los levanta. Autor, borradores y títulos
+desestimados no aportan roles; ambos dictámenes siguen siendo obligatorios.
+Otras PR y la excepción general revisión/validación mantienen sus reglas.
+
+Paris aportó lectura técnica, sin coimplementación ni pruebas; el pairing
+histórico corresponde a Lucía (comentario6237440991). La excepción consta en
+el body GitHub y en Trello por el puente DockerServer: recibo local
+`materiales/07-evidencias/seguimiento-mvp/bridge-pr135-20261018T112640Z.json`
+del workspace, verificado por HAL9000 tras recuperar el puente. No se duplica
+escritura ni aviso Discord1561335717538566267.
+
+| Comprobación propia del ajuste | Resultado confirmado el18/10/2026 |
+| --- | --- |
+| Política104 + gobernanza15 | 119/119 PASS, cero omisiones |
+| Nuevas regresiones sobre baseline93c0dd8f | 9 fallos esperados |
+| Mutantes sin número / marcador visible / identidades / historial completo | 5 /19 /6 /1 fallos detectados |
+| Snapshot real con body autorizado | Política conforme; sólo falta Validacion JUP-126 |
+| Mismo snapshot con validación Paris hipotética | Sin errores; simulación, no dictamen publicado |
+
+Logs reproducibles fuera de Git, en
+`materiales/07-evidencias/PR135-candidato-unico-20261018/` del workspace:
+`scoped-final-tests.log`, `scoped-final-counterfactuals.json`,
+`counterfactual-final/` y `scoped-live-snapshot-result.json`.
+Los119 tests ya ejecutados se conservan sin repetir al no cambiar sus entradas.
+Integridad final confirmada: trazabilidad9 cambios activos, higiene1938 archivos,
+OpenSpec78/78 estricto y diff-check conformes. Archivo técnico del change
+`2026-10-18-jup-126-pr135-authorized-exception` con publicación/CI aún pendientes;
+no implica aceptación ni merge. Publicación y CI/SQL se completan con el recibo
+por SHA de PR135; no se presentan como conformes antes de publicarse. La base continúa
+0e686f91 y el candidato anterior93c0dd8f conserva su evidencia histórica.
+Apps, workflows, scripts, dependencias y lockfile permanecen idénticos a ese
+candidato; la CI obligatoria comprueba el árbol completo. Sin otras PR,
+campañas, modelos, claves, despliegue o merge. Tras CI/SQL conforme corresponde
+una sola ronda de revisión/revalidación del delta sobre el nuevo SHA, sin
+atribuir aceptación nueva a reviews históricas.

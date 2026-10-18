@@ -158,3 +158,17 @@ test("documents latest-title counting without erasing change-request history", (
   }
   assert.match(agents(), /latest published title/);
 });
+
+test("documents the PR135-only human authorization without advertising a general template exception", async () => {
+  const { PR135_PAIRING_REVIEW_EXCEPTION } = await import("./pr-policy.mjs");
+  assert.ok(contributing.includes(PR135_PAIRING_REVIEW_EXCEPTION));
+  assert.match(contributing, /Only|only/);
+  assert.match(contributing, /PR number `135`/);
+  assert.match(contributing, /`lmatsan`/);
+  assert.match(contributing, /`ParisArcos`/);
+  assert.match(agents(), /Only PR #135/);
+  assert.ok(!template().includes(PR135_PAIRING_REVIEW_EXCEPTION));
+  const spec = read("openspec", "specs", "pr-review-validation", "spec.md");
+  assert.ok(spec.includes(PR135_PAIRING_REVIEW_EXCEPTION));
+  assert.match(spec, /complete\s+published history SHALL still resolve all requests for changes/);
+});

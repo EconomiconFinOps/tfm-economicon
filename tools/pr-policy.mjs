@@ -21,8 +21,11 @@ function readRole(body, label) {
   return match?.[1]?.trim();
 }
 
-export function checkPullRequest({ title = "", body = "", head = "", base = "" }) {
+export function checkPullRequest(input) {
+  const { title = "", body = "", head = "", base = "" } = input;
   const errors = [];
+  const specific = pr135Exception(input);
+  if (specific.declared && !specific.active) errors.push(PR135_SCOPE_ERROR);
   const titleMatch = TITLE_PATTERN.exec(title);
   const bodyIdMatch = BODY_ID_PATTERN.exec(body);
 
@@ -74,7 +77,7 @@ export function checkPullRequest({ title = "", body = "", head = "", base = "" }
       );
     }
     const sameReviewer = reviewer === validator && declared;
-    const expected = sameReviewer ? ROLE_LABELS.length - 1 : ROLE_LABELS.length;
+    const expected = sameReviewer || specific.active ? ROLE_LABELS.length - 1 : ROLE_LABELS.length;
     if (new Set(participants.values()).size !== expected) {
       errors.push(
         sameReviewer
@@ -89,6 +92,9 @@ export function checkPullRequest({ title = "", body = "", head = "", base = "" }
 export const REVIEW_FLOW_LINK =
   "https://github.com/EconomiconFinOps/tfm-economicon/blob/develop/CONTRIBUTING.md#review-and-validation-flow";
 export const SAME_PERSON_EXCEPTION = "- Excepcion: revision y validacion por la misma persona, acordado en Trello";
+export const PR135_PAIRING_REVIEW_EXCEPTION = "- Excepcion puntual PR135: pairing y revision por Lucia Mateo; validacion por Paris Arcos Martin; autorizada por Alejandro Aguado el 2026-10-18";
+const PR135_SCOPE_ERROR = "La excepcion puntual PR135 solo es valida para PR135/JUP-126 en EconomiconFinOps/tfm-economicon, hacia develop, con autor, rama y roles autorizados. Ver " + REVIEW_FLOW_LINK;
+const PR135_ROLE_LOGINS = { revision: "lmatsan", validacion: "parisarcos" };
 const REVIEW_KINDS = [
   { key: "revision", label: "Revision", pattern: /^revisi[oó]n\s+jup-(\d{3})\b/iu },
   { key: "validacion", label: "Validacion", pattern: /^validaci[oó]n\s+jup-(\d{3})\b/iu },
@@ -98,6 +104,55 @@ const DECISIVE_STATES = new Set(["APPROVED", "CHANGES_REQUESTED", "DISMISSED"]);
 
 // Accents and case are ignored so that "Validación" and "validacion" match the same title.
 const plain = (text) => text.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase("es");
+
+// The one-off authorization must be plain visible Markdown, not an example or
+// hidden declaration. Keep this stricter reader separate from the general rule.
+function pr135VisibleLines(body) {
+  const lines = body.replace(/\r\n?/g, "\n")
+    .replace(/<!--[\s\S]*?(?:-->|$)/g, "")
+    .replace(/<([a-z][a-z0-9-]*)(?:\s[^>]*)?>[\s\S]*?(?:<\/\1\s*>|$)/gi, "")
+    .split("\n");
+  const visible = [];
+  let fence;
+  for (const line of lines) {
+    const match = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(line);
+    if (fence) {
+      if (match && match[1][0] === fence[0] && match[1].length >= fence.length && !match[2].trim()) fence = undefined;
+      continue;
+    }
+    if (match && !(match[1][0] === "`" && match[2].includes("`"))) {
+      fence = match[1];
+      continue;
+    }
+    if (!/^( {4,}|\t)/.test(line)) visible.push(line);
+  }
+  // CommonMark code spans may cross line breaks, so remove them before
+  // considering a standalone-looking marker or role line within that span.
+  return visible.join("\n").replace(/(?<!`)(`+)(?!`)[\s\S]*?(?<!`)\1(?!`)/g, "").split("\n");
+}
+
+function pr135Exception({ number, repository = "", author = "", title = "", body = "", base = "", head = "" }) {
+  const lines = pr135VisibleLines(body);
+  const declarations = lines.filter((line) => line.trim() === PR135_PAIRING_REVIEW_EXCEPTION);
+  const declared = declarations.length > 0;
+  const roles = ["Alejandro Aguado", "Lucia Mateo", "Lucia Mateo", "Paris Arcos Martin"];
+  const rolesMatch = ROLE_LABELS.every((label, index) => {
+    const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const pattern = new RegExp(`^- ${escaped}:\\s*([^\\r\\n]+)$`, "i");
+    const values = lines.map((line) => pattern.exec(line)?.[1]?.trim()).filter((value) => value !== undefined);
+    return values.length === 1 && plain(values[0].normalize("NFKC")) === plain(roles[index]);
+  });
+  return {
+    declared,
+    active: declarations.length === 1 && number === 135
+      && repository.toLowerCase() === "economiconfinops/tfm-economicon"
+      && author.toLowerCase() === "iber1to"
+      && TITLE_PATTERN.exec(title)?.[1] === "126"
+      && lines.filter((line) => /^-\s*ID:\s*JUP-126\s*$/i.test(line)).length === 1
+      && base === "develop" && head === "fix/JUP-126-dismissed-review-titles"
+      && rolesMatch,
+  };
+}
 
 function declaresSamePersonException(body) {
   const expected = plain(SAME_PERSON_EXCEPTION);
@@ -110,7 +165,8 @@ function declaresSamePersonException(body) {
     .some((line) => !/^( {4,}|\t)/.test(line) && plain(line.trim()).replace(/\.$/, "") === expected);
 }
 
-export function checkReviews({ title = "", body = "", author = "", reviews = [] }) {
+export function checkReviews(input) {
+  const { title = "", body = "", author = "", reviews = [] } = input;
   const titleMatch = TITLE_PATTERN.exec(title);
   if (!titleMatch) return [`El titulo debe contener un identificador JUP-XXX. Ver ${REVIEW_FLOW_LINK}`];
   const id = titleMatch[1];
@@ -120,6 +176,8 @@ export function checkReviews({ title = "", body = "", author = "", reviews = [] 
     .sort((a, b) => Date.parse(a.submitted_at) - Date.parse(b.submitted_at));
 
   const errors = [];
+  const specific = pr135Exception(input);
+  if (specific.declared && !specific.active) errors.push(PR135_SCOPE_ERROR);
   const authors = {};
   for (const kind of REVIEW_KINDS) {
     // Preserve history for change-request resolution below; a dismissed title
@@ -133,6 +191,10 @@ export function checkReviews({ title = "", body = "", author = "", reviews = [] 
     authors[kind.key] = new Set(
       [...latestTitled]
         .filter(([, item]) => item.state !== "DISMISSED")
+        // Only for the explicitly authorized PR135 allocation: the assigned
+        // review/validation supply titles. Other reviews remain in published
+        // and still resolve/block change requests, without dismissing history.
+        .filter(([user]) => !specific.active || user === PR135_ROLE_LOGINS[kind.key])
         .map(([user]) => user),
     );
     if (authors[kind.key].size === 0) {
@@ -192,10 +254,13 @@ export async function fetchReviewInput({
     if (batch.length < 100) break;
   }
   return {
+    number: pull.number,
+    repository,
     title: pull.title ?? "",
     body: pull.body ?? "",
     author: pull.user?.login ?? "",
     base: pull.base?.ref ?? "",
+    head: pull.head?.ref ?? "",
     reviews,
   };
 }
@@ -204,6 +269,9 @@ export function parseEvent(event) {
   const pullRequest = event.pull_request;
   if (!pullRequest) throw new Error("El evento no contiene pull_request.");
   return {
+    number: pullRequest.number,
+    repository: event.repository?.full_name ?? "",
+    author: pullRequest.user?.login ?? "",
     title: pullRequest.title ?? "",
     body: pullRequest.body ?? "",
     head: pullRequest.head?.ref ?? "",

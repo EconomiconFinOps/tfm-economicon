@@ -160,3 +160,26 @@ corresponde antes de la única ronda final de revisión/revalidación.
 Estado al preparar el commit: candidato local completo; publicación/CI pendientes.
 Evidencias: `materiales/07-evidencias/PR135-candidato-unico-20261018/` del workspace.
 No merge, otras ramas, campañas, modelos, claves, despliegues ni Discord.
+
+
+## Excepción humana acotada a PR135 —18/10/2026
+
+La orden humana literal de HAL9000 autoriza a Lucía pairing/revisión y Paris
+validación únicamente en135/JUP126. Supera la espera de decisión anterior;
+Paris conserva sólo lectura técnica histórica, sin coimplementación atribuida.
+Trello y body GitHub verificados por HAL9000 (recibo externo
+`seguimiento-mvp/bridge-pr135-20261018T112640Z.json`); Discord ya informado,
+no duplicar. Se prepara un único push necesario sobre93c0dd8f/base0e686f91.
+
+Guardas estrictas de número/repositorio/autor/rama/base/tarjeta, roles exactos y
+marcador visible; sólo lmatsan Revision y ParisArcos Validacion aportan títulos
+en este caso, conservando todo el historial Request changes. Sin bypass global,
+protecciones modificadas ni dispensar ambos dictámenes. Política104/gobernanza15:
+119PASS sin omisiones; baseline y cuatro mutantes detectados. No se repiten suites
+con entradas intactas. Detalles y logs en [evidencia](../evidence/JUP-126-validation.md#excepción-puntual-autorizada-el-18102026).
+
+Integridad final:9 cambios,1938 archivos, OpenSpec78/78 y diff-check conformes.
+Change archivado técnicamente; aceptación/publicación/CI no se simulan.
+Publicado/CI todavía pendientes al preparar este commit; consultar recibo final
+por SHA en PR135. El único trámite posterior a CI/SQL conforme es revisión y
+validación incrementales del candidato estable. Sin merge ni otras PR.

@@ -43,9 +43,9 @@ from Trello.
 
 ## Rotating roles
 
-Process version: 2026-10-16 (JUP-126)
+Process version: 2026-10-18 (JUP-126, PR135-only authorization)
 
-Every Trello card assigns four different people to four roles. The same names go in the Participacion section of the pull request, and they must reflect who actually does each role. The only accepted overlap is the same person in PR review and validation under the declared exception (see the flow below); the `JUP policy` check then requires three different people instead of four.
+Every Trello card assigns four different people to four roles. The same names go in the Participacion section of the pull request, and they must reflect who actually does each role. The only accepted overlap in the general process is the same person in PR review and validation under the declared exception (see the flow below); PR135 has the separately authorized one-off case documented below; the `JUP policy` check then requires three different people instead of four.
 
 If someone other than the assigned person takes over a role (for example, whoever opens the pull request assumes leadership), they reassign it explicitly: update the Participacion section of the pull request and the Trello card. A reviewer who notices an outdated Participacion section asks for it to be updated.
 
@@ -94,7 +94,7 @@ If someone other than the assigned person takes over a role (for example, whoeve
 8. The required check `JUP reviews` blocks the merge until both titled reviews count under the latest-title rule, neither from the author, without pending requests for changes, and with the exception line when the same person supplies both counting titles. It supports the process; it is not a security control, and it does not judge the content of the reviews. It runs the code of the pull request itself, so reviewers pay special attention to changes in `tools/pr-policy.mjs` and `.github/workflows/`, which can alter the checks.
    For each person and review kind (`Revision` / `Validacion`) for the card, only the latest published title counts. A dismissed latest title supplies no role and does not revive an older title of that kind from the same person. Dismissed titles do not cause a same-person overlap. The complete published history still resolves requests for changes, including dismissals; a Comment still does not lift a Request changes. Reviews on older commits may count if their latest title is not dismissed, but this does not prove current-SHA acceptance, assigned identities or review contents. A green check never replaces the assigned reviewer/validator or the revalidation required by point 7.
 
-   JUP-126 changes the title-counting semantics of JUP-100; it does not grant an exception or authorize dismissal of any review. This process revision is proposed in the governance PR and takes effect only after its review and authorized integration.
+   The JUP-126 title-counting change does not itself grant an exception or authorize dismissal of any review. PR135 has the separately authorized one-off case below. This process revision is proposed in the governance PR and takes effect only after its review and authorized integration.
 
 9. The Trello columns follow the earliest stage still pending, and only the leader moves the card (the same person who merges and updates Trello). The card does not move on its own and nobody else moves it:
    - **40 — En revisión:** from opening the pull request (not a draft, CI green, review and validation requested) until `Revision JUP-XXX` is satisfied, that is, published as a Comment or an Approve with no requested changes pending.
@@ -102,6 +102,38 @@ If someone other than the assigned person takes over a role (for example, whoeve
    - **Parallel work:** the two reviews can be published in any order. If the validation is satisfied first, the card stays in 40 until the review is too. The leader links each published review in a Trello comment.
    - **Requested changes:** the card does not move. It stays in its column, and does not go back to `30 — En curso`, while the leader addresses them and asks again; the stage only advances when the review that requested them is satisfied.
    - **Merged:** the leader moves the card to `70 — Hecho`.
+
+
+### One-off human authorization: PR135 only
+
+On 2026-10-18 the user explicitly authorized Lucia to keep the real pairing and
+review of PR #135, with Paris in validation and Alejandro in leadership. This is
+not a new general exception. All other PRs retain the ordinary separation rules.
+The authorization and the limits of the declared contributions are recorded in
+[the JUP-126 evidence](docs/evidence/JUP-126-validation.md#excepción-puntual-autorizada-el-18102026).
+
+Both checks recognize this case only for PR number `135`, JUP-126 in title/body,
+repository `EconomiconFinOps/tfm-economicon`, author `Iber1to`, base `develop`,
+head `fix/JUP-126-dismissed-review-titles`, and exactly these roles:
+Alejandro Aguado / Lucia Mateo / Lucia Mateo / Paris Arcos Martin. The PR body
+must contain this exact line as visible plain Markdown, outside comments, code
+(including multiline code spans) or HTML, with each role declared once:
+
+```
+- Excepcion puntual PR135: pairing y revision por Lucia Mateo; validacion por Paris Arcos Martin; autorizada por Alejandro Aguado el 2026-10-18
+```
+
+For this authorized allocation only, `lmatsan` supplies the latest non-dismissed
+`Revision JUP-126` and `ParisArcos` the latest non-dismissed `Validacion JUP-126`.
+Historical titles from other role assignments remain published and do not supply
+these allocated roles. This does not dismiss a review: the complete published
+history still resolves every request for changes, including complementary ones.
+Neither author nor draft titles count; a dismissed latest title never revives an
+older title; Comment still does not lift Request changes. Both titles are still
+required, as are evidence, affected-delta revalidation and independent acceptance.
+A visible declaration with a different PR identity or allocation is rejected.
+There is no ruleset, workflow, API permission or status override. A green check
+still grants neither acceptance of review contents nor authorization to merge.
 
 A validation lists what was not validated instead of marking it as met. The Validacion section of the pull request template is the leader's own evidence; it does not replace the validation review.
 

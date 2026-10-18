@@ -40,7 +40,7 @@ work; update both after meaningful milestones.
 
 ## Pull Request Review And Validation
 
-Process version: 2026-10-16 (JUP-126)
+Process version: 2026-10-18 (JUP-126, PR135-only authorization)
 
 The full rules and the definition of the four roles are in `CONTRIBUTING.md#review-and-validation-flow`. The required check `JUP reviews` only verifies that both titled reviews count under the latest-title rule, that neither comes from the author, that no request for changes is pending and, when the same person supplies both counting titles, that the pull request description contains the visible exception line; the rest of these rules depend on you:
 
@@ -52,3 +52,17 @@ The full rules and the definition of the four roles are in `CONTRIBUTING.md#revi
 - Before addressing changes or merging, read every review, the conversation comments and the inline comments on the diff, not only the latest review.
 - Merge only when both reviews exist and nothing is pending; if "Update branch" brings changes to files or behaviour the pull request depends on (not just rows added to shared registries), request a revalidation first.
 - Anyone using local tools, prompts or scripts to review, validate or merge pull requests aligns them with `CONTRIBUTING.md` whenever the process version changes.
+
+
+### One-off authorization for PR135
+
+Only PR #135 / JUP-126 in this repository has the human-authorized exception of
+2026-10-18: Alejandro leads, Lucia pairs and reviews, Paris validates. It requires
+the exact visible declaration documented in CONTRIBUTING, authoritative PR number,
+repository/author/branch/base and exact roles. It does not change any other PR.
+Only Lucia's latest eligible Revision and Paris's latest eligible Validacion can
+supply the titles in this case; all published history still resolves changes.
+No author/draft/dismissed title supplies a role; Comment does not lift changes.
+This records the real pairing rather than crediting Paris with coimplementation.
+Both independent titled verdicts and affected-delta revalidation remain required;
+this exception grants no merge approval or power to dismiss a historical review.
