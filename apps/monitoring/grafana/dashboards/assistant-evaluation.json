@@ -2083,7 +2083,32 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Juicio"
+                "value": "Tipo de ejecución"
+              },
+              {
+                "id": "custom.width",
+                "value": 180
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "regex",
+                    "options": {
+                      "pattern": "^no real.*",
+                      "result": {
+                        "color": "purple",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               }
             ]
           },
