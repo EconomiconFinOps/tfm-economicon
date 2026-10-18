@@ -3,7 +3,7 @@
 Actualización documental: 2026-10-16. [JUP-125](https://trello.com/c/H0RUnArf),
 rama `feat/JUP-125-deterministic-document-chunking`. Formalización retrospectiva
 de la implementación experimental y sus correcciones; no OpenSpec pre-code.
-Dependencia JUP-124/PR #133 en borrador, sin integración confirmada en develop.
+Dependencia JUP-124/PR #133 integrada en develop (`466b083a`, 17/10/2026) e incorporada a esta rama en `4888625e`.
 [Matriz de quince criterios](../evidence/JUP-125-validation.md),
 [OpenSpec archivado](../../openspec/changes/archive/2026-10-16-jup-125-deterministic-document-chunking/proposal.md)
 y [ADR-0023 Proposed](../adr/ADR-0023-deterministic-document-chunking.md).
@@ -209,7 +209,11 @@ doce preguntas y 46 vectores reales. ZIP original, SHA256 y manifiesto permiten
 inspección y replay matemático offline; límites y anomalías históricas se conservan.
 No se repiten SQL, OCR o inferencias ni se modifica el fix C13 de Lucía.
 
-Pendientes: comprobación humana de C10/C14, revalidación de C13 y los cambios
-solicitados por Víctor en citas, compatibilidad con migración 003 y pruebas.
-Las correcciones técnicas quedan coordinadas con Lucía; esta incorporación sólo
-añade evidencia documental y no declara aceptación ni autorización de merge.
+Pendientes: comprobación humana de C10/C14 y revalidación de C13 y del delta
+publicado por Lucía en `d8a3fdf9`, además de la nueva revisión de Víctor.
+Esta aportación sólo añade evidencia documental y no declara aceptación
+funcional ni autorización de merge.
+
+## Respuesta a la Revision JUP-125 — 18/10/2026
+
+Lucía publica en `d8a3fdf9` la respuesta a los tres cambios que Víctor pidió sobre `ddd3356c`. Citas: los `.md` subidos mostraban el título con el marcador ATX y el texto manual perdía título y sección frente a develop; `parent_metadata` quita el marcador y el backend vuelve a leer título y sección del texto manual como antes. Orden de arranque (opción a de Lucía): el backend ya no falla si arranca antes de que el processor aplique la migración 003; si falta la columna `metadata`, repite la consulta como antes de 003, registra `vector_metadata_unavailable` y usa la metadata en cuanto existe, sin consultas adicionales en el caso normal. El fallo del tokenizador llega al arranque con su propio motivo. Su entrega documenta las 11 propuestas por Víctor (9 del processor y 2 del backend) más una del orden de migración y otra del motivo del tokenizador, en rojo sin los arreglos y en verde con ellos. Se corrigen las menciones de #133 en borrador. Pendientes: revisión de Víctor, revalidación de Alejandro del delta junto con C13 y comprobación humana de C10/C14, cuyo paquete histórico se enlaza arriba.

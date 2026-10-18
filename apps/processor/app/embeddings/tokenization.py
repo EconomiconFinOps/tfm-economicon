@@ -4,22 +4,27 @@ from importlib.metadata import version
 from pathlib import Path
 import tiktoken
 from tiktoken.load import load_tiktoken_bpe
+from app.core.runtime_secrets import StartupError
 from app.embeddings.tokenizer_resource import (
     ENCODING_NAME, LIBRARY_VERSION, PATTERN, RESOURCE_BYTES, RESOURCE_SHA256,
     SPECIAL_TOKENS, resource_path, assert_external_resource_path,
 )
 
 
+class EmbeddingTokenizerUnavailable(StartupError, ValueError):
+    """Startup names the missing pinned tokenizer instead of a generic dependency failure."""
+
+
 class EmbeddingTokenCounter:
     def __init__(self, path: Path | None = None):
         if version('tiktoken') != LIBRARY_VERSION:
-            raise ValueError('Embedding tokenizer library version mismatch')
+            raise EmbeddingTokenizerUnavailable('Embedding tokenizer library version mismatch; install the pinned tiktoken version')
         path = Path(path) if path is not None else resource_path()
         assert_external_resource_path(path)
         if path.is_symlink() or not path.is_file() or path.stat().st_size != RESOURCE_BYTES:
-            raise ValueError('Prepare the pinned embedding tokenizer outside the repository before running')
+            raise EmbeddingTokenizerUnavailable('Embedding tokenizer resource is missing; prepare it with build_tokenizer.py and set EMBEDDING_TOKENIZER_FILE')
         if hashlib.sha256(path.read_bytes()).hexdigest() != RESOURCE_SHA256:
-            raise ValueError('Embedding tokenizer resource mismatch')
+            raise EmbeddingTokenizerUnavailable('Embedding tokenizer resource does not match the pinned SHA256; prepare it again with build_tokenizer.py')
         # A filesystem path uses read_file's local branch, never an HTTP constructor.
         ranks = load_tiktoken_bpe(str(path), expected_hash=RESOURCE_SHA256)
         self.max_token_bytes = max(map(len, ranks))

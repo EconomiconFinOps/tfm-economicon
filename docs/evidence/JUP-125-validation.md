@@ -31,7 +31,7 @@ documentos añadidos frente al manifiesto R2; sólo sandbox y su test cambian
 producto. Las otras 1.640 fuentes anteriores son idénticas; no hay borrados.
 Esta formalización modifica documentación, no código, tests, corpus o modelos.
 
-JUP-124/PR #133 está en borrador y no se declara integrada en develop. PM
+JUP-124/PR #133 estaba en borrador al formalizar; se integró en develop el 17/10/2026 (`466b083a`) y la rama la incorpora en `4888625e`. PM
 proporciona los hechos de CI y gestiona cambios de base. Una futura modificación
 de bytes/base exige decisión de vigencia por cada evaluador; no hereda un PASS.
 

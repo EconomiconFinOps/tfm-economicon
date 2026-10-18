@@ -30,3 +30,12 @@ def test_resource_default_is_outside_the_checkout(monkeypatch):
     root=Path(__file__).resolve().parents[3]
     assert not resource_path().resolve().is_relative_to(root)
     with pytest.raises(ValueError): assert_external_resource_path(root/'cl100k_base.tiktoken')
+
+
+def test_missing_resource_reaches_startup_with_its_own_reason(tmp_path):
+    from app.core.runtime_secrets import StartupError, startup_boundary
+    @startup_boundary
+    def start():
+        EmbeddingTokenCounter(tmp_path/'missing.tiktoken')
+    with pytest.raises(StartupError, match='Embedding tokenizer resource is missing.*build_tokenizer.py'):
+        start()
