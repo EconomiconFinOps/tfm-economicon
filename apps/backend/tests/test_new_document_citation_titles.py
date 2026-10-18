@@ -60,6 +60,10 @@ def processor(program, *, value=None, environment=None):
     return result.stdout
 
 
+def generate(kind):
+    return json.loads(processor(PROGRAM, value=[BODY, kind]))
+
+
 @pytest.mark.parametrize('mode', ['legacy', 'dense', 'hybrid'])
 @pytest.mark.parametrize('kind', ['md', 'manual'])
 def test_new_documents_keep_heading_title_section_and_provenance(retrieval, kind, mode):
