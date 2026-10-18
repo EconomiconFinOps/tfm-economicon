@@ -3,7 +3,7 @@
 Actualización documental: 2026-10-16. [JUP-125](https://trello.com/c/H0RUnArf),
 rama `feat/JUP-125-deterministic-document-chunking`. Formalización retrospectiva
 de la implementación experimental y sus correcciones; no OpenSpec pre-code.
-Dependencia JUP-124/PR #133 en borrador, sin integración confirmada en develop.
+Dependencia JUP-124/PR #133 integrada en develop (`466b083a`, 17/10/2026) e incorporada a esta rama en `4888625e`.
 [Matriz de quince criterios](../evidence/JUP-125-validation.md),
 [OpenSpec archivado](../../openspec/changes/archive/2026-10-16-jup-125-deterministic-document-chunking/proposal.md)
 y [ADR-0023 Proposed](../adr/ADR-0023-deterministic-document-chunking.md).
@@ -200,3 +200,62 @@ publicación se gestionan por separado. Sin servicios o inferencias nuevos.
 La `Validacion JUP-125` de Alejandro sobre `4888625e` (no favorable) reprodujo que `StructuredChunker.validate()` aceptaba procedencia bien formada pero incoherente: una referencia de bloque existente cambiada de `blocks/0` a `blocks/1` con página 999 se publicaba y se citaba, igual que una sección inventada o un `parent_normalized_range=[0,999]`. El validador ahora recalcula desde la estructura del documento las anotaciones de cada tramo y la ruta de sección del chunk, compartiendo con el chunker las funciones `source_spans` y `common_section_path`, y rechaza cualquier diferencia. `tests/test_chunk_provenance_integrity.py` cubre el caso de Alejandro, los nueve formatos tras un viaje JSON (control positivo) y la manipulación de sección, padre, nivel y tipo: 10 fallos sin la corrección y 19 correctos con ella.
 
 C10 (cadena original → normalizado) y C14 (paquete congelado de la comparación de recuperación) siguen pendientes de las evidencias que custodia el liderazgo. Pendiente: revalidación del delta y revisión de Víctor.
+
+## Evidencias históricas C10/C14 disponibles — 18/10/2026
+
+El liderazgo incorpora el [paquete descargable C10/C14](../evidence/JUP-125-C10-C14/README.md):
+nueve originales/normalizados/fixtures y comparación congelada de seis documentos,
+doce preguntas y 46 vectores reales. ZIP original, SHA256 y manifiesto permiten
+inspección y replay matemático offline; límites y anomalías históricas se conservan.
+No se repiten SQL, OCR o inferencias ni se modifica el fix C13 de Lucía.
+
+Pendientes: comprobación humana de C10/C14 y revalidación de C13 y del delta
+publicado por Lucía en `d8a3fdf9`, además de la nueva revisión de Víctor.
+Esta aportación sólo añade evidencia documental y no declara aceptación
+funcional ni autorización de merge.
+
+## Respuesta a la Revision JUP-125 — 18/10/2026
+
+Lucía publica en `d8a3fdf9` la respuesta a los tres cambios que Víctor pidió sobre `ddd3356c`. Citas: los `.md` subidos mostraban el título con el marcador ATX y el texto manual perdía título y sección frente a develop; `parent_metadata` quita el marcador y el backend vuelve a leer título y sección del texto manual como antes. Orden de arranque (opción a de Lucía): el backend ya no falla si arranca antes de que el processor aplique la migración 003; si falta la columna `metadata`, repite la consulta como antes de 003, registra `vector_metadata_unavailable` y usa la metadata en cuanto existe, sin consultas adicionales en el caso normal. El fallo del tokenizador llega al arranque con su propio motivo. Su entrega documenta las 11 propuestas por Víctor (9 del processor y 2 del backend) más una del orden de migración y otra del motivo del tokenizador, en rojo sin los arreglos y en verde con ellos. Se corrigen las menciones de #133 en borrador. Pendientes: revisión de Víctor, revalidación de Alejandro del delta junto con C13 y comprobación humana de C10/C14, cuyo paquete histórico se enlaza arriba.
+
+## Corrección focal de la revisión de Lucía — 18/10/2026
+
+Título ATX lineal y fallback 003 selectivo sobre metadata; errores ajenos se propagan
+sin reintento. Pruebas propias:72 processor y 53 backend, incluidas 13 de fallback
+con SQL real propio y límites; embeddings mock 8D, sin nuevas llamadas. Prerrequisitos
+de SQL/citas y omisión en CI documentados en el runbook. Original 2de57bd0 y base 466b083a
+conservados; sin reconciliación. Evaluación independiente y publicación pendientes;
+no sustituye reviews humanas ni elimina Request changes.
+
+## Composición con develop 0e686f91 — 18/10/2026
+
+Se prepara sobre `3591ac7a` la incorporación fija de develop `0e686f91`. Se conservan
+chunking/procedencia/fallback 003 y vecinos/políticas entrantes. Se transporta metadata
+en las filas adicionales y se distinguen posiciones legacy normalizadas de posiciones
+canónicas sin cambiar chunks; fragmentos ambiguos o más de 64 rangos no ganan autoridad.
+Pruebas e inventario se detallan en la evidencia JUP-125: 136recuperación/citas, 10 interacciones
+finales (incluidas en 68 consumidores finales), 50 processor compartidos y 54 contexto
+con fuente idéntica/tokenizador externo, sin inferencias. Paquete de 119 archivos y 33 destinos íntegros.
+Resoluciones físicas aún pendientes de marcar por liderazgo; después dos referencias
+PM y evaluadores distintos de la composición. No se trasladan reviews humanas ni CI
+de un padre al merge local; no se reabren campañas ni se repite archivo OpenSpec.
+
+## Corrección del manifiesto tras CI de f8dd03bc — 18/10/2026
+
+La CI del processor sobre `f8dd03bc` conserva siete fallos de contrato de recursos
+(2.532 PASS y 105 SKIP en aquel job). La reconciliación cambió el separador del
+compilador de políticas para admitir el salto de línea canónico, pero omitió actualizar
+su huella en el manifiesto entrante de develop, antes coherente. El tokenizador sí
+coincide con la versión fijada. Se ajustan exclusivamente la huella de ese módulo,
+la huella agregada del ensamblador y el pin agregado independiente del backend;
+las comprobaciones estrictas, reglas y módulos conservan sus bytes.
+
+Reproducción focal: siete fallos iguales en el candidato original; después siete PASS,
+103 consumidores del processor y 54 del backend PASS en ejecuciones separadas.
+Ambos servicios cargan el bundle real con la misma versión y rechazan tanto el
+manifiesto obsoleto como uno falsificado autoconsistente. La vista de fuentes para
+pruebas con rutas fijas es byteidéntica y añade sólo el tokenizador fijado fuera del
+producto. La evidencia detalla el error local de dependencia y su resolución.
+Pendientes de este delta: controles PM nuevos, revisión y validación independientes,
+publicación y CI posteriores. Los dictámenes de la reconciliación y sus fallos originales
+se conservan; no se convierten en aceptación de esta corrección ni sustituyen roles humanos.

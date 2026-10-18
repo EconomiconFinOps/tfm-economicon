@@ -273,3 +273,62 @@ dos referencias PM nuevas y reevaluación por los mismos roles independientes.
 Commit/push, CI remota posterior y PR por navegador corresponden al PM; todavía
 pendientes. No hay nueva campaña, activación compartida ni participación humana
 acreditada por esta corrección.
+
+## Integración local de la base final — 18/10/2026
+
+Composición en copia nueva: checkpoint local `27a69cb0da1935dd01919da7d8810862b3bed554`
+(padre `bc9f6df7641990820696c710642ae9f93efe99f8`) con base de fase 2
+`f8dd03bc719429af70b1b5d86c1565071b76876c`, que incorpora develop
+`0e686f9180d5ce195391e634a79ef2d6d3182af6`. No se atribuyen los cambios
+sin commit al checkpoint ni se extienden los dictámenes de la copia anterior.
+
+Se preserva el lector verificado y se adapta la expansión de vecinos y políticas
+de B al tenant, generación y espacio capturados. Los vecinos pueden estar fuera
+del umbral/pool semántico inicial; no se pide otro embedding y el pool final
+sigue limitado a veinte. Políticas: ambigüedad de dos documentos, límite de
+65536 bytes antes de transportar el texto, secciones de 4096 caracteres y seis
+fragmentos más centinela. Se mantienen posiciones literales únicas, los dominios
+canónico/legacy y el máximo de 64 tramos. No hay rescate con datos legacy mutables.
+La fixture de operación negocia ahora `server-documentation-v4`, el protocolo
+de la base incorporada, en lugar del nativo antiguo.
+
+Comprobaciones propias sobre esta composición, sin sumar selecciones solapadas:
+
+- Expansión verificada nueva: 22/22, SQL real; vecinos fuera del pool, snapshot
+  frente a modificación legacy, políticas/definición complementaria en dense e
+  hybrid, coordenadas canónicas/legacy, ambigüedad, bytes, fragmentos, literalidad,
+  consulta acotada por deadline y máximo de tramos.
+- Citas nuevas, fallback 003, posiciones estructuradas, políticas legacy y vecinos:
+  55/55 en la primera selección; la ampliación de expansión anterior se repitió
+  por cobertura nueva, no se considera otro conjunto único.
+- Contrato SQL y aislamiento por tenant más expansión anterior: 34/34 en otra
+  selección parcialmente solapada.
+- Processor, tokenizer/contexto, metadata padre, generaciones/caché y reprocesado:
+  83/83, sin omisiones.
+- Negativos SQL externos de aceptación sin rescate legacy: 8/8 sobre la copia
+  nueva; el auxiliar anterior se conserva idéntico, no se traslada su PASS antiguo.
+- Consumidores unitarios de recuperación y políticas: 75/75.
+- Operación pública con SQL real (cuatro combinaciones de preparación/modo),
+  contexto y vecinos: 49/49. Citas y metadatos de generación persistidos sin
+  conceder autoridad financiera a la documentación. El generador es controlado.
+- Contrato de recursos processor y paridad de módulos: 18/18. Bundle real y
+  diagnóstico backend: 6/6. Ambas huellas de código de políticas coinciden con
+  `f53ea3d187cc2ace2f86000c630d290396fb24b86dcb5e6ac409905c91dfd57c`.
+- OpenSpec estricto 80/80; gobernanza 26/26; trazabilidad de nueve changes e
+  higiene conformes. Sin cambios Git del ejecutor.
+
+Se conservan el rojo inicial de integración y los fallos de preparación de la
+primera selección: un documento que debía quedar fuera se publicó antes de
+capturar la generación y el caso de bytes excedía primero el límite de chunk.
+Se corrigieron únicamente esos datos, sin ampliar límites ni modificar aserciones.
+
+El fix de recursos publicado de fase 2 `fdcccf8e2171ba755b5a998ba9fb5a737dba2a91`
+se incorpora tras contrastar el contrato efectivo; los dos archivos de producto
+y tres documentos completos coinciden con su delta, y su fila de continuidad
+se conserva junto a la de JUP-127. No se cambian loader, módulos, prompts,
+versiones ni controles. CI de ese fix aún en curso según PM al entregarlo;
+sus dictámenes no se heredan. El compuesto requiere congelación con dos
+referencias PM nuevas y sus evaluaciones independientes propias.
+No se declara todavía cierre, CI del compuesto, aceptación remota ni roles humanos.
+Herramientas de prueba fijadas y fuentes de sólo lectura en contenedores aislados,
+PostgreSQL/pgvector real; generación y embeddings simulados, cero llamadas o gasto.

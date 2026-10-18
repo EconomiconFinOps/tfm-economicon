@@ -1,0 +1,36 @@
+{
+  "all_46_requests_identical": true,
+  "provider_calls": 0,
+  "cases": [
+    {
+      "case": "markdown",
+      "same_content_and_token_counts": true,
+      "versioned_ids_changed": true
+    },
+    {
+      "case": "plain-text",
+      "same_content_and_token_counts": true,
+      "versioned_ids_changed": true
+    },
+    {
+      "case": "digital-pdf",
+      "same_content_and_token_counts": true,
+      "versioned_ids_changed": true
+    },
+    {
+      "case": "scanned-pdf",
+      "same_content_and_token_counts": true,
+      "versioned_ids_changed": true
+    },
+    {
+      "case": "word-modern",
+      "same_content_and_token_counts": true,
+      "versioned_ids_changed": true
+    },
+    {
+      "case": "word-legacy",
+      "same_content_and_token_counts": true,
+      "versioned_ids_changed": true
+    }
+  ]
+}

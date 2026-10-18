@@ -1,0 +1,1511 @@
+{
+  "cases": [
+    {
+      "document": {
+        "blocks": [
+          {
+            "kind": "heading",
+            "level": 1,
+            "source_lines": [
+              1,
+              1
+            ],
+            "text": "Operación FinOps"
+          },
+          {
+            "kind": "heading",
+            "level": 2,
+            "source_lines": [
+              3,
+              3
+            ],
+            "text": "Anomalías"
+          },
+          {
+            "kind": "code",
+            "language": "text",
+            "source_lines": [
+              7,
+              9
+            ],
+            "text": "relative_delta > 20 % AND absolute_delta > 100 EUR/day"
+          },
+          {
+            "kind": "paragraph",
+            "source_lines": [
+              11,
+              11
+            ],
+            "text": "Ambos límites son estrictos: un valor exactamente igual no supera el umbral."
+          }
+        ],
+        "document_id": "evaluation-markdown",
+        "extraction_method": "synthetic-normalized",
+        "file_metadata": {},
+        "origin": {
+          "content_hash": "5b38ea143f26063bcb69f6efe75d5490e845ce675d4ea783589e092b3165a02a",
+          "source": "synthetic-evaluation",
+          "tenant_id": "tenant-rag2-evaluation",
+          "uploaded_by": "synthetic-operator"
+        },
+        "original_format": "md",
+        "result": "extracted",
+        "schema_version": 1,
+        "tenant_id": "tenant-rag2-evaluation",
+        "text": "# Operación FinOps\n\n## Anomalías\n\nLas anomalías diarias se rigen por la siguiente condición conjunta.\n\n```text\nrelative_delta > 20 % AND absolute_delta > 100 EUR/day\n```\n\nAmbos límites son estrictos: un valor exactamente igual no supera el umbral.\n\n## Etiquetas\n\nLa etiqueta owner identifica al responsable operativo.\n",
+        "warnings": []
+      },
+      "fixture_kind": "synthetic normalized input, not a claim of file extraction",
+      "name": "markdown",
+      "questions": [
+        {
+          "document_id": "evaluation-markdown",
+          "evidence": "relative_delta > 20 % AND absolute_delta > 100 EUR/day",
+          "normalized_span": [
+            111,
+            165
+          ],
+          "page": null,
+          "query": "¿Qué dos condiciones deben cumplirse para detectar la anomalía diaria?"
+        },
+        {
+          "document_id": "evaluation-markdown",
+          "evidence": "Ambos límites son estrictos: un valor exactamente igual no supera el umbral.",
+          "normalized_span": [
+            171,
+            247
+          ],
+          "page": null,
+          "query": "¿Qué ocurre al alcanzar exactamente el límite de anomalía?"
+        }
+      ]
+    },
+    {
+      "document": {
+        "blocks": [
+          {
+            "kind": "text",
+            "source_lines": [
+              1,
+              145
+            ],
+            "text": "La política de soporte mantiene un presupuesto de emergencia separado.\n\nLa nota operativa 0 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 1 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 2 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 3 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 4 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 5 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 6 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 7 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 8 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 9 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 10 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 11 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 12 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 13 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 14 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 15 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 16 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 17 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 18 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 19 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 20 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 21 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 22 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 23 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 24 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 25 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 26 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 27 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 28 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 29 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 30 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 31 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 32 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 33 conserva trazabilidad y responsable para decisiones de soporte.\n\nEl presupuesto de emergencia del equipo Boreal es de 450 EUR por mes.\n\nLa nota operativa 34 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 35 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 36 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 37 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 38 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 39 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 40 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 41 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 42 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 43 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 44 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 45 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 46 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 47 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 48 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 49 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 50 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 51 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 52 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 53 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 54 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 55 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 56 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 57 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 58 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 59 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 60 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 61 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 62 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 63 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 64 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 65 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 66 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 67 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 68 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 69 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa revisión de consumo de Boreal se celebra el martes a las 09:30 UTC."
+          }
+        ],
+        "document_id": "evaluation-plain-text",
+        "extraction_method": "synthetic-normalized",
+        "file_metadata": {},
+        "origin": {
+          "content_hash": "0e584f997470f34006d5f4c2cf8877948b64f3ef845b45834f840bf53a98bb5e",
+          "source": "synthetic-evaluation",
+          "tenant_id": "tenant-rag2-evaluation",
+          "uploaded_by": "synthetic-operator"
+        },
+        "original_format": "txt",
+        "result": "extracted",
+        "schema_version": 1,
+        "tenant_id": "tenant-rag2-evaluation",
+        "text": "La política de soporte mantiene un presupuesto de emergencia separado.\n\nLa nota operativa 0 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 1 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 2 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 3 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 4 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 5 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 6 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 7 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 8 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 9 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 10 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 11 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 12 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 13 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 14 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 15 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 16 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 17 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 18 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 19 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 20 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 21 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 22 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 23 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 24 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 25 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 26 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 27 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 28 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 29 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 30 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 31 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 32 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 33 conserva trazabilidad y responsable para decisiones de soporte.\n\nEl presupuesto de emergencia del equipo Boreal es de 450 EUR por mes.\n\nLa nota operativa 34 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 35 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 36 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 37 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 38 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 39 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 40 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 41 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 42 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 43 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 44 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 45 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 46 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 47 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 48 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 49 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 50 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 51 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 52 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 53 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 54 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 55 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 56 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 57 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 58 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 59 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 60 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 61 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 62 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 63 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 64 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 65 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 66 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 67 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 68 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 69 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa revisión de consumo de Boreal se celebra el martes a las 09:30 UTC.",
+        "warnings": []
+      },
+      "fixture_kind": "synthetic normalized input, not a claim of file extraction",
+      "name": "plain-text",
+      "questions": [
+        {
+          "document_id": "evaluation-plain-text",
+          "evidence": "El presupuesto de emergencia del equipo Boreal es de 450 EUR por mes.",
+          "normalized_span": [
+            2986,
+            3055
+          ],
+          "page": null,
+          "query": "¿Cuánto presupuesto mensual de emergencia tiene Boreal?"
+        },
+        {
+          "document_id": "evaluation-plain-text",
+          "evidence": "La revisión de consumo de Boreal se celebra el martes a las 09:30 UTC.",
+          "normalized_span": [
+            6153,
+            6223
+          ],
+          "page": null,
+          "query": "¿Cuándo revisa Boreal su consumo?"
+        }
+      ]
+    },
+    {
+      "document": {
+        "blocks": [
+          {
+            "bbox": [
+              10,
+              10,
+              500,
+              20
+            ],
+            "coordinate_system": "pdf_points",
+            "kind": "text",
+            "page": 1,
+            "text": "Informe de activos"
+          },
+          {
+            "bbox": [
+              10,
+              22,
+              500,
+              32
+            ],
+            "coordinate_system": "pdf_points",
+            "kind": "text",
+            "page": 1,
+            "text": "Proyecto Álamo"
+          },
+          {
+            "bbox": [
+              10,
+              34,
+              500,
+              44
+            ],
+            "coordinate_system": "pdf_points",
+            "kind": "text",
+            "page": 1,
+            "text": "Recurso Coste Responsable"
+          },
+          {
+            "bbox": [
+              10,
+              46,
+              500,
+              56
+            ],
+            "coordinate_system": "pdf_points",
+            "kind": "text",
+            "page": 1,
+            "text": "vm-alamo-01 120 EUR Lucía"
+          },
+          {
+            "bbox": [
+              10,
+              58,
+              500,
+              68
+            ],
+            "coordinate_system": "pdf_points",
+            "kind": "text",
+            "page": 1,
+            "text": "vm-alamo-02 85 EUR Víctor"
+          },
+          {
+            "bbox": [
+              10,
+              34,
+              500,
+              70
+            ],
+            "coordinate_system": "pdf_points",
+            "kind": "table",
+            "page": 1,
+            "rows": [
+              [
+                "Recurso",
+                "Coste",
+                "Responsable"
+              ],
+              [
+                "vm-alamo-01",
+                "120 EUR",
+                "Lucía"
+              ],
+              [
+                "vm-alamo-02",
+                "85 EUR",
+                "Víctor"
+              ]
+            ]
+          },
+          {
+            "bbox": [
+              10,
+              10,
+              500,
+              20
+            ],
+            "coordinate_system": "pdf_points",
+            "kind": "text",
+            "page": 2,
+            "text": "Condiciones operativas"
+          },
+          {
+            "bbox": [
+              10,
+              22,
+              500,
+              32
+            ],
+            "coordinate_system": "pdf_points",
+            "kind": "text",
+            "page": 2,
+            "text": "El proyecto Álamo archiva instantáneas los viernes."
+          },
+          {
+            "bbox": [
+              10,
+              34,
+              500,
+              44
+            ],
+            "coordinate_system": "pdf_points",
+            "kind": "text",
+            "page": 2,
+            "text": "La retención máxima de instantáneas es de 18 días."
+          }
+        ],
+        "document_id": "evaluation-digital-pdf",
+        "extraction_method": "synthetic-normalized",
+        "file_metadata": {},
+        "origin": {
+          "content_hash": "b75e380fb530827060ca5d2e0a79f01e1b993b340ee04454b518ad8863b3bedf",
+          "source": "synthetic-evaluation",
+          "tenant_id": "tenant-rag2-evaluation",
+          "uploaded_by": "synthetic-operator"
+        },
+        "original_format": "pdf",
+        "result": "extracted",
+        "schema_version": 1,
+        "tenant_id": "tenant-rag2-evaluation",
+        "text": "Informe de activos\nProyecto Álamo\nRecurso Coste Responsable\nvm-alamo-01 120 EUR Lucía\nvm-alamo-02 85 EUR Víctor\n\nCondiciones operativas\nEl proyecto Álamo archiva instantáneas los viernes.\nLa retención máxima de instantáneas es de 18 días.",
+        "warnings": []
+      },
+      "fixture_kind": "synthetic normalized input, not a claim of file extraction",
+      "name": "digital-pdf",
+      "questions": [
+        {
+          "document_id": "evaluation-digital-pdf",
+          "evidence": "vm-alamo-02 85 EUR Víctor",
+          "normalized_span": [
+            86,
+            111
+          ],
+          "page": 1,
+          "query": "¿Qué coste y responsable tiene vm-alamo-02?"
+        },
+        {
+          "document_id": "evaluation-digital-pdf",
+          "evidence": "La retención máxima de instantáneas es de 18 días.",
+          "normalized_span": [
+            188,
+            238
+          ],
+          "page": 2,
+          "query": "¿Cuántos días se conservan las instantáneas de Álamo?"
+        }
+      ]
+    },
+    {
+      "document": {
+        "blocks": [
+          {
+            "bbox": [
+              8,
+              8,
+              900,
+              24
+            ],
+            "coordinate_system": "render_pixels",
+            "kind": "text",
+            "method": "ocr",
+            "page": 1,
+            "text": "Registro escaneado de continuidad"
+          },
+          {
+            "bbox": [
+              8,
+              32,
+              900,
+              48
+            ],
+            "coordinate_system": "render_pixels",
+            "kind": "text",
+            "method": "ocr",
+            "page": 1,
+            "text": "El simulacro de recuperación del equipo Cobalto se realiza en noviembre."
+          },
+          {
+            "bbox": [
+              8,
+              8,
+              900,
+              24
+            ],
+            "coordinate_system": "render_pixels",
+            "kind": "text",
+            "method": "ocr",
+            "page": 2,
+            "text": "El objetivo de recuperación de Cobalto es de 45 minutos."
+          },
+          {
+            "bbox": [
+              8,
+              32,
+              900,
+              48
+            ],
+            "coordinate_system": "render_pixels",
+            "kind": "text",
+            "method": "ocr",
+            "page": 2,
+            "text": "Conservar el acta de cada simulacro."
+          }
+        ],
+        "document_id": "evaluation-scanned-pdf",
+        "extraction_method": "synthetic-ocr-normalized",
+        "file_metadata": {},
+        "origin": {
+          "content_hash": "e500ccb46c2b2b3cb26595ebb5fbcc56e5f616f3f31ffbd54d95fc68533ee941",
+          "source": "synthetic-evaluation",
+          "tenant_id": "tenant-rag2-evaluation",
+          "uploaded_by": "synthetic-operator"
+        },
+        "original_format": "pdf",
+        "result": "extracted",
+        "schema_version": 1,
+        "tenant_id": "tenant-rag2-evaluation",
+        "text": "Registro escaneado de continuidad\nEl simulacro de recuperación del equipo Cobalto se realiza en noviembre.\n\nEl objetivo de recuperación de Cobalto es de 45 minutos.\nConservar el acta de cada simulacro.",
+        "warnings": []
+      },
+      "fixture_kind": "synthetic normalized input, not a claim of file extraction",
+      "name": "scanned-pdf",
+      "questions": [
+        {
+          "document_id": "evaluation-scanned-pdf",
+          "evidence": "El simulacro de recuperación del equipo Cobalto se realiza en noviembre.",
+          "normalized_span": [
+            34,
+            106
+          ],
+          "page": 1,
+          "query": "¿En qué mes se realiza el simulacro de Cobalto?"
+        },
+        {
+          "document_id": "evaluation-scanned-pdf",
+          "evidence": "El objetivo de recuperación de Cobalto es de 45 minutos.",
+          "normalized_span": [
+            108,
+            164
+          ],
+          "page": 2,
+          "query": "¿Cuál es el objetivo de recuperación de Cobalto?"
+        }
+      ]
+    },
+    {
+      "document": {
+        "blocks": [
+          {
+            "kind": "heading",
+            "level": 1,
+            "text": "Plan del equipo Dalia"
+          },
+          {
+            "kind": "paragraph",
+            "text": "El equipo Dalia dispone de 720 EUR para pruebas trimestrales."
+          },
+          {
+            "kind": "table",
+            "rows": [
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 0"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 0"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 1"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 1"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 2"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 2"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 3"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 3"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 4"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 4"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 5"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 5"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 6"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 6"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 7"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 7"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 8"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 8"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 9"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 9"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 10"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 10"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 11"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 11"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 12"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 12"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 13"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 13"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 14"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 14"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 15"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 15"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 16"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 16"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 17"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 17"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 18"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 18"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 19"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 19"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 20"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 20"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 21"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 21"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 22"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 22"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 23"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 23"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 24"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 24"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 25"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 25"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 26"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 26"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 27"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 27"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 28"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 28"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 29"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 29"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 30"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 30"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 31"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 31"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 32"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 32"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 33"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 33"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 34"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Dalia 34"
+                  }
+                ]
+              ]
+            ]
+          },
+          {
+            "kind": "list_item",
+            "text": "La aprobación del equipo Dalia se registra cada jueves."
+          }
+        ],
+        "document_id": "evaluation-word-modern",
+        "extraction_method": "synthetic-normalized",
+        "file_metadata": {},
+        "origin": {
+          "content_hash": "83eea1ec4622c60f1d0563421b870467499383aadf2a4690c7851eac857b7a8d",
+          "source": "synthetic-evaluation",
+          "tenant_id": "tenant-rag2-evaluation",
+          "uploaded_by": "synthetic-operator"
+        },
+        "original_format": "docx",
+        "result": "extracted",
+        "schema_version": 1,
+        "tenant_id": "tenant-rag2-evaluation",
+        "text": "Plan del equipo Dalia\nEl equipo Dalia dispone de 720 EUR para pruebas trimestrales.\nActividad 0\tResponsable de servicio Dalia 0\nActividad 1\tResponsable de servicio Dalia 1\nActividad 2\tResponsable de servicio Dalia 2\nActividad 3\tResponsable de servicio Dalia 3\nActividad 4\tResponsable de servicio Dalia 4\nActividad 5\tResponsable de servicio Dalia 5\nActividad 6\tResponsable de servicio Dalia 6\nActividad 7\tResponsable de servicio Dalia 7\nActividad 8\tResponsable de servicio Dalia 8\nActividad 9\tResponsable de servicio Dalia 9\nActividad 10\tResponsable de servicio Dalia 10\nActividad 11\tResponsable de servicio Dalia 11\nActividad 12\tResponsable de servicio Dalia 12\nActividad 13\tResponsable de servicio Dalia 13\nActividad 14\tResponsable de servicio Dalia 14\nActividad 15\tResponsable de servicio Dalia 15\nActividad 16\tResponsable de servicio Dalia 16\nActividad 17\tResponsable de servicio Dalia 17\nActividad 18\tResponsable de servicio Dalia 18\nActividad 19\tResponsable de servicio Dalia 19\nActividad 20\tResponsable de servicio Dalia 20\nActividad 21\tResponsable de servicio Dalia 21\nActividad 22\tResponsable de servicio Dalia 22\nActividad 23\tResponsable de servicio Dalia 23\nActividad 24\tResponsable de servicio Dalia 24\nActividad 25\tResponsable de servicio Dalia 25\nActividad 26\tResponsable de servicio Dalia 26\nActividad 27\tResponsable de servicio Dalia 27\nActividad 28\tResponsable de servicio Dalia 28\nActividad 29\tResponsable de servicio Dalia 29\nActividad 30\tResponsable de servicio Dalia 30\nActividad 31\tResponsable de servicio Dalia 31\nActividad 32\tResponsable de servicio Dalia 32\nActividad 33\tResponsable de servicio Dalia 33\nActividad 34\tResponsable de servicio Dalia 34\nLa aprobación del equipo Dalia se registra cada jueves.",
+        "warnings": []
+      },
+      "fixture_kind": "synthetic normalized input, not a claim of file extraction",
+      "name": "word-modern",
+      "questions": [
+        {
+          "document_id": "evaluation-word-modern",
+          "evidence": "El equipo Dalia dispone de 720 EUR para pruebas trimestrales.",
+          "normalized_span": [
+            22,
+            83
+          ],
+          "page": null,
+          "query": "¿Cuál es el presupuesto trimestral de pruebas de Dalia?"
+        },
+        {
+          "document_id": "evaluation-word-modern",
+          "evidence": "La aprobación del equipo Dalia se registra cada jueves.",
+          "normalized_span": [
+            1674,
+            1729
+          ],
+          "page": null,
+          "query": "¿Cuándo registra Dalia su aprobación?"
+        }
+      ]
+    },
+    {
+      "document": {
+        "blocks": [
+          {
+            "kind": "heading",
+            "level": 1,
+            "text": "Plan del equipo Encina"
+          },
+          {
+            "kind": "paragraph",
+            "text": "El equipo Encina dispone de 930 EUR para pruebas trimestrales."
+          },
+          {
+            "kind": "table",
+            "rows": [
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 0"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 0"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 1"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 1"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 2"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 2"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 3"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 3"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 4"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 4"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 5"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 5"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 6"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 6"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 7"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 7"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 8"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 8"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 9"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 9"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 10"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 10"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 11"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 11"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 12"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 12"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 13"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 13"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 14"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 14"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 15"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 15"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 16"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 16"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 17"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 17"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 18"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 18"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 19"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 19"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 20"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 20"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 21"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 21"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 22"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 22"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 23"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 23"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 24"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 24"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 25"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 25"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 26"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 26"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 27"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 27"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 28"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 28"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 29"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 29"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 30"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 30"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 31"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 31"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 32"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 32"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 33"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 33"
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Actividad 34"
+                  }
+                ],
+                [
+                  {
+                    "kind": "paragraph",
+                    "text": "Responsable de servicio Encina 34"
+                  }
+                ]
+              ]
+            ]
+          },
+          {
+            "kind": "list_item",
+            "text": "La aprobación del equipo Encina se registra cada lunes."
+          }
+        ],
+        "document_id": "evaluation-word-legacy",
+        "extraction_method": "synthetic-normalized",
+        "file_metadata": {},
+        "origin": {
+          "content_hash": "093963a2cb50c412cdc541b12e3cbaa07a827e6540450fe7d3d271ca87ce6a9e",
+          "source": "synthetic-evaluation",
+          "tenant_id": "tenant-rag2-evaluation",
+          "uploaded_by": "synthetic-operator"
+        },
+        "original_format": "doc",
+        "result": "extracted",
+        "schema_version": 1,
+        "tenant_id": "tenant-rag2-evaluation",
+        "text": "Plan del equipo Encina\nEl equipo Encina dispone de 930 EUR para pruebas trimestrales.\nActividad 0\tResponsable de servicio Encina 0\nActividad 1\tResponsable de servicio Encina 1\nActividad 2\tResponsable de servicio Encina 2\nActividad 3\tResponsable de servicio Encina 3\nActividad 4\tResponsable de servicio Encina 4\nActividad 5\tResponsable de servicio Encina 5\nActividad 6\tResponsable de servicio Encina 6\nActividad 7\tResponsable de servicio Encina 7\nActividad 8\tResponsable de servicio Encina 8\nActividad 9\tResponsable de servicio Encina 9\nActividad 10\tResponsable de servicio Encina 10\nActividad 11\tResponsable de servicio Encina 11\nActividad 12\tResponsable de servicio Encina 12\nActividad 13\tResponsable de servicio Encina 13\nActividad 14\tResponsable de servicio Encina 14\nActividad 15\tResponsable de servicio Encina 15\nActividad 16\tResponsable de servicio Encina 16\nActividad 17\tResponsable de servicio Encina 17\nActividad 18\tResponsable de servicio Encina 18\nActividad 19\tResponsable de servicio Encina 19\nActividad 20\tResponsable de servicio Encina 20\nActividad 21\tResponsable de servicio Encina 21\nActividad 22\tResponsable de servicio Encina 22\nActividad 23\tResponsable de servicio Encina 23\nActividad 24\tResponsable de servicio Encina 24\nActividad 25\tResponsable de servicio Encina 25\nActividad 26\tResponsable de servicio Encina 26\nActividad 27\tResponsable de servicio Encina 27\nActividad 28\tResponsable de servicio Encina 28\nActividad 29\tResponsable de servicio Encina 29\nActividad 30\tResponsable de servicio Encina 30\nActividad 31\tResponsable de servicio Encina 31\nActividad 32\tResponsable de servicio Encina 32\nActividad 33\tResponsable de servicio Encina 33\nActividad 34\tResponsable de servicio Encina 34\nLa aprobación del equipo Encina se registra cada lunes.",
+        "warnings": []
+      },
+      "fixture_kind": "synthetic normalized input, not a claim of file extraction",
+      "name": "word-legacy",
+      "questions": [
+        {
+          "document_id": "evaluation-word-legacy",
+          "evidence": "El equipo Encina dispone de 930 EUR para pruebas trimestrales.",
+          "normalized_span": [
+            23,
+            85
+          ],
+          "page": null,
+          "query": "¿Cuál es el presupuesto trimestral de pruebas de Encina?"
+        },
+        {
+          "document_id": "evaluation-word-legacy",
+          "evidence": "La aprobación del equipo Encina se registra cada lunes.",
+          "normalized_span": [
+            1711,
+            1766
+          ],
+          "page": null,
+          "query": "¿Cuándo registra Encina su aprobación?"
+        }
+      ]
+    }
+  ],
+  "policy": "synthetic only; fixed documents/questions/evidence before comparing; no private corpus; references independent of chunk IDs",
+  "schema_version": 1
+}

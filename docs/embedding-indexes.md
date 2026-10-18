@@ -113,9 +113,16 @@ RRF usa rangos desde 1 y `k=60` por defecto, configurable por generación con
 `--rrf-k` entre 1 y 1000, con desempate por ID. La unión no supera 40 y el
 pool final, 20. Se conserva la distancia real incluso para los admitidos sólo por
 lexical, junto a rangos y scores separados en metadatos internos. Esa distancia
-puede superar el umbral denso. La expansión de vecinos permanece limitada al pool
-autorizado y a la misma revisión. Un fallo de un carril no se presenta como una
-ejecución híbrida correcta degradada silenciosamente.
+puede superar el umbral denso. La expansión posicional consulta sólo los vecinos
+inmediatos de las semillas, aunque no estuvieran en los primeros veinte o bajo
+el umbral; no es otra búsqueda semántica y el pool final sigue limitado a veinte.
+Vecinos y secciones de política usan el mismo tenant, espacio y generación
+capturada, nunca la copia legacy mutable. Las políticas conservan los límites
+de dos documentos como señal de ambigüedad, 65536 bytes por documento, 4096
+caracteres por sección y seis fragmentos más un séptimo de detección. Sólo
+se admiten posiciones literales únicas en el dominio canónico o legacy que
+corresponda, con un máximo de 64 tramos. Un fallo de un carril no se presenta
+como una ejecución híbrida correcta degradada silenciosamente.
 
 ## Operación explícita
 

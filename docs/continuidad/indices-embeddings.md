@@ -140,3 +140,26 @@ No se reindexa ni activa nada. Pruebas y límites en la
 [evidencia existente](../evidence/JUP-127-validation.md#compatibilidad-local-con-pr-134).
 Los dictámenes internos de este delta se entregan por separado; no acreditan
 las revisiones humanas ni resuelven los conflictos actuales con develop.
+
+## Integración de la base final de fase 2 — 18/10/2026
+
+El PM preparó una copia independiente desde el checkpoint local `27a69cb0`
+(los trece archivos ya evaluados sobre `bc9f6df7`) e inició la composición con
+`f8dd03bc`, que incorpora develop `0e686f91`. La copia anterior, sus informes
+originales y sus guardas permanecen intactos; esos PASS no se trasladan aquí.
+
+Se combinan el lector por generación y la expansión posicional/políticas de B.
+Cada expansión consulta únicamente miembros y revisiones de la generación
+capturada y vectores de su espacio. Conserva los límites de ambigüedad, bytes,
+fragmentos, literalidad, coordenadas canónicas/legacy y 64 tramos. La operación
+de prueba se adapta a `server-documentation-v4`; no fuerza el protocolo nativo
+antiguo. No se cambia la receta, el proveedor ni las opciones por defecto.
+
+Las pruebas focales SQL/mock, caché y tokenizer están conformes. La corrección
+de huellas de fase 2 `fdcccf8e` se incorpora tras contrastar el módulo efectivo;
+el manifiesto y pin backend coinciden con ese commit. Pasan la operación,
+contexto, citas e historial (49 casos), recursos processor (18) y bundle/diagnóstico
+backend (6). El candidato compuesto requiere dos referencias PM nuevas y
+evaluaciones independientes propias, cuyos informes se entregan por separado.
+Ver la [evidencia de integración](../evidence/JUP-127-validation.md#integracion-local-de-la-base-final--18102026).
+Sin nuevas inferencias, gasto, campañas, reindexación ni activación compartida.

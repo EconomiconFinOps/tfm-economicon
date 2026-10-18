@@ -98,8 +98,7 @@ Los timestamps y `publication_id` son operativos y no forman parte de la generac
 Los spans normalizados cuentan caracteres Unicode, base 0 y fin exclusivo, no bytes
 ni tokens. `position_contract` define también líneas/páginas y coordenadas.
 
-La migración 003 debe ejecutarse con `PgVectorStore.initialize()` en la preparación
-del processor antes de servir consultas con el nuevo backend. Añade JSONB sin
+La migración 003 la aplica `PgVectorStore.initialize()` al arrancar el processor, que en Compose arranca después del backend. Sólo un error 42703 situado en las referencias `metadata` de esa consulta activa el fallback; errores y columnas ajenas se propagan sin reintento ni diagnóstico de 003 pendiente. Mientras falten sus columnas, el backend recupera como antes de 003 (sin `chunk_metadata` y con la sección leída del texto) y registra `vector_metadata_unavailable`; en cuanto existen, las usa sin reiniciar. Si el processor no arranca porque falta el tokenizador, el error de arranque lo dice expresamente y remite a `build_tokenizer.py`. La migración añade JSONB sin
 reindexar ni cambiar vectores. `{}` identifica chunks antiguos; la recuperación
 mantiene su fallback. Las citas nuevas añaden `source_spans` y `position_contract`
 y conservan los campos públicos existentes. No se inventa una página única para
@@ -206,3 +205,63 @@ Las citas históricas guardadas son una instantánea de la evidencia usada en su
 respuesta; una nueva generación cambia su ID y no reescribe esa conversación.
 La muestra de recuperación es exploratoria y demasiado pequeña para atribuir
 mejora general. No hay semantic chunking, reranking ni modificación del modelo.
+
+## Pruebas SQL de citas y orden de migración
+
+Desde `apps/backend`, estas pruebas necesitan `JUP086_VECTOR_TEST_URL` con el
+pgvector desechable descrito arriba. Instalar en el mismo intérprete requisitos
+de backend **y processor**: las pruebas MD/manual y de coexistencia invocan el
+processor con ese intérprete. Preparar fuera de Git cl100k_base y definir
+`EMBEDDING_TOKENIZER_FILE` si no está en la ruta por defecto. Python 3.11 o posterior
+es necesario (CI usa 3.12). Instalar desde raíz y ejecutar desde backend:
+
+```sh
+python -m pip install -r apps/backend/requirements-dev.txt -r apps/processor/requirements.txt
+# Desde apps/backend, con las variables anteriores preparadas:
+python -B -m pytest -q tests/test_vector_metadata_migration_order.py tests/test_new_document_citation_titles.py tests/test_tenant_isolation_vector.py tests/test_structured_citations.py tests/test_citations.py
+```
+
+Sin la URL SQL, las fixtures omiten los recorridos que la necesitan. Los workflows
+actuales no definen esa variable: CI verde no acredita esas pruebas SQL/citas.
+La prueba 003 configura/restaura SelectorEventLoopPolicy sólo en su proceso Windows.
+Recorre fallback real antes de 003 y metadata después con el mismo almacén, filtros,
+errores ajenos sin reintento y límites tras rollback. Embeddings mock 8D, sin inferencias.
+
+El título Markdown conserva su sintaxis previa; quitar marcadores ATX no retrocede
+sobre espacios largos. `tests/test_parent_metadata.py` fija bordes y limita a 5 s
+un subproceso con 200.000 espacios.
+
+## Convivencia con vecinos y políticas del chat
+
+Las consultas de vecinos y de política usan el mismo tenant, proveedor y snapshot
+que la recuperación principal, incluyendo metadata o su fallback 003. El título
+y las citas enriquecidas siguen usando metadata/source_spans. Los `section_spans`
+para B usan el dominio legacy de blancos colapsados o, si el padre conserva su
+manifiesto de chunking, el texto canónico. Los rangos nunca mezclan ambos dominios
+en una fuente; el contenido del chunk permanece literal. Sólo coincidencias
+exactas y únicas adquieren rangos de sección, con un máximo de 64 por fuente.
+Contexto repetido/reformateado o ambiguo conserva el rechazo conservador de
+autoridad de política. Siguen los límites de documentos, seis chunks por sección,
+bytes, top_k, plazos/cancelación y filtros existentes, sin segunda inferencia.
+
+`tests/test_chunking_retrieval_integration.py` del backend prueba los cruces
+con chunker real, SQL propio, vecinos, política canónica y 003 antes/después
+en la misma instancia. Requiere el entorno combinado y variables del apartado
+SQL anterior; mocks 8D no acreditan calidad semántica.
+
+### Coherencia del bundle de chat al ajustar módulos compartidos
+
+El contrato `chat/v3` incluye la huella del texto UTF-8 normalizado por lectura del
+módulo `chat_policy_sections.py` dentro de `assembler_contract`. Un ajuste de ese
+módulo requiere contrastar el contrato completo y actualizar sólo la huella afectada,
+su agregado canónico y el pin explícito `ASSEMBLER_SHA` del verificador backend.
+No basta con que el manifiesto sea autoconsistente: el processor contrasta las
+entradas runtime y el backend su referencia independiente. Conservar las versiones,
+las comprobaciones de integridad y los originales que detectaron la divergencia.
+
+Verificar la carga del bundle empaquetado real en ambos servicios, su misma
+`prompt_version` y los rechazos del bundle anterior y de un módulo falsificado con
+agregado recalculado. Las pruebas con ruta fija al tokenizador pueden usar una vista
+externa de fuentes byteidénticas y recurso fijado, con identidad comprobada antes y
+después; no generar el recurso dentro del checkout ni confundir esa vista con Git.
+El caso de CI posterior a `f8dd03bc` y sus siete fallos se registra en la evidencia JUP-125.

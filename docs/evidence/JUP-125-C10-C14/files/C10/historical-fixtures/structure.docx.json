@@ -1,0 +1,73 @@
+{
+  "blocks": [
+    {
+      "kind": "heading",
+      "level": 1,
+      "text": "Cloud budget"
+    },
+    {
+      "kind": "paragraph",
+      "text": "Before the table"
+    },
+    {
+      "kind": "table",
+      "rows": [
+        [
+          [
+            {
+              "kind": "paragraph",
+              "text": "Service"
+            }
+          ],
+          [
+            {
+              "kind": "paragraph",
+              "text": "USD"
+            }
+          ]
+        ],
+        [
+          [
+            {
+              "kind": "paragraph",
+              "text": "Compute"
+            }
+          ],
+          [
+            {
+              "kind": "paragraph",
+              "text": "42"
+            }
+          ]
+        ]
+      ]
+    },
+    {
+      "kind": "paragraph",
+      "text": "After the table"
+    }
+  ],
+  "document_id": "6d3d1004-233e-5348-96d4-0fd0799609d0",
+  "extraction_method": "python-docx",
+  "file_metadata": {
+    "author": "python-docx",
+    "title": "Cost evidence"
+  },
+  "origin": {
+    "artifact_uri": null,
+    "content_hash": "d706e357422a198a48a2f05e2d61c075b817c26a045541e47464f4e586ae4889",
+    "file_size": 36800,
+    "filename": "structure.docx",
+    "source": "document",
+    "tenant_id": "tenant-rag2-fixture",
+    "uploaded_by": "synthetic-fixture-operator"
+  },
+  "original_format": "docx",
+  "result": "extracted",
+  "schema_version": 1,
+  "tenant_id": "tenant-rag2-fixture",
+  "text": "Cloud budget\nBefore the table\nService\tUSD\nCompute\t42\nAfter the table",
+  "warnings": [
+    "docx_visual_layout_and_unrecognized_objects_not_inferred"
+  ]
+}

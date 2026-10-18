@@ -26,12 +26,18 @@ class DocumentCitations:
     """
     def __init__(self, document: str):
         parts = []
+        self.original = document
+        self.original_offsets: list[int] = []
+        original_length = 0
         self.offsets: list[int] = []
         self.sections: list[str] = []
         length = 0
         fence = None
         front_matter = False
-        for line_number, line in enumerate(document.splitlines()):
+        for line_number, raw_line in enumerate(document.splitlines(keepends=True)):
+            original_offset = original_length
+            original_length += len(raw_line)
+            line = raw_line.splitlines()[0]
             normalized = " ".join(line.split())
             offset = length + bool(parts)
             if normalized:
@@ -61,6 +67,7 @@ class DocumentCitations:
                     title = without_closing.rstrip()
                 if title:
                     self.offsets.append(offset)
+                    self.original_offsets.append(original_offset)
                     self.sections.append(title[:500])
         self.normalized = " ".join(parts)
         self.title = self.sections[0] if self.sections else None
@@ -72,6 +79,30 @@ class DocumentCitations:
             return None
         index = bisect_right(self.offsets, start) - 1
         return self.sections[index] if index >= 0 else None
+
+    def section_spans(self, content: str, *, original: bool = False) -> list[dict]:
+        """Exact ranges in legacy normalized or new canonical documentary text.
+
+        Repeated/reformatted fragments have no authoritative section ranges.
+        The two coordinate domains are never mixed in one source.
+        """
+        if not content or (not original and content != " ".join(content.split())):
+            return []
+        document = self.original if original else self.normalized
+        offsets = self.original_offsets if original else self.offsets
+        start = document.find(content)
+        if start < 0 or document.find(content, start + 1) >= 0:
+            return []
+        boundaries = [0] + [offset - start for offset in offsets if start < offset < start + len(content)] + [len(content)]
+        if len(boundaries) - 1 > 64:
+            return []  # The chat provenance contract accepts at most 64 section ranges.
+        result = []
+        for left, right in zip(boundaries, boundaries[1:]):
+            index = bisect_right(offsets, start + left) - 1
+            result.append({"start": left, "end": right, "document_start": start + left,
+                           "section_start": offsets[index] if index >= 0 else None,
+                           "section": self.sections[index] if index >= 0 else None})
+        return result
 
 
 def structured_location(metadata: dict, parent: dict, document: str) -> dict:

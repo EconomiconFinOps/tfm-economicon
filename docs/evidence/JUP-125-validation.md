@@ -6,6 +6,19 @@ JUP: JUP-125 · [Trello](https://trello.com/c/H0RUnArf) · Registro: 16/10/2026.
 [ADR-0023 Proposed](../adr/ADR-0023-deterministic-document-chunking.md) y
 [runbook](../runbooks/document-chunking.md).
 
+## Disponibilidad de C10/C14 — 18/10/2026
+
+El [paquete histórico descargable](JUP-125-C10-C14/README.md) incorpora nueve
+originales, sus normalizados/fixtures y el corpus comparativo con 46 inputs y
+vectores reales. Incluye manifiesto, hashes y dos comprobaciones offline, sin
+nuevas llamadas ni cambios de producto. Sus ausencias de filas SQL completas,
+versiones ejecutadas y páginas PDF se declaran expresamente.
+
+Esta disponibilidad no acepta C10/C14 ni atribuye la evidencia histórica al
+candidato actual. La validación humana de Alejandro y los cambios solicitados
+por Víctor siguen pendientes. Los apartados posteriores conservan su contexto
+y fechas históricas, incluidos los roles y estados de dependencias de esas fechas.
+
 ## Alcance, candidato y atribución
 
 La implementación experimental del 15–16/10 y sus correcciones se formalizan
@@ -18,7 +31,7 @@ documentos añadidos frente al manifiesto R2; sólo sandbox y su test cambian
 producto. Las otras 1.640 fuentes anteriores son idénticas; no hay borrados.
 Esta formalización modifica documentación, no código, tests, corpus o modelos.
 
-JUP-124/PR #133 está en borrador y no se declara integrada en develop. PM
+JUP-124/PR #133 estaba en borrador al formalizar; se integró en develop el 17/10/2026 (`466b083a`) y la rama la incorpora en `4888625e`. PM
 proporciona los hechos de CI y gestiona cambios de base. Una futura modificación
 de bytes/base exige decisión de vigencia por cada evaluador; no hereda un PASS.
 
@@ -271,7 +284,7 @@ campaña de calidad ni mejora general inferida.
 
 Python3.12/Linux propio con dependencias declaradas resueltas para este ensayo;
 no se afirma identidad con requirements.lock ni build productivo. Se conserva
-inventario de versiones externo. Tokenizer tiktoken0.14.0/cl100k_base preparado
+inventario de versiones externo. Tokenizer tiktoken 0.14.0/cl100k_base preparado
 con la herramienta existente fuera de Git, 1.681.126 bytes y SHA256
 `223921b76ee99bde995b7ff738513eef100fb51d18c93597a113bcffe865b2a7`;
 runtime sin red. Se conservaron los incidentes de preparación (instalación aún
@@ -283,3 +296,133 @@ dictámenes nuevos de Revisor y Validador distintos contra referencias PM nuevas
 sin extender los PASS anteriores. CI propia de 0d34c06b es histórica; la CI del
 futuro commit, aprobación humana, pairing de Víctor y reviews de Lucía/Alejandro
 siguen separados. Sin nuevas inferencias, proveedores, gasto, fase3 o cálculos.
+
+## Corrección de las observaciones de Lucía — 18/10/2026
+
+Sobre el original `2de57bd0` (base `466b083a`) se corrige el coste cuadrático del
+título ATX y se limita fallback 003 a metadata. Sin cambios de contenido/chunks,
+procedencia, modelo, tokenizador, rollback, aislamiento o límites. Los errores
+SQLSTATE ajenos y provider ausente se propagan sin reintento ni aviso falso.
+
+Comprobaciones propias: **72 processor + 53 backend PASS**, sin omisiones en esas
+selecciones; incluyen 17 títulos/ATX y 13 casos del fallback. Windows/Python 3.11.7,
+requisitos declarados backend + processor, tiktoken 0.14.0, tokenizador externo
+SHA 223921b7…, pgvector 17 propio desechable, mock 8D y cero llamadas. Antes/después
+de 003 con la misma instancia, rutas normal/acotada, tenant/proveedor, REPEATABLE READ,
+statement_timeout/lock_timeout y cancelación/plazo después del error metadata.
+El negativo 42601 inyectado conserva posición metadata para fijar SQLSTATE;
+los negativos 42P01/provider 42703 se provocan sobre SQL real.
+
+El original con 200.000 espacios supera 5 s y se termina; corregido tarda 0,0022 s
+en una medición local. Otros 55.987 encabezados pequeños conservan la salida.
+No es un benchmark de worker. Se preservan errores iniciales de dependencias/
+Python3.10 y montaje del test al aplicar003 sobre una columna existente; sólo
+se corrigió su preparación. No se atribuyen esos errores al producto.
+
+Prerrequisitos/comandos SQL/citas en el [runbook](../runbooks/document-chunking.md).
+CI 39118246164 y SQL 39118032279 del original son antecedentes PM; no ejecutan
+estos recorridos sin JUP086_VECTOR_TEST_URL. Validación humana favorable con
+límites Alejandro 5562495088 y revisión Lucía 5562572813 conservan SHA 82669e21
+y autoría; aún no acreditan este delta. No se reabren C10/C14/C13 ni notas N1–N4;
+se reutiliza evidencia no afectada por identidad. Evaluación independiente y
+publicación del fix pendientes, separadas de reviews humanas y Request changes.
+
+## Reconciliación con develop fijado — 18/10/2026
+
+Candidato local sin commit: `3591ac7a12419de0780faea167dce44a1536d131` más
+`0e686f9180d5ce195391e634a79ef2d6d3182af6`, preparado por liderazgo; base común
+`466b083a`. No se actualiza de nuevo develop. Tres conflictos de texto resueltos
+conservando ambas aportaciones; hay seis rutas modificadas por ambos padres.
+
+La recuperación mantiene ATX lineal, metadata/procedencia, legacy y fallback 003
+selectivo de JUP-125, además de vecinos y política entrantes de B. Vecinos y
+política transportan metadata en el mismo snapshot, también al faltar 003.
+Los rangos de sección usan texto normalizado en legacy y texto canónico en
+documentos con manifiesto de chunking. Se conserva el contenido literal de los
+chunks, sus identificadores, vectores y source_spans; no se sustituyen por una
+vista normalizada. Fragmentos ambiguos/reformateados no ganan autoridad, y el
+contrato de B limita a 64 los rangos por fuente. Los dos módulos compartidos de
+política conservan identidad; sólo admiten el separador literal de línea de la
+representación canónica, con las mismas reglas y límites.
+
+Comprobaciones propias de la composición, separadas por ejecución (no sumar
+casos repetidos):
+
+| Selección | Resultado y vigencia |
+| --- | --- |
+| Recuperación/citas/metadata y política inmediata | 136 PASS en la composición compatible; la ampliación posterior sólo añade casos de interacción y el rechazo del exceso de rangos. |
+| Interacción real chunker → SQL → vecinos/política | 10 PASS finales: normal/acotado, metadata de chunk/padre/ambas ausente, mismo store tras 003 y contenido/citas preservados. |
+| Consumidores del límite de secciones e interacción | 68 PASS tras el ajuste final de 64/65 rangos, incluidos los diez casos anteriores. |
+| Política processor y módulos compartidos | 50 PASS; módulos backend/processor idénticos. |
+| Construcción de contexto, selección y bundle entrante | 54 PASS con tokenizador GLM fijado y fuentes byte-idénticas en una vista externa; no inferencias. |
+| Índice de continuidad | 33 destinos reales, sin duplicados ni ausentes. |
+| Paquete C10/C14 | 119 miembros byte-idénticos al ZIP; ZIP, manifiesto y SHA256SUMS originales intactos, sin ejecutar campañas. |
+
+Entorno: Windows/Python 3.11.7, requisitos declarados backend/processor, pgvector17
+propio desechable, embeddings mock 8D y tokenizadores externos fijados. La vista
+externa sólo permite a fixtures con ruta GLM fija leer el recurso fuera del
+producto; sus fuentes se cotejan byte a byte. Los errores iniciales de preparación
+(INSERT de la prueba y recurso GLM ausente) y el FAIL real de política canónica
+se conservan por separado; no son resultados favorables ni se borran.
+
+La preservación se verifica contra ambos padres, incluyendo todas las rutas
+disjuntas y las adaptaciones enumeradas; no se elige un archivo completo de un
+padre para descartar el otro. La evidencia previa 72/53 y los dictámenes del fix
+`3591ac7a` se reutilizan sólo donde código y entradas mantienen identidad; esta
+tabla acredita específicamente la interacción nueva. No se repiten OCR, C10/C14,
+campañas semánticas, mutación o inferencias. OpenSpec sigue archivado; no se
+rediseña ni se renumera JUP/ADR.
+
+Pendientes de este hito: liderazgo debe marcar las resoluciones en Git y custodiar
+dos referencias originales de la composición antes de revisión/validación local
+independientes. Nuevos dictámenes, CI del commit publicado y revisión/revalidación
+humanas siguen separados. Request changes de Víctor y límites históricos de
+C10/C14 no quedan resueltos por esta comprobación local.
+
+## Fix del contrato de recursos tras CI de f8dd03bc — 18/10/2026
+
+La CI PR `39126027820`, job processor `117671228100`, termina con **7 FAIL,
+2.532 PASS y 105 SKIP**; el push `39126024346` presenta el mismo fallo según
+el contexto fechado del liderazgo. SQL `39126027822` es favorable; no se extiende
+su resultado al processor. Se conserva el log original, sin reclasificarlo.
+
+Causa comprobada contra ambos padres: develop `0e686f91` declaraba correctamente
+el módulo de políticas `3e44194f…`; `3591ac7a` aún no tenía ese módulo/pin.
+La composición `f8dd03bc` incorpora el cambio mínimo de separador ya evaluado y
+su módulo pasa a `f53ea3d1…`, pero conserva el manifiesto de develop. El contraste
+completo de las 16 claves, con tokenizers **0.22.1**, encuentra sólo la huella del
+módulo y la huella agregada del ensamblador distintas. Es una omisión de la
+reconciliación; no se atribuye a fixtures, al tokenizador o a un fallo previo de B.
+
+Corrección: `policy_sections.module_sha256` pasa a
+`f53ea3d187cc2ace2f86000c630d290396fb24b86dcb5e6ac409905c91dfd57c`;
+`assembler_sha256` y el pin backend `ASSEMBLER_SHA` pasan a
+`abac9906452943afe95f41480c07acbaf55c281d0242377ab01fa6943f7499de`.
+Se conservan todas las otras claves, bytes de prompts/módulos, versiones y guardas.
+No se regenera el manifiesto completo ni se debilitan aserciones.
+
+Comprobaciones propias focales, sin sumar casos solapados:
+
+- Los siete casos exactos de CI fallan primero por `Resource contract mismatch`
+  desde el checkout `f8dd03bc`, antes de tocar los archivos. Sus originales se conservan.
+- Los mismos siete casos y aserciones pasan con la corrección y el tokenizador real.
+- Seis archivos afectados del processor: **103 PASS**, incluidos esos siete, controles
+  negativos de recursos, estructuras, presupuestos, política y módulos compartidos.
+- Tres consumidores backend (bundle, ensamblado de contexto y selección de evidencia):
+  primera ejecución **30 PASS / 24 errores** por falta local de `email_validator`;
+  se completa sólo la dependencia declarada en el entorno externo y después **54 PASS**.
+- Carga directa desde el candidato real en ambos servicios, con recurso externo fijado:
+  misma versión `jup-035.chat.v3:390de2615f8e6096acdc24971799c78dfed37cbe518ab3c856a0a7a59329960b`.
+  Ambos rechazan el manifiesto de `f8dd03bc` y uno con huella de módulo falsa y hash
+  agregado recalculado: **cuatro rechazos**; se conservan las comprobaciones estrictas.
+
+Las suites con rutas fijas se ejecutan en una vista de las 2.095 fuentes cotejadas
+contra el candidato, sin Git, con un único recurso añadido: tokenizador GLM de
+20.217.442 bytes y SHA256 `19e773648cb4e65de8660ea6365e10acca112d42a854923df93db4a6f333a82d`.
+Entorno propio Python 3.11.7; la CI original usa 3.12.15/Linux: no se afirma una
+repetición local de ese job entero. Sin SQL nuevo, modelos, inferencias, OCR ni gasto.
+Los originales y las identidades se custodian fuera del producto por el liderazgo.
+OpenSpec y la cobertura anterior de recuperación/chunker se reutilizan sólo por
+identidad; esta corrección no cambia sus entradas ni amplía la aceptación C10/C14.
+Nuevos controles PM, evaluaciones independientes y CI del commit siguiente quedan
+separados de estas comprobaciones y de los requisitos humanos de merge.

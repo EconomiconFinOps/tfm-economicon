@@ -46,3 +46,39 @@ def test_revalidating_a_legacy_citation_preserves_its_serialized_shape():
     legacy={'evidence_id':'legacy','kind':'corpus','document_id':'document','title':'Guide',
             'source':'guide','reference':'document:document/chunk:0','section':None,'page':None,'excerpt':'text'}
     assert SourceCitation.model_validate(legacy).model_dump()==legacy
+
+
+def test_section_ranges_keep_canonical_and_legacy_coordinate_domains_separate():
+    from app.services.citations import DocumentCitations
+    body="# Guide\r\n\r\n## Costs\nRaw  spaces.\n## Next\nEnd."
+    locations=DocumentCitations(body)
+    raw="## Costs\nRaw  spaces.\n## Next\nEnd."
+    spans=locations.section_spans(raw,original=True)
+    assert spans and spans[0]["section"]=="Costs"
+    assert spans[0]["section_start"]==body.index("## Costs")
+    assert spans[-1]["section"]=="Next"
+    for span in spans:
+        part=raw[span["start"]:span["end"]]
+        assert body[span["document_start"]:span["document_start"]+len(part)]==part
+    assert locations.section_spans(raw)==[]
+    legacy=" ".join(raw.split())
+    assert locations.section_spans(legacy)
+    assert locations.section_spans(legacy,original=True)==[]
+
+
+def test_canonical_section_ranges_refuse_repeated_or_reformatted_content():
+    from app.services.citations import DocumentCitations
+    locations=DocumentCitations("# Guide\nRepeated.\nRepeated.\n")
+    assert locations.section_spans("Repeated.",original=True)==[]
+    assert locations.section_spans("# Guide Repeated.",original=True)==[]
+
+
+def test_section_range_budget_is_preserved_in_both_coordinate_domains():
+    from app.services.citations import DocumentCitations
+    for original in (False,True):
+        for count in (64,65):
+            body="".join(f"## Section {index}\nValue {index}.\n" for index in range(count))
+            locations=DocumentCitations(body)
+            content=body if original else locations.normalized
+            spans=locations.section_spans(content,original=original)
+            assert len(spans)==(64 if count==64 else 0)

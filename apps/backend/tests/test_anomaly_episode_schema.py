@@ -42,7 +42,7 @@ def test_migration_applies_once_and_records_its_version(schema):
     MigrationRunner(schema.engine, "app.db.migrations", MIGRATIONS).run()
     with schema.engine.connect() as connection:
         versions = connection.execute(text("SELECT version FROM schema_migrations ORDER BY 1")).scalars().all()
-        assert versions == ["001", "002"]
+        assert versions == ["001", "002", "003", "004", "005"]
         tables = set(connection.execute(text(
             "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
         )).scalars())

@@ -51,6 +51,10 @@ The system SHALL support exact cosine dense retrieval and FTS/GIN/RRF hybrid ret
 - **WHEN** one hybrid lane fails
 - **THEN** the operation does not silently claim successful degraded hybrid retrieval
 
+#### Scenario: Positional neighbors and policy sections after base integration
+- **WHEN** an authorized immediate neighbor or complete policy section is outside the dense threshold or initial candidate set
+- **THEN** bounded expansion uses only the captured tenant, generation and embedding space, preserves policy ambiguity and source-position limits, keeps the final pool at most twenty and never rescues results from mutable legacy rows
+
 ### Requirement: Complete immutable generations and fencing
 The system SHALL build coherent snapshots, publish and activate complete generations by CAS, resume captured state and fence obsolete build executions.
 

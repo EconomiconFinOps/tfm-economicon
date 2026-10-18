@@ -6,7 +6,21 @@ adaptarlo para JUP-071 y publicar PR independiente; chat
 Tarjetas: [JUP-123](https://trello.com/c/TqtcumIN),
 [JUP-071](https://trello.com/c/H0woDubz).
 
-## Segunda reconciliación y nuevo delta — 17/10/2026
+## Estado al preparar la entrega B — 17/10/2026
+
+PR #131 integrada en develop `1de41b907f849082b0676319971775a6560b71b5`.
+Su aclaración de guía continúa en [PR #138](https://github.com/EconomiconFinOps/tfm-economicon/pull/138),
+cabeza `d81b3bab`: Lucía valida favorablemente en
+[review 5557612234](https://github.com/EconomiconFinOps/tfm-economicon/pull/138#pullrequestreview-5557612234),
+Víctor sigue pendiente. CI técnica y SQL verdes; JUP reviews bloquea por esa revisión.
+Su observación sobre corpus/retrieval de129 caracteres queda a criterio de revisión.
+Consulta GitHub del 17/10 al recibir el traspaso de B, sin modificar PR138.
+
+La entrega B se prepara aparte desde `f3ec760d`/HEAD documental `800775ef`, en
+`feat/JUP-123-chat-quality-delivery`; ver [su continuidad](chat-evaluacion-local.md).
+Los dictámenes del colector o de la guía no acreditan revisión/validación de B.
+
+## Segunda reconciliación y nuevo delta — corte anterior del 17/10/2026
 
 Origen: «Resuelve los nuevos conflictos de la PR131, comprueba las pruebas y pide
 oficialmente la revisión y revalidación del nuevo delta a Víctor y Lucía».

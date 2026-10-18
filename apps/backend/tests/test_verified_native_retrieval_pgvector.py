@@ -1,4 +1,4 @@
-"""Native public operation + actual PostgreSQL retrieval; generator boundary is scripted."""
+"""Public operation/current server retrieval with actual SQL and scripted generation."""
 import copy
 import json
 import os
@@ -63,15 +63,14 @@ finally:
     monkeypatch.setattr(application.state, 'embedding_provider', MockEmbeddingProvider(1536), raising=False)
     original = processor.descriptor
     async def descriptor():
-        return {**await original(), 'tool_protocol': 'required-documentation-v1'}
+        return {**await original(), 'tool_protocol': 'server-documentation-v4'}
     monkeypatch.setattr(processor, 'descriptor', descriptor)
     recovered = []
     async def tool_result(claim, result):
         recovered.append(json.loads(result['content']))
     async def stream(claim):
-        yield {'type': 'tool_call', 'assistant': {'role': 'assistant', 'content': None,
-            'tool_calls': [{'id': 'call-synthetic', 'type': 'function', 'function': {
-                'name': 'search_documentation', 'arguments': '{"query":"Review before scheduling."}'}}]}}
+        from app.core.chat_resources import retrieval_control
+        yield {'type': 'tool_call', 'assistant': retrieval_control(claim['context'])}
         assert len(recovered[0]['evidence']) == 1 and recovered[0]['evidence'][0]['id'].startswith('doc:chunk:')
         candidate = copy.deepcopy(ANSWER)
         candidate.update(status='ok', answer='Review before scheduling.', limitations=[],
