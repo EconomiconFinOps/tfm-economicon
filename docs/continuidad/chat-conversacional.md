@@ -1,3 +1,860 @@
+## Corte vigente: corrección29 offline en curso — 13/10/2026
+
+Tras focal28 3PASS/4FAIL, se implementa soporte documental literal visible por
+fuente efectiva y síntesis rotulada como interpretación. Evidence privado vacío;
+proyección de fuentes realmente usadas, sin decorar la respuesta con citas raíz.
+Auxiliares y recomendaciones usan el mismo contrato; cálculos/terminales y
+FinOpsResponse1.0 permanecen. Plan privado incluye cobertura y riesgos cuando
+aplican. Máximo2llamadas1000+2200/120s intacto; no nuevas inferencias.
+
+Pruebas parciales:22PASS claims;20PASS flujo/uso;25PASS integraciónSQLite,
+incluido extracto+interpretación stream=final=historial y negativos sinpersistencia.
+Padre27PASS dosmódulosbackend,32PASS modos,42PASS gateway/diagnósticos;157PASS
+processor recursos/expresiones/contexto. Paridadfinal4contextos PASS; bundle
+`e68cf0c42d19d65b026c88287e5e829712f9fae2928438cb4184d9978ddf8001`.
+OpenSpec69PASS. Selección backend restante:514PASS/46SKIP/15FAIL; los13fixtures
+intervalares se corrigieron y su módulo46PASS. Processor restante340PASS/6SKIP/
+25FAIL: consumidores migrados con38PASS segmentos y150PASS focal+35PASS rerun
+final (corridas parcialmente solapadas, no sumar). Permanecen4symlinkWindows y
+5summary/capacidad con cancelling/TimeoutError: contraste Linux networknone
+pendiente sobre candidato congelado, sin cambiar timeouts ni atribuir causa.
+No aceptación ni nuevas llamadas de proveedor.
+Revisiónlocal posterior cerró reparación involuntaria de recommendations ausente:
+se exige lista explícita, negativos añadidos. Fuentes visibles no garantizan
+entailment; banco y auditoría semántica pendientes. Ver ADR revisión29 y recibos
+externos expression29-*. Saldo permanece0.957927619/2USD; vigencia21:26:06UTC.
+
+## Antecedente: focal28 terminada, sin aceptación — 13/10/2026
+
+Publicado/runtime `b86efd7d9a5be3ff479268e2bd84ce871747f9d2`; CI PR38454490119
+PASS. Archivo e53a50cc2c6173be386ae4d4df5ed8d97a6aba0645f97fbebd92c25a42d0d683:
+1508 blobs contrastados contra Git por el padre. Build86/76/112 hashes y bundle
+c0a33eded1aa62b7a19e314ac71e37e205355c3cde0a78ce25f5f5ec00382aa4 coinciden.
+Focal limpia siete casos originales, sesión56456 terminal0: todos completed.
+Auditoría independiente:3PASS(003/008/025),4FAIL(022/023/026/028). Persisten omisión
+del riesgo de infrautilización, atribuciones documentales sin citas y selección
+de fuentes que no respaldan afirmaciones auxiliares. Dos generaciones no han
+resuelto la calidad semántica; no ejecutar full28 ni declarar validada la PR.
+
+SQL read-only CockroachDB24.1.11 confirma JSONB7/7PASS: dos mensajes por caso y
+stream=final=historial. Recibos externos `expression28-focused.json` y
+`expression28-sql-verify.json`; auditoría semántica del padre separada. Consumo
+asentado upstream1.092818129 menos baseline0.134890510 =0.957927619USD acumulado
+sobre máximo TOTAL2USD. Claves existentes renovadas sólo en vigencia hasta
+21:26:06UTC, mismos límites/modelos. Sin nuevas inferencias tras la focal.
+Siguiente paso: revisar diseño de selección de soporte por afirmación y
+completitud antes de editar; enlace explícito no equivale a entailment probado.
+UI autenticada pendiente de validación final coordinada; revisiones formales
+siguen pendientes y no se autoriza merge.
+
+## Antecedente: candidato28 offline — 13/10/2026
+
+Plan privado1000tokens + final revisado2200 sustituyen generación única, con
+120s compartidos, una recuperación, cero reintentos locales y sin plan público.
+Draft inválido/truncado no admite la final. Conteo real por fase, reserva de
+ambas entradas y uso parcial explícito en diagnóstico correlacionado. No cambia
+FinOpsResponse1.0, fuente de autoridad financiera ni banco. ADR/OpenSpec detallan
+límites y ausencia de garantía semántica de la segunda generación.
+
+Verificación offline:20PASS flujo/uso (incluye cancelación ambas fases, logger
+fallando y deadline entre fases);57PASS gateway/auto del padre con HTTP loopback;
+59PASS backend contexto/SQLite;86PASS DNS/expresiones/contextbudget;49PASS previos
+resources/flow y único fixture de32768tokens actualizado y revalidado en86.
+Paridad4contextos: reserva38060–43359+1024, menor que contexto runtime1048576,
+sin ampliar configuración. OpenSpec69PASS. Bundle
+`c0a33eded1aa62b7a19e314ac71e37e205355c3cde0a78ce25f5f5ec00382aa4`.
+Logs externos expression28-flow2/back1/extra1/openspec
+y parent-gateway3/parity. Publicación/build/prueba
+real28 pendientes; último gasto0.916443034/2USD. Claves19:33:52UTC requieren
+comprobar/renovar sólo vigencia antes de una campaña que no quepa en ese plazo.
+
+## Antecedente: diagnóstico27 terminado, sin aceptación — 13/10/2026
+
+Publicado/runtime `54e101d8f278ba46f80ba592f67abecdc03756aa`; CI PR38450744407
+PASS. Bundle `bf85a23fc2884ead0b46349b84af8848710e364b40f5a0d04003348e6c07f648`
+y hashes85backend/75processor/112frontend verificados. Focal27 original de siete
+casos:7completed,1intento/caso. Auditoría independiente:2PASS(025/026),5FAIL:
+003/008 afirman contenido documental sin citas;022 convierte incertidumbre en
+ausencia de base estable;023 propone conexión no habilitada;028 añade requisitos
+auxiliares sin fuente pertinente. No full28 ni aceptación semántica.
+
+Campaña diagnostic_only con observación acotada a errores008/022: ninguno se
+reprodujo, captured=[]; no atribuir causa histórica. Wrapper38786 terminóexit0
+y restauró ambos hashes originales de gateway/rules. SQL real CockroachDB24.1.11:
+JSONB7/7PASS,2mensajes por caso, SSE=final=historial. Recibos externos
+`expression27-focused.json`, `expression27-capture-receipt.json` y
+`expression27-sql-verify.json`. Gasto asentado0.916443034USD del máximo total2USD;
+claves existentes vigentes hasta19:33:52UTC. No inferencias adicionales mientras
+se revisa cómo vincular afirmaciones y fuentes; un cambio a dos generaciones
+requiere reconciliar explícitamente el ADR y especificación actuales de una.
+
+## Antecedente: focal26 y corrección27 offline — 13/10/2026
+
+Publicado/runtime845d0334febe46cecadbf4fa1eb43be7ac38f492; CI PR38448348918
+PASS. Focal26 sesión55367 exit0:8 de9 casos ejecutados,5completed/2failed y
+026EOF→cancelled alprimerreintento observado (1attempt);028 noadmitido. 001/019
+contenido correcto,003metodologíadocumentadasincita,008classification_unverified_prose,
+022invalid_recommendation_citation,023sinpedirfuenteautorizada. No aceptación.
+SQLCockroachJSONB8/8PASS; estado terminal026confirmado mediante GET separado,
+sin alterar snapshotwaiting original. Recibos externos expression26-focused,
+-sql-verify,-terminal-states y-summary.json. Gasto asentado0.881030298USD/2USD.
+
+Delta27 permite soporte autorizado opcional en missing_data/clarification/refusal,
+sinmetrics/recs nioperandoscorpus. Provenance de citas y operandos se registra
+por separado; diagnósticos de cita ahora distinguen errores cerrados. Prompt pide
+fuente real independientemente de basis y trata migración como riesgo, no certeza.
+Pruebas52backend+126processor y32modos adicionales; padre26tests de consumidores.
+ADR/OpenSpec actualizados; aceptación real y nueva campaña limpia pendientes.
+
+## Corte vigente: focal25 terminada, sin aceptación — 13/10/2026
+
+Publicado/runtime `51671932dce727005377f42695a9423d263ef718`, hashes de imágenes
+85 backend/75 processor/112 frontend y bundle25 verificados. Focal original de
+nueve casos, sesión25340 exit0:9 completed,1intento/caso; semántica3 PASS
+(023/025/026),6 FAIL (001/003/008/019/022/028). Las rutas neutrales siguen
+omitiendo contenido disponible.001 conserva input SQL completo y catálogo
+600/250/150EUR; el esquema sí ofrece scenario.segments y el bundle es25.
+No se conserva el payload final upstream: el recibo no afirma haberlo recuperado.
+
+Persistencia real CockroachDB JSONB9/9PASS por lectura SQL de esas conversaciones,
+2mensajes/caso y stream=resultado=contenido/metadata guardados. Recibos externos
+`expression25-focused.json`, `expression25-input-proof.json` y
+`expression25-sql-verify.json`. Gasto asentado0.850350162USD de2USD. No full28 de25
+ni nueva inferencia tras el mapa. CI25 PR38444339106 PASS. Delta26 aprobado
+técnicamente en curso: explicación segmentada unificada con procedencia privada;
+no objetos generativos request/scenario. ADR y OpenSpec conservan límites y
+aceptación pendiente. Padre verificó24 combinaciones de streaming y paridad en
+cuatro contextos; bundle293cf2502d25eea221bacf775f9340caf181d0945adab4dbca6c6d7c297decd4.
+Regresiones cerradas:425 backend PASS; processor417 casos con407 PASS iniciales
+y10 fixtures de consumidores adaptados, tres módulos revalidados62/62 PASS.
+OpenSpec69 PASS; nuevos modos/divisas25 PASS. Logs externos expression26-allback,
+-allproc, -rest y-openspec conservan resultados anteriores y correcciones.
+Resumen/capacidad de resumen y suites nativas no se repitieron en esta selección;
+rutas de resumen y SQL/vector de producto no cambiaron. La integración SQLite
+usa parser real y compara SSE/final/historial; JSONB real26 y semántica pendientes.
+No hubo nueva llamada pagada.
+
+## Antecedente: candidato24 y corrección25 — 13/10/2026
+
+Publicado y probado `794ab1735d367746ace4a15a462642756a45876a`; CI PR
+`38440203902` PASS (la anterior fue cancelada por concurrencia, no por producto).
+Contraste Linux sin red:134 processor/54 backend PASS, incluidos los cinco
+summary/capacidad y cuatro symlink que fallaban localmente. Nativo pgvector y
+contexto:54/54 PASS en procesos independientes con memoria acotada, sesión58547
+exit0; recibo externo `expression24-vector-bounded.json`.
+
+La primera tanda nativa simultánea a focal sufrió OOM global y exit137. El
+Cockroach aislado salió por protección de disk stall; se arrancó el mismo
+contenedor conservando volumen/configuración. Backend/processor sin reinicios.
+Desde entonces suites nativas pesadas y proveedor se ejecutan secuencialmente.
+No atribuir PASS a la primera tanda. Caso008 se recuperó automáticamente con
+dos intentos y dos mensajes; evidencia GET, no prueba de SSE observado.
+
+Focal24 de nueve casos:2 PASS (025/026),7 FAIL semánticos.001 pierde etiquetas,
+ámbito y conclusión aunque calcula;003 solicitud incompleta;008 omite cociente
+indefinido;019 omite delta absoluto;022/028 abstención documental injustificada;
+023 confunde falta de datos reales con fuera de dominio. Se conservan recibos
+`expression24-focused.json`, `expression24-008-recovered.json` y
+`expression24-focused-remaining.json`; remaining6 sesión12531 exit0,1intento/caso.
+No se ejecutó full28 de24 ni se acepta la PR. Coste asentado0.823623283USD;
+reserva conservadora0.826118859 mientras asienta contador, techo TOTAL2USD.
+Claves existentes renovadas sólo en vigencia hasta19:33:52UTC, mismos límites.
+
+Delta25 offline autorizado: explicación del escenario con segmentos existentes,
+operandos sólo de usuario y prefijo hipotético, sin autoridad financiera ni
+documental; diferencia absoluta incluso cuando relativo es indefinido; solicitud
+de baseline con ámbito e investigación por servicio/recurso; motivos de petición
+desambiguados y carencia documental concreta revisable. Verificado offline:118
+backend (incluye parser→SSE→persistencia SQLite de ambos modos nuevos),143
+processor efectivos (141 primera tanda y2 recursos revalidados tras estabilizar
+bundle),69 OpenSpec. Paridad independiente4 contextos y33 combinaciones de
+streaming PASS; bundle
+`abc079682ff622aca28cdd0528cce928bf751bf7d55987237d21e2ac98d1795d`.
+Pendientes build, pruebas reales y UI tras nuevo login. El texto libre no obtiene garantía
+automática de entailment por llevar prefijo. Runtime24 permanece congelado.
+
+## Antecedente: preparación de delta24 — 13/10/2026
+
+Sobre runtime23 inmutable: orientación útil derivada de cocientes/base cero;
+selección privada explícita de citas en recomendaciones y unión verificada;
+narrativa libre sólo con evidencia, escenario tipado de cantidades de usuario
+y solicitudes neutrales con estado/próximo paso derivados. FinOpsResponse público
+intacto. Memoización cuenta hasta12 evaluaciones numéricas distintas más
+comparaciones, valida cada ocurrencia/profundidad y conserva provenance; no
+soluciona por sí sola prosa incoherente del001. ADR v10 documenta límites.
+Pruebas locales nuevas:19 modos,41 modos/persistencia,52 citas/aritmética PASS;
+revisión independiente30 combinaciones de streaming y rechazo de13 operaciones
+PASS. Paridad independiente4 contextos PASS, bundle
+`18bbae2104524d40f5fb0c5ddfe5b8108c5b94e1ea72aed49f6c162162fc0f30`.
+Regresión completa local test_chat: backend587PASS/46SKIP/9FAIL iniciales;
+cuatro fixtures de evidencia corregidos (17PASS), tres fallos de bundle durante
+edición del prompt revalidados con recursos congelados (35PASS); quedan dos
+WinError1314 al crear symlinks. Processor506PASS/6SKIP/15FAIL iniciales: ocho
+fixtures antiguos corregidos (cola UTF8, modos, fuentes y conteo de repeticiones;
+91PASS y último módulo34PASS). Permanecen cinco fallos de cancelación/capacidad
+summary (TimeoutError/cancelling, WinError10053) y dos symlink1314: requieren
+contraste Linux sobre el candidato, sin cambiar tiempos ni añadir omisiones.
+Gateway/diagnósticos50PASS, auto/segmentos40PASS, boolean/modos35PASS,
+OpenSpec69PASS. Bundle final `ffe9aeda5bbd68792f9f68f30d81701c95e3856352c640b165bdc0b5d39b3a3d`;
+paridad independiente4 contextos PASS. Banco SHA256
+`0bd8a31792d68ff82c2bb222d42593f139d9596e2d24ad37f77c08d648a9f2e7` intacto.
+Pendiente construir congelado, resolver contraste Linux y renovar vigencia
+existente antes de focal001/003/008/019/022/023/025/026/028 y full28 original.
+No evidencia semántica nueva ni gasto desde0.796833638USD. UI login pendiente.
+
+## Antecedente: candidato23 y batería completa terminada — 13/10/2026
+
+Publicado `9603370a2b1266040d8359f7c5b9eb695dc623a3`. CI PR `38430111305`
+PASS; imágenes expression23 verificadas contra 84 archivos backend,74 processor
+y112 frontend. Paridad de esquema/conteo entre servicios y bundle
+`jup-035.chat.v3:561f6f9d49a1958837ec1a79a2d79fe8f334d25bc2996777d2b09f94418af857`.
+Pruebas:132 backend,63 processor,14 persistencia SSE/JSONB,6 cancelación,
+69 OpenSpec y54 pgvector nativo PASS. La suite pgvector usa un contenedor
+desechable sin red externa y verifica vecinos fuera del pool vectorial,
+aislamiento tenant/proveedor, snapshot y límite/deadline; no datos reales.
+
+Focal003/005/007/017:4/4 PASS semánticos y mecánicos auditados por el padre.
+017 muestra100>100 falso,25>20 verdadero y AND no cumplido, sin prosa de
+conclusión elegida por modelo. Recibo externo `expression23-focused.json`.
+Esta muestra no sustituye la batería completa ni borra fallos históricos.
+Full28 original terminada sobre ese mismo runtime inmutable, sin reintentos
+manuales y un intento por caso:26completed/2failed. Recibo `expression23-full28.json`.
+001 falla por `expression_operation_limit` tras cálculos redundantes y prosa
+aritmética incoherente;022 por `unknown_evidence_reference` al validar el resultado.
+No se conoce si esa referencia era inventada o autorizada pero omitida de la
+selección final. Ningún400, truncado o reintento. Auditoría semántica final independiente:19PASS/9FAIL. Además de001/022,
+fallan003 (atribución documental sin citas),008/019 (petición útil ante cero),
+023 (fuente autorizada),025 (propuesta revisable),026 (cobertura) y028
+(requisitos adicionales sin soporte).016/017/018 y027 pasan esta muestra.
+Invariantes mecánicas28PASS; NO aceptación global. No ocultar esos fallos.
+Gasto acumulado posterior:0.796833638USD; techo TOTAL2USD y reserva0.25,
+comprobados antes de cada caso. Claves existentes hasta17:21:51UTC sin cambios
+de modelos, cuotas ni presupuestos. Aislamiento API sobre candidato23:Core200 y
+Growth404 en conversación/status/result/events (`expression23-isolation-remote.log`).
+UI017 no ejecutada: sesión caducada y login humano pendiente; no consumo UI.
+La coordinación de consumo vuelve al implementador, sin nueva campaña hasta
+congelar y revisar candidato24. Renovar sólo vigencia de claves existentes antes
+de otra batería (17:21:51UTC no permite una campaña tardía completa).
+No merge, Discord ni reviews ficticias.
+
+## Antecedente: survey22 y corrección23 — 13/10/2026
+
+PR121 publica `8d897c4` (sólo fixture CI posterior a producto `f5af693`).
+CI técnica PASS según comprobación del padre. Runtime expression22 conserva
+f5af693 y su campaña íntegra:25completed/3failed005,007,013; mecánica28PASS,
+NO aceptación semántica.017 muestra condiciones correctas con conclusión AND
+contradictoria;005/007 narrativa rechazada;003 cita insuficiente,004 incompleta,
+008/009/018/019/020/022/023 con fallos de contenido según auditoría.027 y024
+pasan esta muestra, sin sustituir fallos anteriores. Recibos externos
+`expression22-full28.json` y auditoría/invariantes del padre.
+Gasto observado0.701478144USD, techo TOTAL2USD; claves hasta17:21:51UTC,
+settings intactos. La autorización de publicar/transferir/validar sigue vigente;
+las notas inferiores de autorizaciones pendientes son antecedentes superados.
+
+Corrección23 en preparación: conclusión AND/OR íntegramente servidor desde regla
+explícita autenticada, baseline/observado inequívocos, sin operandos/comparadores
+ni prosa de conclusión elegidos por modelo. Usuario no genera cita ficticia;
+regla documental conserva fuente exacta. La abstención de clasificación requerida
+se limita a mensajes neutrales cerrados, sin reabrir prosa por cambiar status.
+Vecinos documentales se consultan por posición exacta en la misma transacción,
+tenant/proveedor y cota20, no sólo dentro del pool vectorial. Evidence pasa al
+final del esquema privado; no se considera prueba de mejor pertinencia.
+Probe offline005/006/007 muestra routing requerido con rules3+4, pero no con
+rules4 solo. Falta el contexto efectivo fallido: esa reconstrucción condicional
+NO acredita la causa exacta de005/007. No se hizo otra inferencia diagnóstica.
+
+Pruebas iniciales23:132backendPASS,63processorPASS,14SQL/SSE/JSONB localPASS,
+incluyendo terminal booleano user/corpus; SQL pgvector nativo y paridad final
+pendientes antes publicación/build. Padre revisa delta, sin nueva llamada pagada.
+Siguiente: completar paridad/docs, congelar/build, SQLnativo y smoke003005007017;
+full28 sólo según contrato y evaluación, sin declarar validada por completed.
+
+Los apartados siguientes son cortes históricos, no el estado actual.
+
+## Corte vigente: survey21 y corrección22 offline — 13/10/2026
+
+Publicado `c12083ad0251a7f790010a05d71e425813337d90`, runtime expression21.
+Survey íntegro del banco original:27completed/1failed006. Mecánica28/28PASS
+(SSE=final=JSONB, historial vacío al fallar, fuentes autorizadas y límites).
+Auditoría independiente:18PASS/10FAIL semánticos; NO validada. Recibos externos
+`expression21-full28.json`, `expression21-parent-semantic-audit.json` y su informe
+de invariantes. El smoke previo no sustituye este resultado. Gasto acumulado
+observado0.621675526 USD de TOTAL2USD; claves existentes hasta17:21:51UTC con
+modelos, límites y presupuestos intactos. No capturas de razonamiento.
+
+Corrección22 offline:006 confirma `documentary_calculation_citation_missing`.
+La respuesta íntegramente calculada por servidor recibe únicamente sus fuentes
+realmente usadas, mediante marcador Python interno y registros autenticados
+exactos; JSON no puede obtener esa capacidad. Narrativa conserva citas literales.
+013motiva guard sobre filas intervalares parciales sin ampliar autoridad de reglas.
+Comparaciones muestran valores evaluados.024motiva segmento de cantidad original
+sin operaciones inventadas, con moneda/origen y obligaciones de evidencia.
+Prompt aclara no extrapolar reglas, no prometer denominadores futuros positivos,
+pedir fuente/cobertura/ingesta y explicitar riesgo de infrautilización. Ningún
+cambio en banco/corpus ni criterios.017/018 y demás fallos exigen nueva evaluación,
+no se declaran solucionados por pruebas offline. ADR detalla límites.
+
+Pruebas37processorPASS del núcleo/ensamblador, backend58PASS incluyendo parser
+real→SSE→JSONB para dos monedas separadas. Recursos/gateway/expresiones112PASS y paridad final
+comprobada:4981tokensesquema, mensajes4311, variables760. Próximo paso autorizado: publicar/build22, smoke006/024
+y nueva full28 si no hay errores estructurales; no merge ni Discord.
+
+Los apartados siguientes son cortes históricos, no el estado actual.
+
+### Candidato siguiente: intención explícita acotada
+
+Restricción privada sólo ante petición explícita en primer párrafo, una regla y
+un numerador de usuario inequívocos; narrativa/abstención conservadas para los
+otros casos. Pruebas53backend con persistencia; suite ampliada de intención44PASS;
+64processor recursos/parser/presupuesto PASS; OpenSpec69PASS. Paridad final:
+4971tokens esquema,4026mensajes,760variables; schema87989582…0daa18a y bundle
+f087dd07…2f227 iguales. No cambia prompt ni corpus/banco.013/027 y el ValueError
+anterior siguen pendientes. Próxima validación: smoke005/006 y una full28 de
+cobertura diagnóstica, sin declarar aceptación por sólo completarse.
+
+## Corte vigente: focal terminal tipada — 13/10/2026
+
+Publicado `daaffbfe64d2f612a0c1716fdd7d277ec499fa93`, runtime expression20
+con hashes backend/processor/frontend comprobados; CI técnica PASS. Focal20:
+005/006/007 fallan en validación final, 013 rechaza unidades incompatibles y
+además atribuye indebidamente semáforo Unallocated a Budget Variance; 017 PASS
+semántico según auditoría independiente; 027 calcula bien pero sus listas añaden
+metodología sin las citas pertinentes. NO validada; no se ejecuta full28.
+Invariantes de las seis respuestas PASS: SSE/resultado/JSONB, límites, fuentes e
+historial vacío al fallar. Recibos externos `expression20-focused.json` y
+`expression20-focused-parent-invariants.json`; no equivalen a aceptación semántica.
+
+Diagnóstico único005 posterior añade sólo tres códigos cerrados temporalmente;
+esta vez elige narrativa y falla `classification_unverified_prose`, sin reproducir
+el ValueError no identificado de la focal. NO confirma la hipótesis de cita
+faltante. Runtime original restaurado y hash verificado; cero mensajes guardados.
+Recibos `expression20-diagnostic005.json` y `expression20-diagnostic005-remote.log`.
+Gasto acumulado observado 0.541537388 USD, techo TOTAL autorizado 2 USD. No nuevas
+inferencias hasta revisar corrección y causa pendiente. Tres códigos cerrados
+adicionales probados offline (26 PASS), aún sin publicar.
+
+Aislamiento real de lectura: conversación, estado, resultado y eventos devuelven
+200 con Core y 404 con Growth para la misma conversación; sin inferencia ni
+exportar credenciales (`expression20-isolation-remote.log`). Navegador confirma
+retorno de foco al botón tras Escape en este runtime. Próximo paso: restringir la
+variante de clasificación sólo ante petición explícita y regla aplicable inequívoca,
+sin secuestrar consultas narrativas; resolver pertinencia de auxiliares y reglas
+parciales. Los cortes siguientes son antecedentes, no estado vigente.
+
+## Corte actual: intervalos documentales — 13/10/2026
+
+Corte posterior expression19/a5f702b:005/006/007 rechazadas por clasificación libre;
+captura005 confirma conclusión roja después del bloque amarillo correcto.013/017/
+027 completan técnicamente, pero auditoría detecta clasificación indebida sin color,
+status/consejo innecesario y evidencia insuficiente respectivamente. NO aceptación.
+Hook retirado con hashes originales; lectura directa preservada en
+expression19-diagnostic005-observed.json (copiafinaldelwrapper no recuperó archivo).
+Gasto observado0.518084255/2USD. CIa5f702b pasa. Se implementa offline variante
+privada de clasificación terminal sin prosa libre; narrativa excluye classify.
+ADR documenta límites. Pruebas iniciales41backend/64processorPASS y paridad de
+esquema5409tokens/mensajes4007/variable747, sin proveedor. Pendiente pruebas finales,
+congelación y nueva focal; no interpretar pruebas de contrato como semántica.
+Comprobaciones finales:42backendPASS (incluye persistencia),64processorPASS
+gateway/parser y61PASS recursos/presupuesto/stream, OpenSpec69PASS. Tras aclarar
+la apertura narrativa del prompt, paridad final5409tokensesquema/4013mensajes/
+747variables y bundled7f8a112…f490848 coinciden entre servicios.
+El padre corrige retorno del foco al cerrar ChatPanel: se realiza tras el commit
+que vuelve visible el botón, sin robar foco inicial.16pruebas yESLint pasan;
+recomprobar Escape en navegador final. Focal6 pendiente, sin nueva inferencia.
+
+Actualización posterior:00fd4ab publicado y runtime expression18 verificado
+(83/73/112 hashes;47 pruebas Cockroach PASS). Focal005/006 falla después de emitir
+classify correcto;007/013/017 completas con criterios correctos.027 calcula bien,
+pero cita insuficiente para una explicación adicional de metodología. Todos los
+completados conservan SSE=final=JSONB; fallidos con historial vacío. NO validada.
+Diagnóstico único005 posterior completa sin reproducir el error: no acredita
+causa ni reemplaza la muestra fallida. Hook retirado y hashes originales
+restaurados. Recibos expression18-focused.json, -focused-checks.json y
+-diagnostic005.json en el workspace. Gasto observado0.49419398/2USD, sujeto a
+asentamiento. No full28 ni nuevas inferencias tras ese diagnóstico.
+
+Se añaden códigos cerrados para los nuevos errores del selector (18testsPASS,
+sin texto rechazado) y se corrige la fixture de retrieval para comprobar sus
+rangos nuevos exactos (29testsPASS). CI00fd4ab había fallado únicamente esa
+fixture:1840PASS/164SKIP/1FAIL; no un fallo de producto. Pendiente resolver la
+fiabilidad de005/006 con evidencia suficiente y la pertinencia documental027.
+
+Publicado f1848e5, producto idéntico731b5ea, transferido con autorización específica.
+CI técnica y47 pruebas Cockroach pasan, incluidos cuatro caminos de migración y
+preservación de datos. Runtime expression17 tiene82/72/112 hashes de fuentes
+backend/processor/frontend comprobados. UI del padre verifica historial027 y
+cambio de cliente sin arrastrar conversación; no fue una inferencia pagada.
+
+Focal005/013/027: tres respuestas completas, SSE=final=historial, pero005 clasifica
+incorrectamente10% como rojo y013 aplica semáforo de otro KPI a presupuesto.
+027 pasa contraste semántico y de citas independiente. PR121 NO validada.
+Gasto conservador0.4756863025/2USD, pendiente asentamiento del contador upstream.
+Recibos externos expression17-focused.json y expression17-focused-checks.json.
+
+Corrección offline en curso: rangos de sección auténticos y selector `classify`
+de gramática cerrada, sin modificar corpus/banco. Véase
+[ADR](../adr/JUP-035-server-retrieval-expressions.md). Regresiones de límites,
+conclusiones reales y citas; recursos/contextbudget/stream49PASS. Paridad del
+padre en procesos separados: esquema4561 tokens, mensajes3637, variables747,
+hash de esquema idéntico. Evidencia expression18-parent-parity-* fuera de Git.
+No se ha enviado este candidato al proveedor. Próximos pasos: cerrar persistencia,
+revisión, congelar/build y focal005/006/007/013/017/027 antes de full28.
+
+## Reconciliación con develop bfaf398 — 13/10/2026 (corte previo)
+
+Se integra la navegación MVP en español y las anomalías reales de JUP114/116/117,
+preservando el panel conversacional. La captura usa episodios visibles por cliente,
+moneda/periodo por fila, sin agregado financiero; carga/error no conserva filas.
+
+Se detectó colisión histórica 002 entre chat y anomalías. El migrador exclusivo
+reconoce únicamente ese par cuando incluye005: completa ambos esquemas mediante
+DDL inspeccionable antes de003/004 y registra005 tras verificar. No renumera ni
+reescribe filas del ledger. Verify exige005 y ambos esquemas sin escribir.
+Pruebas SQLite:131PASS iniciales y7PASS ampliadas (rama actual003/004 con historial,
+summary/compaction, episodio y estado de detección, ledger y reinicio). Se añaden
+cuatro caminos Cockroach desde bases realmente vacías; ejecución nativa pendiente.
+No se ha enviado ninguna inferencia durante la reconciliación. Gasto sigue
+0.466034965/2USD; aceptación semántica de PR121 sigue pendiente.
+
+## PR121: recuperación de servidor y expresiones locales — 13/10/2026
+
+Ensayo expression16 high4 sobre fb72da0 (producto idéntico a646175e):002 completa
+200/25 correctamente;005 falla por ecuación libre y no persiste mensajes.
+El harness confundió fallo sin deltas con respuesta vacía y detuvo013/027;
+clasificación corregida fuera de producto. Único diagnóstico005 autorizado no
+reproduce rechazo, pero devuelve porcentaje100/100 incorrecto pese total1000:
+NO aceptación ni prueba causal del fallo anterior. Overlay diagnóstico retirado
+y hash original restaurado. Gasto asentado **0.466034965 USD /2USD**.
+Recibos `expression16-high4.json`, `expression16-diagnostic005.json` y logs del
+workspace. SQL nativo43PASS; imagen78/72 hashes verificados.
+La siguiente corrección conserva AST y aclara reutilizar el subárbol completo
+del total como denominador; ejemplo18/7/5GB, sin cambiar banco.44 pruebas pasan.
+Mock offline de la misma imagen LiteLLM1.103.2 con red deshabilitada confirma
+forwarding reasoning high/exclude,3200 y proveedor fijo; no prueba razonamiento
+interno efectivo. Próxima focal005/013/027 pendiente en nuevo SHA congelado.
+
+CI fb72da0: processor y otros cuatro checks técnicos pasan; backend1718PASS,
+106 omitidas y un fixture de conteo falla porque no pasa authorized_evidence.
+La recuperación real del test ya había terminado correctamente. Se corrige
+únicamente la llamada del fixture y se conserva el rechazo explícito sin
+autoridad; el archivo completo pasa33 pruebas. Producto byteidéntico a fb72da0.
+Ese bloqueo fue resuelto por autorización específica del usuario; transferencia y
+ensayo high4 ejecutados después, descritos arriba. Archivo exacto/hash/destino registrados en `expression16-transfer-proof.json` fuera de Git.
+
+Último corte: campaña expression15 sobre192b687 completa28 casos en orden;
+23 completed/5 failed,27 HTTP429 y dos rechazos (unidades y pareja ahorro/divisa).
+Stream=final=historial y cero persistencia en fallidos verificados; hay errores
+semánticos confirmados en002/005/013/018/027 y omisiones, por tanto NO validada.
+Recibos `expression15-full28.json` y `expression15-full28-checks.json` en el
+directorio de evidencias del workspace indicado abajo. Gasto observado después
+**0.456318044 USD /2USD**, pendiente asentamiento del contador upstream.
+Corrección offline siguiente: política CHAT_SYSTEM_PROMPT sin contradicción
+con ejercicios, catálogo documental de unidades explícitas y provenance,
+fuentes exactas autenticadas, paridad de conteo y ahorro/divisa privados null
+según firewall previo. Pruebas processor95PASS/backend26PASS. Sin nuevas
+inferencias ni cambio de reasoning hasta revisión; CI/SQL del nuevo SHA pendientes.
+
+Actualización posterior: CI09ad6f5 pasa los seis checks técnicos (JUP policy
+omitido por evento push; reviews oficiales siguen pendientes). La campaña
+expression14 sobre ese producto termina8 completed,19 HTTP429 waiting cancelados
+por el harness y1 fallo022 `rendered_text_limit`. Cada caso tuvo un intento;
+los ocho completados tienen stream=final=historial y los demás cero mensajes.
+014 omite los cálculos y017 confunde20% con25%: no son aceptación. El esquema
+permitía hojas aisladas como resultados; se corrige para exigir operación raíz.
+Las listas cortas pasan a un único segmento text≤500 poritem y cálculos solo
+en answer, manteniendo el contrato público y rechazo sin truncar. Pruebas
+offline de raíz/stream pasan; recursos/conteo38PASS y contraste backend17PASS.
+Recibo íntegro: `expression14-full28-verified.json` en el directorio siguiente.
+Gasto asentado actual **0.401040246 USD de2USD**. La siguiente campaña deberá
+observar los reintentos automáticos normales de429; la anterior los cancelaba
+para medir un intento y no permite concluir fallo definitivo de recuperación.
+
+La full28 de f6c7895 terminó18 completed/10 failed. Además,010/014/016/027/028
+y otras respuestas completadas presentan problemas de completitud o citas;
+completed no es aceptación. Recibo íntegro del workspace:
+`materiales/07-evidencias/PR121-herramientas-evidencia-20261012/arithmetic12-full28-verified.json`.
+Antes de expression14, acumulado asentado 0.376770819 USD. El 13/10/2026 el usuario amplió el techo
+acumulado a **2 USD** (no 2 USD adicionales); restan 1.623229181 USD. No se han
+hecho llamadas entre esa campaña y expression14. El modelo y los datos sintéticos autorizados
+siguen siendo los mismos; el guard debe reservar reintentos y recorrido UI.
+
+Decisión técnica en implementación para atender el objetivo autorizado:
+`server-documentation-v4`, recuperación determinada por servidor y una generación
+final; expresiones autocontenidas con cantidades vinculadas al origen sustituyen
+la decisión/plan de índices. [ADR](../adr/JUP-035-server-retrieval-expressions.md).
+El contrato público, autoridad financiera, HMAC, límites y criterios semánticos
+se conservan. Implementación congelada en 85994b8; 096b774 añade únicamente la
+explicación general de participación de categorías y actualiza el manifest.
+Imagen expression13: 78 hashes backend y 72 processor coinciden con 85994b8;
+43 pruebas SQL nativas pasan. Recursos/prompt final: 22 pasan. OpenSpec: 67 pasan.
+Suites Windows: backend 491 pasan/42 omitidas/2 errores de privilegio symlink;
+processor 451 pasan/6 omitidas/8 fallos (dos symlink, una expectativa textual ya
+corregida y cinco cancelación/capacidad). La comparación Linux nueva termina
+127 PASS processor y 54 PASS backend, incluyendo esos cinco y los symlinks.
+La caída temporal SSH se resolvió sin repetir la tanda. CI 9c5fada: processor
+PASS y backend 1718 PASS/106 omitidas/1 fallo: un fixture de presupuesto de
+resumen aún sumaba la reserva de decisión retirada. Corregido para contar el
+esquema efectivo con catálogo; conserva el rechazo por faltar un token y la
+preservación del historial. Sus seis pruebas pasan; no cambia producto.
+Recibos del workspace: `expression13-native-remote.log`,
+`expression13-build-remote.log`, `expression-prompt-final.log` y
+`expression-openspec-final.log`, en el directorio de evidencias indicado arriba.
+Runtime expression14 activo con producto y bundle 9c5fada verificados; claves
+aisladas renovadas únicamente en vigencia hasta 12:08:58 UTC. CI final, campaña
+limpia y recorrido UI pendientes; ninguna nueva inferencia hasta este registro.
+
+Los apartados siguientes son evidencia histórica, no estado del candidato nuevo.
+
+## Evaluación de fiabilidad pendiente (2026-10-13)
+
+7bc8f7c falla017 en2,62s por unidades incompatibles, sin salida ni historial.
+Una captura única posterior017 completó con unidades coherentes; no reprodujo
+el fallo y NO sustituye aceptación ni borra la muestra fallida. Instrumentación
+retirada en finally, hash del backend limpio restaurado. Acumulado asentado
+0.296226621USD, techo0.50USD. No habrá más capturas/repeticiones aleatorias.
+
+La fixture de pantalla grande ahora deriva el presupuesto del overhead real
+(prompt y esquemas) más600 tokens para datos, conserva proyección/omisiones y
+snapshot completo; pasa offline. No cambia código funcional ni cap de producción.
+La siguiente full28 será una campaña íntegra sobre runtime limpio, evaluada caso
+a caso y junto con la fiabilidad histórica; nunca se equipara completed a PASS.
+
+## Focal 7f1a150 (2026-10-13)
+
+Autorizacion externa especifica confirmada por el usuario; bloqueo anterior
+resuelto. Arithmetic10 completa017/027.027 cumple10/6EUR por pedido y reduccion40%,
+con fuentes pertinentes, stream=final e historial2.017 explica AND y limite
+estricto pero deja huecos en las magnitudes: no pasa. Su decision privada no se
+conserva y no se atribuye una causa no observada. Se aclara la instruccion general:
+aplicar reglas cuantitativas tambien exige planificar magnitudes/comparaciones,
+aunque no se pida calcular explicitamente; nunca omitir valores mediante huecos.
+La proxima focal017 y full28 requieren candidato nuevo. Recibo arithmetic10-focused.json.
+
+## Focal d1947e6 y separación numérica (2026-10-13)
+
+Runtime arithmetic9 limpio, hashes77/71; CI técnica verde. La focal normal017
+completa sin HTTP400, con cita pertinente y dos mensajes, pero omite porcentaje
+y explicación de condiciones: no acredita aceptación semántica.027 falla antes
+del resultado con calculation_reference_unit, cuyo único guard actual detecta
+referencia a bool. No se conserva el plan privado y no se inventan sus operandos.
+Recibo arithmetic9-focused.json en la carpeta de evidencia del workspace.
+Acumulado upstream0.280110227USD, virtual0.24476610USD, techo0.50USD.
+
+Corrección en curso: calculations solo numéricos, comparisons terminales;
+referencias exclusivamente numéricas y resultados con IDs n:/c: separados.
+Máximo12 pasos sumados, dos generaciones, una búsqueda y3200 tokens intactos.
+La instrucción general exige explicar magnitudes, condiciones y combinaciones,
+sin respuestas codificadas para el banco. Pruebas offline:183 processor,60 backend,
+61 aritmética con caminos mixtos/terminales,17 recursos y67 OpenSpec pasan.
+SSE y persistencia SQL se contrastan con IDs numéricos y comparaciones juntos.
+Nueva focal y full28 pendientes. Candidato7f1a150 publicado, runtime arithmetic10
+con hashes77/71 idénticos y43 pruebas SQL nativas pasan. El intento de ejecutar
+focal017/027 fue rechazado por auto-review antes de CreateProcess: interpretó
+el permiso como limitado a la reproducción específica017 anterior. No hubo
+inferencia ni gasto. Pendiente reconciliar la autorización humana más reciente;
+no se intenta una variante del envío. Recibo arithmetic10-focal-approval-rejection.json.
+
+## Diagnóstico causal de compatibilidad (2026-10-13)
+
+El usuario autorizó específicamente una reproducción del payload017 indicado
+abajo al mismo OpenRouter/GLM5.2/DeepInfra. El contenedor efímero usó la misma
+imagen/configuración del gateway, sin modificarlo ni compartir su base de datos.
+Un error local previo al envío tuvo coste0; se conservó su recibo y se corrigió.
+La única reproducción externa confirmó BadRequestError,HTTP400:
+`Grammar error: Unable to determine if regex is empty`, con intersección de dos
+literales idénticos del extracto autorizado. Upstream antes/después0.409028395USD,
+incremento0; acumulado desde baseline0.13489051USD:0.274137885USD, techo0.50USD.
+Credenciales temporales y contenedor retirados. No queda otra reproducción
+autorizada bajo ese consentimiento específico.
+
+La corrección elimina propiedades raíz redundantes: conserva dos objetos
+completos bajo anyOf y los mismos $defs. Cada restricción sigue en ambas ramas;
+se elimina también anyOf unario de segmentos sin cálculos. Equivalencia y
+contabilidad cruzada se prueban offline; compatibilidad real corregida y full28
+siguen pendientes. Recibo saneado: `payload8-replay-remote.log` en la carpeta
+de evidencia indicada abajo; el error original permanece privado en el host.
+CI5c071d9 fue verde (backend1717PASS106SKIP,processor1318PASS96SKIP), sin que
+ello acreditase aceptación funcional; esquema corregido requiere nuevo candidato.
+
+## Estado actual: segmentos privados y ventanas literales (2026-10-12)
+
+Origen: subagente `/root/pr121_correccion_pendientes`, objetivo autorizado de
+corregir PR121 hasta aceptación.6c0592e no supera la focal017/027: referencia de
+cálculo inexistente y cita no literal, respectivamente; ambos historiales vacíos.
+La captura posterior no reprodujo esos fallos:017 tuvo EOF en decisión y027
+terminó correctamente; se conserva como diagnóstico, nunca aceptación.
+
+El contrato privado ahora usa segmentos text/calculation_id con IDs enumerados,
+y citas elegidas de ventanas literales hasta2048 caracteres. El esquema de
+decisión elimina anyOf raíz redundante, manteniendo coherencia action/query en
+validación local. No se atribuye el EOF a una causa demostrada. Parser y renderer
+validan texto contiguo, normalizan espacios globales como el contrato público y
+preservan límites4000/500 y8KiB. PúblicoFinOpsResponse1.0 sin cambios.
+
+Evidencia offline del cambio en `materiales/07-evidencias/PR121-herramientas-evidencia-20261012`
+del workspace:139 pruebas rápidas,64 segmentos/transporte,15 equivalencia de
+schema/conteo y10 persistencia pasan.45 pruebas contexto backend pasaron en la
+primera ejecución, con3 fixtures de esquema corregidas y revalidadas después.
+SQL nativo, nueva focal y full28 sobre candidato congelado pendientes. Los
+resultados históricos siguientes no constituyen aceptación de este contrato.
+
+41e2370 añade43PASS con CockroachDB nativo. La focal arithmetic8 falla017/027
+por HTTP400; captura017 confirma fase final, pero el gateway elimina el mensaje
+original. Una reproducción efímera para recuperar el error está pendiente:
+auto-review la rechazó dos veces y exigió autorización específica del usuario.
+Ese bloqueo quedó resuelto por el diagnóstico del13/10 arriba. Payload privado SHA256
+`50e516f69876c07fcd120be72cea0b58c8764be70210e2c0bae2174de08e4eec` verificado:
+pregunta017 exacta, prompt41e2370,10chunks del corpus sintético ya usado,
+4cálculos, sin historial/datasets ni credenciales. Destino previsto: mismo
+OpenRouter z-ai/glm-5.2/DeepInfra, techo acumulado0.50USD. Instrumentación
+retirada y runtime41e2370 restaurado. Recibos `payload8-proof-remote.log`,
+`payload8-proof-corpus-remote.log` y `error8-read-remote.log` en carpeta anterior.
+CI detectó3fixtures antiguas de schema privado; se adaptan sólo a segmentos,
+manteniendo validadores públicos y rechazo de evidence/period inválidos.
+
+## Schema contextual (2026-10-12)
+
+99d9b47 elimino la unidad redundante en referencias; el foco027 siguio rechazando
+una unidad literal ausente del input y017 tuvo EOF remoto. Se conserva el NO PASS.
+La decision ahora enumera numeros y tokens de unidad de la pregunta, con limite128
+por conjunto; sin operandos o con exceso se deshabilita el plan. Gateway y backend
+validan esos limites localmente, y manifiesto/conteo incluyen el schema efectivo.
+121 pruebas processor y48 backend pasan, con comprobacion cruzada independiente
+de schema/hash/conteo. Tres cancelaciones de socket stalled en Windows pendientes
+de contraste Linux sin modificar sus deadlines. Nueva campaña real pendiente.
+
+
+## Correccion de referencias aritmeticas (2026-10-12)
+
+Los focos reales 017/027 de80393b8 fallaron antes de responder; fab76da incorpora
+codigos de error cerrados. La captura puntual privada de027 reprodujo
+`calculation_reference_unit`: el modelo declaraba EUR/pedido al referirse a un
+resultado EUR/pedidos. La instrumentacion solo aceptaba la pregunta sintetica
+exacta, uso archivo0600 y fue retirada; esas ejecuciones NO son aceptacion.
+La correccion general usa operandos tipados literal/unit o ref entero, que hereda
+valor y unidad sin reparacion. Contrato y hashes actualizados.116 pruebas del
+processor pasan; nueva campaña real pendiente. Los recibos originales se conservan
+en materiales/07-evidencias/PR121-herramientas-evidencia-20261012 del workspace.
+
+
+Corte siguiente: b79e4ee publicado y CI tecnica/JUP policy verdes;167 processor,
+80 backend+13 esquema y43 Cockroach nativos pasan. Focal5/5completed, pero017
+contiene igualdad falsa500−100=100. No aceptación, no full28 de ese candidato.
+Se implementa plan Decimal acotado y slots privados con extension HMAC, sin
+busqueda para none, ni autoridad financiera nueva. Tests focales aritmeticos
+88PASS y backend82PASS; validacion real del nuevo calculo pendiente.
+Gasto confirmado tras focal0.20213783USD/0.50USD; vigencia renovada hasta21:44UTC,
+sin cambio de límites. Runtime aislado b79e4ee permanece para UI coordinada.
+
+Origen: objetivo explícito «Solucionar los problemas de PR-121 hasta que sea
+valida», delegado a `/root/pr121_correccion_pendientes`. Sustituye la decisión
+pendiente del corte anterior: el usuario autoriza none/search estructurado,
+máximo una búsqueda real y dos generaciones, sin mensajes tool fabricados.
+Implementación structured-documentation-v3 con ramas cerradas, HMAC existente
+vinculado al digest de la decisión y bloque UNTRUSTED_RETRIEVAL_CONTEXT.
+Cada cita documental exige un extracto literal privado verificado; se conserva
+FinOpsResponse1.0, autoridad financiera, plazo, proveedor y salida3200.
+La pertenencia literal no acredita pertinencia semántica: ésta requiere full28.
+Se han releído la única review de Víctor y comentarios/inline vacíos.
+Backend80PASS y OpenSpec67/67 en desarrollo; batería real y aceptación pendientes.
+Gasto previo verificado0.1895518525USD/0.50USD, claves caducadas19:28UTC.
+Ahora está autorizada renovar sólo su vigencia lo necesario, sin ampliar límites.
+No merge, Discord ni reviews atribuidas a terceros. La evidencia final sustituirá
+este estado de implementación, sin borrar los ensayos anteriores negativos.
+
+## PR121: correcciones de review y aceptación pendiente — 12/10/2026
+
+Origen: «Prepara la orden de trabajo para corregir los problemas pendientes de
+la PR-121 y mándasela a un subagente», implementación asistida de Alejandro por
+`/root/pr121_correccion_pendientes`. Código551fb81, merge develop3c6517b en1d082fb,
+pruebas/docs85e1dc9. Cierra carreras SQL/RAM iniciales y de observadores para
+final/terminal/paused/retry_scheduled; decisión length pasa a502 incomplete;
+emoji real y fragmentación byte a byte; HMAC estable CD en init/prepare.
+Conservados controles, firewall, hashes, plazo y dos generaciones. GitHubMERGEABLE,
+fila JUP113 preservada; índice resumido y checkpoints antiguos movidos a tema.
+
+Backend68PASS; processor87PASS y auto29PASS (se solapan); Cockroach43PASS/0SKIP
+con24 cruces nuevos; CDLinux55PASS, frontend42PASS, gobernanza85PASS, OpenSpec67/67.
+Seis checks técnicos y JUP policy pull_request verdes sobre85e1dc9; JUP reviewsFAIL
+por reviews pendientes. No se atribuyen reviews a Víctor/Lucía ni se levantan.
+
+Focales010/011/018/021 conformes en una muestra, pero full28 actual:21completed/
+7failed por native_multiple_calls(005/006/007/012/016/022/027), todos un intento.
+Persistencia:21pares únicos, fallidos sin mensajes. Sin HTTP400. Entre completed:
+011 omite90%por recursos;017 trata100>100como verdadero;018/021 añaden citas sin
+sustento;024 inventa tipos de cambio de ejemplo prohibidos.010 vuelve completo
+y021 conserva70EUR/40%sin93.33. No confundir esos avances con aceptación global.
+Saludo HTTPcompleted sin fuentes, statusunsupported; navegador actualNOT_RUN
+(sesión CUA nueva, localhost28660 sin conexión). No otra ronda de prompts.
+
+Incremento claves0.0760432175USD; acumulado0.1895518525USD de0.50USD. Sin renovación
+ni aumento de límites; caducidad19:28:33UTC. Runtime temporal apagado, volúmenes
+y recibos retenidos; CD compartido intacto. **NO PASS, no integrar.**
+Antes de activar CD, actualizar explícitamente su copia instalada de tools/cd/
+desde una revisión aprobada; este ensayo aislado no modifica el agente compartido.
+Decisión pendiente: protocolo de decisión estructurada none/search con una sola
+consulta autenticada (recomendado), o endpoint compatible con cardinalidad nativa.
+No se cambia ninguno sin decisión; no se ignoran llamadas ni se inventan resultados.
+La calidad requiere algo más que instrucciones de prompt;17/24 son fallos observados
+en esta muestra, sin atribuir causalidad estadística a la modificación.
+
+[Informe, matriz, opciones y evidencia](../evidence/jup-035-pr121-review-fixes-20261012.md),
+[recibo completo](../evidence/jup-035-pr121-review-fixes-20261012.json).
+Sustituye sólo el corte vigente de esta PR; conserva los ensayos históricos siguientes.
+
+## Batería real completa PR121 — 12/10/2026
+
+Origen: «Haz la batería real completa» y «sí» a extender claves una hora con
+límites intactos. Código e56562f / HEAD documental e1374cf;28/28 ejecutados,
+23completed y5failed (005/012/022/027/028: native_multiple_calls). Un intento
+por caso;23 finales con un par persistido,5 fallidos sin mensajes parciales.
+Sin HTTP400. Contraste manual:010 incompleto,011 citas sin soporte para reglas
+owner/PII,021 contradicción70 frente a93.33EUR;018 cita adicional poco pertinente.
+Aceptación globalNO PASS; revisión oficial de Víctor sigue pendiente.
+Campaña0.0596957425USD, acumulado0.113508635USD de0.50USD. Claves extendidas hasta
+19:28:33UTC, sin cambios de presupuesto/modelos/RPM/TPM/concurrencia. Runtime
+apagado; sin nuevas inferencias al terminar, merge ni Discord.
+[Informe y recibo completo versionado](../evidence/jup-035-pr121-full28-20261012.md).
+Sustituye el corte parcial19/28, sin borrar resultados históricos.
+
+## Corrección de compatibilidad PR121 — 12/10/2026
+
+Origen: «Hazlo», código e56562f publicado en PR121. Proyección sin uniqueItems;
+rechazo local de duplicados y procedencia conservados. Backend20PASS,
+processor86PASS, OpenSpec67/67 y seis checks técnicosPASS sobre e56562f.
+Focal018/saludo completan;018 omite cita en focal y sí la incluye en batería:
+variabilidad pendiente, no aceptación semántica. UI:saludo correcto terminado,
+recarga y reapertura verificadas. Batería19/28:15completed,4failed por múltiples
+llamadas(003/005/006/008);020–028 NOT_RUN por guarda previa a caducidad18:25UTC.
+Gasto acumulado desde autorización0.0538128925USD; runtime detenido sin renovar
+claves/límites. Nuevos cambios solicitados por Víctor pendientes (streaming,
+truncación, emoji de test, conflicto documental y HMAC en CD). Sin merge/review
+propia/Discord. Aceptación globalNO PASS.
+[Informe completo](../evidence/jup-035-pr121-schema-compatibility-20261012.md).
+
+## Validación real autorizada de PR121 — 12/10/2026
+
+Origen: «Autorizado», para enviar JUP-069/saludo al gateway existente con máximo
+adicional 0,50 USD, sin renovar claves ni ampliar límites. Sustituye el bloqueo
+administrativo anterior, pero la aceptación técnica sigue **NO PASS**.
+Código funcional 0d91d33 de HEAD f370ff9 activado en runtime sintético; hashes
+75 backend/69 processor confirmados. 018 y saludo: failed, un intento, cero
+deltas, HTTP 400. Contraste aislado: auto sin esquema 200; final nuevo vacío
+400; final estático anterior 200; final nuevo sin uniqueItems 200. Señala
+incompatibilidad de uniqueItems; no prueba calidad ni recorrido con fuentes.
+Full28 y navegador finales NOT_RUN por fallo focal. Multiplicidad pendiente.
+Incremento observado de claves 0.004454135 USD; límites/caducidad intactos.
+Runtime detenido, sin cambios de producto, push, reviews o Discord.
+[Recibos y próximos pasos](../../../materiales/07-evidencias/PR121-herramientas-evidencia-20261012/authorized-validation.md).
+
+## PR121: evidencia acotada, multiplicidad pendiente — 12/10/2026
+
+Encargo del usuario: «Prepara una orden de trabajo para que un agente corrija
+las llamadas múltiples y los problemas de evidencia en la PR-121 y mándaselo a
+un subagente». Implementación asistida del autor Alejandro. Código0d91d33:
+esquema final por intento con registros autorizados exactos, extensión HMAC,
+conteo coordinado y hash de ensamblador actualizado. Firewall independiente sin
+relajar; diagnósticos unknown/duplicate/provenance/multiple sin contenido.
+Processor134PASS; backend108PASS tras sincronizar dos fixtures que fallaron
+por esperar30/40ms en vez de una reserva SQL observable. Fallos conservados.
+Build backend/processor y hashes75/69PASS; OpenSpec67/67 y gobernanzaPASS.
+CI6d5b399: processor1006PASS/71SKIP; backend1652PASS/82SKIP/1FAIL por un techo
+de test calculado con esquema público. Ajustado al esquema efectivo y herramientas
+sin cambiar producto: focal31PASS. Recibo fallido conservado; checks de PR121
+son la fuente de la ejecución posterior.
+
+Reproducción real previa al bloqueo:005/012 devuelven dos IDs nativos distintos;
+019/020/022 una llamada en esta muestra. No hay control compatible demostrado
+para resolver multiplicidad conservando auto nativo/proveedor fijo/una llamada.
+No se truncan llamadas ni se cambian parámetros/routing. El nuevo esquema no
+se ha aceptado aún con el endpoint: auto-review rechazó dos veces el envío de
+018/saludo y gasto específico, exigiendo autorización humana. No se eludió.
+Full28/navegador finalesNOT_RUN; aceptación globalNO PASS. Delta virtual key
+processor0.0028309725USD; OpenRouter compartido0.012580027USD, no factura exclusiva.
+Claves/límites intactos; caducidad18:25UTC, no renovación implícita.
+
+[Informe, causas, comandos y próximos pasos](../evidence/jup-035-pr121-evidence-selection-20261012.md).
+Sustituye sólo el estado del código de evidencia de la campaña anterior; no
+convierte los22/28completed históricos en aceptación del parche nuevo.
+
+## PR121: scheduler corregido, aceptación real NO PASS — 12/10/2026
+
+Continuación de «PR-121 corresponde a la orden de trabajo, verifica lo que se ha
+hecho y si solventa los problemas reportados por Paris», autorizada con «Hazlo».
+Scheduler corregido ante excepciones ordinarias; cancelación y recuperación de
+operaciones probadas: backend22+62 PASS en suites disjuntas. Matriz real confirma
+una búsqueda con auto sin esquema frente a ninguna con auto estricto. Full28:
+22 completed/6 failed; cinco llamadas múltiples, un evidence_membership.001
+completa pero no resuelve la aritmética sintética. No equivalen a22 aprobadas.
+
+Ensayo parallel_tool_calls=false devuelve404; retirado del código y runtime.
+El código funcional final coincide con la full28:75f4f41 más scheduler. Navegador
+reabre historial correctamente en localhost; envío de saludo falla validación
+de evidencia tras25 deltas, sin guardar parciales. HTTP LAN requiere contexto
+seguro. Delta observado en claves vigentes≈0.08035USD, sin modificar límites.
+[Informe y siguientes pasos](../evidence/jup-035-pr121-live-20261012.md).
+Sustituye NOT_RUN anterior, sin declarar aceptación ni reviews oficiales.
+
+## Backend corregido y suite verde — 12/10/2026
+
+Mismo origen JUP-035/PR120 y chat `01a1302b-c7a5-7c71-ba85-4d2391f8ff33`.
+El usuario pidió corregir 8 FAIL/3 ERROR y autorizó la validación por el agente.
+Sobre `8294c4875b7cfdbefbf240a0dcbfab618ee96ed5`, suite backend completa Linux:
+**1671 PASS/47 SKIP, cero fallos/errores, exit 0, 285.01 s**. OpenSpec67/67.
+Se resuelven JWT generados en colección que caducaban, DTO pgvector obsoleto,
+probes SQL ligados a datos smoke y carrera SQL/RAM real de cierre de streaming.
+Seis regresiones deterministas cubren evento publicado antes/después de la lectura
+y cierre sin duplicados para éxito/fallo. Summary SQL usa fixtures propios y pasa
+las tres comprobaciones nativas; ya no está pendiente en el backend.
+
+Revisión y validación asistidas atribuidas a Codex, autorizadas por el usuario;
+no se inventan dictámenes de otras personas. Este corte sustituye el estado
+backend no verde y la espera de revisión humana del corte anterior para este
+parche offline. Las47 omisiones de otras integraciones se detallan en los logs;
+proveedor, navegador y full28 siguen pendientes, sin autorización de gasto nueva.
+Ver [informe](../evidence/jup-035-auto-documentation-20261012.md) y `backend-green/`
+del paquete externo. Siguiente: integrar el parche y acordar aceptación real.
+Sin push, mensajes, merge, despliegue ni cambios en la rama de Paris.
+
+## Antecedente: parche incremental auto de PR120 — 12/10/2026
+
+Origen: «Implementa # Orden de trabajo — JUP-035 / PR120», chat
+`01a1302b-c7a5-7c71-ba85-4d2391f8ff33`. Orden externa del espacio:
+`materiales/07-evidencias/JUP-035-PR120-orden-trabajo.md`.
+
+Checkout propio `tfm-economicon-jup035-auto`, rama
+`fix/JUP-035-auto-documentation`, derivado de PR120
+`f63c15031b65c99f1da149e867675ff771d3c1dd`. HEAD/comentarios/reviews reconfirmados
+el 12/10: mismo SHA, sin comentarios ni reviews. No modifica la rama de Paris.
+
+Implementado `auto-documentation-v2`: decision privada sin response_format,
+cero/una busqueda y final estricto none, maximo dos generaciones y un plazo
+comun. Texto de decision descartado; contexto financiero y validadores intactos.
+Hashes, descriptor, prompt y OpenSpec coordinados; contrato antiguo rechazado.
+Reproduccion original: cuatro fallos funcionales y tres rechazos correctos con
+SSE sintetico. Demuestra rechazo propio, no incompatibilidad del proveedor.
+
+[Informe y pruebas](../evidence/jup-035-auto-documentation-20261012.md): commit de
+codigo `5dd15972e53afa1668d80ba5d75c07c821d7a61b`; aporte local terminado.
+Processor focal final 130 PASS, backend 62 PASS/15 SKIP, frontend 882 y API de
+costes 81 PASS; build 4/4, OpenSpec 67/67 y controles de gobernanza pasan.
+Campañas amplias no verdes: processor 13 FAIL/4 ERROR reproducidos en base;
+backend 147 FAIL reproducidos en base y una carrera de fixture corregida.
+Los conteos solapados no se suman y no equivalen a una bateria real de 28.
+Sin presupuesto nuevo autorizado: matriz real, full28 y aceptacion en runtime
+pendientes. El usuario autorizó posteriormente copia y pruebas aisladas Linux:
+SHA probado 9829d82, processor completo 1002 PASS/71 SKIP, backend focal 77 PASS
+incluidos 15 SQL CockroachDB. Backend amplio 1654 PASS/47 SKIP/8 FAIL/3 ERROR;
+un FAIL pgvector reproducido en base, otros siete no repetidos en focal51PASS,
+probes summary SQL pendientes por entorno específico. Ver informe para límites.
+Logs/receta en linux/ del paquete. Contenedores e imagen temporales retirados;
+archivos en /tmp/economicon-jup035-auto-01a1302b conservados como evidencia.
+
+Siguiente: Paris revisa el parche separado; resolver entorno/presupuesto para
+matriz real, probes summary SQL/navegador y full28 sobre un SHA final.
+Revision Alejandro y validacion Lucia siguen separadas y pendientes. Sin mensajes,
+reviews publicadas, push a Paris, merge, despliegue ni cierre de tarjeta.
+
 ## Cierre documental de entrega — 12/10/2026
 
 RAG/batería incorporados por PM en feat/JUP-035-chat-delivery,
@@ -409,3 +1266,15 @@ incremental: REVIEW_PASS, con hashes tecnicos sin cambios tras su retorno.
 La evidencia [de correcciones CI](../evidence/jup-035-ci-corrections.md) conserva
 los fallos intermedios y las omisiones SQL nativas; la confirmacion remota sigue
 a cargo del PM.
+
+### Suite completa frontend tras reconciliación — 13/10/2026
+
+Padre ejecuta76archivos sobre731b5ea:975PASS/1FAIL (976tests). Único fallo:
+ExportButton.test.tsx usa Blob.text no implementado por jsdom. Corregida lectura
+con FileReader sin modificar producto ni aserciones CSV; módulo5/5PASS después.
+ESLintexit0 con una advertencia existente de dependencia useLayoutEffect en
+ChatPresentation. Recibos workspace expression17-parent-frontend-full.log,
+expression17-parent-export-recheck.log yexpression17-parent-eslint.log.
+Publicación ytransferencia siguen pendientes de autorización específica tras
+rechazoauto-review; no hubo nuevas inferencias. Archivo731b5ea preparado sigue
+representando código de producto idéntico; esta corrección sólo cambia tests/docs.

@@ -1,0 +1,105 @@
+{
+  "blocks": [
+    {
+      "bbox": [
+        40.0,
+        39.31200000000001,
+        176.96000000000004,
+        55.31200000000001
+      ],
+      "coordinate_system": "pdf_points",
+      "kind": "text",
+      "page": 1,
+      "text": "Cloud costs page 1"
+    },
+    {
+      "bbox": [
+        40.0,
+        72.48400000000004,
+        189.39999999999995,
+        84.48400000000004
+      ],
+      "coordinate_system": "pdf_points",
+      "kind": "text",
+      "page": 1,
+      "text": "Compute budget is 42 USD."
+    },
+    {
+      "bbox": [
+        50.0,
+        142.48400000000004,
+        235.332,
+        154.48400000000004
+      ],
+      "coordinate_system": "pdf_points",
+      "kind": "text",
+      "page": 1,
+      "text": "Service USD"
+    },
+    {
+      "bbox": [
+        50.0,
+        172.48400000000004,
+        223.344,
+        184.48400000000004
+      ],
+      "coordinate_system": "pdf_points",
+      "kind": "text",
+      "page": 1,
+      "text": "Compute 42"
+    },
+    {
+      "bbox": [
+        40.0,
+        132.0,
+        340.0,
+        192.0
+      ],
+      "coordinate_system": "pdf_points",
+      "kind": "table",
+      "page": 1,
+      "rows": [
+        [
+          "Service",
+          "USD"
+        ],
+        [
+          "Compute",
+          "42"
+        ]
+      ]
+    }
+  ],
+  "document_id": "39ddd68e-4cf7-5b23-bbea-917e2aac6613",
+  "extraction_method": "pdfplumber",
+  "file_metadata": {
+    "Author": "anonymous",
+    "CreationDate": "D:20261015223526+00'00'",
+    "Creator": "anonymous",
+    "Keywords": "",
+    "ModDate": "D:20261015223526+00'00'",
+    "Producer": "ReportLab PDF Library - (opensource)",
+    "Subject": "unspecified",
+    "Title": "untitled",
+    "Trapped": "False",
+    "ocr_pages": [],
+    "page_count": 1
+  },
+  "origin": {
+    "artifact_uri": null,
+    "content_hash": "efecbcd403c28374e1a385c8d4c6b6df288afeeaa223162fca5ab769d1948a8e",
+    "file_size": 1488,
+    "filename": "table.pdf",
+    "source": "document",
+    "tenant_id": "tenant-rag2-fixture",
+    "uploaded_by": "synthetic-fixture-operator"
+  },
+  "original_format": "pdf",
+  "result": "extracted",
+  "schema_version": 1,
+  "tenant_id": "tenant-rag2-fixture",
+  "text": "Cloud costs page 1\nCompute budget is 42 USD.\nService USD\nCompute 42",
+  "warnings": [
+    "pdf_reading_order_is_extractor_order_not_semantic_guarantee"
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "blocks": [
+    {
+      "bbox": [
+        193,
+        733,
+        1149,
+        790
+      ],
+      "coordinate_system": "render_pixels",
+      "kind": "text",
+      "method": "ocr",
+      "page": 1,
+      "text": "Scanned storage budget 73 USD"
+    }
+  ],
+  "document_id": "ef32c7ac-79be-5061-ba27-01a1f0e9f6df",
+  "extraction_method": "pdfplumber+tesseract",
+  "file_metadata": {
+    "Author": "anonymous",
+    "CreationDate": "D:20261015223526+00'00'",
+    "Creator": "anonymous",
+    "Keywords": "",
+    "ModDate": "D:20261015223526+00'00'",
+    "Producer": "ReportLab PDF Library - (opensource)",
+    "Subject": "unspecified",
+    "Title": "untitled",
+    "Trapped": "False",
+    "ocr_pages": [
+      1
+    ],
+    "page_count": 1
+  },
+  "origin": {
+    "artifact_uri": null,
+    "content_hash": "edb53e067d9415ff4cb1a90a23c6437a108772c3628f5ab036189b97fd6b7378",
+    "file_size": 18427,
+    "filename": "scanned.pdf",
+    "source": "document",
+    "tenant_id": "tenant-rag2-fixture",
+    "uploaded_by": "synthetic-fixture-operator"
+  },
+  "original_format": "pdf",
+  "result": "extracted",
+  "schema_version": 1,
+  "tenant_id": "tenant-rag2-fixture",
+  "text": "Scanned storage budget 73 USD",
+  "warnings": [
+    "page_1_ocr_layout_is_approximate",
+    "pdf_reading_order_is_extractor_order_not_semantic_guarantee"
+  ]
+}

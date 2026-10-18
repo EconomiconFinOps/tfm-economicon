@@ -54,6 +54,16 @@ class TokenizerBuildTests(unittest.TestCase):
                 self.fail("Verified cache should work offline")
             tokenizer.fetch(target, opener=forbidden, digest=hashlib.sha256(b"right").hexdigest(), size=5)
 
+    def test_same_verified_fetcher_supports_the_explicit_embedding_resource_url(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "cl100k_base.tiktoken"
+            def download(request, **kwargs):
+                self.assertEqual(request.full_url, "https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken")
+                return io.BytesIO(b"fixture")
+            tokenizer.fetch(target, opener=download, digest=hashlib.sha256(b"fixture").hexdigest(), size=7,
+                            url="https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken")
+            self.assertEqual(target.read_bytes(), b"fixture")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -12,6 +12,8 @@ from app.core.runtime_secrets import StartupError, register_secrets, validate_co
 class Settings(BaseSettings):
     processor_port: int = 8001
     processor_concurrency: int = 2
+    document_s3_access_key: SecretStr | None = None
+    document_s3_secret_key: SecretStr | None = None
     processor_queue_name: str = "processor:jobs"
     summary_timeout_seconds: int = Field(default=180, ge=30, le=300)
     runtime_environment: Literal["production", "development", "test"] = "production"
@@ -22,6 +24,10 @@ class Settings(BaseSettings):
     embedding_provider: str = "mock"
     embedding_dimension: int = 8
     embedding_model: str = "economicon-embedding"
+    # Character settings remain available for the explicit legacy comparison utility.
+    embedding_chunk_target_tokens: int = Field(default=600, ge=8, le=800, strict=True)
+    embedding_chunk_max_tokens: int = Field(default=800, ge=8, le=800, strict=True)
+    embedding_chunk_overlap_ratio: float = Field(default=0.1, ge=0, lt=1, allow_inf_nan=False)
     embedding_chunk_size: int = 500
     embedding_chunk_overlap: int = 50
     llm_provider: str = "mock"
@@ -40,6 +46,21 @@ class Settings(BaseSettings):
     azure_cost_api_retry_backoff_seconds: float = 0.25
     azure_cost_api_max_retry_after_seconds: float = 30.0
     azure_cost_api_max_pages: int = 1000
+
+    @field_validator('embedding_chunk_target_tokens', 'embedding_chunk_max_tokens', mode='before')
+    @classmethod
+    def parse_chunk_tokens(cls, value):
+        # Environment values are strings; constructor booleans/fractions remain invalid.
+        if isinstance(value, str) and re.fullmatch(r'[0-9]+', value):
+            return int(value)
+        return value
+
+    @field_validator('embedding_chunk_overlap_ratio', mode='before')
+    @classmethod
+    def reject_boolean_overlap(cls, value):
+        if isinstance(value, bool):
+            raise ValueError('overlap ratio must be numeric')
+        return value
 
     @field_validator("embedding_provider", "llm_provider")
     @classmethod
@@ -116,6 +137,9 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_ai_configuration(self) -> "Settings":
+        from app.embeddings.contracts import ChunkingConfig
+        ChunkingConfig(self.embedding_chunk_target_tokens, self.embedding_chunk_max_tokens,
+                       self.embedding_chunk_overlap_ratio)
         providers = {self.llm_provider, self.embedding_provider}
         if self.ai_execution_mode == "evaluation" and "mock" in providers:
             raise ValueError("evaluation mode does not allow mock AI providers")

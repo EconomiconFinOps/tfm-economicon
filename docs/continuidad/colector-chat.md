@@ -1,12 +1,103 @@
 # Colector reutilizable del chat
 
-Verificado: 2026-10-17. Origen: usuario solicita extraer el colector de B,
+Verificado: 2026-10-18. Origen: usuario solicita extraer el colector de B,
 adaptarlo para JUP-071 y publicar PR independiente; chat
 `01a1270c-e332-7462-9c90-706d49ade92c`.
 Tarjetas: [JUP-123](https://trello.com/c/TqtcumIN),
 [JUP-071](https://trello.com/c/H0woDubz).
 
-## Aclaración de run-info — 17/10/2026
+## Reconciliación final de PR138 — 18/10/2026
+
+Origen: nuevo foco humano exclusivo «Vamos con la138», traspasado por Sala de
+Control `01a1270c-e332-7462-9c90-706d49ade92c` a este chat
+`01a143ae-b740-7043-aedb-1a8a65b4b585`. Se mantiene abierto hasta cerrar este
+encargo; no se reabre trabajo de otras PR ni se autoriza merge de PR138.
+
+Rama remota conservada `docs/JUP-123-run-info-guide`, entrada
+`d81b3bab3e844f0e443136c6eccdc2240dce8267`; develop verificado
+`7f38282c6b03f91721ad98784dcb1f7e5cc62df1`. Dos conflictos, ambos de continuidad:
+el índice combina las entradas de develop con el estado de PR138, y este tema
+conserva la historia del colector y la nota de integración de la otra rama.
+Se corrige en el índice la atribución errónea de que PR138 ya estaba integrada.
+No cambia ningún archivo fuera de los tres documentos originales de PR138 frente
+a esa base; producto, workflows, dependencias y otras PR se conservan exactamente.
+
+El checkout original `tfm-economicon-jup123-collector` tiene dos notas locales
+sin publicar. Se guardan por hash y permanecen intactas; el trabajo se realiza
+en `tfm-economicon-pr138-reconcile`, rama local `fix/JUP-123-pr138-reconcile`,
+publicando únicamente en la rama remota existente. La nota local de consulta de
+dictámenes se conserva aquí con su fecha histórica, sin atribuirla al nuevo SHA.
+
+Leídas la [validación favorable de Lucía5557612234](https://github.com/EconomiconFinOps/tfm-economicon/pull/138#pullrequestreview-5557612234)
+y la [aportación de lectura de Paris6248277913](https://github.com/EconomiconFinOps/tfm-economicon/pull/138#issuecomment-6248277913),
+sin comentarios en línea. La validación corresponde a d81, no al candidato
+reconciliado. Se aclara su observación no bloqueante: 128 caracteres para
+corpus/retrieval es el contrato comprobado por `check_run_info`; export del
+colector no lo invoca y permite 129. No se modifica el evaluador para imponerlo.
+
+Roles contrastados mediante Settings/TrelloClient del puente desplegado en
+DockerServer: Alejandro liderazgo, Paris base/pairing histórico, Víctor revisión,
+Lucía validación. La tarjeta JUP-123 se mantiene en 70 — Hecho; este seguimiento
+no la reabre ni cambia responsables o atribuye nueva coautoría.
+
+Verificación focal sobre el validador oficial de la base actual: ejemplo de seis
+cadenas aceptado, generation.model_alias y temperatura null comprobados;
+7 fronteras positivas conformes y 18 negativos rechazados. Se confirma 129
+rechazado por check_run_info y aceptado por run_header sin ese chequeo.
+Las cinco funciones relevantes de validación/export son idénticas por AST a d81;
+la exportación/score de la review de Lucía conserva su identidad y no se repite.
+Las 2.106 rutas restantes son idénticas a develop por modo/blob. Trazabilidad de
+9 changes, higiene de 2.109 archivos, OpenSpec estricto 79/79, política de PR y
+diff del delta contra la base conformes.
+El primer diff-check sin base incluía espacios/CRLF de evidencia ya integrada en
+develop; se conserva esa evidencia sin tocarla y se verifica el delta propio.
+Sin IA ni gasto. Evidencia externa en
+`materiales/07-evidencias/JUP-123-collector/PR138-final-20261018/`: entradas,
+conflictos, preservación del checkout, roles y recibos de validación. CI técnica,
+SQL y policy del único SHA publicado se enlazan en la conversación, sin otro
+push de estado. La falta de dictámenes en JUP reviews se informa por su log;
+no se falsea como SUCCESS ni se exige resolverla antes de pedirlos.
+
+La guardia antes del aviso requiere SHA/base estables, tres documentos de delta,
+ejemplo conforme, CI técnica/SQL/policy aplicables conformes y ningún fallo técnico
+sin explicar. HAL publicará el único aviso Discord a Víctor y Lucía; este chat
+no envía mensajes Discord ni inicia campañas B/JUP-071/N5.
+
+## Estado al preparar la entrega B — 17/10/2026
+
+PR #131 integrada en develop `1de41b907f849082b0676319971775a6560b71b5`.
+Su aclaración de guía continúa en [PR #138](https://github.com/EconomiconFinOps/tfm-economicon/pull/138),
+cabeza `d81b3bab`: Lucía valida favorablemente en
+[review 5557612234](https://github.com/EconomiconFinOps/tfm-economicon/pull/138#pullrequestreview-5557612234),
+Víctor sigue pendiente. CI técnica y SQL verdes; JUP reviews bloquea por esa revisión.
+Su observación sobre corpus/retrieval de129 caracteres queda a criterio de revisión.
+Consulta GitHub del 17/10 al recibir el traspaso de B, sin modificar PR138.
+
+La entrega B se prepara aparte desde `f3ec760d`/HEAD documental `800775ef`, en
+`feat/JUP-123-chat-quality-delivery`; ver [su continuidad](chat-evaluacion-local.md).
+Los dictámenes del colector o de la guía no acreditan revisión/validación de B.
+
+
+## Consulta de dictámenes de PR138 — 17/10/2026
+
+Origen: «Revisa a ver si ha revisado y validado». Cabeza remota permanece en
+`d81b3bab3e844f0e443136c6eccdc2240dce8267`, OPEN/MERGEABLE, bloqueada por reviews.
+[Lucía publica Validacion JUP-123 favorable](https://github.com/EconomiconFinOps/tfm-economicon/pull/138#pullrequestreview-5557612234)
+a las 11:43:03 UTC (13:43 Europe/Paris) sobre ese SHA. Primera review COMMENTED,
+conforme al flujo: exporta el ejemplo literal con cuatro operaciones conservadas,
+cero filas bloqueadas y score correcto, y comprueba 27 variantes. Sin inferencias.
+No hay review de Víctor: Victorh1397 sigue en reviewRequests. Conversación y
+comentarios inline vacíos. CI técnica de push/PR y Chat native SQL SUCCESS;
+JUP reviews 39029764331 falla únicamente por faltar Revision JUP-123.
+
+Observación no bloqueante de Lucía: corpus/retrieval de 129 caracteres exportan
+y puntúan porque el flujo del colector no llama a check_run_info. La guía prescribe
+el límite de 128 del contrato del evaluador, pero este camino no lo aplica.
+Pendiente criterio de Víctor sobre aclararlo como límite de contrato; no se
+modifica el delta ya validado en esta consulta. Falta revisión, después integración
+y cierre del seguimiento. Chat sin archivar; esta nota local no altera la cabeza.
+
+## Aclaración de run-info — corte anterior del 17/10/2026
 
 Origen: «Hazlo», para completar el seguimiento documental tras integrar #131.
 Rama `docs/JUP-123-run-info-guide`, desde develop `1de41b90`.

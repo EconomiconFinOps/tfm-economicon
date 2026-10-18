@@ -4,7 +4,7 @@ from typing import Annotated, Literal, Any
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 
-from pydantic import model_validator
+from pydantic import model_validator, model_serializer
 
 from app.schemas.anomaly_explanations import AnomalySelection
 from app.schemas.ownership import OwnershipSelection
@@ -112,6 +112,18 @@ class SourceCitation(BaseModel):
     section: NonEmptyText | None = None
     page: int | None = Field(default=None, ge=1)
     excerpt: str
+    source_spans: list[dict] | None = None
+    position_contract: dict | None = None
+
+    @model_serializer(mode='wrap')
+    def serialize_provenance(self, handler):
+        # Revalidating an older citation must not append new null fields to its
+        # persisted metadata or change the conversation's evidence snapshot.
+        value = handler(self)
+        for name in ('source_spans', 'position_contract'):
+            if value.get(name) is None:
+                value.pop(name, None)
+        return value
 
 
 class MessageRecord(BaseModel):

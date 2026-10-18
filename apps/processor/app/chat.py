@@ -131,7 +131,7 @@ def create_chat_app():
         except StartupError: return signed_response(request,{'code':'capacity_invalid'},503)
         value={'v':2,'boot_id':app.state.chat_boot_id,'prompt_version':version,'capacity':capacity}
         from app.core.config import get_settings
-        value['tool_protocol']='mock-direct-v1' if get_settings().llm_provider=='mock' else 'required-documentation-v1'
+        value['tool_protocol']='mock-direct-v1' if get_settings().llm_provider=='mock' else 'server-documentation-v4'
         resources=getattr(app.state,'chat_resources',None)
         if resources is not None:
             value.update(tokenizer_sha256=resources.tokenizer_sha256,response_schema_sha256=resources.response_schema_sha256,
@@ -237,8 +237,10 @@ def create_chat_app():
 
         async def monitored_gateway():
             from app.clients.chat_gateway import diagnostic_scope
+            if hasattr(gateway,'resources'):
+                gateway.resources=resources
             with diagnostic_scope(claim.get('operation_id'),claim.get('attempt_id')):
-                options={'tool_result':tool_result} if getattr(gateway,'requires_tool_result',False) and claim['context'].get('tool_protocol')=='required-documentation-v1' else {}
+                options={'tool_result':tool_result} if getattr(gateway,'requires_tool_result',False) and claim['context'].get('tool_protocol')=='server-documentation-v4' else {}
                 iterator=gateway(claim['context'],claim['deadline'],**options).__aiter__()
                 pending=None
                 try:
@@ -277,13 +279,13 @@ def create_chat_app():
                                         except UnicodeDecodeError: end-=1
                                     yield encode({'v':2,'type':'candidate_chunk','offset':offset,'text':fragment})+b'\n'
                                     offset=end
-                                yield encode({'v':2,'type':'candidate_end','size':len(raw),'sha256':hashlib.sha256(raw).hexdigest(),'finish_reason':record.get('finish_reason'),'usage':record.get('usage')})+b'\n'
+                                yield encode({'v':2,'type':'candidate_end','size':len(raw),'sha256':hashlib.sha256(raw).hexdigest(),'finish_reason':record.get('finish_reason'),'usage':record.get('usage'),'usage_report':record.get('usage_report')})+b'\n'
                                 return
                             elif kind=='tool_call':
                                 from app.core.chat_resources import validate_search_call
                                 validate_search_call(record.get('assistant'))
                                 entry=app.state.chat_attempts[key]
-                                if claim['context'].get('tool_protocol')!='required-documentation-v1' or entry['tool_future'] is not None:
+                                if claim['context'].get('tool_protocol')!='server-documentation-v4' or entry['tool_future'] is not None:
                                     raise ValueError('Unexpected tool call.')
                                 entry['assistant']=record['assistant']
                                 entry['tool_future']=asyncio.get_running_loop().create_future()
@@ -292,7 +294,7 @@ def create_chat_app():
                                 if not isinstance(record.get('text'),str) or len(record['text'].encode())>8192: raise ValueError('Delta limit.')
                                 yield encode({'v':2,'type':'delta','text':record['text']})+b'\n'
                             elif kind=='error':
-                                yield encode({'v':2,'type':'error','status':record.get('status'),'category':record.get('category'),'retry_after':record.get('retry_after')})+b'\n'
+                                yield encode({'v':2,'type':'error','status':record.get('status'),'category':record.get('category'),'retry_after':record.get('retry_after'),'usage_report':record.get('usage_report')})+b'\n'
                                 return
                             else: raise ValueError('Stream record.')
             except (TimeoutError,OSError):

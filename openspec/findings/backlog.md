@@ -1,5 +1,31 @@
 # Findings Backlog
 
+## RF-123-001 — Herramientas de evaluacion B fuera del pipeline
+
+Fecha: 2026-10-17. Origen: [Validacion JUP-123 de Lucía en PR140](https://github.com/EconomiconFinOps/tfm-economicon/pull/140#pullrequestreview-5559649459).
+Tipo: cobertura de CI. Severidad: pendiente de priorización por liderazgo.
+Estado: Open; fuera del alcance del bloqueo presupuestario de PR140.
+Owner: pendiente de asignación. No crea una tarjeta, otra PR ni cambia roles.
+
+Los módulos añadidos `tools/test_chat_eval_*.py`, `test_chat_receipt_eval.py` y
+`test_chat_role_binding_jup123.py` pasan en ejecución local, pero no están enlazados
+a un script de package.json ni al workflow; `chat-collector:test` sólo selecciona
+`test_chat_eval_collect*`. CI verde no acredita estas suites. La validación original
+las ejecutó por separado; la corrección presupuestaria mantiene evidencia focal
+local con identidades y comandos propios.
+
+Disposición propuesta: cuando liderazgo acuerde alcance y momento, conectar un
+comando reproducible para estas suites offline al pipeline. Mantener las pruebas
+de recopilación existentes y verificar detección de una regresión sin inferencias.
+No se modifica CI/package ni se amplía la arquitectura en este delta; no se cierra
+el finding por haber ejecutado las pruebas manualmente.
+
+Precisión de cobertura confirmada por Víctor en su revisión de PR140 del 17/10:
+`Chat engineering SQL` cubre CockroachDB; ningún workflow ejecuta pgvector real.
+Sus 30 pruebas nativas pgvector son evidencia manual con alcance/SHA propios,
+no cobertura CI ni nuevas ejecuciones de cada delta posterior. Incorporar esa
+brecha a la priorización del pipeline; sigue Open y no se modifica CI aquí.
+
 ## RF-021-001 — Dimension desde fichero de entorno
 
 Fecha: 2026-10-01. Origen: JUP-021, [validacion de Victor en PR #53](https://github.com/EconomiconFinOps/tfm-economicon/pull/53#pullrequestreview-5383443171).

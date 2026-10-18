@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 import sys
 import tempfile
@@ -82,11 +83,81 @@ class RuntimeTests(unittest.TestCase):
         self.assertTrue(secrets["DATABASE_URL"].startswith("cockroachdb+psycopg://"))
         self.assertTrue(secrets["VECTOR_DATABASE_URL"].startswith("postgresql+psycopg://"))
 
+    def test_evaluation_password_is_added_once_and_preserves_configured_values(self):
+        name = "GRAFANA_EVALUATION_DB_PASSWORD"
+        path = self.root / "secrets.json"
+        initial = json.loads(path.read_text())
+        self.assertTrue(name in initial)
+        self.assertIsInstance(initial[name], str)
+        self.assertGreaterEqual(len(initial[name]), 32)
+
+        legacy = {key: value for key, value in initial.items() if key != name}
+        deploy.atomic_json(path, legacy)
+        upgraded = deploy.document_secrets(self.root)
+        self.assertTrue(all(upgraded[key] == value for key, value in legacy.items()))
+        self.assertGreaterEqual(len(upgraded[name]), 32)
+        after_upgrade = path.read_bytes()
+        deploy.document_secrets(self.root)
+        self.assertTrue(path.read_bytes() == after_upgrade)
+
+        configured = dict(upgraded, **{name: "synthetic-existing-evaluation-password"})
+        deploy.atomic_json(path, configured)
+        before = path.read_bytes()
+        for _ in range(2):
+            self.assertTrue(deploy.document_secrets(self.root) == configured)
+            self.assertTrue(path.read_bytes() == before)
+
     def test_invalid_port_base_rejected_before_creating_files(self):
         for port in (0, 1023, 65425, 65535):
             with self.assertRaises(ValueError):
                 deploy.init(self.root / "invalid", port)
         self.assertFalse((self.root / "invalid").exists())
+
+    def test_init_provisions_distinct_document_credentials(self):
+        values = json.loads((self.root / "secrets.json").read_text())
+        names = ("MINIO_ROOT_USER", "MINIO_ROOT_PASSWORD",
+                 "DOCUMENT_S3_ACCESS_KEY", "DOCUMENT_S3_SECRET_KEY")
+        self.assertEqual(len({values[name] for name in names}), len(names))
+        self.assertEqual(values["DOCUMENT_S3_BUCKET"], "document-ingestion")
+        self.assertEqual(values["DOCUMENT_S3_REGION"], "us-east-1")
+
+    @patch.object(deploy, "run", return_value='{"services": {}}')
+    def test_prepare_upgrades_legacy_document_secrets_once_without_rotation(self, run):
+        path = self.root / "secrets.json"
+        original = json.loads(path.read_text())
+        for name in ("MINIO_ROOT_USER", "MINIO_ROOT_PASSWORD", "DOCUMENT_S3_SECRET_KEY",
+                     "DOCUMENT_S3_BUCKET", "DOCUMENT_S3_REGION"):
+            original.pop(name, None)
+        original.update(DOCUMENT_S3_ACCESS_KEY="existing-document-user", DOCUMENT_S3_BUCKET="existing-bucket")
+        deploy.atomic_json(path, original)
+        hmac = (self.root / "private" / "chat-hmac").read_bytes()
+        first = deploy.prepare(self.root, self.source, self.old, 0)
+        upgraded = path.read_bytes()
+        values = json.loads(upgraded)
+        for name, value in original.items():
+            self.assertEqual(values[name], value)
+        for name in ("MINIO_ROOT_USER", "MINIO_ROOT_PASSWORD", "DOCUMENT_S3_SECRET_KEY"):
+            self.assertTrue(values[name])
+        second = deploy.prepare(self.root, self.source, self.new, 1)
+        self.assertEqual(path.read_bytes(), upgraded)
+        self.assertEqual((self.root / "private" / "chat-hmac").read_bytes(), hmac)
+        for release in (first, second):
+            self.assertIn("DOCUMENT_S3_BUCKET='existing-bucket'", (release / ".env").read_text())
+
+    @patch.object(deploy, "run", return_value='{"services": {}}')
+    def test_document_ports_endpoints_and_origins_follow_each_slot(self, run):
+        ports = []
+        for sha, slot in ((self.old, 0), (self.new, 1)):
+            release = deploy.prepare(self.root, self.source, sha, slot)
+            values = dict(line.split("=", 1) for line in (release / ".env").read_text().splitlines())
+            base = 19252 + slot * 100
+            self.assertEqual(values["MINIO_HOST_PORT"], f"'{base + 11}'")
+            self.assertEqual(values["DOCUMENT_S3_ENDPOINT"], "'http://minio:9000'")
+            self.assertEqual(values["DOCUMENT_S3_PUBLIC_ENDPOINT"], f"'http://127.0.0.1:{base + 11}'")
+            self.assertEqual(values["DOCUMENT_CORS_ORIGINS"],
+                             f"'http://127.0.0.1:{base + 8},http://localhost:{base + 8}'")
+            ports.append({int(values[name].strip("'")) for name in deploy.PORTS})
+        self.assertTrue(ports[0].isdisjoint(ports[1]))
 
     def test_chat_hmac_initialization_reuse_and_legacy_root(self):
         path = self.root / 'private' / 'chat-hmac'
@@ -267,6 +338,51 @@ class RuntimeTests(unittest.TestCase):
             deploy.poll(self.root)
         self.assertEqual(compose.call_args.args[0], self.root / "releases" / self.old)
         self.assertIn("--no-build", compose.call_args.args)
+
+
+@unittest.skipUnless(os.getenv("CD_COMPOSE_INTEGRATION") == "true", "requires explicit local Docker Compose check")
+class ComposeIntegrationTests(unittest.TestCase):
+    def test_real_prepare_renders_current_compose_for_both_slots(self):
+        source = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory(prefix="economicon-cd-compose-") as directory:
+            for legacy in (False, True):
+                with self.subTest(legacy=legacy):
+                    root = Path(directory) / str(legacy)
+                    deploy.init(root, 19252)
+                    if legacy:
+                        values = json.loads((root / "secrets.json").read_text())
+                        for key in tuple(values):
+                            if key.startswith(("MINIO_", "DOCUMENT_")) or key == "GRAFANA_EVALUATION_DB_PASSWORD":
+                                del values[key]
+                        deploy.atomic_json(root / "secrets.json", values)
+                    # Environment must not hide missing generated values or override the slot.
+                    clean = {key: value for key, value in os.environ.items()
+                             if not key.startswith(("MINIO_", "DOCUMENT_", "COMPOSE_"))
+                             and key not in deploy.PORTS and key not in {"CHAT_HMAC_FILE", "CORS_ALLOWED_ORIGINS", "GRAFANA_EVALUATION_DB_PASSWORD"}}
+                    ports = []
+                    with patch.dict(os.environ, clean, clear=True):
+                        for sha, slot in (("a" * 40, 0), ("b" * 40, 1)):
+                            release = deploy.prepare(root, source, sha, slot)
+                            config = json.loads((release / "compose.json").read_text())
+                            services = config["services"]
+                            stored = json.loads((root / "secrets.json").read_text())
+                            self.assertTrue(services["grafana"]["environment"]["GRAFANA_EVALUATION_DB_PASSWORD"]
+                                            == stored["GRAFANA_EVALUATION_DB_PASSWORD"])
+                            secret_bytes = (root / "secrets.json").read_bytes()
+                            self.assertEqual(deploy.prepare(root, source, sha, slot), release)
+                            self.assertTrue((root / "secrets.json").read_bytes() == secret_bytes)
+                            port = str(19252 + slot * 100 + 11)
+                            self.assertEqual(str(services["minio"]["ports"][0]["published"]), port)
+                            self.assertEqual(services["backend"]["environment"]["DOCUMENT_S3_PUBLIC_ENDPOINT"],
+                                             f"http://127.0.0.1:{port}")
+                            self.assertEqual(services["minio"]["environment"]["MINIO_API_CORS_ALLOW_ORIGIN"],
+                                             f"http://127.0.0.1:{19260 + slot * 100},http://localhost:{19260 + slot * 100}")
+                            self.assertNotIn("MINIO_ROOT_PASSWORD", services["backend"]["environment"])
+                            self.assertEqual(services["backend"]["environment"]["DOCUMENT_S3_ACCESS_KEY"],
+                                             services["minio-init"]["environment"]["DOCUMENT_S3_ACCESS_KEY"])
+                            ports.append({(item["host_ip"], str(item["published"]))
+                                          for service in services.values() for item in service.get("ports", [])})
+                    self.assertTrue(ports[0].isdisjoint(ports[1]))
 
 
 if __name__ == "__main__":

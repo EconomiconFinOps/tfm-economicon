@@ -6,11 +6,12 @@
 // handleSubmit, guarda de tenant requerido) se conserva verbatim del origen
 // (`IngestPage.jsx`); solo cambian el origen de `token`/`activeTenant` y la
 // presentacion (Tailwind + SectionCard reconstruido).
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useOutletContext } from "react-router";
+import { DocumentUploadPanel } from "../components/DocumentUploadPanel";
 import { SectionCard } from "../components/SectionCard";
-import { createIngestJob } from "../services/api";
+import { createDocumentTransport, createIngestJob } from "../services/api";
 import type { IngestJobRequest } from "../services/contracts";
 import type { SessionOutletContext } from "../layouts/SessionGate";
 
@@ -24,6 +25,9 @@ interface IngestFormState {
 
 export function IngestPage() {
   const { token, activeTenant } = useOutletContext<SessionOutletContext>();
+
+  const tenantId = activeTenant?.id;
+  const documentTransport = useMemo(() => tenantId ? createDocumentTransport(token, tenantId) : null, [token, tenantId]);
 
   const [form, setForm] = useState<IngestFormState>({
     source: "aws-cur",
@@ -67,6 +71,7 @@ export function IngestPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <DocumentUploadPanel key={`${token}:${activeTenant.id}`} transport={documentTransport!} />
       <SectionCard
         title="Crear trabajo de ingesta"
         subtitle="El backend crea el trabajo en CockroachDB y lo publica en RabbitMQ."

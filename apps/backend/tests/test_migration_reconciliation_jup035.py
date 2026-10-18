@@ -35,7 +35,7 @@ def test_both_002_histories_converge_preserving_ledger_and_data(engine, tmp_path
     runner = MigrationRunner(engine, 'app.db.migrations', DIRECTORY)
     runner.run(); runner.verify(); runner.run(); runner.verify()
     with engine.connect() as c:
-        assert c.execute(text('SELECT version FROM schema_migrations ORDER BY version')).scalars().all() == ['001','002','003','004','005']
+        assert c.execute(text('SELECT version FROM schema_migrations ORDER BY version')).scalars().all() == ['001','002','003','004','005','006']
         assert {'chat_operations','anomaly_episodes','anomaly_detection_state'} <= set(inspect(c).get_table_names())
         if branch != 'fresh':
             assert c.execute(text("SELECT version,applied_at FROM schema_migrations WHERE version != '005' ORDER BY version")).all()[:len(before)] == before

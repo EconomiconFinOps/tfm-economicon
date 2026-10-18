@@ -2,6 +2,49 @@ include:
   - ./infra/litellm/docker-compose.yml
 
 services:
+  minio:
+    build:
+      context: .
+      dockerfile: infra/minio/Dockerfile
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?required}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?required}
+      MINIO_API_CORS_ALLOW_ORIGIN: ${DOCUMENT_CORS_ORIGINS:?required exact browser origins}
+      MINIO_BROWSER: "off"
+    ports:
+      - "127.0.0.1:${MINIO_HOST_PORT:-9000}:9000"
+    volumes:
+      - document-artifacts:/data
+    init: true
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ["no-new-privileges:true"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9000/minio/health/ready',timeout=3).close()"]
+      interval: 5s
+      timeout: 4s
+      retries: 20
+
+  minio-init:
+    build:
+      context: .
+      dockerfile: infra/minio/Dockerfile
+    entrypoint: [/bin/sh, /init/init.sh]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?required}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?required}
+      DOCUMENT_S3_BUCKET: ${DOCUMENT_S3_BUCKET:-document-ingestion}
+      DOCUMENT_S3_ACCESS_KEY: ${DOCUMENT_S3_ACCESS_KEY:?required}
+      DOCUMENT_S3_SECRET_KEY: ${DOCUMENT_S3_SECRET_KEY:?required}
+    volumes: ["./infra/minio/init.sh:/init/init.sh:ro"]
+    depends_on:
+      minio: {condition: service_healthy}
+    restart: "no"
+    init: true
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ["no-new-privileges:true"]
+
   cockroachdb:
     image: cockroachdb/cockroach:v24.1.11@sha256:89bda255c52b25f463c7a9373ffedef122a4d9f1b432aa34b897970fe864a66c
     # This insecure node is only for an operator-confirmed disposable local stack.
@@ -200,6 +243,16 @@ services:
       dockerfile: apps/backend/Dockerfile
     environment:
       API_PORT: 8000
+      DOCUMENT_UPLOADS_ENABLED: "true"
+      DOCUMENT_S3_ENDPOINT: ${DOCUMENT_S3_ENDPOINT:-http://minio:9000}
+      DOCUMENT_S3_PUBLIC_ENDPOINT: ${DOCUMENT_S3_PUBLIC_ENDPOINT:-http://localhost:9000}
+      DOCUMENT_S3_REGION: ${DOCUMENT_S3_REGION:-us-east-1}
+      DOCUMENT_S3_BUCKET: ${DOCUMENT_S3_BUCKET:-document-ingestion}
+      DOCUMENT_S3_ACCESS_KEY: ${DOCUMENT_S3_ACCESS_KEY:?required}
+      DOCUMENT_S3_SECRET_KEY: ${DOCUMENT_S3_SECRET_KEY:?required}
+      DOCUMENT_MAX_FILE_BYTES: ${DOCUMENT_MAX_FILE_BYTES:-20000000}
+      DOCUMENT_UPLOAD_URL_SECONDS: ${DOCUMENT_UPLOAD_URL_SECONDS:-180}
+      DOCUMENT_FAILED_RETENTION_DAYS: ${DOCUMENT_FAILED_RETENTION_DAYS:-7}
       BACKEND_SCHEMA_MODE: verify
       SUMMARY_TIMEOUT_SECONDS: ${SUMMARY_TIMEOUT_SECONDS:-180}
       CHAT_MAX_ACTIVE: ${CHAT_MAX_ACTIVE:-8}
@@ -235,6 +288,7 @@ services:
       DEMO_PASSWORD: ${DEMO_PASSWORD:-}
       COST_REFERENCE_DATE: ${COST_REFERENCE_DATE:-}
     depends_on:
+      minio-init: {condition: service_completed_successfully}
       backend-migrate:
         condition: service_completed_successfully
       cockroachdb:
@@ -268,6 +322,22 @@ services:
       context: ./apps/processor
     environment:
       PROCESSOR_PORT: 8001
+      DOCUMENT_UPLOADS_ENABLED: "true"
+      DOCUMENT_S3_ENDPOINT: ${DOCUMENT_S3_ENDPOINT:-http://minio:9000}
+      DOCUMENT_S3_PUBLIC_ENDPOINT: ${DOCUMENT_S3_PUBLIC_ENDPOINT:-http://localhost:9000}
+      DOCUMENT_S3_REGION: ${DOCUMENT_S3_REGION:-us-east-1}
+      DOCUMENT_S3_BUCKET: ${DOCUMENT_S3_BUCKET:-document-ingestion}
+      DOCUMENT_S3_ACCESS_KEY: ${DOCUMENT_S3_ACCESS_KEY:?required}
+      DOCUMENT_S3_SECRET_KEY: ${DOCUMENT_S3_SECRET_KEY:?required}
+      DOCUMENT_MAX_FILE_BYTES: ${DOCUMENT_MAX_FILE_BYTES:-20000000}
+      DOCUMENT_UPLOAD_URL_SECONDS: ${DOCUMENT_UPLOAD_URL_SECONDS:-180}
+      DOCUMENT_FAILED_RETENTION_DAYS: ${DOCUMENT_FAILED_RETENTION_DAYS:-7}
+      DOCUMENT_MAX_PAGES: ${DOCUMENT_MAX_PAGES:-100}
+      DOCUMENT_EXTRACTION_SECONDS: ${DOCUMENT_EXTRACTION_SECONDS:-180}
+      DOCUMENT_OCR_PAGE_SECONDS: ${DOCUMENT_OCR_PAGE_SECONDS:-30}
+      DOCUMENT_EXTRACTION_MEMORY_MB: ${DOCUMENT_EXTRACTION_MEMORY_MB:-1536}
+      DOCUMENT_OCR_MAX_PIXELS: ${DOCUMENT_OCR_MAX_PIXELS:-16000000}
+      DOCUMENT_EXECUTION_LEASE_SECONDS: ${DOCUMENT_EXECUTION_LEASE_SECONDS:-300}
       SUMMARY_TIMEOUT_SECONDS: ${SUMMARY_TIMEOUT_SECONDS:-180}
       CHAT_ENABLED: ${CHAT_ENABLED:-false}
       SUMMARY_ENABLED: ${SUMMARY_ENABLED:-true}
@@ -291,8 +361,9 @@ services:
       EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-mock}
       EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-8}
       EMBEDDING_MODEL: ${EMBEDDING_MODEL:-economicon-embedding}
-      EMBEDDING_CHUNK_SIZE: ${EMBEDDING_CHUNK_SIZE:-500}
-      EMBEDDING_CHUNK_OVERLAP: ${EMBEDDING_CHUNK_OVERLAP:-50}
+      EMBEDDING_CHUNK_TARGET_TOKENS: ${EMBEDDING_CHUNK_TARGET_TOKENS:-600}
+      EMBEDDING_CHUNK_MAX_TOKENS: ${EMBEDDING_CHUNK_MAX_TOKENS:-800}
+      EMBEDDING_CHUNK_OVERLAP_RATIO: ${EMBEDDING_CHUNK_OVERLAP_RATIO:-0.1}
       LLM_PROVIDER: ${LLM_PROVIDER:-mock}
       LLM_MODEL: ${LLM_MODEL:-economicon-chat}
       AI_EXECUTION_MODE: ${AI_EXECUTION_MODE:-development}
@@ -310,6 +381,7 @@ services:
       AZURE_COST_API_MAX_RETRY_AFTER_SECONDS: ${AZURE_COST_API_MAX_RETRY_AFTER_SECONDS:-30}
       AZURE_COST_API_MAX_PAGES: ${AZURE_COST_API_MAX_PAGES:-1000}
     depends_on:
+      minio-init: {condition: service_completed_successfully}
       azure-cost-api:
         condition: service_healthy
       cockroachdb:
@@ -330,6 +402,7 @@ services:
         ipv4_address: ${PROCESSOR_CHAT_PRIVATE_IP:-172.30.35.3}
         aliases:
           - processor-chat
+    pids_limit: 256
     init: true
     read_only: true
     tmpfs:
@@ -421,3 +494,4 @@ volumes:
   rabbitmq-data:
   prometheus-data:
   grafana-data:
+  document-artifacts:

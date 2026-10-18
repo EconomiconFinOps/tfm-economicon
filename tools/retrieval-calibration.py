@@ -1,4 +1,8 @@
-"""Calibration of the JUP-022 retrieval contract with the JUP-069 question bank.
+"""Historical character-chunking calibration of JUP-022 with the JUP-069 question bank.
+
+This explicit baseline retains TextChunker500/50. The current worker uses
+StructuredChunker; see docs/runbooks/document-chunking.md for its comparison.
+It must not be presented as a calibration of the new production chunker.
 
 The script measures, with the standard library only, whether the fragments that
 a question would retrieve belong to the documents and sections that the bank and

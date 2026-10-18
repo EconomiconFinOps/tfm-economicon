@@ -1,0 +1,39 @@
+{
+  "provider_calls": 1,
+  "events": [
+    {
+      "lot": "comparison-v1",
+      "attempt": 1,
+      "started_utc": "2026-10-15T23:24:33.273670+00:00",
+      "inputs": 46,
+      "input_tokens_offline": 5839,
+      "maximum_estimated_cost_usd": 0.00011678,
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "synthetic_only": true,
+      "budget_pool": "rag-phase2-tests-20261015",
+      "request_body_sha256": "ae19d90f772d599afa7d22c9db37f6642b208a8c5609ae6e3528a4d7574416b5",
+      "http_status": 200,
+      "response_headers": {
+        "x-litellm-call-id": "6024ffad-88c4-47e4-8ab7-3409f5bb7246",
+        "x-litellm-response-cost": "0.00011678"
+      },
+      "status": "succeeded",
+      "finished_utc": "2026-10-15T23:24:35.534142+00:00",
+      "response_model": "economicon-embedding",
+      "provider_usage": {
+        "completion_tokens": 0,
+        "prompt_tokens": 5839,
+        "total_tokens": 5839,
+        "completion_tokens_details": null,
+        "prompt_tokens_details": null
+      },
+      "usage_derived_cost_usd": 0.00011678,
+      "cost_basis": "usage times verified effective model input price; gateway ledger reconciled separately"
+    }
+  ],
+  "cache_records": 46,
+  "usage_derived_cost_usd": 0.00011678,
+  "unknown_reserved_usd": 0
+}

@@ -125,8 +125,13 @@ ejecución; los nombres del ejemplo no acreditan proveedor ni modelo ejecutados.
   además valores con aspecto de credencial; no incluir claves, tokens ni secretos.
   En este adaptador, `generation` nombra el alias del modelo y se exporta como
   `generation.model_alias`, con temperatura desconocida (`null`).
-- `corpus` y `retrieval`: cadenas descriptivas no vacías de hasta 128 caracteres,
-  sin credenciales, que identifiquen la versión y la configuración declaradas.
+- `corpus` y `retrieval`: cadenas descriptivas no vacías, sin credenciales, que
+  identifiquen la versión y la configuración declaradas. Mantenerlas en un máximo
+  de 128 caracteres conforme al contrato JUP-070 que comprueba `check_run_info`.
+  El camino `chat-eval-jup071.py export` no llama a esa comprobación: actualmente
+  puede exportar y puntuar cadenas de 129 caracteres. El límite de 128 es la
+  recomendación compatible con ese contrato, no un rechazo aplicado por el
+  colector; no depender de la permisividad de ese camino para preparar metadatos.
 
 Si la exportación devuelve `EvaluationError; imported validation or input failed;
 consult preserved sidecars`, comprobar primero el formato de estos seis campos,

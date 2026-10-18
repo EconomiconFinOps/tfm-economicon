@@ -1,0 +1,30 @@
+{
+  "blocks": [
+    {
+      "kind": "text",
+      "source_lines": [
+        1,
+        2
+      ],
+      "text": "Cloud budget\nCompute evidence is 42 USD."
+    }
+  ],
+  "document_id": "75f77ec6-4215-564c-971e-441eafb9bbfc",
+  "extraction_method": "utf-8",
+  "file_metadata": {},
+  "origin": {
+    "artifact_uri": null,
+    "content_hash": "c88e4890e5153470f74985e9e45785439dbce2eb7700d2ba31704afabc436f20",
+    "file_size": 44,
+    "filename": "plain.txt",
+    "source": "document",
+    "tenant_id": "tenant-rag2-fixture",
+    "uploaded_by": "synthetic-fixture-operator"
+  },
+  "original_format": "txt",
+  "result": "extracted",
+  "schema_version": 1,
+  "tenant_id": "tenant-rag2-fixture",
+  "text": "Cloud budget\nCompute evidence is 42 USD.",
+  "warnings": []
+}

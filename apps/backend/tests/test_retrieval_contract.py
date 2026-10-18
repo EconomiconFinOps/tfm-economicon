@@ -43,7 +43,7 @@ class RecordingEngine:
     def execute(self, statement, params):
         self.executed.append((" ".join(str(statement).split()), dict(params)))
         if "text_content" in str(statement):
-            return [SimpleNamespace(id=identifier, text_content="text") for identifier in params["document_ids"]]
+            return [SimpleNamespace(id=identifier, text_content="text", metadata={}) for identifier in params["document_ids"]]
         return RecordedRows(self.rows)
 
 
@@ -54,7 +54,7 @@ def store_with(rows=()):
 
 
 def row(chunk_id, distance, source="doc", content="text", document_id="doc-1"):
-    return SimpleNamespace(chunk_id=chunk_id, document_id=document_id, source=source, content=content, distance=distance, tenant_id="tenant-a", chunk_index=0)
+    return SimpleNamespace(chunk_id=chunk_id, document_id=document_id, source=source, content=content, distance=distance, tenant_id="tenant-a", chunk_index=0, metadata={})
 
 
 def last(store):
@@ -90,8 +90,13 @@ def test_rows_are_mapped_in_the_order_returned_by_the_database():
     store = store_with([row("b", 0.2, "s1", "x"), row("a", 0.2, "s2", "y")])
     result = store.search_chunks("tenant-a", [1.0])
     assert result == [
-        {"chunk_id": "b", "document_id": "doc-1", "tenant_id": "tenant-a", "chunk_index": 0, "title": "s1", "section": None, "source": "s1", "content": "x", "distance": 0.2},
-        {"chunk_id": "a", "document_id": "doc-1", "tenant_id": "tenant-a", "chunk_index": 0, "title": "s2", "section": None, "source": "s2", "content": "y", "distance": 0.2},
+        {"chunk_id": "b", "document_id": "doc-1", "tenant_id": "tenant-a", "chunk_index": 0,
+         "title": "s1", "section": None,
+         "section_spans": [{"start": 0, "end": 1, "document_start": 2, "section_start": None, "section": None}],
+         "source": "s1", "content": "x", "distance": 0.2},
+        {"chunk_id": "a", "document_id": "doc-1", "tenant_id": "tenant-a", "chunk_index": 0,
+         "title": "s2", "section": None, "section_spans": [],
+         "source": "s2", "content": "y", "distance": 0.2},
     ]
 
 

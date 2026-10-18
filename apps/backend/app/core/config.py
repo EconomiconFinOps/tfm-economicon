@@ -31,6 +31,8 @@ class Settings(BaseSettings):
     database_url: SecretStr
     rabbitmq_url: SecretStr
     vector_database_url: SecretStr
+    document_s3_access_key: SecretStr | None = None
+    document_s3_secret_key: SecretStr | None = None
     processor_queue_name: str = "processor:jobs"
     summary_timeout_seconds: int = Field(default=180, ge=30, le=300)
     embedding_provider: str = "mock"
