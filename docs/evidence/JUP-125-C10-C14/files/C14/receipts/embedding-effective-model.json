@@ -1,0 +1,9 @@
+{
+  "checked_at_utc": "2026-10-15T23:23:40.042946+00:00",
+  "model_name": "economicon-embedding",
+  "upstream_model": "openrouter/openai/text-embedding-3-small",
+  "configured_dimensions": 1536,
+  "mode": null,
+  "input_cost_per_token": 2e-08,
+  "output_cost_per_token": 0.0
+}

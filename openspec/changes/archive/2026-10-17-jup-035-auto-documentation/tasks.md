@@ -1,0 +1,79 @@
+## Reconciliación de PR140 — 17/10/2026
+
+El contrato técnico vigente es `server-documentation-v4`: recuperación del servidor,
+plan privado y final. Las casillas técnicas completadas se sustentan en las suites
+referidas en [la evidencia del delta](../../../../docs/evidence/JUP-123-victor-corrections.md).
+La N5 de f3ec760d es histórica. No acredita medición con modelo ni navegador del
+nuevo delta; las tareas que lo exigen y los dictámenes oficiales siguen abiertas.
+Los topes de 2 USD citados abajo son históricos, no autorización vigente para gastar.
+
+## Excepción de archivo técnico — 17/10/2026
+
+El usuario de este chat `01a143ae-b740-7043-aedb-1a8a65b4b585` autorizó expresamente:
+«Tienes autorizacion para registrar la excepcion y seguir procediendo», en respuesta
+a la consulta sobre la contradicción de archivo y aceptación. Autoriza el archivo
+**técnico** de los dos changes de PR140 con los pendientes expresos. No completa
+las tareas de aceptación, no sustituye reviews oficiales ni autoriza merge,
+activación, nueva campaña pagada, renovación de claves o cambios de reservas.
+
+## 1. Protocolo
+- [x] 1.1 Reproducir fallos observables en baseline con SSE controlado.
+- [x] 1.2 Antecedente histórico sustituido por server-documentation-v4 (ver diseño vigente): Implementar decision estructurada none/search y finalizacion estricta, cero/una busqueda (sustituye auto nativo por decision autorizada).
+- [x] 1.3 Coordinar contexto, endpoint, operaciones, prompt y hashes.
+- [x] 1.4 Ejecutar suites afectadas y controles; registrar fallos de base, omisiones y correcciones de fixtures.
+
+## 2. Evidencia y entrega
+- [x] 2.1 Entregar parche separado y evidencia con SHA exacto.
+- [ ] 2.2 Verificar matriz real con presupuesto vigente autorizado.
+- [ ] 2.3 Repetir bateria JUP-069 completa sobre un SHA final y recorrido real.
+- [x] 2.4 Realizar revisión técnica propia y validación asistida focal por autorización explícita del usuario (12/10); sin atribuir dictámenes a terceros ni aceptación del proveedor.
+
+## 3. Corrección de la suite backend
+- [x] 3.1 Reproducir y corregir ambas carreras entre estado SQL y evento final en RAM.
+- [x] 3.2 Corregir fixtures de JWT caducados en colección y respuesta HTTP pgvector.
+- [x] 3.3 Provisionar datos SQL sintéticos propios para los tres probes de summary y conservar sus aserciones.
+- [x] 3.4 Ejecutar la suite backend completa en contenedores aislados: 1671 PASS/47 SKIP, cero fallos/errores, exit 0 sobre 8294c48; evidencia y omisiones documentadas.
+
+
+## 4. Seleccion de evidencia y diagnostico de multiplicidad
+- [x] 4.1 Reproducir dos IDs nativos distintos en005/012 y comprobar capacidades publicas del endpoint.
+- [x] 4.2 Acotar esquema final al contexto efectivo, conservar firewall y coordinar conteo/manifiesto.
+- [x] 4.3 Cubrir fuentes desconocidas/duplicadas, procedencia alterada y multiples llamadas sin busqueda parcial.
+- [x] 4.4 Demostrar server-documentation-v4 compatible con el proveedor fijo, una recuperación del servidor, plan privado y una generación final real (evidencia histórica f3ec760d; no nueva campaña del delta), sin llamadas nativas.
+- [x] 4.5 Ejecutar esquema,018 y saludo reales tras autorización específica; se elimina HTTP400, sin confundir completed con aceptación semántica estable (018 mantiene citas accesorias en full28).
+- [ ] 4.6 Ejecutar full28 y navegador sobre una revision congelada; sin extrapolar resultados anteriores.
+
+## 5. Cambios solicitados en review de Víctor
+- [x] 5.1 Corregir cruces SQL/RAM para cuatro estados y ambas entregas;43 pruebas Cockroach nativas pasan.
+- [x] 5.2 Clasificar length de decisión como502 incomplete y probar retry_scheduled sin par persistido.
+- [x] 5.3 Restaurar U+1F600 y ejercitar UTF-8 real partido byte a byte.
+- [x] 5.4 Fusionar develop3c6517b conservando JUP113; GitHubMERGEABLE y JUP policy pull_requestSUCCESS.
+- [x] 5.5 Provisionar HMAC estable en init/prepare; compose config real, UID10001/ro y55 pruebas CDLinux pasan.
+- [x] 5.6 Ejecutar focales y full28 del código congelado; publicar todos los fallos y costes, sin aceptación global.
+- [x] 5.7 Antecedente: server-documentation-v4 sustituyó none/search por recuperación del servidor y una generación; revisión28 sustituye esta última por plan privado y final revisado, dentro del máximo histórico2. Proveedor fijo, sin mensajes tool fabricados.
+- [ ] 5.8 Resolver aceptación semántica:011,017,018,021,024 de la campaña actual; no otra afirmación de garantía sólo por prompts.
+- [ ] 5.9 Completar recorrido de navegador de esta revisión y reviews oficiales; aceptación pendiente; archivo técnico permitido por la excepción del 17/10, sin completar esta casilla.
+
+## 6. Contrato estructurado autorizado
+- [x] 6.1 Probar ramas, campos extra, duplicados, truncacion, llamadas nativas inesperadas, correlacion HMAC y plazo comun.
+- [x] 6.2 Probar extracto literal por cita, contexto documental no confiable y esquema/conteo identicos en ambos servicios.
+- [ ] 6.3 Congelar SHA, desplegar solo runtime sintetico, ejecutar focales y full28 sin cambiar criterios; registrar gasto acumulado máximo2USD (ampliación autorizada el13/10/2026).
+- [ ] 6.4 Recorrido navegador sobre candidato final y evidencia de persistencia/aislamiento, sin confundir CI con reviews oficiales.
+- [x] 6.5 Expresiones Decimal locales, recuperación de servidor por HMAC y plan privado+final revisado; probar origen de cantidades, unidades/cero/límites globales y equivalencia SSE/candidato/persistencia con UTF-8 fragmentado.
+
+## 7. Fiabilidad tras la campaña f6c7895
+- [x] 7.1 Conservar full28:18 completed/10 failed, y defectos semánticos de respuestas completadas; no declararla aceptada.
+- [x] 7.2 Documentar ADR de recuperación única del servidor y expresiones autocontenidas, sin referencias de planes previos.
+- [x] 7.3 Completar regresiones de contrato, HMAC, esquema/conteo, límites, citas, persistencia y cancelación del nuevo protocolo.
+- [ ] 7.4 Congelar candidato, estimar coste conservador y validar campaña íntegra dentro del techo acumulado2USD (ampliación autorizada el13/10/2026); sin muestras seleccionadas.
+- [x] 7.5 Evaluar intervalos documentales con AST, sección posicional y vínculo léxico de KPI; probar límites inclusivos, fuentes alteradas, solapamientos, etiquetas libres y paridad de esquema/conteo.
+- [ ] 7.6 Validar focal005/006/007/013/017/027 y luego full28 sobre candidato congelado; no considerar aceptación los tests locales del selector.
+
+
+## 29. Soporte visible y proyección por uso (aceptación pendiente)
+
+- [x] Implementar extractos literales autorizados e interpretación separada; rechazar evidencia decorativa y pasajes alterados antes de SSE.
+- [x] Conservar métricas financieras sólo con autoridad de servidor y proyectar fuentes de recomendaciones realmente usadas.
+- [x] Verificar streaming fragmentado, límites, citas y persistencia atómica local, con negativos de falsificación de marcador.
+- [ ] Completar regresiones, paridad final y verificación en runtime congelado.
+- [ ] Reejecutar criterios originales y batería completa con auditoría semántica, UI y presupuesto; no declarar aceptación por CI ni literalidad.

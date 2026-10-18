@@ -175,8 +175,10 @@ test("an honest same-person pull request passes both checks", () => {
 
 test("parses GitHub pull request events", () => {
   assert.deepEqual(
-    parseEvent({ pull_request: { title: "JUP-079", body: BODY, head: { ref: "branch" }, base: { ref: "develop" } } }),
-    { title: "JUP-079", body: BODY, head: "branch", base: "develop" },
+    parseEvent({ repository: { full_name: "EconomiconFinOps/tfm-economicon" }, pull_request: {
+      number: 79, user: { login: "Iber1to" }, title: "JUP-079", body: BODY, head: { ref: "branch" }, base: { ref: "develop" },
+    } }),
+    { number: 79, repository: "EconomiconFinOps/tfm-economicon", author: "Iber1to", title: "JUP-079", body: BODY, head: "branch", base: "develop" },
   );
 });
 
@@ -273,8 +275,9 @@ test("ignores pending draft reviews", () => {
   assert.ok(errors.some((e) => e.includes("Validacion JUP-100")));
 });
 
-test("still counts dismissed titled reviews", () => {
-  assert.deepEqual(checkReviews({ ...PR, reviews: [revision(), validacion("Iber1to", "DISMISSED")] }), []);
+test("dismissed titled reviews do not supply a required role", () => {
+  assert.ok(checkReviews({ ...PR, reviews: [revision(), validacion("Iber1to", "DISMISSED")] })
+    .some((error) => error.includes("Validacion JUP-100")));
 });
 
 test("blocks while a reviewer's latest decisive review requests changes", () => {
@@ -294,7 +297,9 @@ test("a later comment does not clear a request for changes", () => {
 
 test("a dismissed request for changes no longer blocks", () => {
   const reviews = [revision("Victorh1397", "DISMISSED"), validacion()];
-  assert.deepEqual(checkReviews({ ...PR, reviews }), []);
+  const errors = checkReviews({ ...PR, reviews });
+  assert.ok(errors.some((error) => error.includes("Revision JUP-100")));
+  assert.ok(!errors.some((error) => /cambios pedidos/.test(error)));
 });
 
 test("an approval dismissed by a push does not revive an older request for changes", () => {
@@ -497,4 +502,197 @@ test("the --reviews command shows its errors as annotations in GitHub Actions", 
   assert.equal(inActions.status, 1);
   assert.match(inActions.stdout, /^::error title=JUP reviews::Falta GITHUB_TOKEN.*CONTRIBUTING\.md#review-and-validation-flow$/m);
   assert.doesNotMatch(local.stdout, /::error/);
+});
+
+
+test("PR63: a dismissed validation and complementary review do not invent an exception", () => {
+  const reviews = [validacion("helper", "DISMISSED"), revision("reviewer"),
+    validacion("validator"), revision("helper")];
+  assert.deepEqual(checkReviews({ ...PR, reviews }), []);
+});
+
+test("a dismissed latest title does not revive the person's older title", () => {
+  const reviews = [revision(), validacion(), validacion("Iber1to", "DISMISSED")];
+  assert.ok(checkReviews({ ...PR, reviews }).some((error) => error.includes("Validacion JUP-100")));
+});
+
+test("a new title after dismissal restores that role", () => {
+  const reviews = [revision(), validacion("Iber1to", "DISMISSED"), validacion()];
+  assert.deepEqual(checkReviews({ ...PR, reviews }), []);
+});
+
+test("complementary outstanding change requests still block the official pair", () => {
+  const reviews = [revision(), validacion(), review("helper", "CHANGES_REQUESTED", "Defecto"),
+    review("helper", "COMMENTED", "Sigue pendiente")];
+  assert.ok(checkReviews({ ...PR, reviews }).some((error) => error.includes("helper")));
+});
+
+
+test("PR63 recorded title/state metadata no longer demands an invented exception", () => {
+  const input = JSON.parse(fs.readFileSync(new URL("./fixtures/pr-reviews/pr63-20261016.json", import.meta.url), "utf8"));
+  assert.equal(input.reviews.length, 18);
+  assert.deepEqual(checkReviews(input), []);
+});
+
+test("latest title selection uses date, normalized login and review kind", () => {
+  const oldValidation = validacion("IBER1TO");
+  const dismissed = review("iber1to", "DISMISSED", "Validación JUP-100");
+  const errors = checkReviews({ ...PR, reviews: [dismissed, revision(), oldValidation] });
+  assert.ok(errors.some((error) => error.includes("Validacion JUP-100")));
+});
+
+// Literal authorization is deliberately independent of the implementation's
+// exported marker: changing a guard/marker must not change the expected case.
+const PR135_MARKER = "- Excepcion puntual PR135: pairing y revision por Lucia Mateo; validacion por Paris Arcos Martin; autorizada por Alejandro Aguado el 2026-10-18";
+const PR135_BODY = `- ID: JUP-126
+- Trello: https://trello.com/c/SplMvNMA
+- Liderazgo: Alejandro Aguado
+- Pairing/coautoria: Lucia Mateo
+- Revision de PR: Lucia Mateo
+- Validacion, pruebas y documentacion: Paris Arcos Martin
+${PR135_MARKER}
+`;
+let pr135Sequence = 0;
+const pr135Review = (user, state, body) => ({ user, state, body,
+  submitted_at: new Date(Date.UTC(2026, 9, 18, 12, pr135Sequence++)).toISOString() });
+const PR135_REVIEWS = [
+  pr135Review("ParisArcos", "COMMENTED", "Revision JUP-126\nHistorical review, retained."),
+  pr135Review("lmatsan", "COMMENTED", "Revision JUP-126\nCurrent assigned review."),
+  pr135Review("ParisArcos", "APPROVED", "Validacion JUP-126\nIndependent validation evidence."),
+];
+const PR135 = { number: 135, repository: REPO, author: "Iber1to", title: "fix(JUP-126): dismissed titles",
+  body: PR135_BODY, head: "fix/JUP-126-dismissed-review-titles", base: "develop", reviews: PR135_REVIEWS };
+const rejectPr135 = (input) => {
+  assert.notDeepEqual(checkPullRequest(input), [], "role policy must fail closed");
+  assert.notDeepEqual(checkReviews(input), [], "review policy must fail closed");
+};
+
+test("PR135 authorization accepts only the approved allocation with both assigned titles", () => {
+  assert.deepEqual(checkPullRequest(PR135), []);
+  assert.deepEqual(checkReviews(PR135), []);
+  assert.equal(PR135_REVIEWS[0].state, "COMMENTED", "history is not dismissed or mutated");
+});
+
+for (const [name, change] of [
+  ["another PR number", { number: 136 }], ["PR63", { number: 63 }],
+  ["missing PR number", { number: undefined }], ["string PR number", { number: "135" }],
+  ["another repository", { repository: "other/tfm-economicon" }],
+  ["another author", { author: "lmatsan" }],
+  ["another card", { title: "fix(JUP-127): other", body: PR135_BODY.replace("ID: JUP-126", "ID: JUP-127") }],
+  ["main", { base: "main", head: "develop" }],
+  ["another branch", { head: "fix/JUP-126-other" }],
+]) {
+  test(`PR135 authorization rejects ${name}`, () => rejectPr135({ ...PR135, ...change }));
+}
+
+for (const label of ["Liderazgo", "Pairing/coautoria", "Revision de PR", "Validacion, pruebas y documentacion"]) {
+  test(`PR135 authorization rejects a different ${label}`, () => {
+    const changed = PR135_BODY.replace(new RegExp(`^- ${label}:.*$`, "m"), `- ${label}: Victor Mendez`);
+    rejectPr135({ ...PR135, body: changed });
+  });
+}
+
+test("PR135 authorization rejects duplicate roles or declarations", () => {
+  rejectPr135({ ...PR135, body: PR135_BODY + "- Liderazgo: Victor Mendez\n" });
+  rejectPr135({ ...PR135, body: PR135_BODY + PR135_MARKER + "\n" });
+  const changed = PR135_BODY.replace("- Liderazgo: Alejandro Aguado", "- Liderazgo: Victor Mendez");
+  rejectPr135({ ...PR135, body: "<!--\n- Liderazgo: Alejandro Aguado\n-->\n" + changed });
+});
+
+for (const [name, wrap] of [
+  ["missing marker", () => ""], ["HTML comment", (x) => `<!--\n${x}\n-->`],
+  ["unclosed comment", (x) => `<!--\n${x}`], ["backtick fence", (x) => "```md\n" + x + "\n```"],
+  ["tilde fence", (x) => "~~~\n" + x + "\n~~~"], ["unclosed fence", (x) => "```\n" + x],
+  ["short inner fence", (x) => "````\n```\n" + x + "\n````"],
+  ["indented code", (x) => "    " + x], ["tab code", (x) => "\t" + x],
+  ["inline code", (x) => "`" + x + "`"], ["quote", (x) => "> " + x],
+  ["multiline code span", (x) => "`example\n" + x + "\nend`"],
+  ["double-backtick code span", (x) => "``example `\n" + x + "\nend``"],
+  ["HTML code", (x) => `<pre><code>\n${x}\n</code></pre>`],
+  ["hidden HTML", (x) => `<div hidden>\n${x}\n</div>`],
+  ["different authorization date", (x) => x.replace("2026-10-18", "2026-10-19")],
+  ["altered authorization text", (x) => x.replace("Excepcion puntual", "excepcion puntual")],
+]) {
+  test(`PR135 authorization rejects ${name}`, () => {
+    rejectPr135({ ...PR135, body: PR135_BODY.replace(PR135_MARKER, wrap(PR135_MARKER)) });
+  });
+}
+
+test("PR135 authorization does not accept roles hidden in code", () => {
+  const roles = PR135_BODY.slice(PR135_BODY.indexOf("- Liderazgo:"), PR135_BODY.indexOf(PR135_MARKER));
+  rejectPr135({ ...PR135, body: PR135_BODY.replace(roles, "```\n" + roles + "```\n") });
+});
+
+test("PR135 authorization ignores a code-span example when the visible declaration also exists", () => {
+  assert.deepEqual(checkPullRequest({ ...PR135, body: PR135_BODY + "\n`example\n" + PR135_MARKER + "\nend`\n" }), []);
+});
+
+test("PR135 authorization keeps title/role login matching case insensitive", () => {
+  const reviews = PR135_REVIEWS.map((r) => ({ ...r, user: r.user.toUpperCase() }));
+  assert.deepEqual(checkReviews({ ...PR135, reviews }), []);
+});
+
+test("PR135 authorization requires the assigned review and validation separately", () => {
+  const [historical, revision135, validation135] = PR135_REVIEWS;
+  assert.match(checkReviews({ ...PR135, reviews: [historical, validation135] }).join(), /Revision JUP-126/);
+  assert.match(checkReviews({ ...PR135, reviews: [historical, revision135] }).join(), /Validacion JUP-126/);
+  const wrongValidation = pr135Review("Victorh1397", "APPROVED", "Validacion JUP-126");
+  assert.match(checkReviews({ ...PR135, reviews: [historical, revision135, wrongValidation] }).join(), /Validacion JUP-126/);
+  const wrongCard = { ...validation135, body: "Validacion JUP-1260" };
+  assert.match(checkReviews({ ...PR135, reviews: [historical, revision135, wrongCard] }).join(), /Validacion JUP-126/);
+});
+
+test("PR135 authorization excludes author and draft titles", () => {
+  for (const index of [1, 2]) {
+    for (const change of [{ user: "Iber1to" }, { state: "PENDING" }]) {
+      const reviews = PR135_REVIEWS.map((r, i) => i === index ? { ...r, ...change } : r);
+      assert.notDeepEqual(checkReviews({ ...PR135, reviews }), []);
+    }
+  }
+});
+
+test("PR135 authorization selects latest assigned titles before excluding dismissals", () => {
+  const dismissed = pr135Review("ParisArcos", "DISMISSED", "Validacion JUP-126");
+  const reviews = [...PR135_REVIEWS, dismissed];
+  assert.match(checkReviews({ ...PR135, reviews }).join(), /Validacion JUP-126/);
+  const fresh = pr135Review("ParisArcos", "APPROVED", "Validacion JUP-126");
+  assert.deepEqual(checkReviews({ ...PR135, reviews: [...reviews, fresh] }), []);
+});
+
+test("PR135 authorization retains complete decisive history including complementary changes", () => {
+  const changes = pr135Review("helper", "CHANGES_REQUESTED", "Revision JUP-126\nBlocking issue.");
+  const comment = pr135Review("helper", "COMMENTED", "Not resolved.");
+  const reviews = [...PR135_REVIEWS, changes, comment];
+  assert.match(checkReviews({ ...PR135, reviews }).join(), /cambios pedidos pendientes de helper/);
+  const approved = pr135Review("helper", "APPROVED", "Resolved.");
+  const dismissed = pr135Review("helper", "DISMISSED", "Resolved approval dismissed.");
+  assert.deepEqual(checkReviews({ ...PR135, reviews: [...reviews, approved, dismissed] }), []);
+  const parisChanges = pr135Review("ParisArcos", "CHANGES_REQUESTED", "Blocking issue.");
+  const parisComment = pr135Review("ParisArcos", "COMMENTED", "Validacion JUP-126\nStill blocked.");
+  assert.match(checkReviews({ ...PR135, reviews: [...PR135_REVIEWS, parisChanges, parisComment] }).join(), /cambios pedidos pendientes de ParisArcos/);
+});
+
+test("PR135 authorization preserves the ordinary overlap rule without its declaration", () => {
+  const body = PR135_BODY.replace(PR135_MARKER, "");
+  assert.match(checkReviews({ ...PR135, body }).join(), /misma persona/);
+  assert.match(checkPullRequest({ ...PR135, body }).join(), /cuatro personas distintas/);
+});
+
+test("PR135 authorization receives authoritative identity from event and live API", async () => {
+  const pull = { number: 135, title: PR135.title, body: PR135_BODY, user: { login: "Iber1to" },
+    head: { ref: PR135.head }, base: { ref: "develop" } };
+  const eventInput = parseEvent({ repository: { full_name: REPO }, pull_request: pull });
+  assert.deepEqual(checkPullRequest(eventInput), []);
+  const routes = { "/pulls/135": pull, "/pulls/135/reviews?per_page=100&page=1":
+    PR135_REVIEWS.map(({ user, ...rest }) => ({ user: { login: user }, ...rest })) };
+  const live = await fetchReviewInput({ repository: REPO, number: 135, token: "t", fetchImpl: fakeFetch(routes) });
+  assert.equal(live.number, 135);
+  assert.equal(live.repository, REPO);
+  assert.equal(live.head, PR135.head);
+  assert.deepEqual(checkPullRequest(live), []);
+  assert.deepEqual(checkReviews(live), []);
+  const { number, ...withoutNumber } = pull;
+  routes["/pulls/135"] = withoutNumber;
+  const missing = await fetchReviewInput({ repository: REPO, number: 135, token: "t", fetchImpl: fakeFetch(routes) });
+  rejectPr135(missing); // A caller-supplied number is not a substitute for API metadata.
 });

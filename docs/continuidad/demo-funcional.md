@@ -210,3 +210,24 @@ y88workflow/politica/gobernanza correctos; OpenSpec y trazabilidad/higiene PASS.
 CI del nuevo SHA pendiente; no se ejecuta modelo ni ensayo. Paris conserva
 su comentario favorable sobre6a498a40; Request changes Victor pendiente de
 revalidacion y Approve. No se modifican reviews ni se integra PR135 aqui.
+
+
+## Actualizacion de base — 18/10/2026
+
+Peticion humana de actualizar PR63 tras solicitud de Lucia. Reconciliacion local
+48567c4a preservada; incorporado develop b1f5f75b8a7ed4d3a2cd9eccac21e7f04e0ab266.
+Unico conflicto en indice: conservar demo y filas/versiones actuales de develop.
+Producto, gobernanza y configuracion de base conservados; sin excepcion para PR63.
+PR135/134/140/138 ya forman parte de esta base; no esperar otra integracion
+de esas PR. El ensayo y su aceptacion siguen NOT_RUN. No trasladar runtime
+ni aprobacion de Victor sobre ed9a172a a este candidato con dependencias nuevas.
+Pruebas focales y CI se registraran con SHA final en descripcion/recibo PR63.
+No cambios al paquete fijo, ampliacion de demo ni repeticion de entrega a Lucia.
+Origen: chat 01a12c49-7488-72f0-9077-1137c5c4f2a6.
+
+Verificado antes de publicar: demo normal/optimizada15/15, integridad3/3,
+compatibilidad CI4/4, workflow/politica/gobernanza137/137,28preguntas/7categorias
+y OpenSpec80/80. Diff propio frente a develop limpio; avisos de whitespace
+en evidencias JUP125 heredados de base, no corregidos en esta PR.
+Producto/configuracion/politica identicos a develop por comparacion Git;
+docs/demo/JUP-065 identico a ed9a172a. Runtime actual no ejecutado.

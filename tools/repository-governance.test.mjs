@@ -148,3 +148,27 @@ test("lists in the branch-protection guide exactly the required checks of the ru
     .parameters.required_status_checks.map(({ context }) => context);
   assert.deepEqual(listed, required);
 });
+
+
+test("documents latest-title counting without erasing change-request history", () => {
+  const flow = section(contributing, "## Review and validation flow");
+  for (const pattern of [/latest published title counts/, /dismissed latest title supplies no role/,
+    /does not revive an older title/, /complete published history/, /assigned reviewer\/validator/]) {
+    assert.match(flow, pattern);
+  }
+  assert.match(agents(), /latest published title/);
+});
+
+test("documents the PR135-only human authorization without advertising a general template exception", async () => {
+  const { PR135_PAIRING_REVIEW_EXCEPTION } = await import("./pr-policy.mjs");
+  assert.ok(contributing.includes(PR135_PAIRING_REVIEW_EXCEPTION));
+  assert.match(contributing, /Only|only/);
+  assert.match(contributing, /PR number `135`/);
+  assert.match(contributing, /`lmatsan`/);
+  assert.match(contributing, /`ParisArcos`/);
+  assert.match(agents(), /Only PR #135/);
+  assert.ok(!template().includes(PR135_PAIRING_REVIEW_EXCEPTION));
+  const spec = read("openspec", "specs", "pr-review-validation", "spec.md");
+  assert.ok(spec.includes(PR135_PAIRING_REVIEW_EXCEPTION));
+  assert.match(spec, /complete\s+published history SHALL still resolve all requests for changes/);
+});

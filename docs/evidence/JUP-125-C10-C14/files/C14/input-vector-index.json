@@ -1,0 +1,842 @@
+{
+  "formula": "SHA256(UTF8(alias + NUL + exact_input))",
+  "records": [
+    {
+      "cache_key": "5b18a80bcf66685203f77f21e95b449610effeed8c18fc06416c5454b48c1a60",
+      "input_utf8_sha256": "5f76e0be22b424fd1dbcd19e545788534604870c03b258382cc3813716fb3380",
+      "input": "# Operación FinOps ## Anomalías Las anomalías diarias se rigen por la siguiente condición conjunta. ```text relative_delta > 20 % AND absolute_delta > 100 EUR/day ``` Ambos límites son estrictos: un valor exactamente igual no supera el umbral. ## Etiquetas La etiqueta owner identifica al responsable operativo.",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 78,
+      "vector_file": "C14/vector-cache/5b18a80bcf66685203f77f21e95b449610effeed8c18fc06416c5454b48c1a60.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "markdown",
+          "chunk_index": 0,
+          "cache_key": "5b18a80bcf66685203f77f21e95b449610effeed8c18fc06416c5454b48c1a60"
+        }
+      ]
+    },
+    {
+      "cache_key": "3255e966918e67866ff8eaf5c7d48e0ffdbc581d60d6174a748239ad33a71fbc",
+      "input_utf8_sha256": "463306937013481bf64262538020cdef4da713c76cbbf5daa3b5a99c79809996",
+      "input": "# Operación FinOps\n\n## Anomalías\n\nLas anomalías diarias se rigen por la siguiente condición conjunta.\n\n```text\nrelative_delta > 20 % AND absolute_delta > 100 EUR/day\n```\n\nAmbos límites son estrictos: un valor exactamente igual no supera el umbral.\n\n",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 68,
+      "vector_file": "C14/vector-cache/3255e966918e67866ff8eaf5c7d48e0ffdbc581d60d6174a748239ad33a71fbc.json",
+      "uses": [
+        {
+          "kind": "structural_chunk",
+          "case": "markdown",
+          "chunk_index": 0,
+          "chunk_id": "evaluation-markdown:chunk:c457cf1a1894277da73137f919d6f77ab03752dd39dcf448b239064795edf7be:0",
+          "cache_key": "3255e966918e67866ff8eaf5c7d48e0ffdbc581d60d6174a748239ad33a71fbc"
+        }
+      ]
+    },
+    {
+      "cache_key": "d3f1a1783e792d4e16d3e3bd043cd32b8d02ae00bb4927b189e018a8fa14ec31",
+      "input_utf8_sha256": "d6de395378a591d926f428867f453bb5e0fb48f6306786624d83a14b60f82797",
+      "input": "## Etiquetas\n\nLa etiqueta owner identifica al responsable operativo.",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 16,
+      "vector_file": "C14/vector-cache/d3f1a1783e792d4e16d3e3bd043cd32b8d02ae00bb4927b189e018a8fa14ec31.json",
+      "uses": [
+        {
+          "kind": "structural_chunk",
+          "case": "markdown",
+          "chunk_index": 1,
+          "chunk_id": "evaluation-markdown:chunk:c457cf1a1894277da73137f919d6f77ab03752dd39dcf448b239064795edf7be:1",
+          "cache_key": "d3f1a1783e792d4e16d3e3bd043cd32b8d02ae00bb4927b189e018a8fa14ec31"
+        }
+      ]
+    },
+    {
+      "cache_key": "b78d42f2d19c1a1d8691c3a52f65b60538f7aa2a1fd6c990f81237f2ec230298",
+      "input_utf8_sha256": "77974251e8e03543b708dab1bd7538a665b81337f3fdef73b726cda5cc90f798",
+      "input": "¿Qué dos condiciones deben cumplirse para detectar la anomalía diaria?",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 16,
+      "vector_file": "C14/vector-cache/b78d42f2d19c1a1d8691c3a52f65b60538f7aa2a1fd6c990f81237f2ec230298.json",
+      "uses": [
+        {
+          "kind": "question",
+          "case": "markdown",
+          "question_index": 0,
+          "cache_key": "b78d42f2d19c1a1d8691c3a52f65b60538f7aa2a1fd6c990f81237f2ec230298"
+        }
+      ]
+    },
+    {
+      "cache_key": "ce3405d5e6e8d15a9b7bf25ea9a145e5e104e086e1cfdda9061b162bf5aa6e4c",
+      "input_utf8_sha256": "263a0b54b5bf5db9c8430f9c1fc22c6af3591ead6a4023b3df01c97c1e627d1c",
+      "input": "¿Qué ocurre al alcanzar exactamente el límite de anomalía?",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 16,
+      "vector_file": "C14/vector-cache/ce3405d5e6e8d15a9b7bf25ea9a145e5e104e086e1cfdda9061b162bf5aa6e4c.json",
+      "uses": [
+        {
+          "kind": "question",
+          "case": "markdown",
+          "question_index": 1,
+          "cache_key": "ce3405d5e6e8d15a9b7bf25ea9a145e5e104e086e1cfdda9061b162bf5aa6e4c"
+        }
+      ]
+    },
+    {
+      "cache_key": "fa4c6e87f7ff0b2528fdd457ba215988dc7c46317bd2b678fb5e0184c87a2b84",
+      "input_utf8_sha256": "16ddc57f373f1d84ea2d1656534ea832d230999027181f29194c7812fea1115e",
+      "input": "La política de soporte mantiene un presupuesto de emergencia separado. La nota operativa 0 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 1 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 2 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 3 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 4 conserva trazabilidad y responsable para decisiones de soporte. La nota o",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 120,
+      "vector_file": "C14/vector-cache/fa4c6e87f7ff0b2528fdd457ba215988dc7c46317bd2b678fb5e0184c87a2b84.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "plain-text",
+          "chunk_index": 0,
+          "cache_key": "fa4c6e87f7ff0b2528fdd457ba215988dc7c46317bd2b678fb5e0184c87a2b84"
+        }
+      ]
+    },
+    {
+      "cache_key": "78d263880f4aeb6e68146f3b3297ec875caf7e680b13735801f6ff55fc8f7071",
+      "input_utf8_sha256": "e7cf17604b9b172194623d5444e437db53f4e994a080ff3c87fff3618fd7169f",
+      "input": "responsable para decisiones de soporte. La nota operativa 5 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 6 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 7 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 8 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 9 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 10 conserva trazabili",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 121,
+      "vector_file": "C14/vector-cache/78d263880f4aeb6e68146f3b3297ec875caf7e680b13735801f6ff55fc8f7071.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "plain-text",
+          "chunk_index": 1,
+          "cache_key": "78d263880f4aeb6e68146f3b3297ec875caf7e680b13735801f6ff55fc8f7071"
+        }
+      ]
+    },
+    {
+      "cache_key": "2496897b797ea8cc3ef1f1fe2f783f4d4c7ce45cf16be56eb15f4bfce7a1e9de",
+      "input_utf8_sha256": "4ae387b4af9594509196f25249dee9b20ee31398bd657e3fbd2bcad22d88a256",
+      "input": "e soporte. La nota operativa 10 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 11 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 12 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 13 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 14 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 15 conserva trazabilidad y responsable para de",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 119,
+      "vector_file": "C14/vector-cache/2496897b797ea8cc3ef1f1fe2f783f4d4c7ce45cf16be56eb15f4bfce7a1e9de.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "plain-text",
+          "chunk_index": 2,
+          "cache_key": "2496897b797ea8cc3ef1f1fe2f783f4d4c7ce45cf16be56eb15f4bfce7a1e9de"
+        }
+      ]
+    },
+    {
+      "cache_key": "1dd73e2ead6863bb2904a8de1dc73ec1cb91396f32768fdb6f0a61113a14f984",
+      "input_utf8_sha256": "f06912a02569b1cff69c4ac41c10718743df9b14189dbca23eeb3d6e4cae5023",
+      "input": "iva 15 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 16 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 17 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 18 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 19 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 20 conserva trazabilidad y responsable para decisiones de soporte. La n",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 119,
+      "vector_file": "C14/vector-cache/1dd73e2ead6863bb2904a8de1dc73ec1cb91396f32768fdb6f0a61113a14f984.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "plain-text",
+          "chunk_index": 3,
+          "cache_key": "1dd73e2ead6863bb2904a8de1dc73ec1cb91396f32768fdb6f0a61113a14f984"
+        }
+      ]
+    },
+    {
+      "cache_key": "cd18ac9bf0036d304e6189ccefb964bbdba08196d7ef5d41e8b09ce3d6364e81",
+      "input_utf8_sha256": "d69da18c02d2e4826a5a1e69541e5a79dff471ec4cfb5b19659528253153f1a8",
+      "input": "dad y responsable para decisiones de soporte. La nota operativa 21 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 22 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 23 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 24 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 25 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 26 conserva",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 118,
+      "vector_file": "C14/vector-cache/cd18ac9bf0036d304e6189ccefb964bbdba08196d7ef5d41e8b09ce3d6364e81.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "plain-text",
+          "chunk_index": 4,
+          "cache_key": "cd18ac9bf0036d304e6189ccefb964bbdba08196d7ef5d41e8b09ce3d6364e81"
+        }
+      ]
+    },
+    {
+      "cache_key": "8d2cfbeee0e59d4115612e5e8e444e2fa9a60a2eee36a57598bec00ed162f7ad",
+      "input_utf8_sha256": "175b8cf82a9ac8784b67a3663b232be7506ddac074d478f8a3c846c98523830b",
+      "input": "cisiones de soporte. La nota operativa 26 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 27 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 28 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 29 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 30 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 31 conserva trazabilidad y responsab",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 120,
+      "vector_file": "C14/vector-cache/8d2cfbeee0e59d4115612e5e8e444e2fa9a60a2eee36a57598bec00ed162f7ad.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "plain-text",
+          "chunk_index": 5,
+          "cache_key": "8d2cfbeee0e59d4115612e5e8e444e2fa9a60a2eee36a57598bec00ed162f7ad"
+        }
+      ]
+    },
+    {
+      "cache_key": "09a5e5c59c06b9dafa725820e6fca425b4348e80cfc8620953ac94b890780325",
+      "input_utf8_sha256": "ff41a784a2ca208c9d7f6dcc6aa2611fb2e19cefc576716fd5c549a8195b0474",
+      "input": "ota operativa 31 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 32 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 33 conserva trazabilidad y responsable para decisiones de soporte. El presupuesto de emergencia del equipo Boreal es de 450 EUR por mes. La nota operativa 34 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 35 conserva trazabilidad y responsable para decisiones de soporte. La nota o",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 120,
+      "vector_file": "C14/vector-cache/09a5e5c59c06b9dafa725820e6fca425b4348e80cfc8620953ac94b890780325.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "plain-text",
+          "chunk_index": 6,
+          "cache_key": "09a5e5c59c06b9dafa725820e6fca425b4348e80cfc8620953ac94b890780325"
+        }
+      ]
+    },
+    {
+      "cache_key": "46394985434e7ccc0cdb0e0423a43f94b996c92965a29b1bf65adc4dcd3f7cbc",
+      "input_utf8_sha256": "6c371473b5ebb9c4d71ee219364a69d6a5915d89cb1d8296e3761a74d3884e0a",
+      "input": "responsable para decisiones de soporte. La nota operativa 36 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 37 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 38 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 39 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 40 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 41 conserva traz",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 119,
+      "vector_file": "C14/vector-cache/46394985434e7ccc0cdb0e0423a43f94b996c92965a29b1bf65adc4dcd3f7cbc.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "plain-text",
+          "chunk_index": 7,
+          "cache_key": "46394985434e7ccc0cdb0e0423a43f94b996c92965a29b1bf65adc4dcd3f7cbc"
+        }
+      ]
+    },
+    {
+      "cache_key": "043efa27930cec42249003c34aa3bb0ba0270a4ec6488444f42b58c36bdb7ccb",
+      "input_utf8_sha256": "733126fdf8af77bd97cde7e281e5cb355fbc78cee37ea1b1362f4f15ff59d50b",
+      "input": "nes de soporte. La nota operativa 41 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 42 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 43 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 44 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 45 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 46 conserva trazabilidad y responsable pa",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 119,
+      "vector_file": "C14/vector-cache/043efa27930cec42249003c34aa3bb0ba0270a4ec6488444f42b58c36bdb7ccb.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "plain-text",
+          "chunk_index": 8,
+          "cache_key": "043efa27930cec42249003c34aa3bb0ba0270a4ec6488444f42b58c36bdb7ccb"
+        }
+      ]
+    },
+    {
+      "cache_key": "b6fc8a5756f43b59f92a294b3a5ecf2f6329c9685631f5a455638dfc65a738ee",
+      "input_utf8_sha256": "21627e5e0d478645f1b7fba32c383ad0b870903245e128715d4139fbe654b93e",
+      "input": "perativa 46 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 47 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 48 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 49 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 50 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 51 conserva trazabilidad y responsable para decisiones de soporte.",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 118,
+      "vector_file": "C14/vector-cache/b6fc8a5756f43b59f92a294b3a5ecf2f6329c9685631f5a455638dfc65a738ee.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "plain-text",
+          "chunk_index": 9,
+          "cache_key": "b6fc8a5756f43b59f92a294b3a5ecf2f6329c9685631f5a455638dfc65a738ee"
+        }
+      ]
+    },
+    {
+      "cache_key": "7d0f0111816b5b45d0798b796262227aedf4d15cccccc325b0251a9a6a6a579a",
+      "input_utf8_sha256": "52ba00473191ba84d613ac8e8e36f11263c48e30935a7408480471a2f4db92f6",
+      "input": "abilidad y responsable para decisiones de soporte. La nota operativa 52 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 53 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 54 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 55 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 56 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 57 con",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 117,
+      "vector_file": "C14/vector-cache/7d0f0111816b5b45d0798b796262227aedf4d15cccccc325b0251a9a6a6a579a.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "plain-text",
+          "chunk_index": 10,
+          "cache_key": "7d0f0111816b5b45d0798b796262227aedf4d15cccccc325b0251a9a6a6a579a"
+        }
+      ]
+    },
+    {
+      "cache_key": "549c62b53597344f3a210a7e93c200013021a0a2e7ebf773c11df83668c35837",
+      "input_utf8_sha256": "bb0a550c971e403d3b199e3a4b00d13affd7536e70a9e463b46a4e5f02be071c",
+      "input": "ra decisiones de soporte. La nota operativa 57 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 58 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 59 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 60 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 61 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 62 conserva trazabilidad y resp",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 120,
+      "vector_file": "C14/vector-cache/549c62b53597344f3a210a7e93c200013021a0a2e7ebf773c11df83668c35837.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "plain-text",
+          "chunk_index": 11,
+          "cache_key": "549c62b53597344f3a210a7e93c200013021a0a2e7ebf773c11df83668c35837"
+        }
+      ]
+    },
+    {
+      "cache_key": "0bf50554e9f3ba45c1558b07adf8b795295a0d299e8083dc9e05b4306ff1e49f",
+      "input_utf8_sha256": "a3d4b80fdcba706b68ee5d290b6d3478554efe6f2062acccfbe1e9b97e0f0d7a",
+      "input": "La nota operativa 62 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 63 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 64 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 65 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 66 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 67 conserva trazabilidad y responsable para decisiones d",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 117,
+      "vector_file": "C14/vector-cache/0bf50554e9f3ba45c1558b07adf8b795295a0d299e8083dc9e05b4306ff1e49f.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "plain-text",
+          "chunk_index": 12,
+          "cache_key": "0bf50554e9f3ba45c1558b07adf8b795295a0d299e8083dc9e05b4306ff1e49f"
+        }
+      ]
+    },
+    {
+      "cache_key": "e737b3e1d55d0b0840a4b61379ccb6b890fb696958a41aff93bdc7879ecfab3b",
+      "input_utf8_sha256": "463015600622081fe62a577ad08aa87ce7273290b48ec189ead70a92030b5924",
+      "input": "serva trazabilidad y responsable para decisiones de soporte. La nota operativa 68 conserva trazabilidad y responsable para decisiones de soporte. La nota operativa 69 conserva trazabilidad y responsable para decisiones de soporte. La revisión de consumo de Boreal se celebra el martes a las 09:30 UTC.",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 76,
+      "vector_file": "C14/vector-cache/e737b3e1d55d0b0840a4b61379ccb6b890fb696958a41aff93bdc7879ecfab3b.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "plain-text",
+          "chunk_index": 13,
+          "cache_key": "e737b3e1d55d0b0840a4b61379ccb6b890fb696958a41aff93bdc7879ecfab3b"
+        }
+      ]
+    },
+    {
+      "cache_key": "411927ae96658da724debe807e49a03fc751a5b600365fce5f4e19f26ee85540",
+      "input_utf8_sha256": "ab66df7bcd21c2339178c4a9b761d8a46895b9dd0b73d13c3bd357fe3c4f236a",
+      "input": "La política de soporte mantiene un presupuesto de emergencia separado.\n\nLa nota operativa 0 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 1 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 2 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 3 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 4 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 5 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 6 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 7 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 8 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 9 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 10 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 11 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 12 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 13 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 14 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 15 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 16 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 17 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 18 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 19 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 20 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 21 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 22 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 23 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 24 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 25 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 26 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 27 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 28 conserva trazabilidad y responsable para decisiones de soporte.\n\n",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 597,
+      "vector_file": "C14/vector-cache/411927ae96658da724debe807e49a03fc751a5b600365fce5f4e19f26ee85540.json",
+      "uses": [
+        {
+          "kind": "structural_chunk",
+          "case": "plain-text",
+          "chunk_index": 0,
+          "chunk_id": "evaluation-plain-text:chunk:463cd32b15163e776bdade715e08ce65d1d35a0656408395b2a72018f4866d29:0",
+          "cache_key": "411927ae96658da724debe807e49a03fc751a5b600365fce5f4e19f26ee85540"
+        }
+      ]
+    },
+    {
+      "cache_key": "13ba9f52f4c439c47ac765694614257593c111a3cb1603a700373bf5d3ecac0a",
+      "input_utf8_sha256": "43b0edd0eef227ad4d99d96b3a43d19fb9961b64c0adc6ed4b32da437318e388",
+      "input": "nota operativa 26 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 27 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 28 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 29 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 30 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 31 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 32 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 33 conserva trazabilidad y responsable para decisiones de soporte.\n\nEl presupuesto de emergencia del equipo Boreal es de 450 EUR por mes.\n\nLa nota operativa 34 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 35 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 36 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 37 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 38 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 39 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 40 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 41 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 42 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 43 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 44 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 45 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 46 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 47 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 48 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 49 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 50 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 51 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 52 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 53 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 54 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 55 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 56 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 57 conserva trazabilidad y responsable para decisiones de soporte.\n\n",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 657,
+      "vector_file": "C14/vector-cache/13ba9f52f4c439c47ac765694614257593c111a3cb1603a700373bf5d3ecac0a.json",
+      "uses": [
+        {
+          "kind": "structural_chunk",
+          "case": "plain-text",
+          "chunk_index": 1,
+          "chunk_id": "evaluation-plain-text:chunk:463cd32b15163e776bdade715e08ce65d1d35a0656408395b2a72018f4866d29:1",
+          "cache_key": "13ba9f52f4c439c47ac765694614257593c111a3cb1603a700373bf5d3ecac0a"
+        }
+      ]
+    },
+    {
+      "cache_key": "b365fa53dfc4ccdf6e65b9d724a6e7dfd9eda14bd5314fa1c3c06b2523310c5b",
+      "input_utf8_sha256": "eb09e57f4c7e44fb7453cb4171c35709af0e8e5ea85fcf84f0406ed002d0a34a",
+      "input": "nota operativa 55 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 56 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 57 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 58 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 59 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 60 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 61 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 62 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 63 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 64 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 65 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 66 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 67 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 68 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa nota operativa 69 conserva trazabilidad y responsable para decisiones de soporte.\n\nLa revisión de consumo de Boreal se celebra el martes a las 09:30 UTC.",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 321,
+      "vector_file": "C14/vector-cache/b365fa53dfc4ccdf6e65b9d724a6e7dfd9eda14bd5314fa1c3c06b2523310c5b.json",
+      "uses": [
+        {
+          "kind": "structural_chunk",
+          "case": "plain-text",
+          "chunk_index": 2,
+          "chunk_id": "evaluation-plain-text:chunk:463cd32b15163e776bdade715e08ce65d1d35a0656408395b2a72018f4866d29:2",
+          "cache_key": "b365fa53dfc4ccdf6e65b9d724a6e7dfd9eda14bd5314fa1c3c06b2523310c5b"
+        }
+      ]
+    },
+    {
+      "cache_key": "b1c09b01424b95c243635cf12a32da04cc2596abcf321b99d66d7ce4cf9b95b1",
+      "input_utf8_sha256": "eb7eb71af82c9262000fe3417c1b60f33d38a087b258c7ca04a3c8ad89eaaa31",
+      "input": "¿Cuánto presupuesto mensual de emergencia tiene Boreal?",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 15,
+      "vector_file": "C14/vector-cache/b1c09b01424b95c243635cf12a32da04cc2596abcf321b99d66d7ce4cf9b95b1.json",
+      "uses": [
+        {
+          "kind": "question",
+          "case": "plain-text",
+          "question_index": 0,
+          "cache_key": "b1c09b01424b95c243635cf12a32da04cc2596abcf321b99d66d7ce4cf9b95b1"
+        }
+      ]
+    },
+    {
+      "cache_key": "cf83e8ea7bde8811e9f00064447885d93b6df26aceb0556e6c66bc5d7a3a3af2",
+      "input_utf8_sha256": "a0be4d5ea9f1ff6966d148a85cc71ec923f05073828af8ec3bd829a42c03e720",
+      "input": "¿Cuándo revisa Boreal su consumo?",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 11,
+      "vector_file": "C14/vector-cache/cf83e8ea7bde8811e9f00064447885d93b6df26aceb0556e6c66bc5d7a3a3af2.json",
+      "uses": [
+        {
+          "kind": "question",
+          "case": "plain-text",
+          "question_index": 1,
+          "cache_key": "cf83e8ea7bde8811e9f00064447885d93b6df26aceb0556e6c66bc5d7a3a3af2"
+        }
+      ]
+    },
+    {
+      "cache_key": "70563172cfd6ebcdbb368d298b238070cc06c35b802fc7f209720311f0d1c781",
+      "input_utf8_sha256": "1ccd7eecdd6e89013a1ef451c35e63c4aa6a89dfe1e9ca59d9d5a502968af839",
+      "input": "Informe de activos Proyecto Álamo Recurso Coste Responsable vm-alamo-01 120 EUR Lucía vm-alamo-02 85 EUR Víctor Condiciones operativas El proyecto Álamo archiva instantáneas los viernes. La retención máxima de instantáneas es de 18 días.",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 73,
+      "vector_file": "C14/vector-cache/70563172cfd6ebcdbb368d298b238070cc06c35b802fc7f209720311f0d1c781.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "digital-pdf",
+          "chunk_index": 0,
+          "cache_key": "70563172cfd6ebcdbb368d298b238070cc06c35b802fc7f209720311f0d1c781"
+        }
+      ]
+    },
+    {
+      "cache_key": "7d821dfa76345b879d997cc54934f1bae5190a78681144bea9b32902e5e9318e",
+      "input_utf8_sha256": "b75e380fb530827060ca5d2e0a79f01e1b993b340ee04454b518ad8863b3bedf",
+      "input": "Informe de activos\nProyecto Álamo\nRecurso Coste Responsable\nvm-alamo-01 120 EUR Lucía\nvm-alamo-02 85 EUR Víctor\n\nCondiciones operativas\nEl proyecto Álamo archiva instantáneas los viernes.\nLa retención máxima de instantáneas es de 18 días.",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 78,
+      "vector_file": "C14/vector-cache/7d821dfa76345b879d997cc54934f1bae5190a78681144bea9b32902e5e9318e.json",
+      "uses": [
+        {
+          "kind": "structural_chunk",
+          "case": "digital-pdf",
+          "chunk_index": 0,
+          "chunk_id": "evaluation-digital-pdf:chunk:0ce76896fd87a4c060176b5a60a3b2be65e45e9cc718848415236c52d802734a:0",
+          "cache_key": "7d821dfa76345b879d997cc54934f1bae5190a78681144bea9b32902e5e9318e"
+        }
+      ]
+    },
+    {
+      "cache_key": "331fcce2624069e8778ea06a1d058b6229f53469e5f5744577b3f8bbe238fbd6",
+      "input_utf8_sha256": "8e31d8318f4ce8aa2557ce947ffedaae38f1f8892f815d398f5be167617a5dc6",
+      "input": "¿Qué coste y responsable tiene vm-alamo-02?",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 14,
+      "vector_file": "C14/vector-cache/331fcce2624069e8778ea06a1d058b6229f53469e5f5744577b3f8bbe238fbd6.json",
+      "uses": [
+        {
+          "kind": "question",
+          "case": "digital-pdf",
+          "question_index": 0,
+          "cache_key": "331fcce2624069e8778ea06a1d058b6229f53469e5f5744577b3f8bbe238fbd6"
+        }
+      ]
+    },
+    {
+      "cache_key": "21b3fc8f0a72e4d8147c053675d91e54bf7019fa9aad45df35ccb152a0665453",
+      "input_utf8_sha256": "bb19a0eaf02161349fe2542ce399e9252b5710d77bc97dcb2e834dbf7a59e7a0",
+      "input": "¿Cuántos días se conservan las instantáneas de Álamo?",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 17,
+      "vector_file": "C14/vector-cache/21b3fc8f0a72e4d8147c053675d91e54bf7019fa9aad45df35ccb152a0665453.json",
+      "uses": [
+        {
+          "kind": "question",
+          "case": "digital-pdf",
+          "question_index": 1,
+          "cache_key": "21b3fc8f0a72e4d8147c053675d91e54bf7019fa9aad45df35ccb152a0665453"
+        }
+      ]
+    },
+    {
+      "cache_key": "4007799bf2ed978496b7199b4be3f8fe38a7cd3fcebfbc70a55a9b4e194c7b30",
+      "input_utf8_sha256": "dbcadf8a2662d119c82d7686f3317ce12bbcc165f75e2e5cabb35aedf2f4b8d1",
+      "input": "Registro escaneado de continuidad El simulacro de recuperación del equipo Cobalto se realiza en noviembre. El objetivo de recuperación de Cobalto es de 45 minutos. Conservar el acta de cada simulacro.",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 48,
+      "vector_file": "C14/vector-cache/4007799bf2ed978496b7199b4be3f8fe38a7cd3fcebfbc70a55a9b4e194c7b30.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "scanned-pdf",
+          "chunk_index": 0,
+          "cache_key": "4007799bf2ed978496b7199b4be3f8fe38a7cd3fcebfbc70a55a9b4e194c7b30"
+        }
+      ]
+    },
+    {
+      "cache_key": "b23cb4bf1ad1dfa4985cd8531df8b8f5df6929f0441e8d65cbf3cb63de4b48b6",
+      "input_utf8_sha256": "e500ccb46c2b2b3cb26595ebb5fbcc56e5f616f3f31ffbd54d95fc68533ee941",
+      "input": "Registro escaneado de continuidad\nEl simulacro de recuperación del equipo Cobalto se realiza en noviembre.\n\nEl objetivo de recuperación de Cobalto es de 45 minutos.\nConservar el acta de cada simulacro.",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 50,
+      "vector_file": "C14/vector-cache/b23cb4bf1ad1dfa4985cd8531df8b8f5df6929f0441e8d65cbf3cb63de4b48b6.json",
+      "uses": [
+        {
+          "kind": "structural_chunk",
+          "case": "scanned-pdf",
+          "chunk_index": 0,
+          "chunk_id": "evaluation-scanned-pdf:chunk:28f8fd358053d0caff9f7af0a1fad78a2f49c32f1425a703913662b40b3e09e1:0",
+          "cache_key": "b23cb4bf1ad1dfa4985cd8531df8b8f5df6929f0441e8d65cbf3cb63de4b48b6"
+        }
+      ]
+    },
+    {
+      "cache_key": "4383a844bb9e89399d01658dab2bce74d641ddeb47f27ed21b2238a5bc0de913",
+      "input_utf8_sha256": "7807a3a8505afc8e638c039fe1f153de691735f9df37176d6c7eb58a2c9ca628",
+      "input": "¿En qué mes se realiza el simulacro de Cobalto?",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 13,
+      "vector_file": "C14/vector-cache/4383a844bb9e89399d01658dab2bce74d641ddeb47f27ed21b2238a5bc0de913.json",
+      "uses": [
+        {
+          "kind": "question",
+          "case": "scanned-pdf",
+          "question_index": 0,
+          "cache_key": "4383a844bb9e89399d01658dab2bce74d641ddeb47f27ed21b2238a5bc0de913"
+        }
+      ]
+    },
+    {
+      "cache_key": "6a7a8eda395b62dca16de87020b8fdcfd4af135bec33587614c9137766a36d18",
+      "input_utf8_sha256": "e286d65284980bf4bf31c3c155c7b0711022351df4d2db309ce1e534c8d313c6",
+      "input": "¿Cuál es el objetivo de recuperación de Cobalto?",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 13,
+      "vector_file": "C14/vector-cache/6a7a8eda395b62dca16de87020b8fdcfd4af135bec33587614c9137766a36d18.json",
+      "uses": [
+        {
+          "kind": "question",
+          "case": "scanned-pdf",
+          "question_index": 1,
+          "cache_key": "6a7a8eda395b62dca16de87020b8fdcfd4af135bec33587614c9137766a36d18"
+        }
+      ]
+    },
+    {
+      "cache_key": "b18650067793e21781e47a608886231886de64b2761d6a7c2e7b37010855685f",
+      "input_utf8_sha256": "055cb193fb3ee849b298aec2455e5ff1df45daa720e175c2bac836bc99069cc6",
+      "input": "Plan del equipo Dalia El equipo Dalia dispone de 720 EUR para pruebas trimestrales. Actividad 0 Responsable de servicio Dalia 0 Actividad 1 Responsable de servicio Dalia 1 Actividad 2 Responsable de servicio Dalia 2 Actividad 3 Responsable de servicio Dalia 3 Actividad 4 Responsable de servicio Dalia 4 Actividad 5 Responsable de servicio Dalia 5 Actividad 6 Responsable de servicio Dalia 6 Actividad 7 Responsable de servicio Dalia 7 Actividad 8 Responsable de servicio Dalia 8 Actividad 9 Responsa",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 136,
+      "vector_file": "C14/vector-cache/b18650067793e21781e47a608886231886de64b2761d6a7c2e7b37010855685f.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "word-modern",
+          "chunk_index": 0,
+          "cache_key": "b18650067793e21781e47a608886231886de64b2761d6a7c2e7b37010855685f"
+        }
+      ]
+    },
+    {
+      "cache_key": "bac700594f83e623ed4da4595cb678d6115c48ff9080ad27ceaa3aa0592c5ad0",
+      "input_utf8_sha256": "26350dbe083fd695b3283eee4b447b40449b4d06d032c320624e352ff073c39d",
+      "input": "sponsable de servicio Dalia 8 Actividad 9 Responsable de servicio Dalia 9 Actividad 10 Responsable de servicio Dalia 10 Actividad 11 Responsable de servicio Dalia 11 Actividad 12 Responsable de servicio Dalia 12 Actividad 13 Responsable de servicio Dalia 13 Actividad 14 Responsable de servicio Dalia 14 Actividad 15 Responsable de servicio Dalia 15 Actividad 16 Responsable de servicio Dalia 16 Actividad 17 Responsable de servicio Dalia 17 Actividad 18 Responsable de servicio Dalia 18 Actividad 19",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 133,
+      "vector_file": "C14/vector-cache/bac700594f83e623ed4da4595cb678d6115c48ff9080ad27ceaa3aa0592c5ad0.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "word-modern",
+          "chunk_index": 1,
+          "cache_key": "bac700594f83e623ed4da4595cb678d6115c48ff9080ad27ceaa3aa0592c5ad0"
+        }
+      ]
+    },
+    {
+      "cache_key": "1d4d8b238c1cdc37ccd4b801bf5c70e94eda24c42d6755d2d6d10e7d2571158c",
+      "input_utf8_sha256": "d1bc1f5f9f721b33aa40b3271b4910dce405a2c2f95b5785772e120bc5303285",
+      "input": "d 18 Responsable de servicio Dalia 18 Actividad 19 Responsable de servicio Dalia 19 Actividad 20 Responsable de servicio Dalia 20 Actividad 21 Responsable de servicio Dalia 21 Actividad 22 Responsable de servicio Dalia 22 Actividad 23 Responsable de servicio Dalia 23 Actividad 24 Responsable de servicio Dalia 24 Actividad 25 Responsable de servicio Dalia 25 Actividad 26 Responsable de servicio Dalia 26 Actividad 27 Responsable de servicio Dalia 27 Actividad 28 Responsable de servicio Dalia 28 Ac",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 132,
+      "vector_file": "C14/vector-cache/1d4d8b238c1cdc37ccd4b801bf5c70e94eda24c42d6755d2d6d10e7d2571158c.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "word-modern",
+          "chunk_index": 2,
+          "cache_key": "1d4d8b238c1cdc37ccd4b801bf5c70e94eda24c42d6755d2d6d10e7d2571158c"
+        }
+      ]
+    },
+    {
+      "cache_key": "94931e40572e614d790abc8160c8f2be4d8e4ff0e4fe8427126fe028be1706c2",
+      "input_utf8_sha256": "561c44909b873e809c3767891e8b177c8140ec25d1b4b4dfd77451977a98a089",
+      "input": "7 Actividad 28 Responsable de servicio Dalia 28 Actividad 29 Responsable de servicio Dalia 29 Actividad 30 Responsable de servicio Dalia 30 Actividad 31 Responsable de servicio Dalia 31 Actividad 32 Responsable de servicio Dalia 32 Actividad 33 Responsable de servicio Dalia 33 Actividad 34 Responsable de servicio Dalia 34 La aprobación del equipo Dalia se registra cada jueves.",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 100,
+      "vector_file": "C14/vector-cache/94931e40572e614d790abc8160c8f2be4d8e4ff0e4fe8427126fe028be1706c2.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "word-modern",
+          "chunk_index": 3,
+          "cache_key": "94931e40572e614d790abc8160c8f2be4d8e4ff0e4fe8427126fe028be1706c2"
+        }
+      ]
+    },
+    {
+      "cache_key": "3eaf61d7a6055d52cc43c7295dc892f3c2012179067165fdbcd6da3acd7cd1cc",
+      "input_utf8_sha256": "83eea1ec4622c60f1d0563421b870467499383aadf2a4690c7851eac857b7a8d",
+      "input": "Plan del equipo Dalia\nEl equipo Dalia dispone de 720 EUR para pruebas trimestrales.\nActividad 0\tResponsable de servicio Dalia 0\nActividad 1\tResponsable de servicio Dalia 1\nActividad 2\tResponsable de servicio Dalia 2\nActividad 3\tResponsable de servicio Dalia 3\nActividad 4\tResponsable de servicio Dalia 4\nActividad 5\tResponsable de servicio Dalia 5\nActividad 6\tResponsable de servicio Dalia 6\nActividad 7\tResponsable de servicio Dalia 7\nActividad 8\tResponsable de servicio Dalia 8\nActividad 9\tResponsable de servicio Dalia 9\nActividad 10\tResponsable de servicio Dalia 10\nActividad 11\tResponsable de servicio Dalia 11\nActividad 12\tResponsable de servicio Dalia 12\nActividad 13\tResponsable de servicio Dalia 13\nActividad 14\tResponsable de servicio Dalia 14\nActividad 15\tResponsable de servicio Dalia 15\nActividad 16\tResponsable de servicio Dalia 16\nActividad 17\tResponsable de servicio Dalia 17\nActividad 18\tResponsable de servicio Dalia 18\nActividad 19\tResponsable de servicio Dalia 19\nActividad 20\tResponsable de servicio Dalia 20\nActividad 21\tResponsable de servicio Dalia 21\nActividad 22\tResponsable de servicio Dalia 22\nActividad 23\tResponsable de servicio Dalia 23\nActividad 24\tResponsable de servicio Dalia 24\nActividad 25\tResponsable de servicio Dalia 25\nActividad 26\tResponsable de servicio Dalia 26\nActividad 27\tResponsable de servicio Dalia 27\nActividad 28\tResponsable de servicio Dalia 28\nActividad 29\tResponsable de servicio Dalia 29\nActividad 30\tResponsable de servicio Dalia 30\nActividad 31\tResponsable de servicio Dalia 31\nActividad 32\tResponsable de servicio Dalia 32\nActividad 33\tResponsable de servicio Dalia 33\nActividad 34\tResponsable de servicio Dalia 34\nLa aprobación del equipo Dalia se registra cada jueves.",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 528,
+      "vector_file": "C14/vector-cache/3eaf61d7a6055d52cc43c7295dc892f3c2012179067165fdbcd6da3acd7cd1cc.json",
+      "uses": [
+        {
+          "kind": "structural_chunk",
+          "case": "word-modern",
+          "chunk_index": 0,
+          "chunk_id": "evaluation-word-modern:chunk:8703b4690f0ff11b21fafea62e9fcbdc58385c2df3b9da9c58a2b12e45109c8c:0",
+          "cache_key": "3eaf61d7a6055d52cc43c7295dc892f3c2012179067165fdbcd6da3acd7cd1cc"
+        }
+      ]
+    },
+    {
+      "cache_key": "a684d04ae50a8878db695ab845dc0dbf60f0a10b5079b120e2a487a663804f43",
+      "input_utf8_sha256": "a17a385ec46f7f3e962f9c4714daeb42033feac9973a89259a6709d659e6a755",
+      "input": "¿Cuál es el presupuesto trimestral de pruebas de Dalia?",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 16,
+      "vector_file": "C14/vector-cache/a684d04ae50a8878db695ab845dc0dbf60f0a10b5079b120e2a487a663804f43.json",
+      "uses": [
+        {
+          "kind": "question",
+          "case": "word-modern",
+          "question_index": 0,
+          "cache_key": "a684d04ae50a8878db695ab845dc0dbf60f0a10b5079b120e2a487a663804f43"
+        }
+      ]
+    },
+    {
+      "cache_key": "844842ad96ec705f6a3a840bcd73c923978b48ec0671eab4906f395c77d8ca65",
+      "input_utf8_sha256": "0e71d4f57df64e38b0d453137cde33aebb0dc42ee7f85eef9ca7ffe95d7b3775",
+      "input": "¿Cuándo registra Dalia su aprobación?",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 13,
+      "vector_file": "C14/vector-cache/844842ad96ec705f6a3a840bcd73c923978b48ec0671eab4906f395c77d8ca65.json",
+      "uses": [
+        {
+          "kind": "question",
+          "case": "word-modern",
+          "question_index": 1,
+          "cache_key": "844842ad96ec705f6a3a840bcd73c923978b48ec0671eab4906f395c77d8ca65"
+        }
+      ]
+    },
+    {
+      "cache_key": "7705c20370df5f0e5db548d50afd99365bafba15f711cdc0b713cf5cac2b573b",
+      "input_utf8_sha256": "018f7b49bab4382f3dfc5964597f51b90745f47db4100e86ae2858ffcb0134e3",
+      "input": "Plan del equipo Encina El equipo Encina dispone de 930 EUR para pruebas trimestrales. Actividad 0 Responsable de servicio Encina 0 Actividad 1 Responsable de servicio Encina 1 Actividad 2 Responsable de servicio Encina 2 Actividad 3 Responsable de servicio Encina 3 Actividad 4 Responsable de servicio Encina 4 Actividad 5 Responsable de servicio Encina 5 Actividad 6 Responsable de servicio Encina 6 Actividad 7 Responsable de servicio Encina 7 Actividad 8 Responsable de servicio Encina 8 Actividad",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 132,
+      "vector_file": "C14/vector-cache/7705c20370df5f0e5db548d50afd99365bafba15f711cdc0b713cf5cac2b573b.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "word-legacy",
+          "chunk_index": 0,
+          "cache_key": "7705c20370df5f0e5db548d50afd99365bafba15f711cdc0b713cf5cac2b573b"
+        }
+      ]
+    },
+    {
+      "cache_key": "6c8c6e110b619ff0c69ca202066d486c63bd6a43df95b545605844df4e097e31",
+      "input_utf8_sha256": "9f79015282507dd877e5cc613769ce313c452cac3148555c198a3f36a4660e13",
+      "input": "vidad 8 Responsable de servicio Encina 8 Actividad 9 Responsable de servicio Encina 9 Actividad 10 Responsable de servicio Encina 10 Actividad 11 Responsable de servicio Encina 11 Actividad 12 Responsable de servicio Encina 12 Actividad 13 Responsable de servicio Encina 13 Actividad 14 Responsable de servicio Encina 14 Actividad 15 Responsable de servicio Encina 15 Actividad 16 Responsable de servicio Encina 16 Actividad 17 Responsable de servicio Encina 17 Actividad 18 Responsable de servicio E",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 129,
+      "vector_file": "C14/vector-cache/6c8c6e110b619ff0c69ca202066d486c63bd6a43df95b545605844df4e097e31.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "word-legacy",
+          "chunk_index": 1,
+          "cache_key": "6c8c6e110b619ff0c69ca202066d486c63bd6a43df95b545605844df4e097e31"
+        }
+      ]
+    },
+    {
+      "cache_key": "a10373e78bcc8670dfa65b1cababa785653c7ecd62f03d31b08ec5e8ff8c42ba",
+      "input_utf8_sha256": "2d52c3a665d71d6e1997bce8703c0e6f7503dd442311b64a5f94c8c63cc74ab9",
+      "input": "o Encina 17 Actividad 18 Responsable de servicio Encina 18 Actividad 19 Responsable de servicio Encina 19 Actividad 20 Responsable de servicio Encina 20 Actividad 21 Responsable de servicio Encina 21 Actividad 22 Responsable de servicio Encina 22 Actividad 23 Responsable de servicio Encina 23 Actividad 24 Responsable de servicio Encina 24 Actividad 25 Responsable de servicio Encina 25 Actividad 26 Responsable de servicio Encina 26 Actividad 27 Responsable de servicio Encina 27 Actividad 28 Respo",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 131,
+      "vector_file": "C14/vector-cache/a10373e78bcc8670dfa65b1cababa785653c7ecd62f03d31b08ec5e8ff8c42ba.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "word-legacy",
+          "chunk_index": 2,
+          "cache_key": "a10373e78bcc8670dfa65b1cababa785653c7ecd62f03d31b08ec5e8ff8c42ba"
+        }
+      ]
+    },
+    {
+      "cache_key": "7cf3cea735e5c60e154fa82ec87a13f9d04dc6222617de1732f70e6ac8c81ac8",
+      "input_utf8_sha256": "89aeb35ae0d156407fd36336cf1437eefe32999579ed02adc37259ec529b01f2",
+      "input": "sponsable de servicio Encina 27 Actividad 28 Responsable de servicio Encina 28 Actividad 29 Responsable de servicio Encina 29 Actividad 30 Responsable de servicio Encina 30 Actividad 31 Responsable de servicio Encina 31 Actividad 32 Responsable de servicio Encina 32 Actividad 33 Responsable de servicio Encina 33 Actividad 34 Responsable de servicio Encina 34 La aprobación del equipo Encina se registra cada lunes.",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 108,
+      "vector_file": "C14/vector-cache/7cf3cea735e5c60e154fa82ec87a13f9d04dc6222617de1732f70e6ac8c81ac8.json",
+      "uses": [
+        {
+          "kind": "legacy_chunk",
+          "case": "word-legacy",
+          "chunk_index": 3,
+          "cache_key": "7cf3cea735e5c60e154fa82ec87a13f9d04dc6222617de1732f70e6ac8c81ac8"
+        }
+      ]
+    },
+    {
+      "cache_key": "3a6eaa9ae3ab720f39f7206280cca64a131f118b23be589316ff84ef4e5a25cb",
+      "input_utf8_sha256": "093963a2cb50c412cdc541b12e3cbaa07a827e6540450fe7d3d271ca87ce6a9e",
+      "input": "Plan del equipo Encina\nEl equipo Encina dispone de 930 EUR para pruebas trimestrales.\nActividad 0\tResponsable de servicio Encina 0\nActividad 1\tResponsable de servicio Encina 1\nActividad 2\tResponsable de servicio Encina 2\nActividad 3\tResponsable de servicio Encina 3\nActividad 4\tResponsable de servicio Encina 4\nActividad 5\tResponsable de servicio Encina 5\nActividad 6\tResponsable de servicio Encina 6\nActividad 7\tResponsable de servicio Encina 7\nActividad 8\tResponsable de servicio Encina 8\nActividad 9\tResponsable de servicio Encina 9\nActividad 10\tResponsable de servicio Encina 10\nActividad 11\tResponsable de servicio Encina 11\nActividad 12\tResponsable de servicio Encina 12\nActividad 13\tResponsable de servicio Encina 13\nActividad 14\tResponsable de servicio Encina 14\nActividad 15\tResponsable de servicio Encina 15\nActividad 16\tResponsable de servicio Encina 16\nActividad 17\tResponsable de servicio Encina 17\nActividad 18\tResponsable de servicio Encina 18\nActividad 19\tResponsable de servicio Encina 19\nActividad 20\tResponsable de servicio Encina 20\nActividad 21\tResponsable de servicio Encina 21\nActividad 22\tResponsable de servicio Encina 22\nActividad 23\tResponsable de servicio Encina 23\nActividad 24\tResponsable de servicio Encina 24\nActividad 25\tResponsable de servicio Encina 25\nActividad 26\tResponsable de servicio Encina 26\nActividad 27\tResponsable de servicio Encina 27\nActividad 28\tResponsable de servicio Encina 28\nActividad 29\tResponsable de servicio Encina 29\nActividad 30\tResponsable de servicio Encina 30\nActividad 31\tResponsable de servicio Encina 31\nActividad 32\tResponsable de servicio Encina 32\nActividad 33\tResponsable de servicio Encina 33\nActividad 34\tResponsable de servicio Encina 34\nLa aprobación del equipo Encina se registra cada lunes.",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 528,
+      "vector_file": "C14/vector-cache/3a6eaa9ae3ab720f39f7206280cca64a131f118b23be589316ff84ef4e5a25cb.json",
+      "uses": [
+        {
+          "kind": "structural_chunk",
+          "case": "word-legacy",
+          "chunk_index": 0,
+          "chunk_id": "evaluation-word-legacy:chunk:bedba839099b99fe1d1f4a20248a43f7a2a6373d15d024b1058a2951c70a701a:0",
+          "cache_key": "3a6eaa9ae3ab720f39f7206280cca64a131f118b23be589316ff84ef4e5a25cb"
+        }
+      ]
+    },
+    {
+      "cache_key": "b08638043f17ca6fccea897063d84d0a9806fe35af3a5a6e36566225f669aab5",
+      "input_utf8_sha256": "72b8c78ab2714cfbbe252b47f893b169fd84d4ab19269042b31d8663b02bc028",
+      "input": "¿Cuál es el presupuesto trimestral de pruebas de Encina?",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 16,
+      "vector_file": "C14/vector-cache/b08638043f17ca6fccea897063d84d0a9806fe35af3a5a6e36566225f669aab5.json",
+      "uses": [
+        {
+          "kind": "question",
+          "case": "word-legacy",
+          "question_index": 0,
+          "cache_key": "b08638043f17ca6fccea897063d84d0a9806fe35af3a5a6e36566225f669aab5"
+        }
+      ]
+    },
+    {
+      "cache_key": "affe47c0604c6ab9e6bd75ab8e2ef430be00194e59af509c5874226612030e0d",
+      "input_utf8_sha256": "76382b0bd90325f597566668f5d8254499b5722af7e35e0c3fa0ceb1e97a1a56",
+      "input": "¿Cuándo registra Encina su aprobación?",
+      "model_alias": "economicon-embedding",
+      "upstream_model": "openrouter/openai/text-embedding-3-small",
+      "dimensions": 1536,
+      "recorded_tokens": 13,
+      "vector_file": "C14/vector-cache/affe47c0604c6ab9e6bd75ab8e2ef430be00194e59af509c5874226612030e0d.json",
+      "uses": [
+        {
+          "kind": "question",
+          "case": "word-legacy",
+          "question_index": 1,
+          "cache_key": "affe47c0604c6ab9e6bd75ab8e2ef430be00194e59af509c5874226612030e0d"
+        }
+      ]
+    }
+  ]
+}

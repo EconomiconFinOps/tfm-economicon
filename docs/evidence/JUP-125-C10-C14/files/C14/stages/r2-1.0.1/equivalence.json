@@ -1,0 +1,37 @@
+{
+  "provider_calls": 0,
+  "all_46_requests_identical": true,
+  "deduplicated_tokens": 5839,
+  "cases": [
+    {
+      "case": "markdown",
+      "complete_new_chunks_metadata_manifest_identical": true,
+      "legacy_document_questions_identical": true
+    },
+    {
+      "case": "plain-text",
+      "complete_new_chunks_metadata_manifest_identical": true,
+      "legacy_document_questions_identical": true
+    },
+    {
+      "case": "digital-pdf",
+      "complete_new_chunks_metadata_manifest_identical": true,
+      "legacy_document_questions_identical": true
+    },
+    {
+      "case": "scanned-pdf",
+      "complete_new_chunks_metadata_manifest_identical": true,
+      "legacy_document_questions_identical": true
+    },
+    {
+      "case": "word-modern",
+      "complete_new_chunks_metadata_manifest_identical": true,
+      "legacy_document_questions_identical": true
+    },
+    {
+      "case": "word-legacy",
+      "complete_new_chunks_metadata_manifest_identical": true,
+      "legacy_document_questions_identical": true
+    }
+  ]
+}

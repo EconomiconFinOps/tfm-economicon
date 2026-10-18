@@ -52,6 +52,7 @@ benchmarks de ADR-0002 conservan su fecha; no son precios actuales.
 | [0021 · Datos de demo por una sola ruta y fecha de referencia](ADR-0021-demo-cost-data-single-path-and-reference-date.md) | 13/10 · Accepted | Generador → API simulada → CLI de ingesta con dos agrupaciones, ventana común 1/7–30/10, casos raros a pruebas y fecha de referencia configurable con tope en la capa de lectura. | JUP-119; [diseño](../../openspec/changes/archive/2026-10-13-jup-119-coherent-cost-data-reference-date/design.md). |
 | [0022 · Ciclo de artefactos documentales](ADR-0022-document-ingestion-artifact-lifecycle.md) | 16/10 · Proposed, retrospectivo | Original privado temporal en MinIO, extracción local aislada y normalizado SQL durable; evita binarios en cola y dependencia del original para recuperar el RAG. | JUP-124; [diseño](../../openspec/changes/archive/2026-10-16-jup-124-advanced-document-ingestion/design.md) y [evidencia histórica](../evidence/JUP-124-validation.md). Implementación aceptada experimentalmente; ratificación documental y reviews humanas pendientes. |
 | [0022 · Resultados de evaluación del asistente en Grafana desde PostgreSQL](ADR-0022-assistant-evaluation-results-in-grafana.md) | 14/10 · Proposed | Guardar los resultados de evaluación en un esquema `evaluation` de `postgres-pgvector` y leerlos con el datasource PostgreSQL de Grafana (rol de solo lectura), con carga reproducible desde los informes y lo no medido como `NULL`; sin Pushgateway, TestData ni plugin Infinity. | JUP-121; [diseño](../../openspec/changes/archive/2026-10-15-jup-121-assistant-evaluation-dashboard/design.md). |
+| [0023 · Chunks estructurales reproducibles](ADR-0023-deterministic-document-chunking.md) | 16/10 · Proposed, retrospectivo | Normalizado canónico, límites en tokens y metadata reconstruible; conserva legacy y publicación atómica sin decisiones de corte mediante modelos. | JUP-125; [diseño](../../openspec/changes/archive/2026-10-16-jup-125-deterministic-document-chunking/design.md) y [matriz de quince criterios](../evidence/JUP-125-validation.md). Implementación previa y correcciones evaluadas; ratificación documental y reviews humanas separadas. |
 
 ### Decisiones ya explicadas fuera de un ADR
 
@@ -126,3 +127,9 @@ Local implementation details, small refactors and documentation-only changes wit
 | Record | Status | Date |
 | --- | --- | --- |
 | [ADR-0013: Tagged cost coverage](ADR-0013-tagged-cost-coverage.md) | Accepted for MVP; user-authorized delivery exception and assisted review documented in JUP-017 evidence | 2026-10-10 |
+
+## Selección del modelo del candidato local B
+
+| Registro | Estado | Fecha |
+| --- | --- | --- |
+| [ADR-0023: selección de modelo para B](ADR-0023-chat-model-selection.md) | Proposed; gateway de la N5 configurado para DeepSeek V4.1 Flash/DeepInfra FP8; forwarding high/exclude y order FP4 del processor documentados. Sin traza upstream; CoreWeave es antecedente. Sin sustituir ADR-0002 ni cambiar el gateway compartido. Renumerado al integrar con el ADR-0022 de Grafana. | 2026-10-17 |
