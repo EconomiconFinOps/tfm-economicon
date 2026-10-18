@@ -7,7 +7,7 @@ Leer la [convención](convencion-compartida.md) y sólo los temas pertinentes.
 Las fechas indican la última actualización documental, no una nueva ejecución de pruebas.
 Los párrafos de B siguientes conservan su corte histórico del 17/10. En la
 reconciliación del 18/10, el PM confirma que el develop fijado `0e686f91` ya
-incorpora PR138/PR140; esa incorporación no acredita esta composición de JUP-125.
+incorpora PR140; esa incorporación no acredita esta composición de JUP-125.
 
 B: PR140 publicada en 09b3c8bb, CI/SQL propias conformes. Reconciliación
 contra 466b083a en fix/JUP-123-local-reconcile: dos conflictos resueltos,
@@ -21,7 +21,7 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 | [Politica de revisiones](revisiones-pr.md) | PR135: reconciliación de5f9dac36 con develop79aa76be tras PR134; excepción y entradas119 intactas, índice unido sin perder chunking. CI/SQL del nuevo candidato y revalidación incremental pendientes; aprobación previa conserva5f9. | 2026-10-18 |
 | [Chunking documental](chunking-documental.md) | JUP-125 / PR #134: reconciliación publicada en f8dd03bc. CI processor detecta siete fallos por huella de política obsoleta; fix mínimo de manifiesto y pin backend preparado, con reproducción y pruebas focales favorables. Controles nuevos y evaluación independiente del fix pendientes; requisitos humanos conservados. | 2026-10-18 |
 | [Ingesta documental](ingesta-documental.md) | JUP-124 / PR #133 integrada en develop 466b083a; extracción Markdown y OCR con límites/documentación propios. La reconciliación local de B preserva esa implementación sin trasladar sus dictámenes a B. | 2026-10-17 |
-| [Colector reutilizable del chat](colector-chat.md) | PR #131 integrada en develop1de41b90. Seguimiento documental PR #138 con validación favorable de Lucía y CI técnica/SQL verdes; revisión de Víctor pendiente. Entrega B independiente. | 2026-10-17 |
+| [Colector reutilizable del chat](colector-chat.md) | PR131 integrada; PR138 reconciliada con develop7f38282c, limitada a tres documentos. Ejemplo/contrato run-info comprobados sin IA; CI y revisión final pendientes. JUP-123 conserva su estado cerrado y los roles originales. | 2026-10-18 |
 | [Dashboard de evaluación del asistente](dashboard-evaluacion-asistente.md) | JUP-121: dashboard de Grafana con tres tipos de medida (A calidad con rúbrica, B negocio, C señales en vivo) alimentado desde el esquema `evaluation` de PostgreSQL con un único comando de carga; implementado y validado en local con la pila real; PR #132 con segunda vuelta de Paris y Lucia atendida (changes `jup-121-lectura-dashboard` y `jup-121-anotaciones-y-fuente`), pulido pendiente de tarjeta. Robustez a la espera de JUP-071; revalidación, revisión técnica y despliegue pendientes. | 2026-10-16 |
 | [Consultas de coste Azure](../evidence/JUP-036-validation.md) | PR69: reconciliación local de `1cf4087f` con develop `a3f514f7` (#129), sin cambios de producto. Corpus1.1.1 conservado; los dos casos SQL pendientes pasan en Cockroach24.1.11. Revisión/validación independientes del nuevo candidato y CI posterior pendientes. | 2026-10-15 |
 | [Memoria: modelos](memoria-modelos.md) | Comparación histórica GLM/DeepSeek conservada. Búsqueda posterior al429: rutas DeepSeek/DeepInfraFP8 yNebius, candidatos MistralLarge4ZDR/MiniMaxM3Together compatibles por catálogo; sin inferencias/activación ni calidad probada. Informeac41b83c; JUP063/109existentes. | 2026-10-17 |
