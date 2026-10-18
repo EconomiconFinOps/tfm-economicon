@@ -150,7 +150,12 @@ class PgVectorQueryStore:
             try:
                 return query(connection)
             except ProgrammingError as exc:
-                if getattr(exc.orig, 'sqlstate', None) != UNDEFINED_COLUMN:
+                # PostgreSQL identifies undefined columns by a 1-based character position;
+                # column_name is not supplied for 42703. Fail closed for unrelated columns.
+                position = getattr(getattr(exc.orig, 'diag', None), 'statement_position', None)
+                missing = (exc.statement or '')[int(position)-1:].split(maxsplit=1) if position and position.isdecimal() else []
+                if (getattr(exc.orig, 'sqlstate', None) != UNDEFINED_COLUMN
+                        or not missing or missing[0] not in {'dc.metadata', 'metadata'}):
                     raise
                 connection.rollback()
                 logger.warning("vector_metadata_unavailable", reason="vector_migration_003_pending")

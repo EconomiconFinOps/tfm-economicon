@@ -284,7 +284,7 @@ campaña de calidad ni mejora general inferida.
 
 Python3.12/Linux propio con dependencias declaradas resueltas para este ensayo;
 no se afirma identidad con requirements.lock ni build productivo. Se conserva
-inventario de versiones externo. Tokenizer tiktoken0.14.0/cl100k_base preparado
+inventario de versiones externo. Tokenizer tiktoken 0.14.0/cl100k_base preparado
 con la herramienta existente fuera de Git, 1.681.126 bytes y SHA256
 `223921b76ee99bde995b7ff738513eef100fb51d18c93597a113bcffe865b2a7`;
 runtime sin red. Se conservaron los incidentes de preparación (instalación aún
@@ -296,3 +296,33 @@ dictámenes nuevos de Revisor y Validador distintos contra referencias PM nuevas
 sin extender los PASS anteriores. CI propia de 0d34c06b es histórica; la CI del
 futuro commit, aprobación humana, pairing de Víctor y reviews de Lucía/Alejandro
 siguen separados. Sin nuevas inferencias, proveedores, gasto, fase3 o cálculos.
+
+## Corrección de las observaciones de Lucía — 18/10/2026
+
+Sobre el original `2de57bd0` (base `466b083a`) se corrige el coste cuadrático del
+título ATX y se limita fallback 003 a metadata. Sin cambios de contenido/chunks,
+procedencia, modelo, tokenizador, rollback, aislamiento o límites. Los errores
+SQLSTATE ajenos y provider ausente se propagan sin reintento ni aviso falso.
+
+Comprobaciones propias: **72 processor + 53 backend PASS**, sin omisiones en esas
+selecciones; incluyen 17 títulos/ATX y 13 casos del fallback. Windows/Python 3.11.7,
+requisitos declarados backend + processor, tiktoken 0.14.0, tokenizador externo
+SHA 223921b7…, pgvector 17 propio desechable, mock 8D y cero llamadas. Antes/después
+de 003 con la misma instancia, rutas normal/acotada, tenant/proveedor, REPEATABLE READ,
+statement_timeout/lock_timeout y cancelación/plazo después del error metadata.
+El negativo 42601 inyectado conserva posición metadata para fijar SQLSTATE;
+los negativos 42P01/provider 42703 se provocan sobre SQL real.
+
+El original con 200.000 espacios supera 5 s y se termina; corregido tarda 0,0022 s
+en una medición local. Otros 55.987 encabezados pequeños conservan la salida.
+No es un benchmark de worker. Se preservan errores iniciales de dependencias/
+Python3.10 y montaje del test al aplicar003 sobre una columna existente; sólo
+se corrigió su preparación. No se atribuyen esos errores al producto.
+
+Prerrequisitos/comandos SQL/citas en el [runbook](../runbooks/document-chunking.md).
+CI 39118246164 y SQL 39118032279 del original son antecedentes PM; no ejecutan
+estos recorridos sin JUP086_VECTOR_TEST_URL. Validación humana favorable con
+límites Alejandro 5562495088 y revisión Lucía 5562572813 conservan SHA 82669e21
+y autoría; aún no acreditan este delta. No se reabren C10/C14/C13 ni notas N1–N4;
+se reutiliza evidencia no afectada por identidad. Evaluación independiente y
+publicación del fix pendientes, separadas de reviews humanas y Request changes.

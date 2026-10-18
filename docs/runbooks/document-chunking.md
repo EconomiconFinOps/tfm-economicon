@@ -98,7 +98,7 @@ Los timestamps y `publication_id` son operativos y no forman parte de la generac
 Los spans normalizados cuentan caracteres Unicode, base 0 y fin exclusivo, no bytes
 ni tokens. `position_contract` define también líneas/páginas y coordenadas.
 
-La migración 003 la aplica `PgVectorStore.initialize()` al arrancar el processor, que en Compose arranca después del backend. Mientras falten sus columnas, el backend recupera como antes de 003 (sin `chunk_metadata` y con la sección leída del texto) y registra `vector_metadata_unavailable`; en cuanto existen, las usa sin reiniciar. Si el processor no arranca porque falta el tokenizador, el error de arranque lo dice expresamente y remite a `build_tokenizer.py`. La migración añade JSONB sin
+La migración 003 la aplica `PgVectorStore.initialize()` al arrancar el processor, que en Compose arranca después del backend. Sólo un error 42703 situado en las referencias `metadata` de esa consulta activa el fallback; errores y columnas ajenas se propagan sin reintento ni diagnóstico de 003 pendiente. Mientras falten sus columnas, el backend recupera como antes de 003 (sin `chunk_metadata` y con la sección leída del texto) y registra `vector_metadata_unavailable`; en cuanto existen, las usa sin reiniciar. Si el processor no arranca porque falta el tokenizador, el error de arranque lo dice expresamente y remite a `build_tokenizer.py`. La migración añade JSONB sin
 reindexar ni cambiar vectores. `{}` identifica chunks antiguos; la recuperación
 mantiene su fallback. Las citas nuevas añaden `source_spans` y `position_contract`
 y conservan los campos públicos existentes. No se inventa una página única para
@@ -205,3 +205,28 @@ Las citas históricas guardadas son una instantánea de la evidencia usada en su
 respuesta; una nueva generación cambia su ID y no reescribe esa conversación.
 La muestra de recuperación es exploratoria y demasiado pequeña para atribuir
 mejora general. No hay semantic chunking, reranking ni modificación del modelo.
+
+## Pruebas SQL de citas y orden de migración
+
+Desde `apps/backend`, estas pruebas necesitan `JUP086_VECTOR_TEST_URL` con el
+pgvector desechable descrito arriba. Instalar en el mismo intérprete requisitos
+de backend **y processor**: las pruebas MD/manual y de coexistencia invocan el
+processor con ese intérprete. Preparar fuera de Git cl100k_base y definir
+`EMBEDDING_TOKENIZER_FILE` si no está en la ruta por defecto. Python 3.11 o posterior
+es necesario (CI usa 3.12). Instalar desde raíz y ejecutar desde backend:
+
+```sh
+python -m pip install -r apps/backend/requirements-dev.txt -r apps/processor/requirements.txt
+# Desde apps/backend, con las variables anteriores preparadas:
+python -B -m pytest -q tests/test_vector_metadata_migration_order.py tests/test_new_document_citation_titles.py tests/test_tenant_isolation_vector.py tests/test_structured_citations.py tests/test_citations.py
+```
+
+Sin la URL SQL, las fixtures omiten los recorridos que la necesitan. Los workflows
+actuales no definen esa variable: CI verde no acredita esas pruebas SQL/citas.
+La prueba 003 configura/restaura SelectorEventLoopPolicy sólo en su proceso Windows.
+Recorre fallback real antes de 003 y metadata después con el mismo almacén, filtros,
+errores ajenos sin reintento y límites tras rollback. Embeddings mock 8D, sin inferencias.
+
+El título Markdown conserva su sintaxis previa; quitar marcadores ATX no retrocede
+sobre espacios largos. `tests/test_parent_metadata.py` fija bordes y limita a 5 s
+un subproceso con 200.000 espacios.

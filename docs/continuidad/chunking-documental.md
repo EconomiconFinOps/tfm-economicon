@@ -217,3 +217,12 @@ funcional ni autorización de merge.
 ## Respuesta a la Revision JUP-125 — 18/10/2026
 
 Lucía publica en `d8a3fdf9` la respuesta a los tres cambios que Víctor pidió sobre `ddd3356c`. Citas: los `.md` subidos mostraban el título con el marcador ATX y el texto manual perdía título y sección frente a develop; `parent_metadata` quita el marcador y el backend vuelve a leer título y sección del texto manual como antes. Orden de arranque (opción a de Lucía): el backend ya no falla si arranca antes de que el processor aplique la migración 003; si falta la columna `metadata`, repite la consulta como antes de 003, registra `vector_metadata_unavailable` y usa la metadata en cuanto existe, sin consultas adicionales en el caso normal. El fallo del tokenizador llega al arranque con su propio motivo. Su entrega documenta las 11 propuestas por Víctor (9 del processor y 2 del backend) más una del orden de migración y otra del motivo del tokenizador, en rojo sin los arreglos y en verde con ellos. Se corrigen las menciones de #133 en borrador. Pendientes: revisión de Víctor, revalidación de Alejandro del delta junto con C13 y comprobación humana de C10/C14, cuyo paquete histórico se enlaza arriba.
+
+## Corrección focal de la revisión de Lucía — 18/10/2026
+
+Título ATX lineal y fallback 003 selectivo sobre metadata; errores ajenos se propagan
+sin reintento. Pruebas propias:72 processor y 53 backend, incluidas 13 de fallback
+con SQL real propio y límites; embeddings mock 8D, sin nuevas llamadas. Prerrequisitos
+de SQL/citas y omisión en CI documentados en el runbook. Original 2de57bd0 y base 466b083a
+conservados; sin reconciliación. Evaluación independiente y publicación pendientes;
+no sustituye reviews humanas ni elimina Request changes.
