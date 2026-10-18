@@ -203,7 +203,7 @@ class LiteLLMClient:
             _RejectRedirectHandler(), _DeadlineHTTPHandler(), _DeadlineHTTPSHandler(),
         )
 
-    def post(self, endpoint: str, payload: dict) -> dict:
+    def post(self, endpoint: str, payload: dict, *, with_usage: bool = False):
         req = request.Request(
             f"{self.base_url}/{endpoint}",
             data=json.dumps(payload, allow_nan=False).encode("utf-8"),
@@ -225,6 +225,9 @@ class LiteLLMClient:
                     req._attempt_deadline.remaining()
                     body = json.loads(raw_body.decode("utf-8"))
                     cost_header = response.headers.get("x-litellm-response-cost")
+                    gateway = {name: response.headers.get(header) for name, header in (
+                        ('call_id', 'x-litellm-call-id'), ('model_id', 'x-litellm-model-id'),
+                        ('model_name', 'x-litellm-model-name'))}
                 if not isinstance(body, dict):
                     raise ValueError("Invalid gateway response")
             except error.HTTPError as exc:
@@ -247,12 +250,13 @@ class LiteLLMClient:
             except (ValueError, UnicodeError):
                 category = "invalid_response"
             else:
+                metadata = _usage_metadata(body, cost_header)
                 logger.info(
                     "litellm_response", alias=payload["model"], status_code=status_code,
                     duration_ms=round((time.perf_counter() - started) * 1000, 2),
-                    **_usage_metadata(body, cost_header),
+                    **metadata,
                 )
-                return body
+                return (body, {**metadata, 'attempts': attempt + 1, 'gateway': gateway}) if with_usage else body
 
             # Leave the handler before raising so no upstream exception is retained.
             logger.warning(

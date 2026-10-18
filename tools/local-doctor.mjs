@@ -232,6 +232,24 @@ function checkConfiguration(vars, contract) {
       errors.push("DEMO_PASSWORD es obligatoria con DEMO_SEED_ENABLED activo: en una linea, no en blanco y no un valor de ejemplo.");
     }
   }
+  const ragFlags = ['RAG_VERIFIED_ENABLED', 'RAG_CONTEXTUAL_ENABLED', 'RAG_HYBRID_ENABLED'];
+  const falseValues = new Set(['0', 'off', 'f', 'false', 'n', 'no']);
+  const enabled = (name) => TRUE_VALUES.has((vars.get(name) || 'false').trim().toLowerCase());
+  for (const name of ragFlags) {
+    const value = (vars.get(name) || 'false').trim().toLowerCase();
+    if (!TRUE_VALUES.has(value) && !falseValues.has(value)) errors.push(`${name} debe ser un booleano valido.`);
+  }
+  const mapping = vars.get('EMBEDDING_MAPPING_SHA256') ?? '';
+  const deployment = vars.get('EMBEDDING_DEPLOYMENT_ID') ?? '';
+  if (deployment && !/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(deployment)) errors.push('EMBEDDING_DEPLOYMENT_ID debe identificar el despliegue acreditado con un identificador acotado.');
+  if (mapping && !/^[0-9a-f]{64}$/.test(mapping)) errors.push('EMBEDDING_MAPPING_SHA256 debe identificar el mapeo efectivo verificado.');
+  if (enabled('RAG_VERIFIED_ENABLED') && ((vars.get('EMBEDDING_DIMENSION') || '8') !== '1536'
+      || ((vars.get('EMBEDDING_PROVIDER') || 'mock').trim().toLowerCase() === 'litellm' && (!mapping || !deployment)))) {
+    errors.push('RAG_VERIFIED_ENABLED requiere EMBEDDING_DIMENSION=1536, EMBEDDING_MAPPING_SHA256 y EMBEDDING_DEPLOYMENT_ID con proveedor litellm.');
+  }
+  if ((enabled('RAG_CONTEXTUAL_ENABLED') || enabled('RAG_HYBRID_ENABLED')) && !enabled('RAG_VERIFIED_ENABLED')) {
+    errors.push('RAG_CONTEXTUAL_ENABLED y RAG_HYBRID_ENABLED requieren RAG_VERIFIED_ENABLED.');
+  }
   return errors;
 }
 

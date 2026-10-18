@@ -84,6 +84,27 @@ def test_non_completed_job_cannot_reprocess(case,monkeypatch):
     assert not provider.calls and store.saved is None
 
 
+def test_reprocess_needs_an_existing_vector_document(case, monkeypatch):
+    operation, scope, provider, store, _ = setup(case, monkeypatch)
+    store.publication = lambda *_: None
+    with pytest.raises(UnsupportedReprocessing, match='No existing vector document'):
+        operation.execute(**scope)
+    assert not provider.calls and store.saved is None
+
+
+def test_reprocess_rechecks_authority_after_the_slow_embedding_calls(case, monkeypatch):
+    operation, scope, provider, store, _ = setup(case, monkeypatch)
+    original = provider.embed
+    def embed_and_lose_authority(value):
+        with case[0].begin() as connection:
+            connection.execute(text("UPDATE jobs SET status='running'"))
+        return original(value)
+    provider.embed = embed_and_lose_authority
+    with pytest.raises(PermissionError):
+        operation.execute(**scope)
+    assert store.saved is None and store.marker == 'previous'
+
+
 def test_structured_pipeline_embeds_only_content_and_accepts_manual_input():
     store,provider=Store(),Provider()
     agent=SimpleNamespace(invoke=lambda *_args,**_kwargs:{'provider':'mock'})
