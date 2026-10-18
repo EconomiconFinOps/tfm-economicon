@@ -98,8 +98,7 @@ Los timestamps y `publication_id` son operativos y no forman parte de la generac
 Los spans normalizados cuentan caracteres Unicode, base 0 y fin exclusivo, no bytes
 ni tokens. `position_contract` define también líneas/páginas y coordenadas.
 
-La migración 003 debe ejecutarse con `PgVectorStore.initialize()` en la preparación
-del processor antes de servir consultas con el nuevo backend. Añade JSONB sin
+La migración 003 la aplica `PgVectorStore.initialize()` al arrancar el processor, que en Compose arranca después del backend. Mientras falten sus columnas, el backend recupera como antes de 003 (sin `chunk_metadata` y con la sección leída del texto) y registra `vector_metadata_unavailable`; en cuanto existen, las usa sin reiniciar. Si el processor no arranca porque falta el tokenizador, el error de arranque lo dice expresamente y remite a `build_tokenizer.py`. La migración añade JSONB sin
 reindexar ni cambiar vectores. `{}` identifica chunks antiguos; la recuperación
 mantiene su fallback. Las citas nuevas añaden `source_spans` y `position_contract`
 y conservan los campos públicos existentes. No se inventa una página única para

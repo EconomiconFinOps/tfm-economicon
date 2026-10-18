@@ -5,6 +5,7 @@ import time
 
 import structlog
 from sqlalchemy import bindparam, create_engine, text
+from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.pool import NullPool
 
@@ -14,6 +15,7 @@ from app.services.citations import DocumentCitations, structured_location
 MAX_TOP_K = 20
 logger = structlog.get_logger("vector_store")
 MAX_COSINE_DISTANCE = 2.0
+UNDEFINED_COLUMN = "42703"
 
 
 class EmbeddingDimensionMismatch(StartupError):
@@ -61,7 +63,7 @@ class PgVectorQueryStore:
             parameters["provider"] = provider
         if max_distance is not None:
             parameters["max_distance"] = float(max_distance)
-        def query(connection):
+        def query(connection, structured=True):
             def timeout():
                 if deadline is None: return
                 remaining=deadline-time.time()
@@ -70,6 +72,8 @@ class PgVectorQueryStore:
                 connection.execute(text("SELECT set_config('statement_timeout', :timeout, true), "
                     "set_config('lock_timeout', :timeout, true)"),{'timeout':str(milliseconds)})
             timeout()
+            chunk_metadata = "dc.metadata" if structured else "NULL"
+            document_metadata = "metadata" if structured else "CAST('{}' AS jsonb)"
             rows = connection.execute(
                 text(
                     f"""
@@ -82,7 +86,7 @@ class PgVectorQueryStore:
                             dc.chunk_index AS chunk_index,
                             kd.source AS source,
                             dc.content AS content,
-                            dc.metadata AS metadata,
+                            {chunk_metadata} AS metadata,
                             (ce.embedding <=> CAST(:query_embedding AS vector)) AS distance
                         FROM knowledge_documents kd
                         JOIN document_chunks dc ON dc.document_id = kd.id
@@ -103,8 +107,8 @@ class PgVectorQueryStore:
             # transaction snapshot as retrieval (including concurrent reingestion).
             timeout()
             documents = connection.execute(
-                text("""
-                    SELECT id, text_content, metadata FROM knowledge_documents
+                text(f"""
+                    SELECT id, text_content, {document_metadata} AS metadata FROM knowledge_documents
                     WHERE tenant_id = :tenant_id AND id IN :document_ids
                 """).bindparams(bindparam("document_ids", expanding=True)),
                 {"tenant_id": tenant_id, "document_ids": list({row.document_id for row in rows})},
@@ -140,13 +144,25 @@ class PgVectorQueryStore:
                 for row in rows
             ]
 
+        def tolerant(connection):
+            # Vector migration 003 is applied by the processor, which starts after the
+            # backend: until its columns exist, retrieve as before 003 instead of failing.
+            try:
+                return query(connection)
+            except ProgrammingError as exc:
+                if getattr(exc.orig, 'sqlstate', None) != UNDEFINED_COLUMN:
+                    raise
+                connection.rollback()
+                logger.warning("vector_metadata_unavailable", reason="vector_migration_003_pending")
+                return query(connection, structured=False)
+
         if deadline is not None:
             if not isinstance(deadline,(int,float)) or not math.isfinite(deadline) or cancelled is None:
                 raise ValueError('Invalid retrieval deadline.')
-            return self._bounded_query(query,deadline,cancelled)
+            return self._bounded_query(tolerant,deadline,cancelled)
         with self.engine.connect().execution_options(isolation_level="REPEATABLE READ") as connection:
             self._capture_peer(connection)
-            return query(connection)
+            return tolerant(connection)
 
     def _bounded_query(self, query, deadline, cancelled):
         """Request-owned async IO: no shared pool checkout or synchronous read."""
