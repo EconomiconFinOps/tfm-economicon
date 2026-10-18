@@ -365,6 +365,10 @@ class ComposeIntegrationTests(unittest.TestCase):
                             release = deploy.prepare(root, source, sha, slot)
                             config = json.loads((release / "compose.json").read_text())
                             services = config["services"]
+                            for flag in ['RAG_VERIFIED_ENABLED', 'RAG_CONTEXTUAL_ENABLED', 'RAG_HYBRID_ENABLED']:
+                                self.assertEqual(str(services['backend']['environment'][flag]).lower(), 'false')
+                            self.assertEqual(services['backend']['environment']['EMBEDDING_MAPPING_SHA256'], '')
+                            self.assertEqual(services['processor']['environment']['EMBEDDING_MAPPING_SHA256'], '')
                             stored = json.loads((root / "secrets.json").read_text())
                             self.assertTrue(services["grafana"]["environment"]["GRAFANA_EVALUATION_DB_PASSWORD"]
                                             == stored["GRAFANA_EVALUATION_DB_PASSWORD"])

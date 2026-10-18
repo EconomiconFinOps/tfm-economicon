@@ -231,3 +231,20 @@ y OpenSpec80/80. Diff propio frente a develop limpio; avisos de whitespace
 en evidencias JUP125 heredados de base, no corregidos en esta PR.
 Producto/configuracion/politica identicos a develop por comparacion Git;
 docs/demo/JUP-065 identico a ed9a172a. Runtime actual no ejecutado.
+
+
+## Base final tras PR139 — 18/10/2026
+
+Por nueva prioridad humana, incorporar develop6d9e6710b7306faced8f811121a757267789120f
+a e26219fa sin tocar otras PR. Unico conflicto: indice de continuidad;
+conservar demo e indices de embeddings. Producto/configuracion son los de
+develop; gobernanza y CI sin cambios respecto a e26219fa. Paquete demo
+intacto: reutilizar pruebas de integridad3/3 y gobernanza137/137 del18/10
+por identidad de entradas, sin presentarlas como ejecuciones nuevas.
+Repetir verificador y compatibilidad CI, validar OpenSpec actualizado y
+comprobar CI push/PR/SQL/policy del SHA publicado. Resultados finales en
+recibo GitHub y materiales/07-evidencias/PR63-base139-20261018/ del workspace.
+La nueva recuperacion/contexto de PR139 exige revalidacion del entorno
+y consultas afectadas; ninguna evidencia runtime antigua se traslada por
+identidad. Ensayo NOT_RUN, sin inferencias, consumo ni servicios compartidos.
+Paris Revision y Victor Validacion sobre candidato final; aviso unico por HAL.

@@ -189,6 +189,14 @@ class ChatContext:
             from app.core.config import get_settings
             settings = get_settings()
             current()
+            from app.services.vector_store import PgVectorQueryStore
+            bounded = {'deadline': deadline, 'cancelled': cancelled} if deadline is not None and isinstance(store, PgVectorQueryStore) else {}
+            plan = None
+            if isinstance(store, PgVectorQueryStore):
+                stage = 'retrieval_plan'
+                plan = store.resolve_retrieval_plan(scope['tenant_id'], enabled=settings.rag_verified_enabled,
+                    contextual=settings.rag_contextual_enabled, hybrid=settings.rag_hybrid_enabled, **bounded)
+            stage = 'embedding'
             if deadline is not None:
                 from app.services.embedding_provider import LiteLLMEmbeddingProvider
                 if isinstance(provider,LiteLLMEmbeddingProvider):
@@ -208,11 +216,12 @@ class ChatContext:
                                     yield response
                                 finally: holder.pop('response',None)
                     provider._transport=BoundedTransport()
-            vector = provider.embed(question)
+            vector = (store.embed_query(scope['tenant_id'], question, provider, plan, **bounded)
+                      if isinstance(store, PgVectorQueryStore) else provider.embed(question))
             current()
             stage='vector_query'
-            from app.services.vector_store import PgVectorQueryStore
-            bounded={'deadline':deadline,'cancelled':cancelled} if deadline is not None and isinstance(store,PgVectorQueryStore) else {}
+            if plan is not None:
+                bounded = {**bounded, 'plan': plan, 'question': question}
             if isinstance(store,PgVectorQueryStore):
                 bounded['neighbor_seed_count']=min(settings.retrieval_top_k,evidence_limit,20)
                 from app.core.chat_policy_sections import policy_topic, SECTIONS
@@ -254,6 +263,9 @@ class ChatContext:
             chunks = contiguous_priority(chunks, primary)
             stage='citations'
             citations = resolve_citations([item['chunk_id'] for item in chunks],chunks,scope['tenant_id'])
+            if holder is not None and isinstance(store, PgVectorQueryStore):
+                holder['retrieval'] = [{'chunk_id': item['chunk_id'], 'distance': item['distance'],
+                                        **item.get('retrieval', {})} for item in chunks]
             evidence = [{'id':item['chunk_id'],'kind':'corpus','title':item['title'],'source':item['source'],
                          'content':item['content'], 'provenance':{
                              'document_id':item['document_id'], 'chunk_index':item['chunk_index'],
@@ -308,6 +320,8 @@ class ChatContext:
             effective['manifest'].update(evidence_ids=[item['id'] for item in effective['authorized_evidence']],
                 tool_result={'tool_call_id':identifier,'variable_tokens':counted,
                              'content_sha256':hashlib.sha256(content.encode()).hexdigest(),'omissions':omissions})
+            if holder.get('retrieval'):
+                effective['manifest']['retrieval'] = [item for item in holder['retrieval'] if item['chunk_id'] in ids]
             if time.time()>=deadline: raise TimeoutError('Retrieval deadline.')
             return result,effective
         finally:

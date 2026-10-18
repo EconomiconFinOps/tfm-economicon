@@ -1,0 +1,15 @@
+{
+  "provider": "litellm",
+  "model_id": "openai/text-embedding-3-small",
+  "mapping_sha256": "1c24c49602cc14f2194932a9fffad3d12cdc87b946e8d239ac67e09dc36105ae",
+  "tokenizer_id": "tiktoken/0.14.0:cl100k_base:223921b76ee99bde995b7ff738513eef100fb51d18c93597a113bcffe865b2a7",
+  "preparation": "contextual_embedding_v1",
+  "dimension": 1536,
+  "distance": "cosine",
+  "config_version": "embedding_config_v1",
+  "query_preparation": "plain_query_v1",
+  "context_tokens": 128,
+  "max_input_tokens": 1024,
+  "max_input_bytes": 16384,
+  "storage_format": "decimal6_v1"
+}

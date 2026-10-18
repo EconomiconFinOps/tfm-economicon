@@ -75,7 +75,7 @@ def test_jup023_real_embeddings_send_dimensions_and_preserve_store_identity(
     litellm_settings, gateway_transport,
 ):
     vector = [0.25] * 1536
-    gateway_transport.responses.append((200, {"data": [{"embedding": vector}]}, {}))
+    gateway_transport.responses.append((200, {"model": "text-embedding-3-small", "data": [{"index": 0, "embedding": vector}]}, {}))
     provider = get_embedding_provider("litellm", 1536, settings=litellm_settings)
     store = FakeVectorStore()
     runner = PipelineRunner(FakeAgentRuntime(), TextChunker(32, 8), provider, store)
@@ -87,7 +87,7 @@ def test_jup023_real_embeddings_send_dimensions_and_preserve_store_identity(
     assert request.full_url == "http://gateway.invalid:4000/v1/embeddings"
     assert request.get_method() == "POST"
     assert json.loads(request.data) == {
-        "model": "economicon-embedding", "input": "synthetic document", "dimensions": 1536,
+        "model": "economicon-embedding", "input": ["synthetic document"], "dimensions": 1536, "encoding_format": "float",
     }
     assert request.get_header("Authorization") == "Bearer jup023-synthetic-virtual-key"
     assert request.timeout == 30
@@ -103,7 +103,7 @@ def test_jup023_invalid_embeddings_fail_before_persistence(litellm_settings, gat
         vector.pop()
     else:
         vector[0] = invalid
-    gateway_transport.responses.append((200, {"data": [{"embedding": vector}]}, {}))
+    gateway_transport.responses.append((200, {"model": "text-embedding-3-small", "data": [{"index": 0, "embedding": vector}]}, {}))
     provider = get_embedding_provider("litellm", 1536, settings=litellm_settings)
     from app.clients.litellm import ProviderError
 

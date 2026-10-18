@@ -333,3 +333,26 @@ def test_the_connection_is_opened_with_the_time_left_of_the_attempt(monkeypatch)
         monkeypatch.setattr(socket, "socket", Recording)
         assert provider.embed("x") == VECTOR
     assert len(seen) == 1 and seen[0] is not None and 0 < seen[0] <= 2.0
+
+
+@pytest.mark.parametrize('defect', [None, 'missing_id', 'wrong_id', 'wrong_header_model', 'wrong_body_model', 'missing_mapping'])
+def test_verified_transport_binds_native_deployment_without_rewriting_body(defect):
+    body = {'model': 'economicon-embedding', 'data': [{'index': 0, 'embedding': VECTOR}]}
+    headers = {'x-litellm-model-id': 'deployment-1',
+               'x-litellm-model-name': 'openrouter/openai/text-embedding-3-small'}
+    if defect == 'missing_id': headers.pop('x-litellm-model-id')
+    elif defect == 'wrong_id': headers['x-litellm-model-id'] = 'another-deployment'
+    elif defect == 'wrong_header_model': headers['x-litellm-model-name'] = 'openrouter/another-1536-model'
+    elif defect == 'wrong_body_model': body['model'] = 'another-1536-model'
+    with FakeGateway((200, body, headers)) as gateway:
+        provider = provider_for(gateway)
+        provider.expected_model = 'openai/text-embedding-3-small'
+        provider.deployment_id, provider.mapping_sha256 = 'deployment-1', 'a' * 64
+        if defect == 'missing_mapping': provider.mapping_sha256 = None
+        if defect is None:
+            assert provider.embed('same authorized question') == VECTOR
+        else:
+            with pytest.raises(ProviderError) as failure: provider.embed('same authorized question')
+            assert failure.value.category == 'invalid_response'
+    assert len(gateway.requests) == 1
+    assert gateway.requests[0]['body']['model'] == 'economicon-embedding'

@@ -38,6 +38,11 @@ class Settings(BaseSettings):
     embedding_provider: str = "mock"
     embedding_dimension: int = 8
     embedding_model: str = "economicon-embedding"
+    embedding_mapping_sha256: str | None = Field(default=None, pattern=r'^[0-9a-f]{64}$')
+    embedding_deployment_id: str | None = Field(default=None, strict=True, pattern=r'^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$')
+    rag_verified_enabled: bool = False
+    rag_contextual_enabled: bool = False
+    rag_hybrid_enabled: bool = False
     litellm_base_url: str = "http://litellm:4000/v1"
     litellm_api_key: SecretStr | None = None
     embedding_timeout_seconds: float = 10.0
@@ -52,6 +57,11 @@ class Settings(BaseSettings):
     health_provider_api_key: SecretStr | None = None
     health_provider_policy_path: str | None = None
     cost_reference_date: date | None = None
+
+    @field_validator('embedding_mapping_sha256', 'embedding_deployment_id', mode='before')
+    @classmethod
+    def empty_mapping(cls, value):
+        return None if value == '' else value
 
     @field_validator("cost_reference_date", mode="before")
     @classmethod
@@ -207,6 +217,12 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_embedding_configuration(self) -> "Settings":
+        if self.rag_verified_enabled and (self.embedding_dimension != 1536
+                or (self.embedding_provider == 'litellm' and (self.embedding_mapping_sha256 is None
+                    or self.embedding_deployment_id is None))):
+            raise ValueError('Verified retrieval requires dimension 1536 and an accredited embedding mapping/deployment binding')
+        if (self.rag_contextual_enabled or self.rag_hybrid_enabled) and not self.rag_verified_enabled:
+            raise ValueError('Contextual/hybrid flags require verified retrieval')
         if (self.embedding_max_retries + 1) * self.embedding_timeout_seconds > MAX_QUESTION_ATTEMPT_SECONDS:
             raise ValueError(
                 "embedding_timeout_seconds and embedding_max_retries together may not exceed "

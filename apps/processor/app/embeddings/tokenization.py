@@ -12,7 +12,7 @@ from app.embeddings.tokenizer_resource import (
 
 
 class EmbeddingTokenizerUnavailable(StartupError, ValueError):
-    """Startup names the missing pinned tokenizer instead of a generic dependency failure."""
+    """Preserve the operator-facing tokenizer diagnostic at the startup boundary."""
 
 
 class EmbeddingTokenCounter:

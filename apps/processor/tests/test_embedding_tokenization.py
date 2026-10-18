@@ -39,3 +39,24 @@ def test_missing_resource_reaches_startup_with_its_own_reason(tmp_path):
         EmbeddingTokenCounter(tmp_path/'missing.tiktoken')
     with pytest.raises(StartupError, match='Embedding tokenizer resource is missing.*build_tokenizer.py'):
         start()
+
+
+@pytest.mark.parametrize('failure', ['version', 'hash'])
+def test_invalid_tokenizer_keeps_the_closed_startup_reason(tmp_path, monkeypatch, failure):
+    from app.core.runtime_secrets import StartupError, startup_boundary
+    from app.embeddings import tokenization
+    from app.embeddings.tokenizer_resource import RESOURCE_BYTES
+    wrong = tmp_path/'wrong.tiktoken'
+    if failure == 'version':
+        monkeypatch.setattr(tokenization, 'version', lambda _: 'wrong-version')
+        expected = 'library version mismatch'
+    else:
+        wrong.write_bytes(b'x' * RESOURCE_BYTES)
+        expected = 'does not match the pinned SHA256'
+    monkeypatch.setattr('requests.get', lambda *_args, **_kwargs: pytest.fail('No runtime network'))
+    @startup_boundary
+    def start():
+        EmbeddingTokenCounter(wrong)
+    with pytest.raises(StartupError, match=expected) as caught:
+        start()
+    assert isinstance(caught.value, ValueError)
