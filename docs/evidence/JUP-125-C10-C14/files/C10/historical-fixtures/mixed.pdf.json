@@ -1,0 +1,76 @@
+{
+  "blocks": [
+    {
+      "bbox": [
+        40.0,
+        39.31200000000001,
+        176.96000000000004,
+        55.31200000000001
+      ],
+      "coordinate_system": "pdf_points",
+      "kind": "text",
+      "page": 1,
+      "text": "Cloud costs page 1"
+    },
+    {
+      "bbox": [
+        40.0,
+        72.48400000000004,
+        189.39999999999995,
+        84.48400000000004
+      ],
+      "coordinate_system": "pdf_points",
+      "kind": "text",
+      "page": 1,
+      "text": "Compute budget is 42 USD."
+    },
+    {
+      "bbox": [
+        193,
+        733,
+        1149,
+        790
+      ],
+      "coordinate_system": "render_pixels",
+      "kind": "text",
+      "method": "ocr",
+      "page": 2,
+      "text": "Scanned storage budget 73 USD"
+    }
+  ],
+  "document_id": "141fbfbd-0f17-5922-927f-7a27cec71f4b",
+  "extraction_method": "pdfplumber+tesseract",
+  "file_metadata": {
+    "Author": "anonymous",
+    "CreationDate": "D:20261015223526+00'00'",
+    "Creator": "anonymous",
+    "Keywords": "",
+    "ModDate": "D:20261015223526+00'00'",
+    "Producer": "ReportLab PDF Library - (opensource)",
+    "Subject": "unspecified",
+    "Title": "untitled",
+    "Trapped": "False",
+    "ocr_pages": [
+      2
+    ],
+    "page_count": 2
+  },
+  "origin": {
+    "artifact_uri": null,
+    "content_hash": "0fd842345872ceba3957064faaf1837bcc52be150bdaa4501e1ea63e2b6ade62",
+    "file_size": 18920,
+    "filename": "mixed.pdf",
+    "source": "document",
+    "tenant_id": "tenant-rag2-fixture",
+    "uploaded_by": "synthetic-fixture-operator"
+  },
+  "original_format": "pdf",
+  "result": "extracted",
+  "schema_version": 1,
+  "tenant_id": "tenant-rag2-fixture",
+  "text": "Cloud costs page 1\nCompute budget is 42 USD.\n\nScanned storage budget 73 USD",
+  "warnings": [
+    "page_2_ocr_layout_is_approximate",
+    "pdf_reading_order_is_extractor_order_not_semantic_guarantee"
+  ]
+}

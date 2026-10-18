@@ -1,0 +1,182 @@
+{
+  "purpose": "Recuperación histórica C10/C14; no aceptación del candidato actual",
+  "prepared_date_canary": "2026-10-18",
+  "official_context_observed_utc": "2026-10-17T23:08:14Z",
+  "current_head_from_PM": "ddd3356c8689b45acb3d419a214ed68194029e2b",
+  "current_base_from_PM": "466b083a6dae97f418cfb1d9156325749c6d7304",
+  "C10": [
+    {
+      "filename": "digital.pdf",
+      "sha256": "62d493579a6dfbe7707a95e1bbe18aed4e382c9fac6dcb85ae5342ea2f5b322e",
+      "normalized_sha256": "03e2d12551ce0876c57dedb8a4bd9d699502022981dfea07d14de1201628fe4f",
+      "characters": 90,
+      "blocks": 4,
+      "method": "pdfplumber",
+      "document_id": "5ec41628-6ace-5cae-96a4-49d7b91d7da0",
+      "original": "C10/originals/digital.pdf",
+      "normalized": "C10/normalized/digital.pdf.json",
+      "historical_fixture": "C10/historical-fixtures/digital.pdf.json",
+      "sql_receipt": "C10/receipts/principal-sql-flow.json",
+      "complete_sql_rows_available": false
+    },
+    {
+      "filename": "hybrid.pdf",
+      "sha256": "b499c2cd816d211476fedcc46644ef0c63b3f3b13ef36f689985582cada597c3",
+      "normalized_sha256": "70ab903b93ac3b225e1e5a7747ff76e7f935ee9e5a6bf5c191352a141604c121",
+      "characters": 74,
+      "blocks": 3,
+      "method": "pdfplumber+tesseract",
+      "document_id": "ece8f92f-0c9b-57b8-9ff8-4149711a3600",
+      "original": "C10/originals/hybrid.pdf",
+      "normalized": "C10/normalized/hybrid.pdf.json",
+      "historical_fixture": "C10/historical-fixtures/hybrid.pdf.json",
+      "sql_receipt": "C10/receipts/principal-sql-flow.json",
+      "complete_sql_rows_available": false
+    },
+    {
+      "filename": "mixed.pdf",
+      "sha256": "0fd842345872ceba3957064faaf1837bcc52be150bdaa4501e1ea63e2b6ade62",
+      "normalized_sha256": "4010e3d50fe0fefaa0f4b7eb873f593b65bf8d98ea46a65d9c0fbf3f376d8b4f",
+      "characters": 75,
+      "blocks": 3,
+      "method": "pdfplumber+tesseract",
+      "document_id": "141fbfbd-0f17-5922-927f-7a27cec71f4b",
+      "original": "C10/originals/mixed.pdf",
+      "normalized": "C10/normalized/mixed.pdf.json",
+      "historical_fixture": "C10/historical-fixtures/mixed.pdf.json",
+      "sql_receipt": "C10/receipts/principal-sql-flow.json",
+      "complete_sql_rows_available": false
+    },
+    {
+      "filename": "plain.txt",
+      "sha256": "c88e4890e5153470f74985e9e45785439dbce2eb7700d2ba31704afabc436f20",
+      "normalized_sha256": "524c60da2c6cfb6a78380864afadf1f168a4cfce1f4b79ea96ba4f58d0967f8b",
+      "characters": 40,
+      "blocks": 1,
+      "method": "utf-8",
+      "document_id": "75f77ec6-4215-564c-971e-441eafb9bbfc",
+      "original": "C10/originals/plain.txt",
+      "normalized": "C10/normalized/plain.txt.json",
+      "historical_fixture": "C10/historical-fixtures/plain.txt.json",
+      "sql_receipt": "C10/receipts/principal-sql-flow.json",
+      "complete_sql_rows_available": false
+    },
+    {
+      "filename": "scanned.pdf",
+      "sha256": "edb53e067d9415ff4cb1a90a23c6437a108772c3628f5ab036189b97fd6b7378",
+      "normalized_sha256": "3d14a228b4b4766de1be6fb9389dc5768bda5de25a29d14f24e819f803ea18e7",
+      "characters": 29,
+      "blocks": 1,
+      "method": "pdfplumber+tesseract",
+      "document_id": "ef32c7ac-79be-5061-ba27-01a1f0e9f6df",
+      "original": "C10/originals/scanned.pdf",
+      "normalized": "C10/normalized/scanned.pdf.json",
+      "historical_fixture": "C10/historical-fixtures/scanned.pdf.json",
+      "sql_receipt": "C10/receipts/principal-sql-flow.json",
+      "complete_sql_rows_available": false
+    },
+    {
+      "filename": "structure.doc",
+      "sha256": "00770205d1db28a9664bc10b86e2437245b3ab65a1b7f8f47a5390ad2ea9d18d",
+      "normalized_sha256": "ca928e998f697b7d7d0dd7461aecbd2612ec3683b41010a486a0af0776cd8f5b",
+      "characters": 68,
+      "blocks": 4,
+      "method": "libreoffice+python-docx",
+      "document_id": "380f19a4-7c60-562d-b6c9-5f735829784c",
+      "original": "C10/originals/structure.doc",
+      "normalized": "C10/normalized/structure.doc.json",
+      "historical_fixture": "C10/historical-fixtures/structure.doc.json",
+      "sql_receipt": "C10/receipts/principal-sql-flow.json",
+      "complete_sql_rows_available": false
+    },
+    {
+      "filename": "structure.docx",
+      "sha256": "d706e357422a198a48a2f05e2d61c075b817c26a045541e47464f4e586ae4889",
+      "normalized_sha256": "7bec683b956406a1cec7a5f6f7a11cfe332a8181acf5143f7f589ed6e913df4d",
+      "characters": 68,
+      "blocks": 4,
+      "method": "python-docx",
+      "document_id": "6d3d1004-233e-5348-96d4-0fd0799609d0",
+      "original": "C10/originals/structure.docx",
+      "normalized": "C10/normalized/structure.docx.json",
+      "historical_fixture": "C10/historical-fixtures/structure.docx.json",
+      "sql_receipt": "C10/receipts/principal-sql-flow.json",
+      "complete_sql_rows_available": false
+    },
+    {
+      "filename": "structure.md",
+      "sha256": "04e27e9196692ab1f083a7595f27b005eed8e50eaf815e3de692225b4b6e9f3e",
+      "normalized_sha256": "de66ce3fc5b7d83cc0d10797b307215163a25e3d79e2a28659af38d56d7e67eb",
+      "characters": 116,
+      "blocks": 7,
+      "method": "markdown-it",
+      "document_id": "5bd3dea2-4875-5465-8709-4d95d11705d7",
+      "original": "C10/originals/structure.md",
+      "normalized": "C10/normalized/structure.md.json",
+      "historical_fixture": "C10/historical-fixtures/structure.md.json",
+      "sql_receipt": "C10/receipts/principal-sql-flow.json",
+      "complete_sql_rows_available": false
+    },
+    {
+      "filename": "table.pdf",
+      "sha256": "efecbcd403c28374e1a385c8d4c6b6df288afeeaa223162fca5ab769d1948a8e",
+      "normalized_sha256": "3839c550f1c3f9ff24ca9a31685c36e21779392b938870f20be2a9627a8c6b96",
+      "characters": 67,
+      "blocks": 5,
+      "method": "pdfplumber",
+      "document_id": "39ddd68e-4cf7-5b23-bbea-917e2aac6613",
+      "original": "C10/originals/table.pdf",
+      "normalized": "C10/normalized/table.pdf.json",
+      "historical_fixture": "C10/historical-fixtures/table.pdf.json",
+      "sql_receipt": "C10/receipts/principal-sql-flow.json",
+      "complete_sql_rows_available": false
+    }
+  ],
+  "C14": {
+    "corpus": "C14/corpus/evaluation-corpus-frozen-v2.json",
+    "corpus_sha256": "1db07751e61e841cfb00d6cd5d5b5aac1b5d989b9e2de7fe92840effeddd030b",
+    "documents": 6,
+    "questions": 12,
+    "inputs": 46,
+    "dimensions": 1536,
+    "vector_index": "C14/input-vector-index.json",
+    "stages": [
+      {
+        "name": "initial-1.0.0",
+        "inputs": "C14/stages/initial-1.0.0/inputs.json",
+        "sql_results": "C14/stages/initial-1.0.0/sql-results.json"
+      },
+      {
+        "name": "initial-enriched-1.0.0",
+        "inputs": "C14/stages/initial-enriched-1.0.0/inputs.json",
+        "sql_results": "C14/stages/initial-enriched-1.0.0/sql-results.json"
+      },
+      {
+        "name": "r1-1.0.0",
+        "inputs": "C14/stages/r1-1.0.0/inputs.json",
+        "sql_results": null
+      },
+      {
+        "name": "final-1.0.1",
+        "inputs": "C14/stages/final-1.0.1/inputs.json",
+        "sql_results": "C14/stages/final-1.0.1/sql-results.json"
+      },
+      {
+        "name": "r2-1.0.1",
+        "inputs": "C14/stages/r2-1.0.1/inputs.json",
+        "sql_results": null
+      }
+    ],
+    "R1_empty_corpus_preserved": true,
+    "R2_reuses_final_SQL": true
+  },
+  "absences": [
+    "C10 complete persisted SQL chunk rows/citation objects absent; only summarized receipts and procedure recovered",
+    "Executed Tesseract/LibreOffice version receipts absent; locks are not execution receipts",
+    "Physical cl100k_base resource absent from documented local path; no new tokenization",
+    "Raw provider HTTP vector response absent; actual vectors and receipt survive",
+    "Full historical runtime/source distribution not bundled; original SQL procedure needs isolated infrastructure",
+    "No current-head PR134 execution or human acceptance performed"
+  ],
+  "publication": "Comentario preparado por separado para PM; no publicado"
+}

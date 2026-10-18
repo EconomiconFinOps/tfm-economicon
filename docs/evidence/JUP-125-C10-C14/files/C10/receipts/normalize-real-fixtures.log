@@ -1,0 +1,9 @@
+{"filename": "digital.pdf", "result": "normalized", "characters": 90, "blocks": 4}
+{"filename": "hybrid.pdf", "result": "normalized", "characters": 74, "blocks": 3}
+{"filename": "mixed.pdf", "result": "normalized", "characters": 75, "blocks": 3}
+{"filename": "plain.txt", "result": "normalized", "characters": 40, "blocks": 1}
+{"filename": "scanned.pdf", "result": "normalized", "characters": 29, "blocks": 1}
+{"filename": "structure.doc", "result": "normalized", "characters": 68, "blocks": 4}
+{"filename": "structure.docx", "result": "normalized", "characters": 68, "blocks": 4}
+{"filename": "structure.md", "result": "normalized", "characters": 116, "blocks": 7}
+{"filename": "table.pdf", "result": "normalized", "characters": 67, "blocks": 5}

@@ -9,7 +9,29 @@ Se incorpora sin modificar producto, pruebas, modelos, tokenizadores ni datos
 persistidos. No acredita aceptación actual de C10/C14 ni levanta la petición de
 cambios de Víctor. La corrección C13 de Lucía en `ddd3356c` se conserva.
 
-## Descarga e integridad
+## Navegación directa
+
+Los 119 archivos del paquete pueden consultarse directamente en GitHub, sin
+descargar el ZIP. Son copias fieles de sus miembros, sin corregir ni reescribir
+contenidos históricos:
+
+- [README original del paquete](files/README.md): procedencia, instrucciones y límites.
+- [Índice original](files/INDEX.json): documentos, etapas y ausencias.
+- [MANIFEST original](files/MANIFEST.json): rutas relativas, tamaños y SHA256.
+- [C10](files/C10/): originales, normalizados, fixtures y recibos.
+- [C14](files/C14/): corpus, etapas, inputs y vectores conservados.
+- [Versiones registradas](files/versions/): locks históricos, sin acreditar versiones ejecutadas.
+
+El MANIFEST mantiene sus bytes y resuelve sus rutas desde `files/`. Enumera los
+otros 118 archivos de esa carpeta; no incluye este README exterior, el ZIP ni
+el SHA256SUMS exterior. El [README dentro de files/](files/README.md) también se
+conserva exactamente como estaba en el paquete.
+
+La regla local de `.gitattributes` evita la normalización de finales de línea
+sólo dentro de `files/`, para conservar los hashes originales. No desactiva
+los diffs de texto ni modifica la configuración global de Git.
+
+## Descarga ZIP e integridad
 
 - [Descargar el ZIP](pr134-C10-C14-evidence-20261018.zip) con el botón de descarga
   del archivo en GitHub. Tamaño: **772.180 bytes**, **119 archivos**.
@@ -22,13 +44,18 @@ El ZIP se conserva byte a byte respecto a la entrega recuperada. El manifiesto
 enumera los otros 118 archivos, sus tamaños y hashes; la huella permite comprobar
 identidad con esta referencia, no autentica por sí sola al proveedor.
 
-Descomprimir en una carpeta temporal nueva, fuera del checkout, y ejecutar allí
-con Python 3.10 o posterior, sin dependencias adicionales ni red:
+Para comprobar los archivos navegables con Python 3.10 o posterior, sin
+dependencias adicionales ni red, desde la raíz del repositorio:
 
 ```text
+cd docs/evidence/JUP-125-C10-C14/files
 python -B verify_package.py
 python -B replay_cached_cosine.py
 ```
+
+El replay matemático es opcional. Como alternativa, descargar el ZIP y
+descomprimirlo en una carpeta temporal nueva, fuera del checkout; ejecutar
+las mismas órdenes Python desde la raíz extraída, sin el paso `cd` anterior.
 
 El primer comando verifica archivos y correspondencias. El segundo recalcula
 coseno sobre los vectores conservados y reproduce los rankings históricos de
@@ -68,8 +95,10 @@ El replay nuevo no reproduce filtros SQL, citas ni latencias del candidato actua
   efectivos y los recibos e inventario histórico. No se realizaron nuevas
   inferencias ni gasto para esta recuperación.
 
-`README.md` e `INDEX.json` dentro del ZIP detallan alcance, procedencia y ausencias;
-`C14/input-vector-index.json` enlaza cada input literal con su archivo vectorial.
+El [README original](files/README.md) y el [índice](files/INDEX.json), también
+incluidos en el ZIP, detallan alcance, procedencia y ausencias; el
+[índice input/vector](files/C14/input-vector-index.json) enlaza cada input literal
+con su archivo vectorial.
 Se conservan los originales y sus limitaciones sin sustituirlos por resultados
 regenerados ni atribuirlos al SHA actual de la PR.
 

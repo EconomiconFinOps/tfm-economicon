@@ -1,0 +1,9 @@
+{
+  "sha256": "1db07751e61e841cfb00d6cd5d5b5aac1b5d989b9e2de7fe92840effeddd030b",
+  "documents": 6,
+  "questions": 12,
+  "characters": 10475,
+  "source": "principal synthetic fixture preparation before implementation",
+  "data_classification": "no private data",
+  "preliminary_v1": "Preserved; invalid Word fixture cell shape found before any comparison/test, corrected to actual lists-of-blocks. Text/questions/evidence unchanged."
+}

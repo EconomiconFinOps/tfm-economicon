@@ -1,0 +1,32 @@
+[
+  {
+    "case": "markdown",
+    "same_ids_content_order_tokens_manifest": true,
+    "metadata_unchanged": true
+  },
+  {
+    "case": "plain-text",
+    "same_ids_content_order_tokens_manifest": true,
+    "metadata_unchanged": true
+  },
+  {
+    "case": "digital-pdf",
+    "same_ids_content_order_tokens_manifest": true,
+    "metadata_unchanged": true
+  },
+  {
+    "case": "scanned-pdf",
+    "same_ids_content_order_tokens_manifest": true,
+    "metadata_unchanged": true
+  },
+  {
+    "case": "word-modern",
+    "same_ids_content_order_tokens_manifest": true,
+    "metadata_unchanged": true
+  },
+  {
+    "case": "word-legacy",
+    "same_ids_content_order_tokens_manifest": true,
+    "metadata_unchanged": true
+  }
+]
