@@ -26,12 +26,18 @@ class DocumentCitations:
     """
     def __init__(self, document: str):
         parts = []
+        self.original = document
+        self.original_offsets: list[int] = []
+        original_length = 0
         self.offsets: list[int] = []
         self.sections: list[str] = []
         length = 0
         fence = None
         front_matter = False
-        for line_number, line in enumerate(document.splitlines()):
+        for line_number, raw_line in enumerate(document.splitlines(keepends=True)):
+            original_offset = original_length
+            original_length += len(raw_line)
+            line = raw_line.splitlines()[0]
             normalized = " ".join(line.split())
             offset = length + bool(parts)
             if normalized:
@@ -61,6 +67,7 @@ class DocumentCitations:
                     title = without_closing.rstrip()
                 if title:
                     self.offsets.append(offset)
+                    self.original_offsets.append(original_offset)
                     self.sections.append(title[:500])
         self.normalized = " ".join(parts)
         self.title = self.sections[0] if self.sections else None
@@ -73,25 +80,55 @@ class DocumentCitations:
         index = bisect_right(self.offsets, start) - 1
         return self.sections[index] if index >= 0 else None
 
-    def section_spans(self, content: str) -> list[dict]:
-        """Exact ranges in the normalized chunk, derived from original Markdown.
+    def section_spans(self, content: str, *, original: bool = False) -> list[dict]:
+        """Exact ranges in legacy normalized or new canonical documentary text.
 
-        An initial section never overrides a later heading inside the fragment.
-        Ambiguous/reformatted fragments have no authoritative section ranges.
+        Repeated/reformatted fragments have no authoritative section ranges.
+        The two coordinate domains are never mixed in one source.
         """
-        if not content or content != " ".join(content.split()):
+        if not content or (not original and content != " ".join(content.split())):
             return []
-        start = self.normalized.find(content)
-        if start < 0 or self.normalized.find(content, start + 1) >= 0:
+        document = self.original if original else self.normalized
+        offsets = self.original_offsets if original else self.offsets
+        start = document.find(content)
+        if start < 0 or document.find(content, start + 1) >= 0:
             return []
-        boundaries = [0] + [offset - start for offset in self.offsets if start < offset < start + len(content)] + [len(content)]
+        boundaries = [0] + [offset - start for offset in offsets if start < offset < start + len(content)] + [len(content)]
+        if len(boundaries) - 1 > 64:
+            return []  # The chat provenance contract accepts at most 64 section ranges.
         result = []
         for left, right in zip(boundaries, boundaries[1:]):
-            index = bisect_right(self.offsets, start + left) - 1
+            index = bisect_right(offsets, start + left) - 1
             result.append({"start": left, "end": right, "document_start": start + left,
-                           "section_start": self.offsets[index] if index >= 0 else None,
+                           "section_start": offsets[index] if index >= 0 else None,
                            "section": self.sections[index] if index >= 0 else None})
         return result
+
+
+def structured_location(metadata: dict, parent: dict, document: str) -> dict:
+    """Use declared source positions; never guess locations for a new generation."""
+    spans = metadata.get('source_spans', [])
+    pages = {span.get('original', {}).get('page') for span in spans
+             if span.get('original', {}).get('page') is not None}
+    page = next(iter(pages)) if len(pages) == 1 else None
+    if page is not None:
+        # Separators may have no page. Every non-whitespace primary character
+        # must nevertheless have a reliable annotation on that same page.
+        known = sorted(span['normalized_range'] for span in spans if span.get('original', {}).get('page') == page)
+        for primary in metadata.get('primary_spans', []):
+            start,end = primary['normalized_range']
+            cursor = start
+            for left,right in known:
+                if right <= cursor or left >= end:
+                    continue
+                if document[cursor:min(left,end)].strip():
+                    page = None; break
+                cursor = max(cursor,min(right,end))
+            if document[cursor:end].strip():
+                page = None
+    path = metadata.get('section_path')
+    return {'section':' / '.join(path) if path else None, 'page':page,
+            'source_spans':spans, 'position_contract':parent.get('chunking', {}).get('position_contract')}
 
 
 def heading(text: str) -> str | None:
@@ -112,7 +149,7 @@ def resolve_citations(references: list[str], chunks: list[dict], tenant_id: str)
     citations = []
     for ref in references:
         chunk = records[ref]
-        citations.append(SourceCitation(
+        citation = SourceCitation(
             evidence_id=ref,
             kind="corpus",
             document_id=chunk["document_id"],
@@ -122,5 +159,8 @@ def resolve_citations(references: list[str], chunks: list[dict], tenant_id: str)
             section=chunk.get("section"),
             page=chunk.get("page"),
             excerpt=chunk["content"][:140],
-        ).model_dump())
+            **({'source_spans':chunk['source_spans'], 'position_contract':chunk.get('position_contract')}
+               if 'source_spans' in chunk else {}),
+        ).model_dump(exclude_unset=True)
+        citations.append(citation)
     return citations

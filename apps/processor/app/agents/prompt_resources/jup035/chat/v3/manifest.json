@@ -61,7 +61,7 @@
       "version": "same-tenant-provider-snapshot-exact-heading-companion-v2"
     },
     "policy_sections": {
-      "module_sha256": "3e44194f9444f7071475193172ef37adb5d6f01e7f74ef3e43589541b7d587b2",
+      "module_sha256": "f53ea3d187cc2ace2f86000c630d290396fb24b86dcb5e6ac409905c91dfd57c",
       "version": "complete-positional-policy-with-budget-definition-v2"
     },
     "quantity_display": "observed-value-unit-provenance-no-operation-v1",
@@ -205,7 +205,7 @@
       "module_sha256": "132cffa5026abeb7450e8807dd4523150ca51c921efd5b1c9495ad36f82f9ac3"
     }
   },
-  "assembler_sha256": "bae5ebffaf8705636a2a2ec6d5450277ad3a4b09022f8dc956e3e0c342584c74",
+  "assembler_sha256": "abac9906452943afe95f41480c07acbaf55c281d0242377ab01fa6943f7499de",
   "budgets": {
     "model_context_tokens": 1048576,
     "output_tokens": 3200,

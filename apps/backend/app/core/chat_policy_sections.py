@@ -103,7 +103,7 @@ def complete_sections(sources, heading):
         if not prefix or normalized(content[prefix.end():prefix.end()+len(heading)]) != normalized(heading):
             continue
         body = content[prefix.end()+len(heading):]
-        if not body.startswith(' '):
+        if not body[:1].isspace():
             continue
         result.append({'document_id': document, 'section_start': start,
                        'heading': heading, 'body': body.strip(), 'sources': list(used.values())})

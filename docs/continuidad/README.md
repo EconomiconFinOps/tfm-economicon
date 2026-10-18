@@ -5,6 +5,10 @@ y estado operativo; GitHub conserva código y revisiones; OpenSpec conserva
 requisitos y diseño. Este índice enlaza evidencia, no sustituye esas fuentes.
 Leer la [convención](convencion-compartida.md) y sólo los temas pertinentes.
 Las fechas indican la última actualización documental, no una nueva ejecución de pruebas.
+Los párrafos de B siguientes conservan su corte histórico del 17/10. En la
+reconciliación del 18/10, el PM confirma que el develop fijado `0e686f91` ya
+incorpora PR138/PR140; esa incorporación no acredita esta composición de JUP-125.
+
 B: PR140 publicada en 09b3c8bb, CI/SQL propias conformes. Reconciliación
 contra 466b083a en fix/JUP-123-local-reconcile: dos conflictos resueltos,
 67 backend y 92 processor PASS; publicación autorizada para desbloquear la revisión.
@@ -14,6 +18,7 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
+| [Chunking documental](chunking-documental.md) | JUP-125 / PR #134: reconciliación publicada en f8dd03bc. CI processor detecta siete fallos por huella de política obsoleta; fix mínimo de manifiesto y pin backend preparado, con reproducción y pruebas focales favorables. Controles nuevos y evaluación independiente del fix pendientes; requisitos humanos conservados. | 2026-10-18 |
 | [Ingesta documental](ingesta-documental.md) | JUP-124 / PR #133 integrada en develop 466b083a; extracción Markdown y OCR con límites/documentación propios. La reconciliación local de B preserva esa implementación sin trasladar sus dictámenes a B. | 2026-10-17 |
 | [Colector reutilizable del chat](colector-chat.md) | PR #131 integrada en develop1de41b90. Seguimiento documental PR #138 con validación favorable de Lucía y CI técnica/SQL verdes; revisión de Víctor pendiente. Entrega B independiente. | 2026-10-17 |
 | [Dashboard de evaluación del asistente](dashboard-evaluacion-asistente.md) | JUP-121: dashboard de Grafana con tres tipos de medida (A calidad con rúbrica, B negocio, C señales en vivo) alimentado desde el esquema `evaluation` de PostgreSQL con un único comando de carga; implementado y validado en local con la pila real; PR #132 con segunda vuelta de Paris y Lucia atendida (changes `jup-121-lectura-dashboard` y `jup-121-anotaciones-y-fuente`), pulido pendiente de tarjeta. Robustez a la espera de JUP-071; revalidación, revisión técnica y despliegue pendientes. | 2026-10-16 |
@@ -34,8 +39,8 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 | [Arquitectura técnica](arquitectura-tecnica.md) | JUP-060 / PR92: arquitectura reconciliada con a0e9a56, memoria histórica verificada y dictámenes por subagentes autorizados; OpenSpec archivado. Estado de integración en PR/Trello. | 2026-10-11 |
 | [Arquitectura documental AWS](cloud-aws.md) | Referencia Fargate y Terraform sin ejecución; antecedente EC2 operativo superado. 6 pruebas mock/8 rutas correctos, sin despliegue. | 2026-10-10 |
 | [Proveedor y modelos](proveedor-modelos.md) | JUP-078 / PR113: gateway dedicado, claves9+1 USD/30d y26 controles Docker verificados; OpenSpec archivado, revision asistida aprobada, sin gasto real. | 2026-10-10 |
-| [Métricas funcionales de negocio](metricas-funcionales-negocio.md) | JUP-068 / PR68: cierre técnico por excepción MVP con subagente;113 pruebas y59 OpenSpec pasan. Piloto/beneficio real sin medir. | 2026-10-10 |
-| [Cobertura de etiquetado](cobertura-etiquetado.md) | JUP-017 / PR66: excepción MVP autorizada; conflicto y refresco corregidos, revisión asistida y pruebas en curso. Evidencia versionada en docs/evidence/JUP-017-validation.md. | 2026-10-10 |
+| [Métricas funcionales de negocio](../evidence/JUP-068-validation.md) | JUP-068 / PR68: cierre técnico por excepción MVP con subagente;113 pruebas y59 OpenSpec pasan. Piloto/beneficio real sin medir. | 2026-10-10 |
+| [Cobertura de etiquetado](../evidence/JUP-017-validation.md) | JUP-017 / PR66: excepción MVP autorizada; conflicto y refresco corregidos, revisión asistida y pruebas en curso. Evidencia versionada en docs/evidence/JUP-017-validation.md. | 2026-10-10 |
 | [Consulta de ownership](consulta-ownership.md) | JUP-037 / PR100: cierre preparado bajo excepción de plazo MVP; atribución real documentada, 209 backend/35 frontend y navegador HTTP/SQL pasan. Corrección de nuevo hilo; CI final/integración por verificar al publicar. | 2026-10-10 |
 | [Pruebas unitarias e integradas](pruebas-unitarias-integradas.md) | JUP-054: PR93 integrada por excepción de plazo del MVP (7 tests nuevos, CI Linux 2041 pass/91 skips). Segunda pasada en rama, con flujo ordinario: cobertura del candidato `e1c2a8f` y 291 pruebas nuevas, sin cambios de producto; 5 defectos registrados sin corregir (`RF-054-001` a `005`); PR #114 abierta con CI en verde, revisión y validación pendientes. | 2026-10-10 |
 | [Dimension vectorial desde Settings](dimension-vectorial-settings.md) | JUP-102 / PR #108: pruebas y CI tecnica verificadas; excepcion de entrega fuera de plazo autorizada, atribucion real bajo Alejandro y cierre por PR. Reviews humanas dispensadas, no simuladas. | 2026-10-10 |

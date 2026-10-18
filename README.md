@@ -376,6 +376,12 @@ documento sin reextraerlo. Los pendientes y reintentos conservan sus originales.
 Configuración, licencias, sandbox Linux, límites y reproducción están en el
 [runbook de ingesta documental](docs/runbooks/document-ingestion.md).
 
+La fragmentación estructural de JUP-125 consume el normalizado durable sin repetir
+extracción/OCR y conserva compatibilidad con documentos ya indexados. Configuración,
+reconstrucción, procedencia y reprocesamiento explícito: [runbook de chunking](docs/runbooks/document-chunking.md).
+La [evidencia JUP-125](docs/evidence/JUP-125-validation.md) separa resultados locales,
+límites y pasos oficiales pendientes; no implica integración de JUP-124/PR #133.
+
 ### Individualmente
 
 Puedes ejecutar cada submodulo por separado desde su propia carpeta:

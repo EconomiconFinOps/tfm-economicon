@@ -6,15 +6,17 @@ import time
 
 import structlog
 from sqlalchemy import bindparam, create_engine, text
+from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.pool import NullPool
 
 from app.core.runtime_secrets import StartupError
-from app.services.citations import DocumentCitations
+from app.services.citations import DocumentCitations, structured_location
 
 MAX_TOP_K = 20
 logger = structlog.get_logger("vector_store")
 MAX_COSINE_DISTANCE = 2.0
+UNDEFINED_COLUMN = "42703"
 MAX_POLICY_CHUNKS = 6
 
 
@@ -70,7 +72,7 @@ class PgVectorQueryStore:
             parameters["provider"] = provider
         if max_distance is not None:
             parameters["max_distance"] = float(max_distance)
-        def query(connection):
+        def query(connection, structured=True):
             def timeout():
                 if deadline is None: return
                 remaining=deadline-time.time()
@@ -79,10 +81,12 @@ class PgVectorQueryStore:
                 connection.execute(text("SELECT set_config('statement_timeout', :timeout, true), "
                     "set_config('lock_timeout', :timeout, true)"),{'timeout':str(milliseconds)})
             timeout()
+            chunk_metadata = "dc.metadata" if structured else "NULL"
+            document_metadata = "metadata" if structured else "CAST('{}' AS jsonb)"
             rows = connection.execute(
                 text(
                     f"""
-                    SELECT chunk_id, document_id, tenant_id, chunk_index, source, content, distance
+                    SELECT chunk_id, document_id, tenant_id, chunk_index, source, content, distance, metadata
                     FROM (
                         SELECT
                             dc.id AS chunk_id,
@@ -91,6 +95,7 @@ class PgVectorQueryStore:
                             dc.chunk_index AS chunk_index,
                             kd.source AS source,
                             dc.content AS content,
+                            {chunk_metadata} AS metadata,
                             (ce.embedding <=> CAST(:query_embedding AS vector)) AS distance
                         FROM knowledge_documents kd
                         JOIN document_chunks dc ON dc.document_id = kd.id
@@ -129,6 +134,7 @@ class PgVectorQueryStore:
                         SELECT DISTINCT dc.id AS chunk_id, kd.id AS document_id,
                             kd.tenant_id AS tenant_id, dc.chunk_index AS chunk_index,
                             kd.source AS source, dc.content AS content,
+                            {chunk_metadata} AS metadata,
                             (ce.embedding <=> CAST(:query_embedding AS vector)) AS distance
                         FROM knowledge_documents kd
                         JOIN document_chunks dc ON dc.document_id = kd.id
@@ -149,9 +155,9 @@ class PgVectorQueryStore:
             policy_ids = set()
             if policy_section is not None:
                 from app.core.chat_policy_sections import COMPANION_SECTIONS
-                policy_rows = self._policy_rows(connection, tenant_id, provider, vector, policy_section, timeout)
+                policy_rows = self._policy_rows(connection, tenant_id, provider, vector, policy_section, timeout, structured)
                 for companion in COMPANION_SECTIONS.get(policy_section, ()):
-                    policy_rows += self._policy_rows(connection, tenant_id, provider, vector, companion, timeout)
+                    policy_rows += self._policy_rows(connection, tenant_id, provider, vector, companion, timeout, structured)
                 policy_rows = list({row.chunk_id: row for row in policy_rows}.values())
                 policy_ids = {row.chunk_id for row in policy_rows}
                 rows = (policy_rows + [row for row in rows if row.chunk_id not in policy_ids])[:top_k]
@@ -161,22 +167,38 @@ class PgVectorQueryStore:
             # transaction snapshot as retrieval (including concurrent reingestion).
             timeout()
             documents = connection.execute(
-                text("""
-                    SELECT id, text_content FROM knowledge_documents
+                text(f"""
+                    SELECT id, text_content, {document_metadata} AS metadata FROM knowledge_documents
                     WHERE tenant_id = :tenant_id AND id IN :document_ids
                 """).bindparams(bindparam("document_ids", expanding=True)),
                 {"tenant_id": tenant_id, "document_ids": list({row.document_id for row in rows})},
             )
-            locations = {row.id: DocumentCitations(row.text_content) for row in documents}
+            documents = {row.id:row for row in documents}
+            locations = {key:DocumentCitations(row.text_content) for key,row in documents.items()}
+            def manual(row):
+                return documents[row.document_id].metadata.get('original_format') == 'manual-text'
+            def location(row):
+                if row.metadata:
+                    value = structured_location(row.metadata, documents[row.document_id].metadata,
+                                                documents[row.document_id].text_content)
+                    if manual(row):
+                        # Manual text has no structured blocks: keep the Markdown reading it had before.
+                        value['section'] = locations[row.document_id].section(row.content)
+                    return value
+                return {'section':locations[row.document_id].section(row.content)}
             return [
                 {
                     "chunk_id": row.chunk_id,
                     "document_id": row.document_id,
                     "tenant_id": row.tenant_id,
-                    "title": locations[row.document_id].title or row.source.strip(),
+                    "title": documents[row.document_id].metadata.get("title") or (
+                        None if documents[row.document_id].metadata.get('chunking') and not manual(row) else locations[row.document_id].title
+                    ) or row.source.strip(),
                     "chunk_index": row.chunk_index,
-                    "section": locations[row.document_id].section(row.content),
-                    "section_spans": locations[row.document_id].section_spans(row.content),
+                    **location(row),
+                    **({'chunk_metadata':row.metadata} if row.metadata else {}),
+                    "section_spans": locations[row.document_id].section_spans(row.content,
+                        original=bool(documents[row.document_id].metadata.get("chunking"))),
                     "source": row.source,
                     "content": row.content,
                     "distance": float(row.distance),
@@ -185,15 +207,32 @@ class PgVectorQueryStore:
                 for row in rows
             ]
 
+        def tolerant(connection):
+            # Vector migration 003 is applied by the processor, which starts after the
+            # backend: until its columns exist, retrieve as before 003 instead of failing.
+            try:
+                return query(connection)
+            except ProgrammingError as exc:
+                # PostgreSQL identifies undefined columns by a 1-based character position;
+                # column_name is not supplied for 42703. Fail closed for unrelated columns.
+                position = getattr(getattr(exc.orig, 'diag', None), 'statement_position', None)
+                missing = (exc.statement or '')[int(position)-1:].split(maxsplit=1) if position and position.isdecimal() else []
+                if (getattr(exc.orig, 'sqlstate', None) != UNDEFINED_COLUMN
+                        or not missing or missing[0] not in {'dc.metadata', 'metadata'}):
+                    raise
+                connection.rollback()
+                logger.warning("vector_metadata_unavailable", reason="vector_migration_003_pending")
+                return query(connection, structured=False)
+
         if deadline is not None:
             if not isinstance(deadline,(int,float)) or not math.isfinite(deadline) or cancelled is None:
                 raise ValueError('Invalid retrieval deadline.')
-            return self._bounded_query(query,deadline,cancelled)
+            return self._bounded_query(tolerant,deadline,cancelled)
         with self.engine.connect().execution_options(isolation_level="REPEATABLE READ") as connection:
             self._capture_peer(connection)
-            return query(connection)
+            return tolerant(connection)
 
-    def _policy_rows(self, connection, tenant_id, provider, vector, section, timeout):
+    def _policy_rows(self, connection, tenant_id, provider, vector, section, timeout, structured=True):
         """Exact section expansion in the caller's tenant/provider snapshot.
 
         Two document candidates or seven chunk candidates are ambiguity/budget
@@ -203,11 +242,12 @@ class PgVectorQueryStore:
         """
         from app.core.chat_policy_sections import complete_sections, normalized
         timeout()
+        document_metadata = "metadata" if structured else "CAST('{}' AS jsonb)"
         heading = (r'(?m)^[ ]{0,3}#{1,6}[ \t]+' + r'[ \t]+'.join(re.escape(w) for w in section.split())
                    + r'[ \t]*(#+[ \t]*)?\r?$')
-        documents = connection.execute(text("""
+        documents = connection.execute(text(f"""
             SELECT kd.id, CASE WHEN octet_length(kd.text_content) <= 65536
-                THEN kd.text_content ELSE NULL END AS text_content
+                THEN kd.text_content ELSE NULL END AS text_content, {document_metadata} AS metadata
             FROM knowledge_documents kd
             WHERE kd.tenant_id = :tenant_id AND kd.text_content ~* :policy_heading
                 AND EXISTS (SELECT 1 FROM document_chunks dc
@@ -222,15 +262,18 @@ class PgVectorQueryStore:
         indices = [i for i, title in enumerate(locations.sections) if normalized(title) == normalized(section)]
         if len(indices) != 1 or indices[0]+1 >= len(locations.offsets):
             return []
-        start, end = locations.offsets[indices[0]:indices[0]+2]
+        original = bool(document.metadata.get("chunking"))
+        offsets = locations.original_offsets if original else locations.offsets
+        start, end = offsets[indices[0]:indices[0]+2]
         if not 0 < end-start <= 4096:
             return []
         timeout()
-        rows = connection.execute(text("""
-            SELECT chunk_id, document_id, tenant_id, chunk_index, source, content, distance
+        chunk_metadata = "dc.metadata" if structured else "NULL"
+        rows = connection.execute(text(f"""
+            SELECT chunk_id, document_id, tenant_id, chunk_index, source, content, distance, metadata
             FROM (
                 SELECT dc.id AS chunk_id, kd.id AS document_id, kd.tenant_id,
-                    dc.chunk_index, kd.source, dc.content,
+                    dc.chunk_index, kd.source, dc.content, {chunk_metadata} AS metadata,
                     (ce.embedding <=> CAST(:query_embedding AS vector)) AS distance,
                     position(dc.content in :policy_normalized)-1 AS section_offset
                 FROM knowledge_documents kd
@@ -243,7 +286,7 @@ class PgVectorQueryStore:
                 AND section_offset + char_length(content) > :policy_start
             ORDER BY chunk_index, chunk_id LIMIT :policy_chunk_limit
         """), {'tenant_id': tenant_id, 'provider': provider, 'query_embedding': vector,
-               'policy_document': document.id, 'policy_normalized': locations.normalized,
+               'policy_document': document.id, 'policy_normalized': document.text_content if original else locations.normalized,
                'policy_start': start, 'policy_end': end,
                'policy_chunk_limit': MAX_POLICY_CHUNKS+1}).all()
         if (not rows or len(rows) > MAX_POLICY_CHUNKS
@@ -251,7 +294,7 @@ class PgVectorQueryStore:
             return []
         sources = [{'id': row.chunk_id, 'kind': 'corpus', 'content': row.content,
                     'provenance': {'document_id': document.id, 'chunk_index': row.chunk_index,
-                                   'sections': locations.section_spans(row.content)}} for row in rows]
+                                   'sections': locations.section_spans(row.content, original=original)}} for row in rows]
         if len(complete_sections(sources, section)) != 1:
             return []
         return list(rows)

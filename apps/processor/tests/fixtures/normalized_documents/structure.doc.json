@@ -1,0 +1,73 @@
+{
+  "blocks": [
+    {
+      "kind": "heading",
+      "level": 1,
+      "text": "Cloud budget"
+    },
+    {
+      "kind": "paragraph",
+      "text": "Before the table"
+    },
+    {
+      "kind": "table",
+      "rows": [
+        [
+          [
+            {
+              "kind": "paragraph",
+              "text": "Service"
+            }
+          ],
+          [
+            {
+              "kind": "paragraph",
+              "text": "USD"
+            }
+          ]
+        ],
+        [
+          [
+            {
+              "kind": "paragraph",
+              "text": "Compute"
+            }
+          ],
+          [
+            {
+              "kind": "paragraph",
+              "text": "42"
+            }
+          ]
+        ]
+      ]
+    },
+    {
+      "kind": "paragraph",
+      "text": "After the table"
+    }
+  ],
+  "document_id": "380f19a4-7c60-562d-b6c9-5f735829784c",
+  "extraction_method": "libreoffice+python-docx",
+  "file_metadata": {
+    "title": "Word Document"
+  },
+  "origin": {
+    "artifact_uri": null,
+    "content_hash": "00770205d1db28a9664bc10b86e2437245b3ab65a1b7f8f47a5390ad2ea9d18d",
+    "file_size": 18432,
+    "filename": "structure.doc",
+    "source": "document",
+    "tenant_id": "tenant-rag2-fixture",
+    "uploaded_by": "synthetic-fixture-operator"
+  },
+  "original_format": "doc",
+  "result": "extracted",
+  "schema_version": 1,
+  "tenant_id": "tenant-rag2-fixture",
+  "text": "Cloud budget\nBefore the table\nService\tUSD\nCompute\t42\nAfter the table",
+  "warnings": [
+    "legacy_doc_converted_to_docx",
+    "docx_visual_layout_and_unrecognized_objects_not_inferred"
+  ]
+}

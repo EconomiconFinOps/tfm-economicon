@@ -19,10 +19,10 @@ class Rows(list):
 class Connection:
     def __init__(self, document=POLICY, doc_count=1, width=150, step=100):
         self.calls = []; self.document = document
-        self.documents = Rows(SimpleNamespace(id=f'policy-{i}', text_content=document) for i in range(doc_count))
+        self.documents = Rows(SimpleNamespace(id=f'policy-{i}', text_content=document, metadata={}) for i in range(doc_count))
         self.location = DocumentCitations(document or '')
         self.rows = Rows(SimpleNamespace(chunk_id=f'policy:{i}', document_id='policy-0',
-            tenant_id='tenant-a', chunk_index=i, source='manual', content=self.location.normalized[left:left+width], distance=.9)
+            tenant_id='tenant-a', chunk_index=i, source='manual', content=self.location.normalized[left:left+width], distance=.9, metadata={})
             for i,left in enumerate(range(0,len(self.location.normalized),step)))
 
     def connect(self): return self
@@ -33,7 +33,7 @@ class Connection:
         self.calls.append((str(statement), params))
         if 'policy_heading' in params: return self.documents
         if 'policy_chunk_limit' in params: return self.rows
-        if 'document_ids' in params: return [SimpleNamespace(id=x,text_content=self.document) for x in params['document_ids']]
+        if 'document_ids' in params: return [SimpleNamespace(id=x,text_content=self.document,metadata={}) for x in params['document_ids']]
         return Rows()
 
 

@@ -11,7 +11,8 @@ from app.clients.litellm import ProviderError
 from app.clients.rabbitmq_queue import QueueMessage, RabbitMQQueue
 from app.core.config import Settings
 from app.db.database import Database
-from app.embeddings.chunker import TextChunker
+from app.embeddings.structural_chunker import StructuredChunker
+from app.embeddings.contracts import ChunkingConfig
 from app.embeddings.providers import get_embedding_provider
 from app.graphs.pipeline import PipelineRunner
 from app.repositories.jobs import JobRepository
@@ -36,7 +37,8 @@ class ProcessorWorker:
             self.repository = JobRepository(self.database)
             self.pipeline = PipelineRunner(
                 AgentRuntime(settings),
-                TextChunker(settings.embedding_chunk_size, settings.embedding_chunk_overlap),
+                StructuredChunker(ChunkingConfig(settings.embedding_chunk_target_tokens,
+                    settings.embedding_chunk_max_tokens, settings.embedding_chunk_overlap_ratio)),
                 get_embedding_provider(settings.embedding_provider, settings.embedding_dimension, settings=settings),
                 self.vector_store,
             )
