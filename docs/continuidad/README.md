@@ -18,6 +18,7 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
+| [Politica de revisiones](revisiones-pr.md) | PR135: reconciliación de5f9dac36 con develop79aa76be tras PR134; excepción y entradas119 intactas, índice unido sin perder chunking. CI/SQL del nuevo candidato y revalidación incremental pendientes; aprobación previa conserva5f9. | 2026-10-18 |
 | [Chunking documental](chunking-documental.md) | JUP-125 / PR #134: reconciliación publicada en f8dd03bc. CI processor detecta siete fallos por huella de política obsoleta; fix mínimo de manifiesto y pin backend preparado, con reproducción y pruebas focales favorables. Controles nuevos y evaluación independiente del fix pendientes; requisitos humanos conservados. | 2026-10-18 |
 | [Ingesta documental](ingesta-documental.md) | JUP-124 / PR #133 integrada en develop 466b083a; extracción Markdown y OCR con límites/documentación propios. La reconciliación local de B preserva esa implementación sin trasladar sus dictámenes a B. | 2026-10-17 |
 | [Colector reutilizable del chat](colector-chat.md) | PR #131 integrada en develop1de41b90. Seguimiento documental PR #138 con validación favorable de Lucía y CI técnica/SQL verdes; revisión de Víctor pendiente. Entrega B independiente. | 2026-10-17 |
