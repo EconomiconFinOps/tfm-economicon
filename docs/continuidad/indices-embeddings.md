@@ -187,3 +187,9 @@ PG17.11/runtimePython3.12.13 existentes, recursos propios1CPU/1GB retirados.
 OpenSpec80/80PASS. Candidato local pendiente de reconciliación develop, CI y
 review/validación humanas. Sin push, merge, reviews ni cambios de roles/otrasPR.
 Ver adenda de evidencia JUP-127.
+
+
+Reconciliación del candidato con develop real `b1f5f75b` (PR138 integrada): sólo
+los tres documentos de138 se incorporan automáticamente, sin conflicto. Producción,
+fixtures y tests idénticos al árbol que dio30unit y9SQL PASS; evidencia reutilizada
+por identidad, no nuevas ejecuciones. Remoto139 seguía57fe7c57 antes de integrar.

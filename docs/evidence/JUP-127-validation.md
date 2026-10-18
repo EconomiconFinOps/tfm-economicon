@@ -406,3 +406,9 @@ sus guardas completas; corregir su aplicación no migra el índice ni crea un
 proveedor/modelo nuevo. El SHA del código fija la variación de recetaD a revalidar.
 OpenSpec80/80PASS. CI remota y dictámenes humanos del candidato siguen pendientes.
 No hay publicación ni aprobación nueva por este registro local.
+
+
+La integración local de develop `b1f5f75b` agrega únicamente los tres documentos de
+PR138; producción y pruebas permanecen idénticas a las ejecutadas arriba. Por esa
+identidad se reutilizan30unit y9SQL, sin afirmar ejecución nueva tras integrar.
+La publicación/CI y los dictámenes posteriores se registran porSHA final separado.
