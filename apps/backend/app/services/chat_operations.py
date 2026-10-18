@@ -7,6 +7,7 @@ from email.utils import parsedate_to_datetime
 from uuid import uuid4
 
 from app.db.chat_repository import ChatError, ChatRepository, TERMINAL
+from app.core.chat_calculations import CalculationError
 from app.schemas.chat import canonical, validate_response, reported_usage, response_citations, ResponseValidationError
 
 
@@ -215,7 +216,7 @@ class ChatOperations:
                     if self.clock()>=row['attempt_deadline']-5:
                         raise TimeoutError()
                     if record.get('type')=='tool_call':
-                        if searched or seq or claim['context'].get('tool_protocol')!='required-documentation-v1':
+                        if searched or seq or claim['context'].get('tool_protocol')!='server-documentation-v4':
                             raise ValueError('Unexpected tool call.')
                         searched=True
                         from app.services.chat_context import retrieval_diagnostic_scope
@@ -242,8 +243,6 @@ class ChatOperations:
                         await self._error(scope,row,transient,self._delay(record.get('retry_after'),row['attempt_count']) if transient else 0)
                         return
                     elif record.get('type')=='candidate':
-                        if claim['context'].get('tool_protocol')=='required-documentation-v1' and not searched:
-                            raise ValueError('Missing search.')
                         if record.get('finish_reason')=='length':
                             await self._error(scope,row,True,self._delay(None,row['attempt_count']),'incomplete')
                             return
@@ -294,8 +293,8 @@ class ChatOperations:
             logger.warning('chat_backend_diagnostic %s', canonical({
                 'operation_id': row['operation_id'],
                 'attempt_id': row['current_attempt_id'],
-                'stage': 'response_validation' if isinstance(error, ResponseValidationError) else 'stream_processing',
-                'rule_code': error.rule_code if isinstance(error, ResponseValidationError) else 'invalid_stream',
+                'stage': 'calculation_validation' if isinstance(error, CalculationError) else 'response_validation' if isinstance(error, ResponseValidationError) else 'stream_processing',
+                'rule_code': error.rule_code if isinstance(error, (ResponseValidationError, CalculationError)) else 'invalid_stream',
             }))
             await self._error(scope,row,False,reason='invalid_response')
         finally:
