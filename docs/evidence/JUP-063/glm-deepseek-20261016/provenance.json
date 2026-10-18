@@ -68,5 +68,7 @@
   "acceptance": "NOT_ASSESSED",
   "independent_adjudication": false,
   "api_ui_validated": false,
-  "new_inference_executed": false
+  "new_inference_executed": false,
+  "inputs_bundle_source_file": "materiales/07-evidencias/PR121-local-evaluation/model-comparison-inputs-v1.json",
+  "phase_receipts_matching_inputs_bundle_hashes": 336
 }
