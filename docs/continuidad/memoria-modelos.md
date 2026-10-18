@@ -4,6 +4,34 @@ Verificado: 2026-10-17. Origen: chat `01a1270c-e332-7462-9c90-706d49ade92c`.
 Encargo humano: analizar modelos, justificar el elegido, preparar material para
 la memoria y abrir una JUP sólo si resulta necesaria.
 
+## Regularización documental — 18/10/2026
+
+Origen HAL 9000 `01a1270c-e332-7462-9c90-706d49ade92c`: autorización humana
+excepcional para publicar la comparativa, incorporarla a Grafana y regularizar
+el ADR de modelo, dejando PR63 intacta. La parte ADR se prepara en rama aislada
+`docs/JUP-063-adr-modelo-regularizacion`, desde develop real `6d9e6710`.
+
+[ADR-0025](../adr/ADR-0025-chat-model-selection.md) conserva la configuración
+histórica DeepSeek V4.1 Flash/DeepInfra FP8 de la N5 y todas las diferencias
+processor/gateway y ausencias de traza upstream. Ratificación **documental**
+por la excepción humana; no consenso ni nuevas reviews del equipo, no cambio de
+runtime, proveedor, presupuesto o aceptación funcional de campañas. La elección
+histórica GLM/DeepSeek no se reescribe como comparación causal de la N5 posterior.
+
+El número 0023 queda para chunking, cuyo estado Proposed no cambia. El modelo
+pasa al primer número libre 0025; la ruta 0023 de modelo se conserva sólo como alias
+para enlaces históricos. La referencia OpenSpec de producto apunta al destino
+canónico. Las colisiones anteriores 0013/0022 quedan fuera de este encargo.
+Los párrafos siguientes conservan sus cortes históricos y no expresan el estado
+actual del ADR renumerado. La publicación integrada, su CI y la incorporación
+Grafana corresponden al custodio del nuevo encargo; no se afirman aquí cumplidas.
+
+Comprobación documental local del 18/10: OpenSpec estricto 80/80 PASS;
+higiene del repositorio 2139 archivos conforme; `git diff --check` conforme.
+Cabeceras canónicas0023/0025 y alias comprobados, 13 enlaces relativos existentes;
+el enlace a la nueva comparativa debe comprobarse tras integrar su commit.
+No se han ejecutado campañas ni suites de producto para esta regularización.
+
 ## Actualización de validación — 17/10/2026
 
 Continuación posterior autorizada: los smokes separados DeepSeek/DeepInfraFP8 y
