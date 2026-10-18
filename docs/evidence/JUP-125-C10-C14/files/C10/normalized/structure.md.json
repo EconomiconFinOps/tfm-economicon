@@ -1,0 +1,86 @@
+{
+  "blocks": [
+    {
+      "kind": "heading",
+      "level": 1,
+      "source_lines": [
+        1,
+        1
+      ],
+      "text": "# Cloud budget"
+    },
+    {
+      "kind": "paragraph",
+      "level": 0,
+      "source_lines": [
+        3,
+        3
+      ],
+      "text": "Compute evidence is 42 USD."
+    },
+    {
+      "kind": "list",
+      "level": 0,
+      "source_lines": [
+        5,
+        6
+      ],
+      "text": "- Storage\n"
+    },
+    {
+      "kind": "list_item",
+      "level": 1,
+      "source_lines": [
+        5,
+        6
+      ],
+      "text": "- Storage\n"
+    },
+    {
+      "kind": "paragraph",
+      "level": 2,
+      "source_lines": [
+        5,
+        5
+      ],
+      "text": "- Storage"
+    },
+    {
+      "kind": "table",
+      "level": 0,
+      "source_lines": [
+        7,
+        9
+      ],
+      "text": "| Service | USD |\n|---|---|\n| VM | 42 |"
+    },
+    {
+      "kind": "code",
+      "language": "sql",
+      "level": 0,
+      "source_lines": [
+        11,
+        13
+      ],
+      "text": "```sql\nSELECT 1\n```"
+    }
+  ],
+  "document_id": "5bd3dea2-4875-5465-8709-4d95d11705d7",
+  "extraction_method": "markdown-it",
+  "file_metadata": {},
+  "origin": {
+    "artifact_uri": null,
+    "content_hash": "04e27e9196692ab1f083a7595f27b005eed8e50eaf815e3de692225b4b6e9f3e",
+    "file_size": 116,
+    "filename": "structure.md",
+    "source": "document",
+    "tenant_id": "tenant-rag2-fixture",
+    "uploaded_by": "synthetic-fixture-operator"
+  },
+  "original_format": "md",
+  "result": "extracted",
+  "schema_version": 1,
+  "tenant_id": "tenant-rag2-fixture",
+  "text": "# Cloud budget\n\nCompute evidence is 42 USD.\n\n- Storage\n\n| Service | USD |\n|---|---|\n| VM | 42 |\n\n```sql\nSELECT 1\n```",
+  "warnings": []
+}

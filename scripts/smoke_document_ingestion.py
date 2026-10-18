@@ -3,7 +3,7 @@
 
 Run against an explicitly selected disposable stack. This creates one job per
 --tenant (default: tenant-core), using the document supplied with --document.
-Requires the backend's SQLAlchemy/psycopg dependencies and DATABASE_URL,
+Requires the processor dependencies, its prepared offline tokenizer, and DATABASE_URL,
 VECTOR_DATABASE_URL, and the password environment variable selected below.
 The output contains identifiers and checks, never credentials or document text.
 """
@@ -12,10 +12,10 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import math
 import os
 from pathlib import Path
 import time
+import sys
 import urllib.request
 
 from sqlalchemy import create_engine, text
@@ -41,7 +41,7 @@ def post(base_url: str, path: str, payload: dict, *, token=None, tenant=None):
 
 
 def verify_document(connection, *, job_id, tenant, content, source, artifact_uri, result,
-                    provider, dimension, chunk_size, chunk_overlap):
+                    provider, dimension, target_tokens, max_tokens, overlap_ratio):
     document = connection.execute(
         text("SELECT * FROM knowledge_documents WHERE job_id = :job_id"),
         {"job_id": job_id},
@@ -53,7 +53,7 @@ def verify_document(connection, *, job_id, tenant, content, source, artifact_uri
     assert document["artifact_uri"] == artifact_uri
     chunks = connection.execute(
         text("""
-            SELECT c.id, c.document_id, c.chunk_index, c.content, c.char_count,
+            SELECT c.id, c.document_id, c.chunk_index, c.content, c.char_count, c.metadata,
                    e.id AS embedding_id, e.chunk_id, e.dimension, e.provider,
                    vector_dims(e.embedding) AS stored_dimension
             FROM document_chunks c
@@ -65,20 +65,24 @@ def verify_document(connection, *, job_id, tenant, content, source, artifact_uri
     assert len(chunks) > 0
     assert len(chunks) == document["chunk_count"] == result["embedding_result"]["chunk_count"]
     assert len(chunks) == result["embedding_result"]["embedding_count"]
-    normalized = " ".join(content.split())
-    step = chunk_size - chunk_overlap
-    expected_count = 1 + math.ceil(max(0, len(normalized) - chunk_size) / step)
-    expected_chunks = [normalized[index * step:index * step + chunk_size].strip()
-                       for index in range(expected_count)]
-    expected_chunks = [chunk for chunk in expected_chunks if chunk]
-    assert [chunk["content"] for chunk in chunks] == expected_chunks
-    assert result["chunks"] == expected_chunks
+    # Recompute from the authorized manual-input contract, never from SQL output.
+    sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'apps/processor'))
+    from app.embeddings.contracts import ChunkingConfig
+    from app.embeddings.normalized import manual_document
+    from app.embeddings.structural_chunker import StructuredChunker
+    expected = StructuredChunker(ChunkingConfig(target_tokens,max_tokens,overlap_ratio)).chunk_document(
+        manual_document({'job_id':job_id,'tenant_id':tenant,'source':source,'artifact_uri':artifact_uri,'text_content':content}))
+    expected_chunks = expected['chunks']
+    assert [chunk['content'] for chunk in chunks] == [chunk['content'] for chunk in expected_chunks]
+    assert result['chunks'] == expected_chunks
+    assert document['metadata']['chunking'] == expected['manifest']
     for index, chunk in enumerate(chunks):
         assert chunk["chunk_index"] == index
-        assert chunk["id"] == chunk["chunk_id"] == f"{job_id}:chunk:{index}"
-        assert chunk["embedding_id"] == f"{job_id}:chunk:{index}:embedding"
+        assert chunk["id"] == chunk["chunk_id"] == expected_chunks[index]["chunk_id"]
+        assert chunk["embedding_id"] == expected_chunks[index]["chunk_id"] + ":embedding"
         assert chunk["document_id"] == job_id
-        assert chunk["content"] and chunk["content"] in normalized
+        assert chunk["content"] and chunk["metadata"] == expected_chunks[index]["metadata"]
+        assert chunk["metadata"]["token_count"] <= max_tokens
         assert chunk["char_count"] == len(chunk["content"])
         assert chunk["dimension"] == chunk["stored_dimension"] == dimension
         assert chunk["provider"] == provider
@@ -101,16 +105,17 @@ def main() -> None:
     parser.add_argument("--artifact-uri", default="docs/assistant-corpus/finops/azure-finops-mvp.md")
     parser.add_argument("--expected-provider", default="mock")
     parser.add_argument("--expected-dimension", type=int, default=8)
-    parser.add_argument("--expected-chunk-size", type=int, default=500)
-    parser.add_argument("--expected-chunk-overlap", type=int, default=50)
+    parser.add_argument("--expected-target-tokens", type=int, default=600)
+    parser.add_argument("--expected-max-tokens", type=int, default=800)
+    parser.add_argument("--expected-overlap-ratio", type=float, default=0.1)
     parser.add_argument("--timeout", type=float, default=60)
     args = parser.parse_args()
     if args.timeout <= 0:
         parser.error("--timeout must be positive")
     if args.expected_dimension <= 0:
         parser.error("--expected-dimension must be positive")
-    if not 0 <= args.expected_chunk_overlap < args.expected_chunk_size:
-        parser.error("expected chunk overlap must be nonnegative and less than chunk size")
+    if not 8 <= args.expected_target_tokens <= args.expected_max_tokens <= 800 or not 0 <= args.expected_overlap_ratio < 1:
+        parser.error("invalid expected token configuration")
     content = args.document.read_text(encoding="utf-8").strip()
     if not content:
         parser.error("document must contain non-whitespace text")
@@ -166,8 +171,8 @@ def main() -> None:
                                 source=args.source, artifact_uri=args.artifact_uri,
                                 result=result, provider=args.expected_provider,
                                 dimension=args.expected_dimension,
-                                chunk_size=args.expected_chunk_size,
-                                chunk_overlap=args.expected_chunk_overlap)
+                                target_tokens=args.expected_target_tokens, max_tokens=args.expected_max_tokens,
+                                overlap_ratio=args.expected_overlap_ratio)
         emit("smoke_passed", job_ids=jobs, provider=args.expected_provider,
              scope="HTTP, RabbitMQ worker, CockroachDB and pgvector persistence")
     finally:

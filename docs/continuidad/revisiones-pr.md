@@ -183,3 +183,45 @@ Change archivado técnicamente; aceptación/publicación/CI no se simulan.
 Publicado/CI todavía pendientes al preparar este commit; consultar recibo final
 por SHA en PR135. El único trámite posterior a CI/SQL conforme es revisión y
 validación incrementales del candidato estable. Sin merge ni otras PR.
+
+
+## Reconciliación tras integrar PR134 —18/10/2026
+
+Origen: petición humana transmitida por HAL9000, fuente
+`01a1270c-e332-7462-9c90-706d49ade92c`, chat custodio
+`01a14ab7-fc75-7e20-ab29-610d85739b5c`. Lucía pide actualizar135 para volver a
+aprobar. GitHub confirma conflicto de5f9dac36 tras PR134; `git ls-remote` y fetch
+confirman develop real `79aa76be6148d12e59ac55693b8c933546182ef8`, aunque el
+baseRefOid de la PR aún mostraba0e686f91. Se integra esa base una sola vez.
+
+Único conflicto en índice: unión de la fila135 y chunking134. Se conservan las
+correcciones entrantes de dos enlaces históricos rotos hacia evidencia JUP-068 y
+JUP-017;34 destinos activos, sin perder temas. Antes de notas nuevas,204 archivos
+entrantes y20 propios disjuntos mantienen blobs. Apps/scripts/.github/package/
+lockfile coinciden con develop79aa76be; los cambios de chunking, tokenizer,
+citas y evidencias C10/C14 proceden íntegramente de134, sin modificarlos.
+La política, fixture, tests, AGENTS, CONTRIBUTING y spec de JUP-126 mantienen
+sus blobs respecto a5f9dac36; excepción puntual y roles intactos.
+
+Nuevas comprobaciones: workflow14/14 sin omisiones (entra preparación de tokenizer
+embedding en CI), trazabilidad9 cambios, higiene2109 archivos, OpenSpec79/79
+estricto y diff-check conformes. Se reutilizan119 pruebas política/gobernanza por
+identidad de todas sus entradas: no se anuncian como ejecución nueva ni se
+repiten contrafactuales/campañas. La CI/SQL obligatoria comprobará el árbol
+publicado. Sin inferencias, modelos, claves, demo o despliegue.
+
+Leídas8 reviews,7 comentarios y0 inline antes de integrar. Paris publicó
+Validacion5562892839 COMMENTED favorable sobre5f9dac36; Lucía Revision5563180135
+COMMENTED y5563235772 APPROVED sobre ese mismo SHA (18/10 13:45:59UTC).
+La aprobación existe; no se presenta como pendiente en5f9. Conserva su alcance
+histórico tras el push y no acredita automáticamente el candidato reconciliado.
+Las observaciones no bloqueantes de Lucía no se corrigen en esta actualización.
+Tras CI/SQL conforme: Lucía reaprueba una vez y Paris confirma sólo compatibilidad
+del delta/base/workflow afectado, reutilizando evidencia vigente. Sin merge ni
+otras PR/ramas; HAL9000 coordina Discord, no se duplica ningún aviso.
+
+Estado al preparar el commit: reconciliación completa local; publicación y
+checks por SHA pendientes, se completan en recibo PR135 sin otro push documental.
+Recibos externos: `materiales/07-evidencias/PR135-base-PR134-20261018/` del workspace;
+`preservation-before-docs.json`, `workflow.log`, `trace.log`, `hygiene.log`,
+`openspec.log` y snapshots de reviews/conversación.

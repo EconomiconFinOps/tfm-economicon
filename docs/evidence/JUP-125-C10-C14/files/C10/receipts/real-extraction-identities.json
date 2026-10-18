@@ -1,0 +1,74 @@
+[
+  {
+    "format": "digital.pdf",
+    "method": "pdfplumber",
+    "source_hash": "62d493579a6dfbe7707a95e1bbe18aed4e382c9fac6dcb85ae5342ea2f5b322e",
+    "source_matches": true,
+    "normalized_matches": true,
+    "candidate_fixture_matches": true
+  },
+  {
+    "format": "hybrid.pdf",
+    "method": "pdfplumber+tesseract",
+    "source_hash": "b499c2cd816d211476fedcc46644ef0c63b3f3b13ef36f689985582cada597c3",
+    "source_matches": true,
+    "normalized_matches": true,
+    "candidate_fixture_matches": true
+  },
+  {
+    "format": "mixed.pdf",
+    "method": "pdfplumber+tesseract",
+    "source_hash": "0fd842345872ceba3957064faaf1837bcc52be150bdaa4501e1ea63e2b6ade62",
+    "source_matches": true,
+    "normalized_matches": true,
+    "candidate_fixture_matches": true
+  },
+  {
+    "format": "plain.txt",
+    "method": "utf-8",
+    "source_hash": "c88e4890e5153470f74985e9e45785439dbce2eb7700d2ba31704afabc436f20",
+    "source_matches": true,
+    "normalized_matches": true,
+    "candidate_fixture_matches": true
+  },
+  {
+    "format": "scanned.pdf",
+    "method": "pdfplumber+tesseract",
+    "source_hash": "edb53e067d9415ff4cb1a90a23c6437a108772c3628f5ab036189b97fd6b7378",
+    "source_matches": true,
+    "normalized_matches": true,
+    "candidate_fixture_matches": true
+  },
+  {
+    "format": "structure.doc",
+    "method": "libreoffice+python-docx",
+    "source_hash": "00770205d1db28a9664bc10b86e2437245b3ab65a1b7f8f47a5390ad2ea9d18d",
+    "source_matches": true,
+    "normalized_matches": true,
+    "candidate_fixture_matches": true
+  },
+  {
+    "format": "structure.docx",
+    "method": "python-docx",
+    "source_hash": "d706e357422a198a48a2f05e2d61c075b817c26a045541e47464f4e586ae4889",
+    "source_matches": true,
+    "normalized_matches": true,
+    "candidate_fixture_matches": true
+  },
+  {
+    "format": "structure.md",
+    "method": "markdown-it",
+    "source_hash": "04e27e9196692ab1f083a7595f27b005eed8e50eaf815e3de692225b4b6e9f3e",
+    "source_matches": true,
+    "normalized_matches": true,
+    "candidate_fixture_matches": true
+  },
+  {
+    "format": "table.pdf",
+    "method": "pdfplumber",
+    "source_hash": "efecbcd403c28374e1a385c8d4c6b6df288afeeaa223162fca5ab769d1948a8e",
+    "source_matches": true,
+    "normalized_matches": true,
+    "candidate_fixture_matches": true
+  }
+]

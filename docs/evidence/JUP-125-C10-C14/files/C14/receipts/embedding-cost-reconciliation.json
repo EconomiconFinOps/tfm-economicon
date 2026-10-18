@@ -1,0 +1,13 @@
+{
+  "time_utc": "2026-10-15T23:26:04.612710+00:00",
+  "identity_verified": true,
+  "historical_spend_before_lot_usd": 0.0005544200000000003,
+  "gateway_spend_after_lot_usd": 0.0006712000000000004,
+  "gateway_delta_usd": 0.00011678000000000003,
+  "own_call_usage_cost_usd": 0.00011678,
+  "own_gateway_call_response_cost_usd": 0.00011678,
+  "gateway_delta_matches_own_call": true,
+  "new_inference_calls": 0,
+  "mutations": 0,
+  "budget_pool": "rag-phase2-tests-20261015"
+}

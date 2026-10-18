@@ -1,0 +1,84 @@
+{
+  "blocks": [
+    {
+      "bbox": [
+        40.0,
+        39.31200000000001,
+        176.96000000000004,
+        55.31200000000001
+      ],
+      "coordinate_system": "pdf_points",
+      "kind": "text",
+      "page": 1,
+      "text": "Cloud costs page 1"
+    },
+    {
+      "bbox": [
+        40.0,
+        72.48400000000004,
+        189.39999999999995,
+        84.48400000000004
+      ],
+      "coordinate_system": "pdf_points",
+      "kind": "text",
+      "page": 1,
+      "text": "Compute budget is 42 USD."
+    },
+    {
+      "bbox": [
+        40.0,
+        39.31200000000001,
+        176.96000000000004,
+        55.31200000000001
+      ],
+      "coordinate_system": "pdf_points",
+      "kind": "text",
+      "page": 2,
+      "text": "Cloud costs page 2"
+    },
+    {
+      "bbox": [
+        40.0,
+        72.48400000000004,
+        189.39999999999995,
+        84.48400000000004
+      ],
+      "coordinate_system": "pdf_points",
+      "kind": "text",
+      "page": 2,
+      "text": "Compute budget is 42 USD."
+    }
+  ],
+  "document_id": "5ec41628-6ace-5cae-96a4-49d7b91d7da0",
+  "extraction_method": "pdfplumber",
+  "file_metadata": {
+    "Author": "anonymous",
+    "CreationDate": "D:20261015223526+00'00'",
+    "Creator": "anonymous",
+    "Keywords": "",
+    "ModDate": "D:20261015223526+00'00'",
+    "Producer": "ReportLab PDF Library - (opensource)",
+    "Subject": "unspecified",
+    "Title": "untitled",
+    "Trapped": "False",
+    "ocr_pages": [],
+    "page_count": 2
+  },
+  "origin": {
+    "artifact_uri": null,
+    "content_hash": "62d493579a6dfbe7707a95e1bbe18aed4e382c9fac6dcb85ae5342ea2f5b322e",
+    "file_size": 1892,
+    "filename": "digital.pdf",
+    "source": "document",
+    "tenant_id": "tenant-rag2-fixture",
+    "uploaded_by": "synthetic-fixture-operator"
+  },
+  "original_format": "pdf",
+  "result": "extracted",
+  "schema_version": 1,
+  "tenant_id": "tenant-rag2-fixture",
+  "text": "Cloud costs page 1\nCompute budget is 42 USD.\n\nCloud costs page 2\nCompute budget is 42 USD.",
+  "warnings": [
+    "pdf_reading_order_is_extractor_order_not_semantic_guarantee"
+  ]
+}

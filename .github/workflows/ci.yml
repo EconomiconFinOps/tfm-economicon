@@ -132,6 +132,9 @@ jobs:
       - name: Prepare pinned offline tokenizer
         if: matrix.service.name != 'azure-cost-api'
         run: python apps/processor/build_tokenizer.py
+      - name: Prepare pinned offline embedding tokenizer
+        if: matrix.service.name == 'processor'
+        run: python apps/processor/build_tokenizer.py --embedding-only
       - name: Run tests
         working-directory: ${{ matrix.service.path }}
         run: python -m pytest tests -q

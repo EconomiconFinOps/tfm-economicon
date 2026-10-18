@@ -1,0 +1,2 @@
+# Preserve exact historical package bytes without disabling text diffs.
+files/** -text

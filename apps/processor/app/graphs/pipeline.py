@@ -1,6 +1,7 @@
 from typing import TypedDict
 
 from langgraph.graph import END, StateGraph
+from app.embeddings.normalized import manual_document, parent_metadata
 
 
 class PipelineState(TypedDict, total=False):
@@ -12,7 +13,10 @@ class PipelineState(TypedDict, total=False):
     text_content: str
     normalized_source: str
     cost_focus: list[str]
-    chunks: list[str]
+    chunks: list
+    normalized_document: dict
+    chunking_manifest: dict
+    expected_publication: str | None
     embedding_result: dict
     insight: dict
     summary: str
@@ -50,6 +54,15 @@ class PipelineRunner:
         }
 
     def _chunk(self, state: PipelineState) -> PipelineState:
+        if hasattr(self.chunker, 'chunk_document'):
+            document = state.get('normalized_document') or manual_document(state)
+            if (document['document_id'] != state['job_id'] or document['tenant_id'] != state['tenant_id']
+                    or document['text'] != state['text_content']):
+                raise ValueError('Normalized document identity does not match the authorized job')
+            expected = self.vector_store.publication(state['job_id'], state['tenant_id'])
+            result = self.chunker.chunk_document(document)
+            return {**state, 'normalized_document':document, 'chunks':result['chunks'],
+                    'chunking_manifest':result['manifest'], 'expected_publication':expected}
         chunks = self.chunker.split(state["text_content"])
         return {
             **state,
@@ -64,7 +77,12 @@ class PipelineRunner:
         }
 
     def _embed_and_store(self, state: PipelineState) -> PipelineState:
-        embeddings = [self.embedding_provider.embed(chunk) for chunk in state["chunks"]]
+        embeddings = [self.embedding_provider.embed(chunk['content'] if isinstance(chunk, dict) else chunk)
+                      for chunk in state["chunks"]]
+        options = {}
+        if 'chunking_manifest' in state:
+            options = {'document_metadata':parent_metadata(state['normalized_document'], state['chunking_manifest']),
+                       'expected_publication':state['expected_publication']}
         embedding_result = self.vector_store.store_document(
             job_id=state["job_id"],
             tenant_id=state["tenant_id"],
@@ -74,6 +92,7 @@ class PipelineRunner:
             chunks=state["chunks"],
             embeddings=embeddings,
             provider_name=self.embedding_provider.name,
+            **options,
         )
         return {
             **state,

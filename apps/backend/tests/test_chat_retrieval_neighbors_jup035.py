@@ -16,13 +16,13 @@ class Connection:
     def __exit__(self,*args):pass
     def execute(self,statement,params):
         sql=str(statement);self.calls.append((sql,params))
-        if 'text_content' in sql:return [SimpleNamespace(id=doc,text_content='# Manual\ncontent') for doc in params['document_ids']]
+        if 'text_content' in sql:return [SimpleNamespace(id=doc,text_content='# Manual\ncontent',metadata={}) for doc in params['document_ids']]
         if 'neighbor_limit' in params:return Rows(self.neighbors)
         return Rows(self.seeds)
 
 
 def row(index,document='doc'):
-    return SimpleNamespace(chunk_id=f'{document}:{index}',document_id=document,tenant_id='tenant-a',chunk_index=index,source='manual',content='content',distance=.12)
+    return SimpleNamespace(chunk_id=f'{document}:{index}',document_id=document,tenant_id='tenant-a',chunk_index=index,source='manual',content='content',distance=.12,metadata={})
 
 
 def store(seeds,neighbors):

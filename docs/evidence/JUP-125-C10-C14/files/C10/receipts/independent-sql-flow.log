@@ -1,0 +1,113 @@
+{
+  "quality_claim": false,
+  "fixtures": [
+    {
+      "format": "digital.pdf",
+      "chunks": 1,
+      "persisted_metadata": true,
+      "reconstructed_from_sql_chunks_only": true
+    },
+    {
+      "format": "hybrid.pdf",
+      "chunks": 1,
+      "persisted_metadata": true,
+      "reconstructed_from_sql_chunks_only": true
+    },
+    {
+      "format": "mixed.pdf",
+      "chunks": 1,
+      "persisted_metadata": true,
+      "reconstructed_from_sql_chunks_only": true
+    },
+    {
+      "format": "plain.txt",
+      "chunks": 1,
+      "persisted_metadata": true,
+      "reconstructed_from_sql_chunks_only": true
+    },
+    {
+      "format": "scanned.pdf",
+      "chunks": 1,
+      "persisted_metadata": true,
+      "reconstructed_from_sql_chunks_only": true
+    },
+    {
+      "format": "structure.doc",
+      "chunks": 1,
+      "persisted_metadata": true,
+      "reconstructed_from_sql_chunks_only": true
+    },
+    {
+      "format": "structure.docx",
+      "chunks": 1,
+      "persisted_metadata": true,
+      "reconstructed_from_sql_chunks_only": true
+    },
+    {
+      "format": "structure.md",
+      "chunks": 1,
+      "persisted_metadata": true,
+      "reconstructed_from_sql_chunks_only": true
+    },
+    {
+      "format": "table.pdf",
+      "chunks": 1,
+      "persisted_metadata": true,
+      "reconstructed_from_sql_chunks_only": true
+    }
+  ],
+  "rollback_after_delete_preserves_all_rows": true,
+  "stale_publication_rejected": true,
+  "retrieval": {
+    "tenant_isolation": true,
+    "legacy_search_and_citations": true,
+    "new_pdf_citation_provenance": true,
+    "all_real_normalized_formats": [
+      {
+        "format": "digital.pdf",
+        "retrieved_chunks": 1,
+        "text_and_citation_provenance_contrasted": true
+      },
+      {
+        "format": "hybrid.pdf",
+        "retrieved_chunks": 1,
+        "text_and_citation_provenance_contrasted": true
+      },
+      {
+        "format": "mixed.pdf",
+        "retrieved_chunks": 1,
+        "text_and_citation_provenance_contrasted": true
+      },
+      {
+        "format": "plain.txt",
+        "retrieved_chunks": 1,
+        "text_and_citation_provenance_contrasted": true
+      },
+      {
+        "format": "scanned.pdf",
+        "retrieved_chunks": 1,
+        "text_and_citation_provenance_contrasted": true
+      },
+      {
+        "format": "structure.doc",
+        "retrieved_chunks": 1,
+        "text_and_citation_provenance_contrasted": true
+      },
+      {
+        "format": "structure.docx",
+        "retrieved_chunks": 1,
+        "text_and_citation_provenance_contrasted": true
+      },
+      {
+        "format": "structure.md",
+        "retrieved_chunks": 1,
+        "text_and_citation_provenance_contrasted": true
+      },
+      {
+        "format": "table.pdf",
+        "retrieved_chunks": 1,
+        "text_and_citation_provenance_contrasted": true
+      }
+    ]
+  }
+}
