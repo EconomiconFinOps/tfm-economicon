@@ -378,3 +378,51 @@ dos referencias originales de la composición antes de revisión/validación loc
 independientes. Nuevos dictámenes, CI del commit publicado y revisión/revalidación
 humanas siguen separados. Request changes de Víctor y límites históricos de
 C10/C14 no quedan resueltos por esta comprobación local.
+
+## Fix del contrato de recursos tras CI de f8dd03bc — 18/10/2026
+
+La CI PR `39126027820`, job processor `117671228100`, termina con **7 FAIL,
+2.532 PASS y 105 SKIP**; el push `39126024346` presenta el mismo fallo según
+el contexto fechado del liderazgo. SQL `39126027822` es favorable; no se extiende
+su resultado al processor. Se conserva el log original, sin reclasificarlo.
+
+Causa comprobada contra ambos padres: develop `0e686f91` declaraba correctamente
+el módulo de políticas `3e44194f…`; `3591ac7a` aún no tenía ese módulo/pin.
+La composición `f8dd03bc` incorpora el cambio mínimo de separador ya evaluado y
+su módulo pasa a `f53ea3d1…`, pero conserva el manifiesto de develop. El contraste
+completo de las 16 claves, con tokenizers **0.22.1**, encuentra sólo la huella del
+módulo y la huella agregada del ensamblador distintas. Es una omisión de la
+reconciliación; no se atribuye a fixtures, al tokenizador o a un fallo previo de B.
+
+Corrección: `policy_sections.module_sha256` pasa a
+`f53ea3d187cc2ace2f86000c630d290396fb24b86dcb5e6ac409905c91dfd57c`;
+`assembler_sha256` y el pin backend `ASSEMBLER_SHA` pasan a
+`abac9906452943afe95f41480c07acbaf55c281d0242377ab01fa6943f7499de`.
+Se conservan todas las otras claves, bytes de prompts/módulos, versiones y guardas.
+No se regenera el manifiesto completo ni se debilitan aserciones.
+
+Comprobaciones propias focales, sin sumar casos solapados:
+
+- Los siete casos exactos de CI fallan primero por `Resource contract mismatch`
+  desde el checkout `f8dd03bc`, antes de tocar los archivos. Sus originales se conservan.
+- Los mismos siete casos y aserciones pasan con la corrección y el tokenizador real.
+- Seis archivos afectados del processor: **103 PASS**, incluidos esos siete, controles
+  negativos de recursos, estructuras, presupuestos, política y módulos compartidos.
+- Tres consumidores backend (bundle, ensamblado de contexto y selección de evidencia):
+  primera ejecución **30 PASS / 24 errores** por falta local de `email_validator`;
+  se completa sólo la dependencia declarada en el entorno externo y después **54 PASS**.
+- Carga directa desde el candidato real en ambos servicios, con recurso externo fijado:
+  misma versión `jup-035.chat.v3:390de2615f8e6096acdc24971799c78dfed37cbe518ab3c856a0a7a59329960b`.
+  Ambos rechazan el manifiesto de `f8dd03bc` y uno con huella de módulo falsa y hash
+  agregado recalculado: **cuatro rechazos**; se conservan las comprobaciones estrictas.
+
+Las suites con rutas fijas se ejecutan en una vista de las 2.095 fuentes cotejadas
+contra el candidato, sin Git, con un único recurso añadido: tokenizador GLM de
+20.217.442 bytes y SHA256 `19e773648cb4e65de8660ea6365e10acca112d42a854923df93db4a6f333a82d`.
+Entorno propio Python 3.11.7; la CI original usa 3.12.15/Linux: no se afirma una
+repetición local de ese job entero. Sin SQL nuevo, modelos, inferencias, OCR ni gasto.
+Los originales y las identidades se custodian fuera del producto por el liderazgo.
+OpenSpec y la cobertura anterior de recuperación/chunker se reutilizan sólo por
+identidad; esta corrección no cambia sus entradas ni amplía la aceptación C10/C14.
+Nuevos controles PM, evaluaciones independientes y CI del commit siguiente quedan
+separados de estas comprobaciones y de los requisitos humanos de merge.

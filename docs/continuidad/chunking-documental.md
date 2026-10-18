@@ -239,3 +239,23 @@ con fuente idéntica/tokenizador externo, sin inferencias. Paquete de 119 archiv
 Resoluciones físicas aún pendientes de marcar por liderazgo; después dos referencias
 PM y evaluadores distintos de la composición. No se trasladan reviews humanas ni CI
 de un padre al merge local; no se reabren campañas ni se repite archivo OpenSpec.
+
+## Corrección del manifiesto tras CI de f8dd03bc — 18/10/2026
+
+La CI del processor sobre `f8dd03bc` conserva siete fallos de contrato de recursos
+(2.532 PASS y 105 SKIP en aquel job). La reconciliación cambió el separador del
+compilador de políticas para admitir el salto de línea canónico, pero omitió actualizar
+su huella en el manifiesto entrante de develop, antes coherente. El tokenizador sí
+coincide con la versión fijada. Se ajustan exclusivamente la huella de ese módulo,
+la huella agregada del ensamblador y el pin agregado independiente del backend;
+las comprobaciones estrictas, reglas y módulos conservan sus bytes.
+
+Reproducción focal: siete fallos iguales en el candidato original; después siete PASS,
+103 consumidores del processor y 54 del backend PASS en ejecuciones separadas.
+Ambos servicios cargan el bundle real con la misma versión y rechazan tanto el
+manifiesto obsoleto como uno falsificado autoconsistente. La vista de fuentes para
+pruebas con rutas fijas es byteidéntica y añade sólo el tokenizador fijado fuera del
+producto. La evidencia detalla el error local de dependencia y su resolución.
+Pendientes de este delta: controles PM nuevos, revisión y validación independientes,
+publicación y CI posteriores. Los dictámenes de la reconciliación y sus fallos originales
+se conservan; no se convierten en aceptación de esta corrección ni sustituyen roles humanos.

@@ -248,3 +248,20 @@ bytes, top_k, plazos/cancelación y filtros existentes, sin segunda inferencia.
 con chunker real, SQL propio, vecinos, política canónica y 003 antes/después
 en la misma instancia. Requiere el entorno combinado y variables del apartado
 SQL anterior; mocks 8D no acreditan calidad semántica.
+
+### Coherencia del bundle de chat al ajustar módulos compartidos
+
+El contrato `chat/v3` incluye la huella del texto UTF-8 normalizado por lectura del
+módulo `chat_policy_sections.py` dentro de `assembler_contract`. Un ajuste de ese
+módulo requiere contrastar el contrato completo y actualizar sólo la huella afectada,
+su agregado canónico y el pin explícito `ASSEMBLER_SHA` del verificador backend.
+No basta con que el manifiesto sea autoconsistente: el processor contrasta las
+entradas runtime y el backend su referencia independiente. Conservar las versiones,
+las comprobaciones de integridad y los originales que detectaron la divergencia.
+
+Verificar la carga del bundle empaquetado real en ambos servicios, su misma
+`prompt_version` y los rechazos del bundle anterior y de un módulo falsificado con
+agregado recalculado. Las pruebas con ruta fija al tokenizador pueden usar una vista
+externa de fuentes byteidénticas y recurso fijado, con identidad comprobada antes y
+después; no generar el recurso dentro del checkout ni confundir esa vista con Git.
+El caso de CI posterior a `f8dd03bc` y sus siete fallos se registra en la evidencia JUP-125.
