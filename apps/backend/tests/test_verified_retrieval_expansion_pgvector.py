@@ -1,5 +1,8 @@
 """Neighbors and complete policies must use only the captured verified generation."""
 import json
+import subprocess
+import sys
+import tempfile
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -54,8 +57,37 @@ def search(store, plan, **options):
         max_distance=.01, provider='mock', plan=plan, question='evidence', **options)
 
 
+def metric_projection(rows, plan, mode, monkeypatch):
+    """Exercise the actual offline adapter/validator with actual SQL output."""
+    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[3] / 'scripts/tests'))
+    from test_assistant_native_eval import evaluation
+    from test_assistant_metrics import base_results, passing, metrics, BANK, LABELS, CATALOGUE
+    result = base_results()
+    result['run']['retrieval'].update(mode=mode, top_k=20, max_distance=.01, space_id=plan['space_id'])
+    fragments = [evaluation.metric_fragment(row) for row in rows]
+    passing(result, 'JUP-069-006')['retrieved'] = fragments
+    metrics.validate_results(result, BANK, LABELS, CATALOGUE)
+    with tempfile.TemporaryDirectory() as directory:
+        source, output = Path(directory) / 'results.json', Path(directory) / 'report.json'
+        source.write_text(json.dumps(result), encoding='utf-8')
+        command = [sys.executable, '-B', str(Path(__file__).resolve().parents[3] / 'tools/assistant-metrics.py'),
+                   '--results', str(source), '--output', str(output)]
+        accepted = subprocess.run(command, capture_output=True, timeout=10)
+        assert accepted.returncode == 0, 'Metrics CLI rejected the actual captured expansion'
+        unmarked = json.loads(json.dumps(result))
+        [case] = [item for item in unmarked['cases'] if item['case'] == 'JUP-069-006']
+        expanded = next(item for item in case['retrieved'] if item.get('admission') in {'neighbor', 'policy'})
+        assert expanded['distance'] > result['run']['retrieval']['max_distance']
+        for key in ('admission', 'generation_id', 'space_id'):
+            expanded.pop(key)
+        source.write_text(json.dumps(unmarked), encoding='utf-8')
+        rejected = subprocess.run(command, capture_output=True, timeout=10)
+        assert rejected.returncode == 2, 'Removing expansion provenance must not relax the dense threshold'
+    return fragments
+
+
 @pytest.mark.parametrize('mode', ['dense', 'hybrid'])
-def test_verified_neighbor_outside_dense_pool_retains_snapshot(retrieval, mode):
+def test_verified_neighbor_outside_dense_pool_retains_snapshot(retrieval, mode, monkeypatch):
     save(retrieval, 'a-seed', 'SEED evidence\nNeighbor evidence\nNonrecursive evidence',
          chunks=['SEED evidence', 'Neighbor evidence', 'Nonrecursive evidence'])
     for index in range(21):
@@ -71,6 +103,10 @@ def test_verified_neighbor_outside_dense_pool_retains_snapshot(retrieval, mode):
     assert rows[1]['content'] == 'Neighbor evidence'
     assert 'a-seed:chunk:2' not in {row['chunk_id'] for row in rows}
     assert all(row['tenant_id'] == 'tenant-a' for row in rows)
+    fragments = metric_projection(rows, plan, mode, monkeypatch)
+    assert fragments[1]['admission'] == 'neighbor'
+    assert fragments[1]['generation_id'] == plan['generation_id']
+    assert fragments[1]['space_id'] == plan['space_id']
 
 
 POLICY = '# Guide\r\n\r\n## Reglas De Tagging\r\nPolicy  content.\r\n## Next\r\nEnd.'
@@ -79,7 +115,7 @@ POLICY = '# Guide\r\n\r\n## Reglas De Tagging\r\nPolicy  content.\r\n## Next\r\n
 @pytest.mark.parametrize('mode', ['dense', 'hybrid'])
 @pytest.mark.parametrize('canonical', [False, True])
 @pytest.mark.parametrize('bounded', [False, True])
-def test_verified_complete_policy_outside_threshold_uses_revision_and_coordinate_domain(retrieval, mode, canonical, bounded):
+def test_verified_complete_policy_outside_threshold_uses_revision_and_coordinate_domain(retrieval, mode, canonical, bounded, monkeypatch):
     save(retrieval, 'policy', POLICY, canonical=canonical)
     save(retrieval, 'foreign-policy', POLICY, tenant='tenant-b')
     plan = generation(retrieval, mode)
@@ -99,6 +135,9 @@ def test_verified_complete_policy_outside_threshold_uses_revision_and_coordinate
     assert 'Policy' in section['body'] and 'MUTABLE LEGACY' not in section['body']
     expected = POLICY if canonical else DocumentCitations(POLICY).normalized
     assert section['section_start'] == expected.index('## Reglas De Tagging')
+    [fragment] = metric_projection(rows, plan, mode, monkeypatch)
+    assert fragment['admission'] == 'policy'
+    assert fragment['generation_id'] == plan['generation_id']
 
 
 @pytest.mark.parametrize('reason', ['ambiguous', 'oversize', 'fragments', 'repeated'])

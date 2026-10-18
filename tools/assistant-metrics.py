@@ -50,7 +50,7 @@ ALLOWED = {
     "availability": {"requests", "server_errors"},
     "case": {"case", "outcome", "checks", "retrieved", "citations", "figures", "latency_ms", "failure_category", "failure_stage", "structured_ok", "evidence_refs"},
     "check": {"id", "class", "result", "decided_by"},
-    "fragment": {"chunk_id", "source", "heading", "distance", "admission"},
+    "fragment": {"chunk_id", "source", "heading", "distance", "admission", "generation_id", "space_id"},
     "figure": {"origin"},
     "refs": {"total", "dangling"},
 }
@@ -325,10 +325,22 @@ def validate_case(item: dict, index: int, bank_case: dict, run: dict) -> None:
         require(fragment, "heading", where, lambda value: isinstance(value, str) and len(value) <= 200 and value.isprintable())
         distance = require(fragment, "distance", where, lambda value: is_number(value) and 0 <= value <= 2)
         admission = fragment.get('admission', 'dense')
-        if admission not in {'dense', 'lexical', 'both'} or (retrieval.get('mode', 'dense') == 'dense' and admission != 'dense'):
+        if type(admission) is not str:
+            fail(f'{where}.admission', 'a known admission name is required')
+        expanded = admission in {'neighbor', 'policy'}
+        if admission not in {'dense', 'lexical', 'both', 'neighbor', 'policy'} or (
+                retrieval.get('mode', 'dense') == 'dense' and admission not in {'dense', 'neighbor', 'policy'}):
             fail(f'{where}.admission', 'admission must match the configured retrieval mode')
+        if expanded:
+            generation = require(fragment, 'generation_id', where,
+                lambda value: value is None or shaped(r'[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}')(value))
+            space = require(fragment, 'space_id', where, lambda value: value is None or shaped(DIGEST)(value))
+            if (space != retrieval.get('space_id') or (space is None) != (generation is None)):
+                fail(f'{where}.space_id', 'expansion identity must match the declared run; legacy identity stays unknown')
+        elif 'generation_id' in fragment or 'space_id' in fragment:
+            fail(f'{where}.admission', 'expansion identity requires an explicit expansion admission')
         if (retrieval["max_distance"] is not None and distance > retrieval["max_distance"]
-                and not (retrieval.get('mode') == 'hybrid' and admission == 'lexical')):
+                and not expanded and not (retrieval.get('mode') == 'hybrid' and admission == 'lexical')):
             fail(f"{where}.distance", "exceeds the maximum distance of the run")
     if retrieved and run["corpus"]["chunks"] == 0:
         fail(f"{path}.retrieved", "a corpus without fragments retrieves nothing")

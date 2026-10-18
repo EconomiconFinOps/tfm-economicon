@@ -163,3 +163,11 @@ backend (6). El candidato compuesto requiere dos referencias PM nuevas y
 evaluaciones independientes propias, cuyos informes se entregan por separado.
 Ver la [evidencia de integración](../evidence/JUP-127-validation.md#integracion-local-de-la-base-final--18102026).
 Sin nuevas inferencias, gasto, campañas, reindexación ni activación compartida.
+
+Sobre el compuesto local `552c23d3`, la revisión independiente detectó un P2
+del consumidor de métricas (expansiones densas legítimas rechazadas o etiquetadas
+como léxicas), y la validación dejó pendiente probar 4096/4097 caracteres pese
+a 146 casos conformes. Ambos originales adversos se conservan. Se corrige la
+procedencia productor/proyección/validador sin cambiar distancias ni el umbral;
+una prueba externa del principal cubre los ocho bordes de sección. La corrección
+requiere sus nuevas referencias PM y reevaluación afectada por los mismos roles.

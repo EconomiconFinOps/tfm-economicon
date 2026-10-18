@@ -332,3 +332,33 @@ referencias PM nuevas y sus evaluaciones independientes propias.
 No se declara todavía cierre, CI del compuesto, aceptación remota ni roles humanos.
 Herramientas de prueba fijadas y fuentes de sólo lectura en contenedores aislados,
 PostgreSQL/pgvector real; generación y embeddings simulados, cero llamadas o gasto.
+
+### Corrección del consumidor tras la evaluación del compuesto
+
+Los originales sobre `552c23d3` se conservan: REVIEW_FAIL P2 del consumidor de
+métricas (258 pruebas conformes no cubrían ese contrato) y NEEDS_CONTEXT de la
+validación (146 casos conformes, frontera de sección pendiente). Sus dos guardas
+originales y el retorno independiente del PM fueron conformes antes de modificar
+el candidato; no se sustituyen por referencias nuevas para ocultar el resultado.
+
+El backend marca expresamente las admisiones posicionales y de política. La
+proyección de métricas conserva distancia y pareja generación/espacio, o ambos
+nulos en legacy, y valida su coherencia con la ejecución. No atribuye a FTS una
+expansión ni admite una distancia densa sin procedencia explícita fuera del umbral.
+El control de tenant/proveedor/generación y los límites de recuperación no cambian;
+la validación offline no se presenta como verificación criptográfica del origen.
+
+Se conservan los rojos nuevos. Las tres suites del consumidor terminan con
+227 PASS / 1 omisión por Node ausente en la imagen Python; ese único caso de
+paridad Python/Node pasa por separado en el host con Node instalado. Tras los
+últimos controles de tipos, los 15 casos nativos y sus subcasos pasan. El
+productor SQL y adaptador/validador reales pasan 46 casos, incluidos ocho de
+4096/4097 preparados externamente por el principal. Los diez recorridos SQL
+de vecinos/políticas repiten el CLI real con sus resultados capturados: acepta
+las expansiones identificadas y rechaza el mismo dato al quitar la procedencia,
+sin relajar el umbral. Las selecciones solapadas no se suman.
+
+No hay cambios de modelo, prompt, regla financiera, recursos/pins, dependencias,
+API pública o receta. La reevaluación afectada de esta corrección se entrega
+por separado, después de nuevas referencias PM; los dictámenes adversos anteriores
+no se reescriben. Cero inferencias y gasto; no se repite una campaña.

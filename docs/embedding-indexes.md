@@ -124,6 +124,16 @@ se admiten posiciones literales únicas en el dominio canónico o legacy que
 corresponda, con un máximo de 64 tramos. Un fallo de un carril no se presenta
 como una ejecución híbrida correcta degradada silenciosamente.
 
+La captura técnica distingue las admisiones `neighbor` y `policy` de los carriles
+`dense`, `lexical` y `both`. El evaluador conserva la distancia real y copia para
+las expansiones la pareja `generation_id`/`space_id`: identificada en el índice
+verificado, ambos valores nulos en legacy (no se inventa identidad). El consumidor
+exige la pareja explícita y coincidencia con el espacio declarado de la ejecución.
+Una distancia densa sin esa procedencia sigue sujeta al umbral; la ausencia de
+rangos híbridos no se interpreta como admisión léxica. La validación offline es
+estructural sobre capturas del servidor, no una nueva prueba criptográfica de
+autorización; el aislamiento se aplica en la recuperación y se prueba con SQL.
+
 ## Operación explícita
 
 Desde el entorno del processor, `python -m app.reprocess_document` conserva la

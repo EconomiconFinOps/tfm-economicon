@@ -395,6 +395,30 @@ def reviewers_of(verdicts: list[dict]) -> list[str]:
     return sorted(names)
 
 
+def metric_fragment(item):
+    """Project actual admission; missing lane ranks never imply an FTS hit."""
+    fragment = {"chunk_id": item["chunk_id"], "source": item["source"],
+                "heading": item.get("heading") or "", "distance": item["distance"]}
+    ranking = item.get('retrieval', {})
+    if (not isinstance(ranking, dict)
+            or 'mode' in ranking and (type(ranking['mode']) is not str or ranking['mode'] not in {'dense', 'hybrid'})):
+        raise EvaluationError('Invalid retrieval admission capture')
+    admission = ranking.get('admission')
+    if admission is not None:
+        if (type(admission) is not str or admission not in {'neighbor', 'policy'}
+                or not {'generation_id', 'space_id'} <= ranking.keys()):
+            raise EvaluationError('Invalid expansion admission capture')
+        fragment.update(admission=admission, generation_id=ranking['generation_id'], space_id=ranking['space_id'])
+    elif ranking.get('mode') == 'hybrid':
+        dense, lexical = ranking.get('dense_rank'), ranking.get('lexical_rank')
+        if (dense is None and lexical is None
+                or any(rank is not None and (type(rank) is not int or not 1 <= rank <= 20)
+                       for rank in (dense, lexical))):
+            raise EvaluationError('Missing or invalid hybrid lane admission')
+        fragment['admission'] = 'lexical' if dense is None else 'dense' if lexical is None else 'both'
+    return fragment
+
+
 def score_case(case: dict, raw: dict | None, judgments: dict, rules: dict, *, provisional: bool = False):
     case_id = case["id"]
     analysis = {"reason": None, "disagreements": [], "single_decider": False, "objective_failures": []}
@@ -438,14 +462,7 @@ def score_case(case: dict, raw: dict | None, judgments: dict, rules: dict, *, pr
             analysis["single_decider"] = True
         judged.append({"id": check_id, "class": "judged", "result": "pass" if results == {"pass"} else "fail", "decided_by": people})
     checks.extend(judged)
-    retrieved = []
-    for item in raw['retrieved']:
-        fragment = {"chunk_id": item["chunk_id"], "source": item["source"], "heading": item.get("heading") or "", "distance": item["distance"]}
-        ranking = item.get('retrieval', {})
-        if ranking.get('mode') == 'hybrid':
-            fragment['admission'] = ('lexical' if ranking.get('dense_rank') is None else
-                                     'dense' if ranking.get('lexical_rank') is None else 'both')
-        retrieved.append(fragment)
+    retrieved = [metric_fragment(item) for item in raw['retrieved']]
     figures = classify_figures(raw["answer"], case, raw["retrieved"])
     untraceable = critical and any(item["origin"] == "untraceable" for item in figures)
     failed = [check["id"] for check in checks if check["result"] == "fail"]

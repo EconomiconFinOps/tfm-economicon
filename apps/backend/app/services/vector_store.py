@@ -119,6 +119,7 @@ class PgVectorQueryStore:
             ).all()
             if not rows and policy_section is None:
                 return []
+            neighbor_ids = set()
             if neighbor_seed_count and rows:
                 # One semantic retrieval, followed by bounded positional expansion
                 # in this same tenant/provider/snapshot; never another embedding.
@@ -157,6 +158,7 @@ class PgVectorQueryStore:
                         row = by_location.get(location)
                         if row is not None and row.chunk_id not in selected:
                             expanded.append(row); selected.add(row.chunk_id)
+                            neighbor_ids.add(row.chunk_id)
                     expanded.extend(row for row in rows if row.chunk_id not in selected)
                     rows = expanded[:top_k]
             policy_ids = set()
@@ -210,6 +212,9 @@ class PgVectorQueryStore:
                     "content": row.content,
                     "distance": float(row.distance),
                     **({'policy_priority': True} if row.chunk_id in policy_ids else {}),
+                    **({'retrieval': {'mode': 'dense', 'generation_id': None, 'space_id': None,
+                        'admission': 'policy' if row.chunk_id in policy_ids else 'neighbor'}}
+                       if row.chunk_id in policy_ids or row.chunk_id in neighbor_ids else {}),
                 }
                 for row in rows
             ]
@@ -548,6 +553,7 @@ class PgVectorQueryStore:
                     for location in pairs:
                         row = by_location.get(location)
                         if row is not None and (row['revision_id'], row['chunk_id']) not in selected:
+                            row['admission'] = 'neighbor'
                             expanded.append(row)
                             selected.add((row['revision_id'], row['chunk_id']))
                     expanded.extend(row for row in rows if (row['revision_id'], row['chunk_id']) not in selected)
@@ -559,6 +565,8 @@ class PgVectorQueryStore:
                 policy_rows = [row for section in sections
                     for row in self._generation_policy_rows(connection, params, base, section, timeout)]
                 policy_rows = list({(row['revision_id'], row['chunk_id']): row for row in policy_rows}.values())
+                for row in policy_rows:
+                    row['admission'] = 'policy'
                 policy_ids = {(row['revision_id'], row['chunk_id']) for row in policy_rows}
                 rows = (policy_rows + [row for row in rows
                     if (row['revision_id'], row['chunk_id']) not in policy_ids])[:limit]
@@ -588,6 +596,7 @@ class PgVectorQueryStore:
                     **({'policy_priority': True} if (row['revision_id'], row['chunk_id']) in policy_ids else {}),
                     'retrieval': {'generation_id': plan['generation_id'], 'space_id': plan['space_id'], 'mode': mode,
                         'rrf_k': plan['retrieval_config']['rrf_k'],
+                        **({'admission': row['admission']} if 'admission' in row else {}),
                         **{key: row[key] for key in ('dense_rank', 'lexical_rank', 'lexical_score', 'rrf_score') if key in row}}})
             return result
         return self._execute_query(query, deadline, cancelled)

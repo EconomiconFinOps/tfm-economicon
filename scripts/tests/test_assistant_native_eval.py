@@ -197,4 +197,65 @@ class HybridMetricsCompatibilityTests(unittest.TestCase):
         with self.assertRaises(metrics.ResultsError): metrics.validate_results(result, BANK, LABELS, CATALOGUE)
 
 
+class ExpandedMetricsCompatibilityTests(unittest.TestCase):
+    GENERATION = '11111111-1111-4111-8111-111111111111'
+
+    def test_explicit_expansions_retain_real_distance_and_captured_identity(self):
+        from test_assistant_metrics import base_results, passing, metrics, BANK, LABELS, CATALOGUE
+        for mode in ['dense', 'hybrid']:
+            for admission in ['neighbor', 'policy']:
+                for verified in [False, True]:
+                    with self.subTest(mode=mode, admission=admission, verified=verified):
+                        result = base_results()
+                        space = 'a' * 64 if verified else None
+                        result['run']['retrieval'].update(mode=mode, space_id=space)
+                        case = passing(result, 'JUP-069-006')
+                        source = {'chunk_id': 'synthetic', 'source': 'rules', 'distance': 1.,
+                            'retrieval': {'mode': mode, 'admission': admission,
+                                'generation_id': self.GENERATION if verified else None, 'space_id': space}}
+                        fragment = evaluation.metric_fragment(source)
+                        self.assertEqual(fragment['admission'], admission)
+                        self.assertEqual(fragment['distance'], 1.)
+                        self.assertEqual(fragment['generation_id'], source['retrieval']['generation_id'])
+                        self.assertEqual(fragment['space_id'], space)
+                        case['retrieved'] = [fragment]
+                        metrics.validate_results(result, BANK, LABELS, CATALOGUE)
+
+    def test_unmarked_dense_distance_still_fails_and_missing_hybrid_ranks_are_not_lexical(self):
+        from test_assistant_metrics import base_results, passing, metrics, BANK, LABELS, CATALOGUE
+        result = base_results()
+        case = passing(result, 'JUP-069-006')
+        source = {'chunk_id': 'synthetic', 'source': 'rules', 'distance': 1.}
+        case['retrieved'] = [evaluation.metric_fragment(source)]
+        with self.assertRaises(metrics.ResultsError):
+            metrics.validate_results(result, BANK, LABELS, CATALOGUE)
+        source['retrieval'] = {'mode': 'hybrid', 'dense_rank': None, 'lexical_rank': None}
+        with self.assertRaises(evaluation.EvaluationError):
+            evaluation.metric_fragment(source)
+
+    def test_expansion_scope_requires_explicit_paired_identity_matching_the_run(self):
+        from test_assistant_metrics import base_results, passing, metrics, BANK, LABELS, CATALOGUE
+        for invalid in ['missing-generation', 'missing-space', 'invalid-generation', 'wrong-space', 'unpaired']:
+            result = base_results()
+            result['run']['retrieval']['space_id'] = 'a' * 64
+            item = {'chunk_id': 'synthetic', 'source': 'rules', 'heading': '', 'distance': 1.,
+                    'admission': 'neighbor', 'generation_id': self.GENERATION, 'space_id': 'a' * 64}
+            if invalid == 'missing-generation': item.pop('generation_id')
+            if invalid == 'missing-space': item.pop('space_id')
+            if invalid == 'invalid-generation': item['generation_id'] = 'not-a-generation'
+            if invalid == 'wrong-space': item['space_id'] = 'b' * 64
+            if invalid == 'unpaired': item['generation_id'] = None
+            passing(result, 'JUP-069-006')['retrieved'] = [item]
+            with self.subTest(invalid=invalid), self.assertRaises(metrics.ResultsError):
+                metrics.validate_results(result, BANK, LABELS, CATALOGUE)
+
+    def test_unknown_admission_or_incomplete_capture_is_not_projected(self):
+        for ranking in [{'mode': 'dense', 'admission': 'anything'},
+                        {'mode': 'dense', 'admission': 'neighbor'},
+                        {'mode': 'dense', 'admission': []}, {'mode': 'invalid'}, {'mode': []}]:
+            source = {'chunk_id': 'synthetic', 'source': 'rules', 'distance': 1., 'retrieval': ranking}
+            with self.subTest(ranking=ranking), self.assertRaises(evaluation.EvaluationError):
+                evaluation.metric_fragment(source)
+
+
 if __name__ == '__main__': unittest.main()
