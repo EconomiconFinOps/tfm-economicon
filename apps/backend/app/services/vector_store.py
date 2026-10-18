@@ -482,7 +482,7 @@ class PgVectorQueryStore:
 
     def _search_generation(self, tenant, vector, limit, threshold, provider, plan, question, deadline, cancelled,
                            neighbor_seed_count=0, policy_section=None):
-        from app.services.retrieval_policy import anchors_match, fuse, lexical_eligible, query_policy
+        from app.services.retrieval_policy import fuse, lexical_eligible, query_policy
         self._verified_vector(vector)
         if plan['tenant_id'] != tenant or provider != plan['descriptor']['provider']:
             raise ValueError('Retrieval plan scope mismatch')
@@ -515,7 +515,8 @@ class PgVectorQueryStore:
                 + 'ORDER BY distance,chunk_id LIMIT 20'), {**params, 'threshold': threshold}).mappings()]
             mode = plan['retrieval_config']['mode']
             if mode == 'hybrid':
-                dense = [item for item in dense if anchors_match(item['content'], policy)]
+                # Anchors only gate lexical rescue. Dense remains inclusive of
+                # every captured candidate inside the declared distance bound.
                 timeout()
                 lexical_sql = base.replace('(e.embedding <=> CAST(:vector AS vector)) AS distance',
                     '(e.embedding <=> CAST(:vector AS vector)) AS distance,ts_rank_cd(c.search_vector,plainto_tsquery(\'pg_catalog.simple\',:question)) AS lexical_score')

@@ -59,6 +59,15 @@ The system SHALL support exact cosine dense retrieval and FTS/GIN/RRF hybrid ret
 - **WHEN** a captured neighbor or policy fragment has a distance beyond the semantic threshold
 - **THEN** producer and metrics projection preserve its explicit positional or policy admission, real distance and paired generation/space identity (both unknown for legacy); the validator checks identity against the declared run without labelling it lexical or relaxing ordinary dense admission
 
+#### Scenario: Literal normalization and lane-specific eligibility
+- **WHEN** equivalent NFC/NFD text or case variants occur in a complete literal anchor
+- **THEN** literal comparison uses NFC and casefold, preserving full token boundaries, signs and units
+- **WHEN** an incidental query anchor such as y/o or a differently formatted date does not occur in a dense candidate
+- **THEN** it does not remove that candidate within the inclusive cosine bound0.6; anchor eligibility gates only lexical rescue outside the dense set
+- **WHEN** a comparison is unsupported or malformed
+- **THEN** another identifier still cannot rescue it lexically; dense eligibility is independent of lexical rescue
+
+
 ### Requirement: Complete immutable generations and fencing
 The system SHALL build coherent snapshots, publish and activate complete generations by CAS, resume captured state and fence obsolete build executions.
 

@@ -171,3 +171,19 @@ a 146 casos conformes. Ambos originales adversos se conservan. Se corrige la
 procedencia productor/proyección/validador sin cambiar distancias ni el umbral;
 una prueba externa del principal cubre los ocho bordes de sección. La corrección
 requiere sus nuevas referencias PM y reevaluación afectada por los mismos roles.
+
+
+## Corrección autorizada de los dos bloqueantes de PR139 — 18/10/2026
+
+Desde57fe7c57, copia aislada `tfm-economicon-pr139-corrections`, rama local
+`fix/JUP-127-authorized-review-corrections`: implementación asistida de Alejandro,
+liderazgoParis, revisiónLucía y validaciónVíctor preservados. NFC/casefold literal y
+anclas sólo en rescate léxico; dense mantiene límite inclusivo0.6 y tenant/snapshot.
+Estos cambios modifican la recetaD; no se trasladan resultados históricos.
+Política30/30PASS tras baseline27PASS/3FAIL. Autorización humana posterior explícita
+para DockerServer supera el rechazo inicial de destino. Nueve controlesSQL reales:
+baseline6FAIL/3PASS, corrección9PASS; borde exacto0.6/0.599999 y aislamiento.
+PG17.11/runtimePython3.12.13 existentes, recursos propios1CPU/1GB retirados.
+OpenSpec80/80PASS. Candidato local pendiente de reconciliación develop, CI y
+review/validación humanas. Sin push, merge, reviews ni cambios de roles/otrasPR.
+Ver adenda de evidencia JUP-127.

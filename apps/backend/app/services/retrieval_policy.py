@@ -4,13 +4,16 @@ No formula evaluation or equivalence inference. FTS proposes candidates; this
 policy can only admit complete textual anchors with short contextual support.
 """
 import re
+import unicodedata
 
 STOP = frozenset('a al algo ante aquí como con cual cuáles cuando de del desde donde el ella en entre es esa ese esta este esto hay la las lo los me mi o para por que qué se si sin sobre su sus un una unas unos y how what which when where why is are the a an of for from in on to with and or this that show explain'.split())
 TOKENS = re.compile(r'>=|<=|!=|==|>|<|=|[\w]+(?:[-./][\w]+)*|[^\w\s]', re.UNICODE)
 
 
 def literal_tokens(value):
-    return TOKENS.findall(' '.join(value.split()))
+    # Preserve complete literal tokens while folding Unicode and identifier case.
+    normalized = unicodedata.normalize('NFC', value).casefold()
+    return TOKENS.findall(' '.join(normalized.split()))
 
 
 def contains_literal(content, anchor):

@@ -65,3 +65,12 @@ def test_terminal_punctuation_cannot_backtrack_and_drop_complete_unit(question, 
     assert policy['rescue'] and lexical_eligible(question,policy)
     assert len(policy['anchors'])==2 and policy['anchors'][1]==question.removeprefix('JUP-125 ').removesuffix('.')
     assert not lexical_eligible(wrong,policy) and not anchors_match(wrong,policy)
+
+@pytest.mark.parametrize('content,anchor', [
+    ('rg-prod-01', 'RG-PROD-01'),
+    ('Compa\u00f1\u00eda', 'Compan\u0303i\u0301a'),
+    ('STRASSE', 'Stra\u00dfe'),
+])
+def test_literal_anchors_normalize_unicode_and_case_without_substring_rescue(content, anchor):
+    assert contains_literal(content, anchor)
+    assert not contains_literal(content + '0', anchor)

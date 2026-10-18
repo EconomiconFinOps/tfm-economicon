@@ -18,7 +18,7 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
-| [Índices de embeddings](indices-embeddings.md) | JUP-127: composición local de 27a69cb0 con PR #134 f8dd03bc/fdcccf8e y develop 0e686f91. Vecinos y políticas de B adaptados a la generación capturada, sin rescate legacy; SQL/mock, operación, citas, historial y recursos conformes. Requiere dictámenes independientes propios; CI y roles humanos mantienen su fase. Sin campañas, reindexación ni activación. | 2026-10-18 |
+| [Índices de embeddings](indices-embeddings.md) | PR139: dos bloqueantes57fe7c57 corregidos sólo local por excepción humana; política30PASS y9SQL realesPASS tras baseline6FAIL/3PASS; candidato local, sin publicación ni dictamen nuevo. | 2026-10-18 |
 | [Politica de revisiones](revisiones-pr.md) | PR135: reconciliación de5f9dac36 con develop79aa76be tras PR134; excepción y entradas119 intactas, índice unido sin perder chunking. CI/SQL del nuevo candidato y revalidación incremental pendientes; aprobación previa conserva5f9. | 2026-10-18 |
 | [Chunking documental](chunking-documental.md) | JUP-125 / PR #134: reconciliación publicada en f8dd03bc. CI processor detecta siete fallos por huella de política obsoleta; fix mínimo de manifiesto y pin backend preparado, con reproducción y pruebas focales favorables. Controles nuevos y evaluación independiente del fix pendientes; requisitos humanos conservados. | 2026-10-18 |
 | [Ingesta documental](ingesta-documental.md) | JUP-124 / PR #133 integrada en develop 466b083a; extracción Markdown y OCR con límites/documentación propios. La reconciliación local de B preserva esa implementación sin trasladar sus dictámenes a B. | 2026-10-17 |

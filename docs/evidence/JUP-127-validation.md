@@ -362,3 +362,47 @@ No hay cambios de modelo, prompt, regla financiera, recursos/pins, dependencias,
 API pública o receta. La reevaluación afectada de esta corrección se entrega
 por separado, después de nuevas referencias PM; los dictámenes adversos anteriores
 no se reescriben. Cero inferencias y gasto; no se repite una campaña.
+
+
+## Correcciones solicitadas por Lucía sobre 57fe7c57 — 18/10/2026
+
+El humano autoriza una excepción puntual de implementación asistida para los dos
+bloqueantes de la review `PRR_kwDOT_7PXs8AAAABS6ChrA`. Alejandro aporta las
+correcciones asistidas, Paris conserva liderazgo, Lucía revisión y Víctor validación.
+Este trabajo no es un dictamen independiente ni una aceptación del candidato.
+
+La comparación literal aplica NFC y casefold sin perder límites de tokens,
+operadores ni unidades. La elegibilidad de anclas queda limitada al rescate léxico:
+el carril denso conserva todos los candidatos de la generación/tenant capturados
+con distancia inclusiva0.6. Las comparaciones no soportadas continúan sin rescate
+léxico por otro identificador. No se cambian modelos, vectores, prompts, opciones
+por defecto ni generaciones persistidas.
+
+Esto **cambia la receta D de recuperación**. Las cifras de campañas y las revisiones
+históricas se conservan con sus bytes y alcance; no acreditan el comportamiento
+corregido ni una mejora de calidad. No se ejecutan nuevas inferencias ni campañas.
+Las observaciones no bloqueantes de esa review quedan fuera de este ajuste.
+
+Evidencia propia local: baseline de política27PASS/3FAIL en los tres nuevos controles
+de normalización; candidato30PASS. Contrafactual y logs fuera de Git en
+`materiales/07-evidencias/PR139-correcciones-20261018/`. Nueve casos PostgreSQL/
+pgvector reales dan **6FAIL/3PASS en57fe7c57 y9PASS corregidos**, con idénticas
+aserciones. Cubren identificadores en distintas cajas, NFC/NFD, y/o, fechas,
+borde exacto0.6 (vector entero2,4,2,1; exclusión0.599999), aislamiento y no-rescate
+comparativo. El SQL usa generaciones construidas/activadas por el processor real
+con proveedor mock, FTS real y vectores sintéticos; no mide calidad ni uso real.
+
+Destino DockerServer expresamente autorizado por el humano el18/10, fuentes .py
+con allowlist y hashes (sin documentos ni credenciales). PostgreSQL17.11 imagen
+`pgvector/pgvector:pg17` sha256cf134a767f474095eeba57e0117be8e568e011a63f33fbf252f14c9b760f8e6f;
+Python3.12.13 y tokenizador0.14.0 fijado en runtime existente. Cada contenedor
+propio limitado a1CPU/1GB, PostgreSQL sólo loopback y tmpfs; retirada de todos
+confirmada. Dos errores iniciales de harness (dependencia pytest y cwd) se
+conservan como errores, no como fallos del producto ni ejecuciones válidas.
+
+El descriptor de espacio y los vectores no cambian: las huellas identifican la
+preparación/embedding, no estos bytes del lector. `literal_context_v1` conserva
+sus guardas completas; corregir su aplicación no migra el índice ni crea un
+proveedor/modelo nuevo. El SHA del código fija la variación de recetaD a revalidar.
+OpenSpec80/80PASS. CI remota y dictámenes humanos del candidato siguen pendientes.
+No hay publicación ni aprobación nueva por este registro local.
