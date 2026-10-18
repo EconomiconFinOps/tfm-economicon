@@ -326,7 +326,7 @@ def test_real_fts_literal_comparators_lexical_rescue_and_independent_flags(setup
 
 @pytest.mark.parametrize('dense', [False, True])
 @pytest.mark.parametrize('number', ['20', '20.5'])
-def test_real_unquoted_percent_rejects_wrong_units_from_both_lanes(setup, backend_query_store, dense, number):
+def test_real_unquoted_percent_guards_lexical_rescue_without_vetoing_dense(setup, backend_query_store, dense, number):
     store, generations, identity = setup
     for identifier, content in [('correct', f'utilization > {number}%'), ('wrong-unit', f'utilization > {number} USD'),
                                 ('wrong-op', f'utilization >= {number}%'), ('wrong-number', 'utilization > 200%')]:
@@ -342,10 +342,18 @@ def test_real_unquoted_percent_rejects_wrong_units_from_both_lanes(setup, backen
         vector = ([0., 1.] if dense else [1., 0.]) + [0.] * 1534
         hits = query.search_chunks('a', vector, max_distance=.6, provider='mock', plan=plan,
                                    question=f'utilization > {number}%')
-        assert [item['document_id'] for item in hits] == ['correct']
-        assert hits[0]['retrieval']['dense_rank'] == (1 if dense else None)
-        assert hits[0]['retrieval']['lexical_rank'] == 1
-        assert hits[0]['distance'] == (0. if dense else 1.)
+        expected = {'correct', 'wrong-unit', 'wrong-op', 'wrong-number'} if dense else {'correct'}
+        assert {item['document_id'] for item in hits} == expected
+        assert len(hits) == len(expected)
+        assert all(item['distance'] == (0. if dense else 1.) for item in hits)
+        assert all(item['retrieval']['generation_id'] == candidate
+                   and item['retrieval']['space_id'] == plan['space_id'] for item in hits)
+        if dense:
+            assert sorted(item['retrieval']['dense_rank'] for item in hits) == [1, 2, 3, 4]
+        else:
+            assert hits[0]['retrieval']['dense_rank'] is None
+        correct = next(item for item in hits if item['document_id'] == 'correct')
+        assert correct['retrieval']['lexical_rank'] == 1
     finally:
         query.close()
 
