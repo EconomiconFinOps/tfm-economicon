@@ -230,3 +230,21 @@ errores ajenos sin reintento y límites tras rollback. Embeddings mock 8D, sin i
 El título Markdown conserva su sintaxis previa; quitar marcadores ATX no retrocede
 sobre espacios largos. `tests/test_parent_metadata.py` fija bordes y limita a 5 s
 un subproceso con 200.000 espacios.
+
+## Convivencia con vecinos y políticas del chat
+
+Las consultas de vecinos y de política usan el mismo tenant, proveedor y snapshot
+que la recuperación principal, incluyendo metadata o su fallback 003. El título
+y las citas enriquecidas siguen usando metadata/source_spans. Los `section_spans`
+para B usan el dominio legacy de blancos colapsados o, si el padre conserva su
+manifiesto de chunking, el texto canónico. Los rangos nunca mezclan ambos dominios
+en una fuente; el contenido del chunk permanece literal. Sólo coincidencias
+exactas y únicas adquieren rangos de sección, con un máximo de 64 por fuente.
+Contexto repetido/reformateado o ambiguo conserva el rechazo conservador de
+autoridad de política. Siguen los límites de documentos, seis chunks por sección,
+bytes, top_k, plazos/cancelación y filtros existentes, sin segunda inferencia.
+
+`tests/test_chunking_retrieval_integration.py` del backend prueba los cruces
+con chunker real, SQL propio, vecinos, política canónica y 003 antes/después
+en la misma instancia. Requiere el entorno combinado y variables del apartado
+SQL anterior; mocks 8D no acreditan calidad semántica.

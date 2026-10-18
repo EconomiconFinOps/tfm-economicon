@@ -1,6 +1,7 @@
 import asyncio
 import ipaddress
 import math
+import re
 import time
 
 import structlog
@@ -16,6 +17,7 @@ MAX_TOP_K = 20
 logger = structlog.get_logger("vector_store")
 MAX_COSINE_DISTANCE = 2.0
 UNDEFINED_COLUMN = "42703"
+MAX_POLICY_CHUNKS = 6
 
 
 class EmbeddingDimensionMismatch(StartupError):
@@ -46,7 +48,8 @@ class PgVectorQueryStore:
 
     def search_chunks(
         self, tenant_id: str, query_embedding: list[float], top_k: int = 4, max_distance: float | None = None,
-        provider: str | None = None, *, deadline: float | None = None, cancelled=None,
+        provider: str | None = None, *, deadline: float | None = None, cancelled=None, neighbor_seed_count: int = 0,
+        policy_section: str | None = None,
     ) -> list[dict]:
         if isinstance(top_k, bool) or not isinstance(top_k, int) or not 1 <= top_k <= MAX_TOP_K:
             raise ValueError(f"top_k must be an integer between 1 and {MAX_TOP_K}")
@@ -55,6 +58,12 @@ class PgVectorQueryStore:
             or not math.isfinite(max_distance) or not 0 < max_distance <= MAX_COSINE_DISTANCE
         ):
             raise ValueError("max_distance must be greater than 0 and at most 2")
+        if type(neighbor_seed_count) is not int or not 0 <= neighbor_seed_count <= top_k:
+            raise ValueError('Invalid neighbor seed count.')
+        if policy_section is not None:
+            from app.core.chat_policy_sections import SECTIONS
+            if policy_section not in SECTIONS.values() or not isinstance(provider, str) or not provider:
+                raise ValueError('Invalid policy section lookup.')
         vector = "[" + ",".join(f"{value:.6f}" for value in query_embedding) + "]"
         threshold = "WHERE distance <= :max_distance" if max_distance is not None else ""
         provider_filter = "AND ce.provider = :provider" if provider is not None else ""
@@ -101,6 +110,57 @@ class PgVectorQueryStore:
                 ),
                 parameters,
             ).all()
+            if not rows and policy_section is None:
+                return []
+            if neighbor_seed_count and rows:
+                # One semantic retrieval, followed by bounded positional expansion
+                # in this same tenant/provider/snapshot; never another embedding.
+                seeds = rows[:neighbor_seed_count]
+                pairs = list(dict.fromkeys((row.document_id, index) for row in seeds
+                    for index in (row.chunk_index - 1, row.chunk_index + 1) if index >= 0))
+                if pairs:
+                    timeout()
+                    neighbor_params = {'tenant_id': tenant_id, 'neighbor_limit': 2 * neighbor_seed_count, 'query_embedding': vector}
+                    predicates = []
+                    for index, (document, chunk_index) in enumerate(pairs):
+                        predicates.append(f'(dc.document_id = :document_{index} AND dc.chunk_index = :index_{index})')
+                        neighbor_params[f'document_{index}'] = document
+                        neighbor_params[f'index_{index}'] = chunk_index
+                    neighbor_provider = ''
+                    if provider is not None:
+                        neighbor_params['provider'] = provider
+                        neighbor_provider = 'AND ce.provider = :provider'
+                    neighbors = connection.execute(text(f"""
+                        SELECT DISTINCT dc.id AS chunk_id, kd.id AS document_id,
+                            kd.tenant_id AS tenant_id, dc.chunk_index AS chunk_index,
+                            kd.source AS source, dc.content AS content,
+                            {chunk_metadata} AS metadata,
+                            (ce.embedding <=> CAST(:query_embedding AS vector)) AS distance
+                        FROM knowledge_documents kd
+                        JOIN document_chunks dc ON dc.document_id = kd.id
+                        JOIN chunk_embeddings ce ON ce.chunk_id = dc.id
+                        WHERE kd.tenant_id = :tenant_id {neighbor_provider}
+                            AND ({' OR '.join(predicates)})
+                        ORDER BY document_id, chunk_index, chunk_id
+                        LIMIT :neighbor_limit
+                    """), neighbor_params).all()
+                    by_location = {(row.document_id, row.chunk_index): row for row in neighbors}
+                    expanded, selected = list(seeds), {row.chunk_id for row in seeds}
+                    for location in pairs:
+                        row = by_location.get(location)
+                        if row is not None and row.chunk_id not in selected:
+                            expanded.append(row); selected.add(row.chunk_id)
+                    expanded.extend(row for row in rows if row.chunk_id not in selected)
+                    rows = expanded[:top_k]
+            policy_ids = set()
+            if policy_section is not None:
+                from app.core.chat_policy_sections import COMPANION_SECTIONS
+                policy_rows = self._policy_rows(connection, tenant_id, provider, vector, policy_section, timeout, structured)
+                for companion in COMPANION_SECTIONS.get(policy_section, ()):
+                    policy_rows += self._policy_rows(connection, tenant_id, provider, vector, companion, timeout, structured)
+                policy_rows = list({row.chunk_id: row for row in policy_rows}.values())
+                policy_ids = {row.chunk_id for row in policy_rows}
+                rows = (policy_rows + [row for row in rows if row.chunk_id not in policy_ids])[:top_k]
             if not rows:
                 return []
             # Fetch each source document once, scoped to the same tenant and
@@ -137,9 +197,12 @@ class PgVectorQueryStore:
                     "chunk_index": row.chunk_index,
                     **location(row),
                     **({'chunk_metadata':row.metadata} if row.metadata else {}),
+                    "section_spans": locations[row.document_id].section_spans(row.content,
+                        original=bool(documents[row.document_id].metadata.get("chunking"))),
                     "source": row.source,
                     "content": row.content,
                     "distance": float(row.distance),
+                    **({'policy_priority': True} if row.chunk_id in policy_ids else {}),
                 }
                 for row in rows
             ]
@@ -168,6 +231,73 @@ class PgVectorQueryStore:
         with self.engine.connect().execution_options(isolation_level="REPEATABLE READ") as connection:
             self._capture_peer(connection)
             return tolerant(connection)
+
+    def _policy_rows(self, connection, tenant_id, provider, vector, section, timeout, structured=True):
+        """Exact section expansion in the caller's tenant/provider snapshot.
+
+        Two document candidates or seven chunk candidates are ambiguity/budget
+        sentinels, not samples from which a favorable policy is selected. Source
+        text is bounded before transport; a large candidate is never truncated
+        into an apparently complete policy. No second embedding is requested.
+        """
+        from app.core.chat_policy_sections import complete_sections, normalized
+        timeout()
+        document_metadata = "metadata" if structured else "CAST('{}' AS jsonb)"
+        heading = (r'(?m)^[ ]{0,3}#{1,6}[ \t]+' + r'[ \t]+'.join(re.escape(w) for w in section.split())
+                   + r'[ \t]*(#+[ \t]*)?\r?$')
+        documents = connection.execute(text(f"""
+            SELECT kd.id, CASE WHEN octet_length(kd.text_content) <= 65536
+                THEN kd.text_content ELSE NULL END AS text_content, {document_metadata} AS metadata
+            FROM knowledge_documents kd
+            WHERE kd.tenant_id = :tenant_id AND kd.text_content ~* :policy_heading
+                AND EXISTS (SELECT 1 FROM document_chunks dc
+                    JOIN chunk_embeddings ce ON ce.chunk_id = dc.id
+                    WHERE dc.document_id = kd.id AND ce.provider = :provider)
+            ORDER BY kd.id LIMIT 2
+        """), {'tenant_id': tenant_id, 'provider': provider, 'policy_heading': heading}).all()
+        if len(documents) != 1 or documents[0].text_content is None:
+            return []
+        document = documents[0]
+        locations = DocumentCitations(document.text_content)
+        indices = [i for i, title in enumerate(locations.sections) if normalized(title) == normalized(section)]
+        if len(indices) != 1 or indices[0]+1 >= len(locations.offsets):
+            return []
+        original = bool(document.metadata.get("chunking"))
+        offsets = locations.original_offsets if original else locations.offsets
+        start, end = offsets[indices[0]:indices[0]+2]
+        if not 0 < end-start <= 4096:
+            return []
+        timeout()
+        chunk_metadata = "dc.metadata" if structured else "NULL"
+        rows = connection.execute(text(f"""
+            SELECT chunk_id, document_id, tenant_id, chunk_index, source, content, distance, metadata
+            FROM (
+                SELECT dc.id AS chunk_id, kd.id AS document_id, kd.tenant_id,
+                    dc.chunk_index, kd.source, dc.content, {chunk_metadata} AS metadata,
+                    (ce.embedding <=> CAST(:query_embedding AS vector)) AS distance,
+                    position(dc.content in :policy_normalized)-1 AS section_offset
+                FROM knowledge_documents kd
+                JOIN document_chunks dc ON dc.document_id = kd.id
+                JOIN chunk_embeddings ce ON ce.chunk_id = dc.id
+                WHERE kd.tenant_id = :tenant_id AND kd.id = :policy_document
+                    AND ce.provider = :provider
+            ) scoped
+            WHERE section_offset >= 0 AND section_offset <= :policy_end
+                AND section_offset + char_length(content) > :policy_start
+            ORDER BY chunk_index, chunk_id LIMIT :policy_chunk_limit
+        """), {'tenant_id': tenant_id, 'provider': provider, 'query_embedding': vector,
+               'policy_document': document.id, 'policy_normalized': document.text_content if original else locations.normalized,
+               'policy_start': start, 'policy_end': end,
+               'policy_chunk_limit': MAX_POLICY_CHUNKS+1}).all()
+        if (not rows or len(rows) > MAX_POLICY_CHUNKS
+                or any(row.document_id != document.id or row.tenant_id != tenant_id for row in rows)):
+            return []
+        sources = [{'id': row.chunk_id, 'kind': 'corpus', 'content': row.content,
+                    'provenance': {'document_id': document.id, 'chunk_index': row.chunk_index,
+                                   'sections': locations.section_spans(row.content, original=original)}} for row in rows]
+        if len(complete_sections(sources, section)) != 1:
+            return []
+        return list(rows)
 
     def _bounded_query(self, query, deadline, cancelled):
         """Request-owned async IO: no shared pool checkout or synchronous read."""

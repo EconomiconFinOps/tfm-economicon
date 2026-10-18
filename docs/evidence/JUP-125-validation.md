@@ -326,3 +326,55 @@ límites Alejandro 5562495088 y revisión Lucía 5562572813 conservan SHA 82669e
 y autoría; aún no acreditan este delta. No se reabren C10/C14/C13 ni notas N1–N4;
 se reutiliza evidencia no afectada por identidad. Evaluación independiente y
 publicación del fix pendientes, separadas de reviews humanas y Request changes.
+
+## Reconciliación con develop fijado — 18/10/2026
+
+Candidato local sin commit: `3591ac7a12419de0780faea167dce44a1536d131` más
+`0e686f9180d5ce195391e634a79ef2d6d3182af6`, preparado por liderazgo; base común
+`466b083a`. No se actualiza de nuevo develop. Tres conflictos de texto resueltos
+conservando ambas aportaciones; hay seis rutas modificadas por ambos padres.
+
+La recuperación mantiene ATX lineal, metadata/procedencia, legacy y fallback 003
+selectivo de JUP-125, además de vecinos y política entrantes de B. Vecinos y
+política transportan metadata en el mismo snapshot, también al faltar 003.
+Los rangos de sección usan texto normalizado en legacy y texto canónico en
+documentos con manifiesto de chunking. Se conserva el contenido literal de los
+chunks, sus identificadores, vectores y source_spans; no se sustituyen por una
+vista normalizada. Fragmentos ambiguos/reformateados no ganan autoridad, y el
+contrato de B limita a 64 los rangos por fuente. Los dos módulos compartidos de
+política conservan identidad; sólo admiten el separador literal de línea de la
+representación canónica, con las mismas reglas y límites.
+
+Comprobaciones propias de la composición, separadas por ejecución (no sumar
+casos repetidos):
+
+| Selección | Resultado y vigencia |
+| --- | --- |
+| Recuperación/citas/metadata y política inmediata | 136 PASS en la composición compatible; la ampliación posterior sólo añade casos de interacción y el rechazo del exceso de rangos. |
+| Interacción real chunker → SQL → vecinos/política | 10 PASS finales: normal/acotado, metadata de chunk/padre/ambas ausente, mismo store tras 003 y contenido/citas preservados. |
+| Consumidores del límite de secciones e interacción | 68 PASS tras el ajuste final de 64/65 rangos, incluidos los diez casos anteriores. |
+| Política processor y módulos compartidos | 50 PASS; módulos backend/processor idénticos. |
+| Construcción de contexto, selección y bundle entrante | 54 PASS con tokenizador GLM fijado y fuentes byte-idénticas en una vista externa; no inferencias. |
+| Índice de continuidad | 33 destinos reales, sin duplicados ni ausentes. |
+| Paquete C10/C14 | 119 miembros byte-idénticos al ZIP; ZIP, manifiesto y SHA256SUMS originales intactos, sin ejecutar campañas. |
+
+Entorno: Windows/Python 3.11.7, requisitos declarados backend/processor, pgvector17
+propio desechable, embeddings mock 8D y tokenizadores externos fijados. La vista
+externa sólo permite a fixtures con ruta GLM fija leer el recurso fuera del
+producto; sus fuentes se cotejan byte a byte. Los errores iniciales de preparación
+(INSERT de la prueba y recurso GLM ausente) y el FAIL real de política canónica
+se conservan por separado; no son resultados favorables ni se borran.
+
+La preservación se verifica contra ambos padres, incluyendo todas las rutas
+disjuntas y las adaptaciones enumeradas; no se elige un archivo completo de un
+padre para descartar el otro. La evidencia previa 72/53 y los dictámenes del fix
+`3591ac7a` se reutilizan sólo donde código y entradas mantienen identidad; esta
+tabla acredita específicamente la interacción nueva. No se repiten OCR, C10/C14,
+campañas semánticas, mutación o inferencias. OpenSpec sigue archivado; no se
+rediseña ni se renumera JUP/ADR.
+
+Pendientes de este hito: liderazgo debe marcar las resoluciones en Git y custodiar
+dos referencias originales de la composición antes de revisión/validación local
+independientes. Nuevos dictámenes, CI del commit publicado y revisión/revalidación
+humanas siguen separados. Request changes de Víctor y límites históricos de
+C10/C14 no quedan resueltos por esta comprobación local.

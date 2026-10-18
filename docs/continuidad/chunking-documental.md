@@ -226,3 +226,16 @@ con SQL real propio y límites; embeddings mock 8D, sin nuevas llamadas. Prerreq
 de SQL/citas y omisión en CI documentados en el runbook. Original 2de57bd0 y base 466b083a
 conservados; sin reconciliación. Evaluación independiente y publicación pendientes;
 no sustituye reviews humanas ni elimina Request changes.
+
+## Composición con develop 0e686f91 — 18/10/2026
+
+Se prepara sobre `3591ac7a` la incorporación fija de develop `0e686f91`. Se conservan
+chunking/procedencia/fallback 003 y vecinos/políticas entrantes. Se transporta metadata
+en las filas adicionales y se distinguen posiciones legacy normalizadas de posiciones
+canónicas sin cambiar chunks; fragmentos ambiguos o más de 64 rangos no ganan autoridad.
+Pruebas e inventario se detallan en la evidencia JUP-125: 136recuperación/citas, 10 interacciones
+finales (incluidas en 68 consumidores finales), 50 processor compartidos y 54 contexto
+con fuente idéntica/tokenizador externo, sin inferencias. Paquete de 119 archivos y 33 destinos íntegros.
+Resoluciones físicas aún pendientes de marcar por liderazgo; después dos referencias
+PM y evaluadores distintos de la composición. No se trasladan reviews humanas ni CI
+de un padre al merge local; no se reabren campañas ni se repite archivo OpenSpec.

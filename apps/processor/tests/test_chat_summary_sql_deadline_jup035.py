@@ -114,7 +114,10 @@ def test_existing_private_summary_closes_real_owned_sql_before_settled(summary_s
     native.block('SELECT CAST(dialogue_history AS TEXT)',4);native.main_control()
     async def scenario(client,application):
         monkeypatch.setattr(application.state,'chat_database',SimpleNamespace(engine=native.engine))
-        body=envelope(summary_session,scope=native.scope,deadline=time.time()+(.35 if mode=='deadline' else 30))
+        # Allow preparation and the server-side visibility probe to finish before
+        # expiry. The four-second query must still be cancelled in under three
+        # seconds; the separate fallback test retains its real 0.35-second window.
+        body=envelope(summary_session,scope=native.scope,deadline=time.time()+(1 if mode=='deadline' else 30))
         task=asyncio.create_task(request(client,'POST',ROUTE,body));shutdown=None
         try:
             await native.wait_active();job=application.state.summary_jobs[body['job_id']]
@@ -129,7 +132,10 @@ def test_existing_private_summary_closes_real_owned_sql_before_settled(summary_s
                 shutdown=asyncio.create_task(close(application))
             await native.wait_closed(1.5);native.verify_closed()
             assert native.code=='57014' and native.query_seconds<3
-            await asyncio.gather(task,return_exceptions=True)
+            responses=await asyncio.gather(task,return_exceptions=True)
+            if mode=='deadline':
+                assert responses[0].status_code==504
+                assert responses[0].json()['code']=='summary_deadline'
             if shutdown is not None:await shutdown
             await wait_settled(job)
             assert job.settled and (job.pending is None or job.pending.done()) and summary_session[2]==[]

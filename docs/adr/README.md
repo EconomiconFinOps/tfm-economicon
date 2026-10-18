@@ -127,3 +127,9 @@ Local implementation details, small refactors and documentation-only changes wit
 | Record | Status | Date |
 | --- | --- | --- |
 | [ADR-0013: Tagged cost coverage](ADR-0013-tagged-cost-coverage.md) | Accepted for MVP; user-authorized delivery exception and assisted review documented in JUP-017 evidence | 2026-10-10 |
+
+## Selección del modelo del candidato local B
+
+| Registro | Estado | Fecha |
+| --- | --- | --- |
+| [ADR-0023: selección de modelo para B](ADR-0023-chat-model-selection.md) | Proposed; gateway de la N5 configurado para DeepSeek V4.1 Flash/DeepInfra FP8; forwarding high/exclude y order FP4 del processor documentados. Sin traza upstream; CoreWeave es antecedente. Sin sustituir ADR-0002 ni cambiar el gateway compartido. Renumerado al integrar con el ADR-0022 de Grafana. | 2026-10-17 |
