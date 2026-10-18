@@ -117,9 +117,9 @@ Any team member MAY merge a pull request, but only when it has both titled revie
 
 ### Requirement: The flow is enforced by a required check
 A required CI check named `JUP reviews` SHALL run on pull requests towards `develop` and `main` whenever the PR is opened, updated or edited and whenever a review is submitted, edited or dismissed. It SHALL read the current reviews from GitHub rather than from the triggering event. It SHALL pass only when:
-- a review titled `Revision JUP-XXX` and a review titled `Validacion JUP-XXX` exist for the PR's identifier, neither from the PR author (reviews on earlier commits and dismissed reviews still count as published);
+- a review titled `Revision JUP-XXX` and a review titled `Validacion JUP-XXX` count for the PR's identifier, neither from the PR author; for each person and review kind only the latest published title SHALL count, and a dismissed latest title SHALL supply no role and SHALL NOT revive an older title;
 - no reviewer's latest decisive review (Approve, Request changes or a dismissal of their review) is a Request changes; a dismissed review leaves that reviewer without a current decision, so an older request does not come back;
-- if the same person published both, the PR description declares the exception.
+- if the same person supplies both counting titles, the PR description declares the exception. Dismissed titles SHALL NOT create an overlap.
 When it fails, its message SHALL say what is missing and link to the flow in `CONTRIBUTING.md`, and in GitHub Actions it SHALL also show each error as an annotation in the checks panel. If the reviews cannot be read, the check SHALL fail rather than pass.
 
 #### Scenario: Validation missing
@@ -143,8 +143,21 @@ When it fails, its message SHALL say what is missing and link to the flow in `CO
 - **THEN** it does not count as a declaration
 
 #### Scenario: Reviews from an earlier commit
-- **WHEN** both titled reviews were published before the latest push
-- **THEN** the check still counts them, and GitHub's own dismissal of stale approvals decides whether a new approval is needed
+- **WHEN** both latest titles were published before the latest push and neither is dismissed
+- **THEN** the check still counts them, without proving current-SHA acceptance or replacing the assigned roles and required revalidation
+
+
+#### Scenario: Dismissed validation and complementary review
+- **WHEN** one person has a dismissed validation title and a non-dismissed review title, while other people supply the required titles
+- **THEN** that dismissed validation does not create a same-person overlap
+
+#### Scenario: Latest title dismissed
+- **WHEN** a person's latest title of a kind is dismissed after an earlier title of the same kind
+- **THEN** neither title supplies that role and the check reports it missing unless another eligible person supplies it
+
+#### Scenario: Fresh title after dismissal
+- **WHEN** a person publishes a new non-dismissed title after a dismissed title of the same kind
+- **THEN** the new title can supply that role, while pending requests for changes still block
 
 #### Scenario: Reviews cannot be read
 - **WHEN** the GitHub API call fails
@@ -161,3 +174,48 @@ When it fails, its message SHALL say what is missing and link to the flow in `CO
 - **WHEN** a contributor opens a pull request from the template
 - **THEN** the description contains the flow checklist and the clarification about its Validacion section
 
+
+
+### Requirement: PR135-only human-authorized pairing and review allocation
+For the explicit human authorization of 2026-10-18 only, the checks SHALL allow
+Lucia Mateo to pair and review PR135/JUP-126, with Alejandro Aguado as leader and
+Paris Arcos Martin as validator. Activation SHALL require authoritative number
+135, repository EconomiconFinOps/tfm-economicon, author Iber1to, base develop,
+head fix/JUP-126-dismissed-review-titles, matching JUP-126 title/body, exact roles
+declared once and this unique visible plain Markdown declaration:
+
+```
+- Excepcion puntual PR135: pairing y revision por Lucia Mateo; validacion por Paris Arcos Martin; autorizada por Alejandro Aguado el 2026-10-18
+```
+
+The checks SHALL reject use of this declaration for any other PR, repository,
+author, branch, base, card or role allocation. A declaration or role inside HTML,
+comments, fenced/indented code or multiline code spans SHALL NOT activate it.
+For this allocation only, the latest eligible Revision of lmatsan and Validacion
+of ParisArcos SHALL supply the required titles. Other historical role titles
+SHALL remain published without supplying these allocated roles. The complete
+published history SHALL still resolve all requests for changes, including those
+from other participants. Author and draft titles SHALL NOT count. A dismissed
+latest title SHALL NOT revive an older one, and Comment SHALL NOT lift changes.
+The exception SHALL NOT replace either verdict, content acceptance, revalidation
+or merge authorization, and SHALL NOT alter rulesets, workflows or permissions.
+
+#### Scenario: Authorized allocation with both verdicts
+- **WHEN** the exact PR135 context, roles and visible declaration are present with eligible titled reviews from lmatsan and ParisArcos
+- **THEN** both checks accept the authorized allocation without dismissing historical reviews
+
+#### Scenario: Other PR or allocation
+- **WHEN** the declaration is copied to another PR or its required identity or roles differ
+- **THEN** it does not authorize an exception and the checks reject the declaration
+
+#### Scenario: Hidden authorization
+- **WHEN** the declaration exists only inside HTML, a comment or code, including a multiline code span
+- **THEN** it cannot activate the exception
+
+#### Scenario: Missing or ineligible assigned title
+- **WHEN** either assigned title is absent, pending, dismissed, from the PR author, or replaced by a different participant or card
+- **THEN** the review check still fails and names the missing title
+
+#### Scenario: Complementary request for changes
+- **WHEN** both assigned titles exist but any participant has a pending decisive Request changes followed only by Comment
+- **THEN** the check still fails until that request is properly resolved
