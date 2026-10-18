@@ -117,3 +117,46 @@ Publicación, CI y solicitudes de revisión/revalidación del delta: pendientes 
 preparar este commit; se completan por recibo en PR135 sin push documental posterior.
 Evidencia local nueva: `materiales/07-evidencias/PR135-base-20261017T2110/` del
 workspace. Sólo estabilizar135; coordinar63 después por decisión humana.
+
+
+## Candidato único de PR135 tras PR140 — 18/10/2026
+
+Encargo humano de HAL 9000/Sala de Control, fuente
+`01a1270c-e332-7462-9c90-706d49ade92c`: foco exclusivo135, sin tocar otras PR
+ni solicitar dictámenes durante cada actualización. Checkout propio limpio en
+cd2bab7f; GitHub confirma `mergeable=false/dirty`. Se incorpora una sola vez
+la base real `0e686f9180d5ce195391e634a79ef2d6d3182af6` (PR140 ya integrada).
+
+Único conflicto: índice de continuidad. Se conserva la fila JUP-126, las filas
+entrantes de ingesta/colector actualizadas y todos los temas/destinos de ambos
+padres. No se duplican filas compartidas ni se descarta la evidencia histórica
+de sus temas. 209 archivos entrantes y15 propios disjuntos preservados;
+13 rutas propias funcionales/normativas mantienen blobs respecto a cd2bab7f.
+Apps, scripts, workflows, package y lockfile coinciden con la base integrada.
+No cambios nuevos de producto, gate, contratos, tests o protecciones de JUP-126.
+
+Propio nuevo: OpenSpec78/78 estricto, trazabilidad9 cambios, higiene1933 archivos,
+preservación y diff-check correctos. Política63, gobernanza14 y workflow14 se
+reutilizan por identidad: no se presentan como nuevas ejecuciones. Las campañas
+B/N5 y evaluaciones traídas por develop conservan su autoría/fecha; no se
+reproducen ni se atribuyen a esta entrega. CI/SQL obligatorios del candidato
+final se documentarán en recibo por SHA, sin un push documental posterior.
+
+Feedback reconsultado:5 reviews,5 comentarios,0 inline, sin cambios pedidos
+nuevos. Lucía COMMENTED sobre cd2bab7f; Víctor cfd52352 DISMISSED, solicitud
+Victorh1397 pendiente. No trasladar aceptación a la composición nueva.
+[Paris aporta lectura técnica](https://github.com/EconomiconFinOps/tfm-economicon/pull/135#issuecomment-6248277341)
+el18/10 09:32 UTC, expresamente sin coimplementación ni pruebas. Se conserva
+ese alcance, no se acredita pairing retrospectivo.
+
+Puente DockerServer consultado el18/10: Trello sigue en40 — En revisión con
+Alejandro liderazgo, Paris pairing, Lucía revisión y Víctor validación. Los
+mensajes1561325841550549005 (oferta de Paris) y1561325936773697639 (aceptación de
+Lucía) no constituyen relevo formal del validador ni prueba de contribución.
+El pairing histórico de Lucía no se transfiere a Paris. Sin reasignar roles ni
+crear excepciones; liderazgo debe conciliar la participación real y el rol que
+corresponde antes de la única ronda final de revisión/revalidación.
+
+Estado al preparar el commit: candidato local completo; publicación/CI pendientes.
+Evidencias: `materiales/07-evidencias/PR135-candidato-unico-20261018/` del workspace.
+No merge, otras ramas, campañas, modelos, claves, despliegues ni Discord.

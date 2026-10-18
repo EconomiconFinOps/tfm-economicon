@@ -19,6 +19,29 @@ def canonical(value):
     return json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':'),allow_nan=False).encode()
 
 
+def test_server_retrieval_does_not_grant_financial_authority(prepared,monkeypatch):
+    from app.services.chat_context import ChatContext
+    from app.core.chat_resources import load_resources
+    import time
+    api,_=prepared
+    builder=ChatContext(api[0],load_resources(RESOURCE_ROOT,RESOURCE_ROOT.parent/'v2/tokenizer.json'))
+    scope={'tenant_id':'t','user_id':'alice','conversation_id':'alice-chat'}
+    context=builder.build(scope,body(content='Ejercicio hipotético: 73 EUR frente a 20 EUR.'))
+    from app.core.chat_resources import retrieval_control
+    decision=retrieval_control(context);queries=[]
+    def retrieve(scope,query,**kwargs):
+        queries.append(query)
+        return [],[],None
+    monkeypatch.setattr(builder,'retrieve',retrieve)
+    result,effective=asyncio.run(builder.tool_extension(scope,context,decision,time.time()+10))
+    data=json.loads(result['content'])
+    assert queries==[decision['query']] and set(data)=={'evidence','omissions'}
+    assert data['evidence']==[] and effective['authorized_evidence']==[]
+    assert effective['financial_metrics_allowed'] is False
+    messages=context['messages']+[{'role':'user','content':'UNTRUSTED_RETRIEVAL_CONTEXT\n'+result['content']}]
+    assert result['variable_tokens']==builder.resources.count_messages(messages,authorized_evidence=[])
+
+
 @pytest.fixture
 def prepared(api,monkeypatch):
     manifest=json.loads((RESOURCE_ROOT/'manifest.json').read_bytes())
@@ -45,11 +68,26 @@ async def initialize(application):
         await initializer(application)
 
 
+@pytest.mark.parametrize('protocol', [None, 'required-documentation-v1', 'auto-documentation-v2', 'missing'])
+def test_descriptor_must_explicitly_negotiate_current_tool_protocol(prepared, monkeypatch, protocol):
+    from app.services.chat_context import ChatContext
+    from app.core.chat_resources import load_resources
+    from app.db.chat_repository import ChatError
+    api, _ = prepared
+    descriptor = asyncio.run(api[2].descriptor())
+    descriptor['tool_protocol'] = protocol
+    if protocol=='missing': descriptor.pop('tool_protocol')
+    builder = ChatContext(api[0], load_resources(RESOURCE_ROOT, RESOURCE_ROOT.parent/'v2/tokenizer.json'))
+    with pytest.raises(ChatError) as failure:
+        asyncio.run(builder({'tenant_id':'t','user_id':'alice','conversation_id':'alice-chat'}, body(), descriptor))
+    assert failure.value.code == 'tool_contract_mismatch'
+
+
 def test_required_tool_context_never_prefetches_corpus(prepared, monkeypatch):
     api, _ = prepared
     descriptor=api[2].descriptor
     async def required_descriptor():
-        return {**await descriptor(), 'tool_protocol':'required-documentation-v1'}
+        return {**await descriptor(), 'tool_protocol':'server-documentation-v4'}
     monkeypatch.setattr(api[2], 'descriptor', required_descriptor)
     from app.services.chat_context import ChatContext
     calls = []
@@ -60,7 +98,7 @@ def test_required_tool_context_never_prefetches_corpus(prepared, monkeypatch):
         assert response.status_code == 200
         context, _ = current(api)
         assert calls == [], 'Corpus must be retrieved only after the native call'
-        assert context['tool_protocol'] == 'required-documentation-v1'
+        assert context['tool_protocol'] == 'server-documentation-v4'
         assert context['authorized_evidence'] == []
         assert context['financial_metrics_allowed'] is False
     run(scenario, api)
@@ -89,10 +127,9 @@ def test_required_extension_runs_existing_scoped_retrieval_and_preserves_financi
     monkeypatch.setattr(api[0].state,'vector_store',Store(),raising=False)
     builder=ChatContext(api[0],load_resources(RESOURCE_ROOT,RESOURCE_ROOT.parent/'v2/tokenizer.json'))
     scope={'tenant_id':'t','user_id':'alice','conversation_id':'alice-chat'}
-    context=builder.build(scope,body())
+    context=builder.build(scope,body(content='Review rule'))
     original=copy.deepcopy(context)
-    assistant={'role':'assistant','content':None,'tool_calls':[{'id':'call-synthetic','type':'function',
-        'function':{'name':'search_documentation','arguments':'{"query":"Review rule"}'}}]}
+    assistant={'action': 'search', 'query': 'Review rule'}
     result,effective=asyncio.run(builder.tool_extension(scope,context,assistant,time.time()+10))
     assert calls[0]==('embed','Review rule')
     assert calls[1][0:3]==('search','t',[1.0]) and calls[1][3]['provider']=='synthetic'
@@ -104,15 +141,19 @@ def test_required_extension_runs_existing_scoped_retrieval_and_preserves_financi
     assert [item['id'] for item in content['evidence']]==([] if empty else ['manual:4'])
     assert effective['authorized_evidence']==content['evidence']
     assert [item['evidence_id'] for item in effective['source_citations']]==([] if empty else ['manual:4'])
-    continuation=context['messages']+[assistant,{'role':'tool','tool_call_id':result['tool_call_id'],'content':result['content']}]
-    assert result['variable_tokens']==builder.resources.count_messages(continuation,financial_metrics_allowed=False)
+    continuation=context['messages']+[{'role':'user','content':'UNTRUSTED_RETRIEVAL_CONTEXT\n'+result['content']}]
+    assert result['variable_tokens']==builder.resources.count_messages(continuation,
+        financial_metrics_allowed=False,authorized_evidence=effective['authorized_evidence'])
+    if not empty:
+        with pytest.raises(ValueError,match='not authorized'):
+            builder.resources.count_messages(continuation,financial_metrics_allowed=False)
     calls.clear()
     with pytest.raises(TimeoutError):
         asyncio.run(builder.tool_extension(scope,context,assistant,time.time()-1))
     assert calls==[], 'Expired recovery must not embed or search'
 
 
-@pytest.mark.parametrize(('phase','cancel'), [('connect',False),('ranked',False),('ranked',True),('documents',True)])
+@pytest.mark.parametrize(('phase','cancel'), [('connect',False),('ranked',False),('ranked',True),('neighbors',False),('neighbors',True),('documents',True)])
 def test_required_database_wait_really_stops_worker_and_query(monkeypatch, phase, cancel):
     import threading, time
     from types import SimpleNamespace
@@ -157,14 +198,14 @@ def test_required_database_wait_really_stops_worker_and_query(monkeypatch, phase
                 timeouts.append(parameters)
                 return Result([])
             calls.append(parameters)
-            current='ranked' if 'ORDER BY distance' in sql else 'documents'
+            current='neighbors' if 'neighbor_limit' in parameters else 'ranked' if 'ORDER BY distance' in sql else 'documents'
             if current==phase:
                 if self.bounded: await_only(blocked())
                 else:
                     entered.set();active.set()
                     try: release.wait(2)
                     finally: active.clear();stopped.set()
-            return Result([row] if current=='ranked' else [SimpleNamespace(id='manual',text_content='# Manual\nReview before scheduling.')])
+            return Result([row] if current in ('ranked','neighbors') else [SimpleNamespace(id='manual',text_content='# Manual\nReview before scheduling.')])
     class Ordinary(SQL):
         def __init__(self): super().__init__(False)
         connection=SimpleNamespace(driver_connection=driver)
@@ -211,10 +252,10 @@ def test_required_database_wait_really_stops_worker_and_query(monkeypatch, phase
         embedding_provider=SimpleNamespace(name='mock',embed=lambda query:[1.0])))
     resources=SimpleNamespace(count_messages=lambda *args,**kwargs:0)
     builder=ChatContext(application,resources)
-    context={'tool_protocol':'required-documentation-v1','authorized_evidence':[],
+    context={'tool_protocol':'server-documentation-v4','authorized_evidence':[],
         'messages':[],'manifest':{},'financial_metrics_allowed':False}
-    assistant={'role':'assistant','content':None,'tool_calls':[{'id':'call-db','type':'function',
-        'function':{'name':'search_documentation','arguments':'{"query":"Review rule"}'}}]}
+    assistant={'action': 'search', 'query': 'Review rule'}
+    context['messages']=[{'role':'user','content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({'question':'Review rule'})}]
     async def scenario():
         task=asyncio.create_task(builder.tool_extension({'tenant_id':'t'},context,assistant,
             time.time()+(1 if cancel else .12)))
@@ -320,10 +361,10 @@ def test_required_retrieval_diagnostic_is_closed_correlated_and_private(monkeypa
             return [{'tenant_id':'PRIVATE_TENANT_NEVER_LOG','content':'PRIVATE_CONTENT_NEVER_LOG'}]
     application=SimpleNamespace(state=SimpleNamespace(embedding_provider=Provider(),vector_store=Store()))
     builder=chat_context.ChatContext(application,SimpleNamespace(count_messages=lambda *a,**kw:0))
-    context={'tool_protocol':'required-documentation-v1','authorized_evidence':[],
+    context={'tool_protocol':'server-documentation-v4','authorized_evidence':[],
         'messages':[],'manifest':{},'financial_metrics_allowed':False}
-    assistant={'role':'assistant','content':None,'tool_calls':[{'id':'call-private','type':'function',
-        'function':{'name':'search_documentation','arguments':'{"query":"PRIVATE_QUERY_NEVER_LOG"}'}}]}
+    assistant={'action': 'search', 'query': 'PRIVATE_QUERY_NEVER_LOG'}
+    context['messages']=[{'role':'user','content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps({'question':'PRIVATE_QUERY_NEVER_LOG'})}]
     operation='51dfed93-9027-4f8b-a403-6a8f5931db7c'
     attempt='07435a41-9e75-4ee4-858f-eb29840027b5'
     async def scenario():
@@ -374,18 +415,36 @@ def test_default_context_uses_fixed_system_and_real_shared_count(prepared):
 
 
 def test_large_demo_screen_is_projected_with_omissions_but_full_snapshot_remains(prepared,monkeypatch):
-    monkeypatch.setenv('CHAT_CONTEXT_TOKENS','12000')
+    from app.core.chat_resources import load_resources, decision_schema
+    from app.core.context_budget import MARGIN_TOKENS
+    from app.schemas.chat import provider_response_schema
+    from app.services.chat_context import ChatContext
     api,_=prepared
+    resources=load_resources(RESOURCE_ROOT,RESOURCE_ROOT.parent/'v2/tokenizer.json')
+    minimal=ChatContext(api[0],resources).build(
+        {'tenant_id':'t','user_id':'alice','conversation_id':'alice-chat'},body())
+    fixed=(resources.count(canonical(minimal['messages']).decode())
+           +resources.count(canonical(provider_response_schema(authorized_evidence=[])).decode())
+           +resources.count(canonical(decision_schema(minimal)).decode()))
+    # Follow the real immutable prompt/schema overhead while leaving only a
+    # small screen allowance; production/model limits are not changed.
+    from app.core.chat_review import admission_tokens
+    reserve=admission_tokens(resources.count,minimal['messages'],provider_response_schema(authorized_evidence=[]),[])
+    test_limit=max(fixed+resources.context_budget['output_tokens'],reserve['max_context_tokens'])+MARGIN_TOKENS+600
+    monkeypatch.setenv('CHAT_CONTEXT_TOKENS',str(test_limit))
     async def scenario(client):
         await initialize(api[0])
         payload=body()
         payload['screen_context']['datasets']=[demo_dataset([
             {'label':'Servicio '+str(index)+' '+'dato '*40,'currency':'EUR','amount':'1.00'} for index in range(2500)])]
         assert len(canonical(payload['screen_context']))<1048576
+        assert resources.count(canonical(payload['screen_context']).decode())>test_limit
         response=await client.post(path(),json=payload,headers=headers())
         assert response.status_code==200,response.text
         context,value=current(api)
-        assert context['manifest']['variable_tokens']+1824<=12000
+        admitted=api[0].state.chat_context_builder.resources
+        assert admitted.context_budget['context_tokens']==test_limit
+        assert admitted.count_messages(context['messages'],authorized_evidence=[])==context['manifest']['variable_tokens']
         assert value['omissions']
         assert all(item['kind']!='cost_query' for item in context['authorized_evidence'])
         operation=await existing(client,payload)

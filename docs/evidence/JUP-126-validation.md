@@ -143,3 +143,31 @@ pendiente al preparar el commit. No demo, gasto de modelos, claves o despliegue.
 Logs: `materiales/07-evidencias/PR135-base-20261017T2110/` del workspace.
 La aprobación cfd52352 no se atribuye al nuevo candidato; el recibo final de
 PR135 registra su estado y las solicitudes incrementales a Lucía/Víctor.
+
+
+## Candidato único con la base PR140 — 18/10/2026
+
+Base incorporada: `0e686f9180d5ce195391e634a79ef2d6d3182af6`; head previo
+`cd2bab7fc69eafde7aaeeb43ee14a82874a02b44`. Conflicto real sólo en índice,
+resuelto por unión de temas/destinos y estados entrantes de las filas compartidas.
+209 archivos entrantes y15 propios disjuntos preservados. Las13 rutas propias
+funcionales/normativas JUP-126 no cambian de blob. Apps/scripts/.github/package/
+lockfile idénticos a la base; sin modificaciones nuevas de producto o política.
+
+| Nueva comprobación propia | Resultado |
+| --- | --- |
+| `corepack pnpm jup:check:all` | 9 cambios activos correctos |
+| `corepack pnpm jup:cleanup:check` | 1933 archivos correctos |
+| `corepack pnpm openspec:validate` | 78/78 PASS estricto |
+| Preservación/identidad de blobs/unión de destinos y diff-check | PASS |
+
+Se reutilizan las63 pruebas de política,14 de gobernanza y14 de workflow
+previamente conformes por identidad de sus entradas. No nuevas campañas,
+mutaciones, inferencias, embeddings o pruebas de demo. Los resultados históricos
+B/N5 traídos por develop no son ejecuciones de este encargo. CI/SQL obligatorios
+del SHA publicado pendientes al preparar el commit; recibo final en PR135.
+No nuevas solicitudes de dictámenes durante la preparación: después corresponde
+coordinar una sola ronda sobre el candidato estable, con responsabilidades reales.
+La lectura técnica de Paris no se convierte en coimplementación o validación;
+los mensajes de oferta/aceptación no se interpretan como relevo formal.
+Logs y snapshots filtrados: `materiales/07-evidencias/PR135-candidato-unico-20261018/`.

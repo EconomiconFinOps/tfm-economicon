@@ -1,4 +1,4 @@
-"""One incremental gateway request under the chat attempt's remaining deadline.
+"""Private bounded plan and reviewed stream under one chat attempt deadline.
 
 No ingestion setting is changed. Backend alone decides whether another attempt
 may run. This adapter never retries, redirects, repairs JSON or falls back.
@@ -22,10 +22,10 @@ import threading
 import time
 from urllib import error,request
 
-from app.agents.schemas import chat_provider_schema, assemble_chat_response
+from app.agents.schemas import chat_wire_schema, assemble_chat_response
 from app.clients.chat_dns import resolve
 from app.core.context_budget import budget
-from app.clients.chat_stream_parser import AnswerJSON,SSEFrames,complete_json
+from app.clients.chat_stream_parser import SegmentAnswerJSON,SSEFrames,complete_json
 from app.clients.litellm import LiteLLMClient,_AttemptDeadline,_DeadlineHTTPConnection,_DeadlineHTTPSConnection,_RejectRedirectHandler,_transport_failure,_usage_metadata
 
 
@@ -34,7 +34,7 @@ _diagnostic_logger = logging.getLogger(__name__)
 _NATIVE_RULES = frozenset({
     'native_tool_index', 'native_metadata_type', 'native_metadata_conflict',
     'native_function_shape', 'native_fragment_type', 'native_tool_limit',
-    'native_tool_count', 'native_final_invalid',
+    'native_tool_count', 'native_final_invalid', 'native_multiple_calls',
 })
 
 
@@ -88,9 +88,11 @@ def diagnostic_scope(operation_id, attempt_id):
         _diagnostic_context.reset(token)
 
 
-def _record_diagnostic(stage, failure, request_hash, finish, *, status=None, category=None):
+def _record_diagnostic(stage, failure, request_hash, finish, *, status=None, category=None, stream_location=None):
     """A bounded structural event; never serialize exceptions or candidate data."""
     try:
+        from app.core.chat_calculations import CalculationError
+        from app.core.chat_rules import ClassificationProseError
         correlation = _diagnostic_context.get() or (None, None)
         classes = {ValidationError: 'ValidationError', ValueError: 'ValueError',
                    json.JSONDecodeError: 'JSONDecodeError', UnicodeDecodeError: 'UnicodeDecodeError',
@@ -129,6 +131,121 @@ def _record_diagnostic(stage, failure, request_hash, finish, *, status=None, cat
         }
         if isinstance(failure, _NativeEnvelopeError):
             event['rule_code'] = failure.rule_code
+        if isinstance(failure, CalculationError):
+            event['exception_class'] = 'CalculationError'
+            event['rule_code'] = failure.rule_code
+        if type(failure) is ClassificationProseError:
+            event['exception_class']='ValueError'
+            event['rule_code']='classification_unverified_prose'
+            location={}
+            if failure.field in {'answer','assumptions','limitations','next_actions','recommendations.action','recommendations.rationale'}:
+                location['field']=failure.field
+            if type(failure.index) is int and 0 <= failure.index < 24:
+                location['item_index']=failure.index
+            if location:event['prose_location']=location
+        # Reconstruct a closed structural value; never serialize an exception's
+        # attributes, a segment, its prose, a hash of prose, or arbitrary keys.
+        if stage == 'provisional_answer' and type(stream_location) is dict:
+            location={}
+            if stream_location.get('field') == 'answer':location['field']='answer'
+            for key,allowed in (
+                ('mode',{'segment','adjacent_prose','terminal'}),
+                ('kind',{'text','inference','documentary','expression','quantity','calculation_id','terminal','unknown'})):
+                item=stream_location.get(key)
+                if type(item) is str and item in allowed:location[key]=item
+            first,last=stream_location.get('first_segment'),stream_location.get('last_segment')
+            if type(first) is int and type(last) is int and 0<=first<=last<128:
+                location.update(first_segment=first,last_segment=last)
+            if {'field','mode','kind'}<=location.keys():event['stream_location']=location
+        assembly_rules = {
+            'Citation passage is not grounded.':'citation_passage_not_grounded',
+            'Invalid evidence collection.':'invalid_evidence_collection',
+            'Invalid evidence record.':'invalid_evidence_record',
+            'Invalid recommendation collection.':'invalid_recommendation_collection',
+            'Invalid recommendation citations.':'invalid_recommendation_citations',
+            'Invalid recommendation citation.':'invalid_recommendation_citation',
+            'Recommendation citation shape invalid.':'recommendation_citation_shape',
+            'Recommendation citation source unknown.':'recommendation_citation_unknown',
+            'Recommendation citation duplicated.':'recommendation_citation_duplicate',
+            'Recommendation citation metadata mismatch.':'recommendation_citation_metadata',
+            'Recommendation citations must be explicit records.':'recommendation_explicit_citations_required',
+            'Invalid response scope.':'invalid_response_scope',
+            'Period is server-owned.':'server_owned_period',
+            'Subscriptions are server-owned.':'server_owned_subscriptions',
+            'Invalid calculation response.':'invalid_calculation_response',
+            'Invalid calculation collection.':'invalid_calculation_collection',
+            'Invalid short prose item.':'invalid_short_prose_item',
+            'Invalid response segment.':'invalid_response_segment',
+            'Invalid segment text.':'invalid_segment_text',
+            'Invalid segment reference.':'invalid_segment_reference',
+            'Invalid segment collection.':'invalid_segment_collection',
+            'Rendered text limit.':'rendered_text_limit',
+            'Empty rendered text.':'empty_rendered_text',
+            'Response segment limit.':'response_segment_limit',
+            'Incomplete segmented answer.':'incomplete_segmented_answer',
+            'Stream candidate mismatch.':'stream_candidate_mismatch',
+            'Expression input unavailable.':'expression_input_unavailable',
+            'Expression input type.':'expression_input_type',
+            'Expression source magnitude.':'expression_source_magnitude',
+            'Expression operation limit.':'expression_operation_limit',
+            'Expression catalog changed.':'expression_catalog_changed',
+            'Expression shape or depth.':'expression_shape_or_depth',
+            'Expression operation shape.':'expression_operation_shape',
+            'Rendered expression requires an operation.':'expression_operation_required',
+            'Unknown source quantity.':'expression_unknown_source_quantity',
+            'Incompatible expression units.':'expression_incompatible_units',
+            'Expression magnitude or unit limit.':'expression_magnitude_or_unit_limit',
+            'Comparison expression shape.':'expression_comparison_shape',
+            'Expression precision limit.':'expression_precision_limit',
+            'Classification shape.':'classification_shape',
+            'Unknown documentary interval rule.':'classification_unknown_rule',
+            'Documentary KPI value mismatch.':'classification_kpi_mismatch',
+            'Documentary interval unit mismatch.':'classification_unit_mismatch',
+            'Ambiguous documentary interval.':'classification_ambiguous_interval',
+            'Unverified documentary classification prose.':'classification_unverified_prose',
+            'Invalid classified answer.':'classified_answer_invalid',
+            'Classified evidence is server-owned.':'classified_evidence_server_owned',
+            'Derived documentary source unavailable.':'derived_documentary_source_unavailable',
+            'Derived documentary evidence mismatch.':'derived_documentary_evidence_mismatch',
+            'Explicit classification requires typed answer.':'explicit_classification_requires_typed_answer',
+            'Explicit boolean rule requires typed answer.':'explicit_boolean_requires_typed_answer',
+            'Boolean rule answer shape.':'boolean_answer_shape',
+            'Boolean rule not grounded.':'boolean_rule_not_grounded',
+            'Boolean rule unit mismatch.':'boolean_rule_unit_mismatch',
+            'User rule status requires no financial authority.':'boolean_user_authority_status',
+            'Invalid neutral request.':'invalid_neutral_request',
+            'Invalid user scenario.':'invalid_user_scenario',
+            'User scenario contains documentary operands.':'scenario_documentary_operands',
+            'Invalid neutral auxiliary fields.':'invalid_neutral_auxiliary_fields',
+            'Neutral request status is server-owned.':'neutral_request_server_owned_status',
+            'User scenario status requires no financial authority.':'scenario_status_authority',
+            'Narrative requires selected evidence.':'narrative_evidence_required',
+            'Documentary selection shape invalid.':'documentary_selection_shape',
+            'Documentary selection source unavailable.':'documentary_selection_source',
+            'Documentary selection passage mismatch.':'documentary_selection_passage',
+            'Documentary excerpt output limit.':'documentary_excerpt_limit',
+            'Response evidence is derived from used support.':'evidence_projection_only',
+            'Explanation requires explicit interpretation or literal support.':'explicit_interpretation_required',
+            'Invalid inference text.':'invalid_inference_text',
+            'Recommendation support must be visible.':'recommendation_visible_support_required',
+            'Recommendation requires visible documentary support.':'recommendation_documentary_support_required',
+            'Invalid recommendation visible support.':'recommendation_visible_support_shape',
+            'Financial metric source unavailable.':'financial_metric_source_unavailable',
+            'Invalid response basis.':'invalid_response_basis',
+            'Terminal response cannot override basis.':'terminal_basis_override',
+            'Response basis status mismatch.':'response_basis_status',
+            'Response basis cannot grant authority.':'response_basis_authority',
+            'Response basis requires useful next action.':'response_basis_next_action',
+            'Response basis contains documentary operands.':'response_basis_documentary_operands',
+            'Invalid classified calculation.':'classified_calculation_invalid',
+            'Invalid classified auxiliary fields.':'classified_auxiliary_invalid',
+            'Classification requires typed answer.':'classification_requires_typed_answer',
+            'Documentary calculation citation missing.':'documentary_calculation_citation_missing',
+            'Invalid canonical subscriptions.':'invalid_canonical_subscriptions',
+            'Invalid authorized evidence.':'invalid_authorized_evidence',
+        }
+        if type(failure) is ValueError and failure.args and type(failure.args[0]) is str and failure.args[0] in assembly_rules:
+            event['rule_code'] = assembly_rules[failure.args[0]]
         encoded = json.dumps(event, ensure_ascii=True, separators=(',', ':'), allow_nan=False)
         if len(encoded.encode()) <= 2048:
             _diagnostic_logger.warning(encoded)
@@ -242,10 +359,14 @@ class ChatGateway:
         if settings.llm_model!='economicon-chat' or settings.litellm_api_key is None:
             raise ValueError('Chat gateway configuration.')
         self.settings=settings
+        self.resources=None
         self.client=LiteLLMClient(settings)
         self.client.transport=request.build_opener(request.ProxyHandler({}),_RejectRedirectHandler(),_ChatHTTPHandler(),_ChatHTTPSHandler())
 
     def _records(self,context,deadline,holder,cancelled,tool_choice=None):
+        from app.core.chat_review import DRAFT_TOKENS,FINAL_TOKENS,draft_schema,validate_draft
+        phase=context.get('_review_phase','final')
+        holder['usage']=None
         finish=None;request_hash=None;emitted=False;stage='request'
         def diagnostic(at,failure=None,**metadata):
             nonlocal emitted
@@ -258,14 +379,21 @@ class ChatGateway:
             yield {'type':'error','category':'timeout'};return
         try:
             payload={'model':'economicon-chat','messages':context['messages'],'stream':True,
-                'stream_options':{'include_usage':True},'max_tokens':budget('chat')['output_tokens'],'num_retries':0,
-                'timeout':remaining,'stream_timeout':remaining,'reasoning':{'enabled':False},
-                'provider':{'order':['deepinfra/fp4'],'allow_fallbacks':False,'require_parameters':True},
-                'response_format':{'type':'json_schema','json_schema':{'name':'FinOpsResponse','strict':True,
-                    'schema':chat_provider_schema(financial_metrics_allowed=context.get('financial_metrics_allowed'))}}}
-            if tool_choice is not None:
-                from app.core.chat_resources import CHAT_TOOLS
-                payload.update(tools=CHAT_TOOLS,tool_choice=tool_choice)
+                'stream_options':{'include_usage':True},'max_tokens':DRAFT_TOKENS if phase=='draft' else FINAL_TOKENS,'num_retries':0,'temperature':0,
+                'timeout':remaining,'stream_timeout':remaining,'reasoning':{'effort':'high','exclude':True},
+                'provider':{'order':['deepinfra/fp4'],'allow_fallbacks':False,'require_parameters':True}}
+            from app.core.chat_expressions import context_quantities
+            source_quantities=context_quantities(context)
+            payload['response_format']={'type':'json_schema','json_schema':{
+                'name':'FinOpsResponse','strict':True,
+                'schema':chat_wire_schema(
+                    financial_metrics_allowed=context.get('financial_metrics_allowed'),
+                    authorized_evidence=context.get('authorized_evidence', []), quantities=source_quantities)}}
+            if phase=='draft':
+                payload['response_format']['json_schema']={'name':'PrivateAnswerPlan','strict':True,
+                    'schema':draft_schema(context.get('authorized_evidence',[]))}
+            if self.resources is not None:
+                self.resources.check_messages(payload['messages'],payload['response_format']['json_schema']['schema'])
             req=request.Request(self.client.base_url+'/chat/completions',data=json.dumps(payload,ensure_ascii=False,allow_nan=False).encode(),
                 headers={'Authorization':'Bearer '+self.settings.litellm_api_key.get_secret_value(),'Content-Type':'application/json'},method='POST')
             request_hash=hashlib.sha256(req.data).hexdigest()
@@ -274,13 +402,17 @@ class ChatGateway:
             raise
         req._attempt_deadline=_AttemptDeadline(max(.001,deadline-time.time()-5))
         req._chat_cancelled=cancelled
-        frames,answer=SSEFrames(),AnswerJSON()
+        request_metadata={'phase':phase,'request_sha256':request_hash,'output_token_limit':payload['max_tokens']}
+        if self.resources is not None:
+            from app.core.chat_resources import canonical
+            request_metadata['input_tokens']=self.resources.count(canonical(payload['messages']).decode())+self.resources.count(canonical(payload['response_format']['json_schema']['schema']).decode())
+        frames,answer=SSEFrames(),SegmentAnswerJSON([], quantities=source_quantities)
         decoder=codecs.getincrementaldecoder('utf-8-sig')('strict')
         candidate=[];candidate_bytes=0;usage=None
-        native={'id':'','type':'','function':{'name':'','arguments':''}}
-        native_seen=False
         try:
             stage='transport'
+            holder['attempted_legs']=holder.get('attempted_legs',0)+1
+            holder.setdefault('requests',[]).append(request_metadata)
             with self.client.transport.open(req,timeout=min(5,remaining)) as response:
                 holder['response']=response
                 if cancelled.is_set(): return
@@ -299,40 +431,34 @@ class ChatGateway:
                         stage='envelope'
                         if data=='[DONE]':
                             stage='finish'
-                            if tool_choice=='required':
-                                from app.core.chat_resources import validate_search_call
-                                if finish=='length':
-                                    diagnostic('finish',category='incomplete')
-                                    yield {'type':'error','status':502,'category':'incomplete'}
-                                    return
-                                if finish!='tool_calls' or not native_seen or ''.join(candidate).strip():
-                                    raise ValueError('Required native search missing.')
-                                assistant={'role':'assistant','content':None,'tool_calls':[native]}
-                                try:
-                                    validate_search_call(assistant)
-                                except ValueError as failure:
-                                    raise _NativeEnvelopeError('native_final_invalid') from failure
-                                yield {'type':'tool_call','assistant':assistant,'usage':usage}
-                                return
-                            if native_seen: raise ValueError('Second search forbidden.')
                             if finish not in ('stop','length'): raise ValueError('Gateway finish reason.')
                             raw=''.join(candidate)
                             try:
                                 stage='candidate_json'
                                 parsed=complete_json(raw)
+                                if phase=='draft':
+                                    if finish!='stop':raise ValueError('Private draft truncated.')
+                                    validate_draft(parsed,context.get('authorized_evidence',[]))
+                                    yield {'type':'draft','plan':parsed,'usage':usage}
+                                    return
                                 stage='model_validation'
-                                result=assemble_chat_response(parsed,context.get('response_period'), context.get('response_subscriptions', []))
+                                from app.core.chat_segments import render_response
+                                parsed=render_response(parsed,[],quantities=source_quantities)
+                                result=assemble_chat_response(parsed,context.get('response_period'), context.get('response_subscriptions', []), authorized_evidence=context.get('authorized_evidence', []))
                             except Exception as failure:
                                 diagnostic(stage,failure,category='incomplete' if finish=='length' else 'invalid_response')
                                 if finish=='length':
                                     yield {'type':'error','status':502,'category':'incomplete'}
                                     return
                                 raise
+                            if answer.finish()!=result['answer']:raise ValueError('Stream candidate mismatch.')
                             yield {'type':'candidate','result':result,'finish_reason':finish,'usage':usage}
                             return
                         event=complete_json(data)
                         if not isinstance(event,dict): raise ValueError('Gateway event.')
-                        if isinstance(event.get('usage'),dict): usage=_usage_metadata(event,response.headers.get('x-litellm-response-cost'))
+                        if isinstance(event.get('usage'),dict):
+                            usage=_usage_metadata(event,response.headers.get('x-litellm-response-cost'))
+                            holder['usage']=usage
                         choices=event.get('choices',[])
                         if not isinstance(choices,list) or len(choices)>1: raise ValueError('Gateway choices.')
                         for choice in choices:
@@ -340,47 +466,19 @@ class ChatGateway:
                             if choice.get('finish_reason') is not None: finish=choice['finish_reason']
                             delta=choice.get('delta',{})
                             if not isinstance(delta,dict): raise ValueError('Gateway delta.')
-                            if delta.get('tool_calls') is not None:
-                                parts=delta['tool_calls']
-                                if not isinstance(parts,list) or len(parts)>1: raise _NativeEnvelopeError('native_tool_count')
-                                for part in parts:
-                                    if not isinstance(part,dict) or type(part.get('index')) is not int or part['index']!=0 or set(part)-{'index','id','type','function'}:
-                                        raise _NativeEnvelopeError('native_tool_index')
-                                    native_seen=True
-                                    for key in ('id','type'):
-                                        value=part.get(key)
-                                        if value is not None:
-                                            if not isinstance(value,str): raise _NativeEnvelopeError('native_metadata_type')
-                                            if native[key] and value and native[key]!=value:
-                                                raise _NativeEnvelopeError('native_metadata_conflict')
-                                            if value: native[key]=value
-                                    function=part.get('function')
-                                    if function is None: function={}
-                                    if not isinstance(function,dict) or set(function)-{'name','arguments'}: raise _NativeEnvelopeError('native_function_shape')
-                                    for key, value in function.items():
-                                        if value is None: continue
-                                        if not isinstance(value,str): raise _NativeEnvelopeError('native_fragment_type')
-                                        native['function'][key]+=value
-                                    if len(native['id'])>128 or len(native['type'])>8 or len(native['function']['name'])>64 or len(native['function']['arguments'].encode())>16384:
-                                        raise _NativeEnvelopeError('native_tool_limit')
+                            if delta.get('tool_calls') is not None or delta.get('function_call') is not None:
+                                raise _NativeEnvelopeError('native_final_invalid')
                             fragment=delta.get('content')
                             if fragment is None: continue
                             if not isinstance(fragment,str): raise ValueError('Gateway content.')
                             candidate_bytes+=len(fragment.encode())
                             if candidate_bytes>1024*1024: raise ValueError('Candidate limit.')
                             candidate.append(fragment)
-                            if tool_choice=='required': continue
                             stage='provisional_answer'
-                            provisional=answer.feed(fragment)
+                            provisional=answer.feed(fragment) if phase!='draft' else ''
                             # Escape-aware decoding completes surrogate pairs;
                             # chunking preserves codepoints and the8KiB wire bound.
-                            piece=[];size=0
-                            for char in provisional:
-                                width=len(char.encode())
-                                if size+width>8192:
-                                    yield {'type':'delta','text':''.join(piece)};piece=[];size=0
-                                piece.append(char);size+=width
-                            if piece: yield {'type':'delta','text':''.join(piece)}
+                            yield from text_deltas(provisional)
         except error.HTTPError as failure:
             status=failure.code
             retry_after=failure.headers.get('Retry-After')
@@ -396,44 +494,90 @@ class ChatGateway:
             diagnostic('transport',failure,category='transport')
             yield {'type':'error','category':'transport'}
         except Exception as failure:
-            diagnostic(stage,failure,category='invalid_response')
+            diagnostic(stage,failure,category='invalid_response',
+                       stream_location=answer.failure_location if stage=='provisional_answer' else None)
             yield {'type':'error','category':'invalid_response','status':422}
         finally:
             holder.pop('response',None)
 
     async def __call__(self,context,deadline,*,tool_result=None):
         holder={};cancelled=threading.Event()
+        from app.core.chat_review import phase_messages,review_usage
+        usages=[];attempted=0
         try:
-            required=context.get('tool_protocol')=='required-documentation-v1'
-            had_search=required
-            iterator=self._records(context,deadline,holder,cancelled,'required' if required else None)
-            first_usage=None
+            protocol=context.get('tool_protocol')
+            if protocol not in (None,'server-documentation-v4'):
+                yield {'type':'error','status':422,'category':'invalid_response'};return
+            if protocol=='server-documentation-v4':
+                if tool_result is None:
+                    yield {'type':'error','status':422,'category':'invalid_response'};return
+                from app.core.chat_resources import retrieval_control,continuation_messages
+                control=retrieval_control(context)
+                yield {'type':'tool_call','assistant':control}
+                remaining=deadline-time.time()-5
+                if remaining<=0:raise TimeoutError()
+                result=await asyncio.wait_for(tool_result(control),remaining)
+                messages=continuation_messages(context,control,result)
+                context={**context,'messages':messages,'authorized_evidence':
+                    context.get('authorized_evidence',[])+json.loads(result['content'])['evidence']}
+            if cancelled.is_set() or time.time()>=deadline-5:raise TimeoutError()
+            if self.resources is None:raise ValueError('Review token resources unavailable.')
+            draft_context={**context,'_review_phase':'draft','messages':phase_messages(context['messages'],'draft')}
+            iterator=self._records(draft_context,deadline,holder,cancelled)
+            draft=None
             while True:
                 record=await asyncio.to_thread(next,iterator,None)
-                if record is None: return
-                if record['type']=='tool_call':
-                    if not required or tool_result is None:
-                        yield {'type':'error','status':422,'category':'invalid_response'};return
-                    required=False
-                    first_usage=record.get('usage')
+                attempted=holder.get('attempted_legs',0)
+                if record is None:break
+                if record.get('type')=='draft':
+                    draft=record['plan'];usages.append(record.get('usage'));break
+                if record.get('type')=='error':
+                    if attempted>len(usages):usages.append(holder.get('usage'))
+                    await asyncio.to_thread(iterator.close)
+                    yield {**record,'usage_report':review_usage(usages,attempted) if attempted else None};return
+                raise ValueError('Unexpected draft record.')
+            await asyncio.to_thread(iterator.close)
+            if draft is None:raise ValueError('Missing private draft.')
+            if cancelled.is_set() or time.time()>=deadline-5:raise TimeoutError()
+            final_context={**context,'_review_phase':'final','messages':phase_messages(context['messages'],'final',draft)}
+            iterator=self._records(final_context,deadline,holder,cancelled)
+            while True:
+                record=await asyncio.to_thread(next,iterator,None)
+                attempted=holder.get('attempted_legs',0)
+                if record is None:return
+                if record.get('type') in ('candidate','error'):
+                    if attempted>len(usages):usages.append(record.get('usage',holder.get('usage')))
+                    report=review_usage(usages,attempted) if attempted else None
+                    record={**record,'usage_report':report,'usage':report['observed'] if report and report['complete'] else None}
+                    await asyncio.to_thread(iterator.close)
                     yield record
-                    remaining=deadline-time.time()-5
-                    if remaining<=0: raise TimeoutError()
-                    result=await asyncio.wait_for(tool_result(record['assistant']),remaining)
-                    from app.core.chat_resources import continuation_messages
-                    messages=continuation_messages(context,record['assistant'],result)
-                    if cancelled.is_set() or time.time()>=deadline-5: raise TimeoutError()
-                    iterator=self._records({**context,'messages':messages},deadline,holder,cancelled,'none')
-                else:
-                    if record['type']=='candidate' and had_search:
-                        record={**record,'usage':combined_usage(first_usage,record.get('usage'))}
-                    yield record
+                    return
+                yield record
         except TimeoutError:
-            yield {'type':'error','category':'timeout'}
+            attempted=holder.get('attempted_legs',0)
+            yield {'type':'error','category':'timeout','usage_report':review_usage(usages+[holder.get('usage')] if len(usages)<attempted else usages,attempted) if attempted else None}
         finally:
             cancelled.set()
             response=holder.get('response')
-            if response is not None: interrupt(response)
+            if response is not None:interrupt(response)
+            try:
+                attempted=holder.get('attempted_legs',0)
+                if attempted:
+                    report=review_usage(usages+[holder.get('usage')] if len(usages)<attempted else usages,attempted)
+                    operation_id,attempt_id=_diagnostic_context.get() or (None,None)
+                    _diagnostic_logger.info('chat_review_usage %s',json.dumps({'event':'chat_review_usage','operation_id':operation_id,'attempt_id':attempt_id,'requests':holder.get('requests',[]),**report}))
+            except Exception:
+                pass
+
+
+def text_deltas(text):
+    piece=[];size=0
+    for char in text:
+        width=len(char.encode())
+        if size+width>8192:
+            yield {'type':'delta','text':''.join(piece)};piece=[];size=0
+        piece.append(char);size+=width
+    if piece: yield {'type':'delta','text':''.join(piece)}
 
 
 def combined_usage(first,second):
