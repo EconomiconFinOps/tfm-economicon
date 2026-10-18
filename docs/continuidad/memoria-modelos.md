@@ -32,6 +32,29 @@ Cabeceras canónicas0023/0025 y alias comprobados, 13 enlaces relativos existent
 el enlace a la nueva comparativa debe comprobarse tras integrar su commit.
 No se han ejecutado campañas ni suites de producto para esta regularización.
 
+## Comparativa común preparada para publicación — 18/10/2026
+
+En la rama de integración `docs/JUP-063-model-comparison-publication`, basada en
+`6d9e6710`, queda la [publicación histórica](../evidence/JUP-063/glm-deepseek-20261016/README.md).
+El informe conserva exactamente119291bytes ySHA256d8dff405f58063c79757d3f29abd290c8015a42bd7b2da0e785205f007e30380,
+comprobados también en blobGit; `.gitattributes` acotado conserva susCRLF.
+Una proyección allowlist de336 recibos sólo incluye identidadde caso/repetición,
+fase, coste, duración yhash original, sin peticiones/respuestas/contextos oledger.
+Los336 hashes coinciden con losmanifiestos originales; snapshots yreviews también
+coinciden. Verificadoroffline:84pares,82/84 y77/84 locales,costes exactos
+0.3470654625/0.176012028USD ypercentiles conformes. Cuatro mutantes recalculando
+susmanifiestos(costecambiado,faseduplicada,verdictocambiado,claveprohibida)
+rechazados. No nueva evaluaciónsemántica,red oinferencia.
+
+Corte15/10 22:58UTC=16/10 00:58París;28casos×3 y168fasespor configuración.
+ConservaNOT_ASSESSED, ausencia deadjudicaciónindependiente yAPI/UI, rúbrica
+localprovisional ycampañasN3/N5/parciales separadas. Fuentes antiguasintactas.
+OpenSpecestricto80/80, trazabilidad9changes e higiene2146archivos conformes en
+estacapa documental. Elprimercontrolhigiene fuebloqueadoporsubprocesogitdel
+sandbox; la reejecuciónlocalautorizada sípasó, sin alterar elcontrol.
+IntegraciónGrafana, publicaciónremota yCI delcandidato final aúnpendientes en
+estecorte; no se atribuyenreviews ni aceptación humana/cierrede tarjetas.
+
 ## Actualización de validación — 17/10/2026
 
 Continuación posterior autorizada: los smokes separados DeepSeek/DeepInfraFP8 y
