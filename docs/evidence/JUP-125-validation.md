@@ -6,6 +6,19 @@ JUP: JUP-125 · [Trello](https://trello.com/c/H0RUnArf) · Registro: 16/10/2026.
 [ADR-0023 Proposed](../adr/ADR-0023-deterministic-document-chunking.md) y
 [runbook](../runbooks/document-chunking.md).
 
+## Disponibilidad de C10/C14 — 18/10/2026
+
+El [paquete histórico descargable](JUP-125-C10-C14/README.md) incorpora nueve
+originales, sus normalizados/fixtures y el corpus comparativo con 46 inputs y
+vectores reales. Incluye manifiesto, hashes y dos comprobaciones offline, sin
+nuevas llamadas ni cambios de producto. Sus ausencias de filas SQL completas,
+versiones ejecutadas y páginas PDF se declaran expresamente.
+
+Esta disponibilidad no acepta C10/C14 ni atribuye la evidencia histórica al
+candidato actual. La validación humana de Alejandro y los cambios solicitados
+por Víctor siguen pendientes. Los apartados posteriores conservan su contexto
+y fechas históricas, incluidos los roles y estados de dependencias de esas fechas.
+
 ## Alcance, candidato y atribución
 
 La implementación experimental del 15–16/10 y sus correcciones se formalizan
