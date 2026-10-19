@@ -65,6 +65,7 @@ jobs:
           corepack pnpm jup:check:test
           corepack pnpm pr:check:test
           corepack pnpm ci:check:test
+          node --test tools/landing-turbo.test.mjs
           corepack pnpm roadmap:test
           corepack pnpm repository:governance:test
           corepack pnpm jup:check:all
@@ -100,6 +101,11 @@ jobs:
           corepack pnpm collaboration:test
           corepack pnpm contributions:test
           corepack pnpm openspec:validate
+      - name: Build landing through the root workspace task
+        env:
+          SITE_ORIGIN: https://landing.example.test
+          LANDING_OUT_DIR: ${{ runner.temp }}/economicon-landing-ci/dist
+        run: corepack pnpm build --filter=@finops/landing
 
   python-tests:
     name: Python tests (${{ matrix.service.name }})
@@ -142,6 +148,29 @@ jobs:
       - name: Run tests
         working-directory: ${{ matrix.service.path }}
         run: python -m pytest tests -q
+
+  landing-static:
+    name: Landing static checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+      - name: Check landing JavaScript syntax
+        working-directory: apps/landing
+        run: node --check src/app.js && node --check scripts/build.mjs && node --check scripts/serve.mjs
+      - name: Test public artifact and static server
+        working-directory: apps/landing
+        run: node --test tests/build.test.mjs tests/server.test.mjs
+      - name: Build non-indexable public artifact
+        working-directory: apps/landing
+        run: node scripts/build.mjs
 
   frontend-build:
     name: Frontend build
