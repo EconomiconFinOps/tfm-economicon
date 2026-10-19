@@ -1,0 +1,23 @@
+{
+  "origin": "PR143 f64a26be ensayo 2026-10-19; reduced boundary reproductions, not raw provider payloads",
+  "cases": [
+    {
+      "id": "003",
+      "parts": [
+        "El aumento puede ser esperado, optimizable o anómalo.",
+        "Para poder aplicarlo necesito una fuente autorizada."
+      ]
+    },
+    {
+      "id": "025",
+      "parts": [
+        "Su ejecución debe diseñarse en otra historia.",
+        "Puedo ayudarte a preparar una propuesta."
+      ]
+    }
+  ],
+  "unfinished": [
+    "En cambio,",
+    "Para repartir una reserva, la vista coherente es el coste amortizado:"
+  ]
+}

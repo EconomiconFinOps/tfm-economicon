@@ -286,5 +286,7 @@ def response_citations(value, context):
         if (citation['title'] != source['title'].strip() or citation['source'] != source['source'].strip()
                 or not isinstance(source.get('content'),str) or citation['excerpt'] != source['content'][:140]):
             raise ResponseValidationError('citation_provenance')
-        selected.append(citation)
+        # The selected, tenant-authorized snapshot is immutable conversation data.
+        # Do not make the browser resolve model-provided URLs or query live corpus.
+        selected.append({**citation, 'content': source['content']})
     return [item['evidence_id'] for item in selected], selected

@@ -18,6 +18,7 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
+| [Acciones y citas del panel](../demo/JUP-065/correccion-panel.md) | JUP-065: corrección separada de acciones ocultas, narrativa incompleta y visor de fuentes; pruebas y límites documentados, reviews y aceptación integrada pendientes. | 2026-10-19 |
 | [Demo funcional](demo-funcional.md) | PR63 incorpora develop6d9e6710/PR139; paquete fijo intacto. CI y dictamenes del SHA final pendientes; ensayo NOT_RUN. | 2026-10-18 |
 | [Índices de embeddings](indices-embeddings.md) | PR139: dos bloqueantes57fe7c57 corregidos sólo local por excepción humana; política30PASS y9SQL realesPASS tras baseline6FAIL/3PASS; candidato local, sin publicación ni dictamen nuevo. | 2026-10-18 |
 | [Politica de revisiones](revisiones-pr.md) | PR135: reconciliación de5f9dac36 con develop79aa76be tras PR134; excepción y entradas119 intactas, índice unido sin perder chunking. CI/SQL del nuevo candidato y revalidación incremental pendientes; aprobación previa conserva5f9. | 2026-10-18 |

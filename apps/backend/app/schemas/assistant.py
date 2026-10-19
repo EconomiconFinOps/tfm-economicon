@@ -112,6 +112,7 @@ class SourceCitation(BaseModel):
     section: NonEmptyText | None = None
     page: int | None = Field(default=None, ge=1)
     excerpt: str
+    content: str | None = None
     source_spans: list[dict] | None = None
     position_contract: dict | None = None
 
@@ -120,7 +121,7 @@ class SourceCitation(BaseModel):
         # Revalidating an older citation must not append new null fields to its
         # persisted metadata or change the conversation's evidence snapshot.
         value = handler(self)
-        for name in ('source_spans', 'position_contract'):
+        for name in ('source_spans', 'position_contract', 'content'):
             if value.get(name) is None:
                 value.pop(name, None)
         return value
