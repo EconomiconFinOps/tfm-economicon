@@ -255,6 +255,6 @@ El ensayo real sobre RCf444ba11 obtuvo aceptación parcial; supersede el NOT_RUN
 histórico anterior, sin acreditar aceptación integral. Su cierre y límites se
 recogen en la tarjeta JUP-065. Los fallos de acciones ocultas, texto incompleto
 persistido y fuentes sin apertura se corrigen en una rama y PR independientes:
-[acciones y citas del panel](panel-acciones-citas.md). Se conservan los roles
+[acciones y citas del panel](../demo/JUP-065/correccion-panel.md). Se conservan los roles
 humanos; las excepciones previas no se extienden a esta nueva PR. Ensayo narrado,
 pertinencia de citas y nueva aceptación generativa siguen pendientes.
