@@ -1,5 +1,6 @@
 """Private, bounded response segments; public response fields remain strings."""
 import copy
+import re
 
 from app.core.chat_calculations import render_text
 from app.core.chat_claims import documentary_schema, render_documentary
@@ -354,9 +355,32 @@ def render_segment(segment, records, expressions=None):
     raise ValueError('Invalid response segment.')
 
 
+def validate_narrative_segments(segments):
+    """Reject dangling prose slots; a citation is not a numeric operand.
+
+    This bounded Spanish/English syntax check is not a semantic quality judge.
+    Adjacent prose is joined first; a typed quantity/calculation can complete it.
+    """
+    pending = []
+    for segment in [*segments, {}]:
+        if not isinstance(segment, dict):
+            raise ValueError('Invalid response segment.')
+        if 'inference' in segment or 'text' in segment:
+            if not isinstance(segment.get('inference', segment.get('text')), str):
+                raise ValueError('Invalid segment text.')
+            pending.append(segment.get('inference', segment.get('text', '')))
+            continue
+        if pending and not any(key in segment for key in ('quantity', 'expression', 'calculation_id')):
+            text = ''.join(pending).rstrip()
+            if re.search(r'\b(?:es|son|de|del|con|como|entre|frente a|respecto a|is|are|of|with|from|to)\s*$', text, re.I):
+                raise ValueError('Incomplete narrative: missing continuation or typed quantity.')
+        pending = []
+
+
 def render_segments(segments, records, *, limit=4000, expressions=None):
     if not isinstance(segments,list) or not 1<=len(segments)<=128:
         raise ValueError('Invalid segment collection.')
+    validate_narrative_segments(segments)
     parts=[];pending=[]
     for segment in segments:
         # Validate shape before grouping adjacent text. Group validation closes

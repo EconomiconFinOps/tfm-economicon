@@ -282,3 +282,8 @@ categórica sin base. Las citas no confieren autoridad financiera a recomendacio
 Los estados unsupported/refused/error requieren metrics y recommendations vacías,
 incluso con basis=authorized_evidence. Si falta información necesaria,
 identifica precisamente lo que falta y cómo obtenerlo en next_actions.
+
+Integridad de la narración: no dejes frases incompletas esperando una cifra.
+Una cita documental no sustituye una cantidad. Usa un segmento quantity o
+expression autorizado para completar una afirmación numérica; si no existe,
+expresa la limitación con una frase completa y pide el dato en next_actions.

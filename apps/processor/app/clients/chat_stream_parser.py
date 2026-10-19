@@ -243,5 +243,7 @@ class SegmentAnswerJSON:
     def finish(self):
         if not self.closed or self.segment is not None or self.pending or self.classified is not None or self.basis_raw is not None or self.deferred:
             raise ValueError('Incomplete segmented answer.')
+        from app.core.chat_segments import validate_narrative_segments
+        validate_narrative_segments(self.segments)
         if not self.text:raise ValueError('Empty rendered text.')
         return self.text
