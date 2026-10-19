@@ -89,6 +89,10 @@ CI_BLOCK_TODAY = [
     "corepack pnpm assistant-corpus:validate",
     "corepack pnpm validation-questions:validate",
     "corepack pnpm validation-questions:test",
+    # JUP-065: conservar tambien los controles de demo al integrar JUP-121.
+    "python docs/demo/JUP-065/verificar.py --repo .",
+    "python -m unittest discover -s docs/demo/JUP-065 -p 'test_*.py' -v",
+    "node docs/demo/JUP-065/generado/sources/tools/validation-questions.mjs validate",
     "corepack pnpm business-metrics:validate",
     "corepack pnpm business-metrics:test",
     "corepack pnpm retrieval-labels:validate",

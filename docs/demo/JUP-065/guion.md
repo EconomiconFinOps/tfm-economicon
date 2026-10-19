@@ -1,0 +1,49 @@
+# Recorrido de demostración — 7 minutos
+
+Audiencia: tutor/equipo. Mensaje: «Economicon permite consultar una muestra de gasto Cloud y contrastar explicaciones con su documentación». Abrir previamente `/login`, `/`, el panel lateral «Asistente FinOps» (sólo tras aceptar A/B y autorizar su activación) y la ficha de evidencia; evitar terminales con secretos.
+
+| Tiempo | Acción exacta | Qué decir | Resultado esperado / evidencia |
+| --- | --- | --- | --- |
+| 0:00–0:30 | Presentar el alcance | «Usamos una API Azure simulada con una muestra pública; las respuestas de IA se comprobarán contra fuentes». Identificar proveedor real o mock según el ensayo. | No afirmar acceso a Azure real ni ahorros logrados. |
+| 0:30–1:00 | Entrar con la cuenta demo y seleccionar Core Finance (`tenant-core`) | «Cada consulta queda vinculada al cliente seleccionado». | Sesión válida; tenant visible; captura sin credenciales. |
+| 1:00–2:15 | En `/`, Mes inicial `2024-06`, Mes final `2024-06`, agrupar por Grupo de recursos | «Seleccionamos junio, pero los datos son una muestra pública, no una factura mensual completa. Conservamos moneda y procedencia». | Total 0,06 USD; comprobar los 38 registros en `totals[0].record_count` del recibo de billing o sumando la columna Registros, sin exigir un contador global visible; ocho grupos, incluyendo DevTestLab unificado. La UI consulta `[2024-06-01, 2024-07-01)`; la carga y referencia fijadas siguen en `[2024-06-01, 2024-06-20)`. En esta muestra coinciden los registros: no hay filas de la suscripción desde el día 20. Contrastar datos y grupos con `costes-esperados.json`; no confundir ambos periodos ni sumar grupos redondeados para recalcular el total. |
+| 2:15–2:45 | Cambiar a Growth Ops y volver a Core Finance | «El cliente sin carga debe mostrar ausencia de datos». | Growth sin costes; Core recupera 0,06 USD. Esto comprueba separación visual, no sustituye una prueba de autorización contra tenants ajenos. |
+| 2:45–3:15 | Mostrar la evidencia de ingesta ya completada del documento FinOps | «El asistente utiliza este documento versionado». | ID de documento/job/chunks y hash del corpus del ensayo, estado completed comprobado por la consulta SQL del preflight; «queued» no basta. No esperar una indexación larga en directo. |
+| 3:15–4:30 | En `/`, «Abrir asistente» → «Nueva conversación»; en «Pregunta» introducir y enviar el prompt completo JUP-069-004 de `prompts.json` | «¿Uso coste actual o amortizado para repartir el coste de una reserva?» | Distingue facturación de distribución temporal del compromiso; explica uso del amortizado para showback, sin sumar ambas vistas. Texto exacto variable. |
+| 4:30–5:15 | Abrir una cita de esa respuesta | «Podemos revisar en qué se apoya la explicación». | Documento correcto, extracto que respalda la afirmación y referencia resoluble del tenant; repetir tras recarga. Un ID de chunk sin evidencia visible no supera este paso. |
+| 5:15–6:15 | En el mismo panel, «Nueva conversación»; enviar JUP-069-003 completo | «¿Por qué ha subido tanto el gasto?» | Pide alcance y periodo; propone investigación sin inventar importe, servicio culpable ni causa raíz. |
+| 6:15–7:00 | Mostrar límites y cerrar sesión | «Hemos demostrado consulta de muestra y explicación trazable; el ahorro y las decisiones operativas necesitan más evidencia». | Sin promesas de ahorro ni apagado; ruta protegida vuelve al login tras salir. |
+
+Con `CHAT_ENABLED=false` el panel está oculto: los tramos 3:15–6:15 quedan `blocked`, no se sustituyen por la ruta estructurada `/assistant`. Tras recarga, abrir el panel y «Historial» para recuperar la conversación y su cita. La integración de A no autoriza activar el chat antes de aceptar B.
+
+## Tramo JUP-036 — versión ampliada de 9 minutos
+
+Usar la misma instancia y muestra JUP-065,con `COST_REFERENCE_DATE=` vacío y
+fechas explícitas. Insertar este bloque tras 2:45;desplazar dos minutos los tramos
+posteriores:corpus 4:45–5:15,generación 5:15–6:30,cita 6:30–7:15,pregunta de aclaración 7:15–8:15,
+cierre 8:15–9:00. No añadir además la reserva de dos minutos.
+
+| Tiempo ampliado | Acción | Resultado esperado |
+| --- | --- | --- |
+| 2:45–3:30 | Core,en `/assistant`,crear conversación;activar «Consultar gasto Azure». «Ámbito Azure»:Suscripción;«Suscripción (opcional)»: `64e355d7-997c-491d-b0c1-8414dccfcf42`;«Valor exacto (opcional)» vacío. «Inicio UTC (incluido)»:2024-06-01;«Fin UTC (excluido)»:2024-06-20. Escribir «¿Cuánto hemos gastado en esta suscripción en este periodo?» y Enviar. | Selección explícita;respuesta estructurada con 0,06 USD y 38 registros y periodo correcto. No atribuir interpretación de lenguaje natural ni generación LLM. |
+| 3:30–4:00 | Abrir evidencia de costes y recargar la conversación. | Importe,ámbito,periodo e ingestas trazables;comparar con billing. El conteo visible no demuestra factura mensual completa. |
+| 4:00–4:45 | Cambiar a Growth,crear conversación y repetir selección/fechas;volver a Core. | Ausencia de datos,no gasto cero;conservar ambas evidencias. |
+
+Es el mismo caso del paso7 del ensayo integrado. Es obligatorio comprobarlo en
+el ensayo técnico,aunque se elija presentar sólo el guion corto. Sus comprobaciones
+no requieren activar el panel generativo. Contrato:[JUP-036](../../api/azure-cost-questions.md).
+Los datos y fecha de JUP-107/119 pertenecen a otro ensayo,como explica el README.
+
+## Reserva y ampliación
+
+Como alternativa al bloque JUP-036 en una presentación ampliada,no acumulativa, usar JUP-069-001 en conversación nueva: leer «escenario sintético» antes de pegar el contexto. Esperados: total 1.000 EUR, VM 600 EUR, cuota 60 %, tolerancia 0,01 EUR/puntos porcentuales. No conecta ni carga esos datos en el dashboard. JUP-069-023 y 025 comprueban abstención ante tenant real inaccesible y orden de apagado; conservar el texto y la rúbrica originales.
+
+## Plan ante fallos
+
+- Si login, costes o aislamiento fallan: detener el tramo funcional; registrar el error y pasar a explicar el diseño. No presentar capturas anteriores como resultado actual.
+- Si el proveedor tarda más de 30 segundos: anunciar incidencia, esperar como máximo otros 30 segundos y registrar `blocked`; no improvisar múltiples reintentos. Es un límite de presentación propuesto, no un SLA del producto.
+- Si aparece 502, no pulsar repetidamente reenviar: existe un residual documentado de duplicación de mensajes en JUP-025. Guardar evidencia y comenzar conversación nueva después de diagnosticar.
+- Comprobar que el mensaje va a la conversación nueva seleccionada antes de usar las conversaciones de reserva: JUP-104 reprodujo RF-104-001, que puede devolver la selección a la anterior. Si ocurre, registrar `fail` y detener ese tramo; la preparación no corrige el producto ni declara acreditadas esas reservas.
+- Si falta una cita útil, marcar `fail` con servicio operativo o `blocked` por integración pendiente; no sustituirla silenciosamente por la rúbrica.
+- Alternativa disponible ahora: guion y referencias offline, etiquetados como preparación. Solo usar vídeo/capturas de un ensayo cuando existan y muestren fecha, commit y modo; hoy no se ha generado ese respaldo.
+- Con mock se puede ensayar navegación y errores. No cuenta como ensayo definitivo de IA real. No modificar preguntas, corpus o respuestas esperadas para ocultar un fallo.
