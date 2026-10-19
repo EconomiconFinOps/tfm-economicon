@@ -80,6 +80,8 @@ CI_BLOCK_TODAY = [
     "corepack pnpm jup:check:test",
     "corepack pnpm pr:check:test",
     "corepack pnpm ci:check:test",
+    # JUP-089: conservar la regresión Turbo en el contrato exacto del bloque.
+    "node --test tools/landing-turbo.test.mjs",
     "corepack pnpm roadmap:test",
     "corepack pnpm repository:governance:test",
     "corepack pnpm jup:check:all",

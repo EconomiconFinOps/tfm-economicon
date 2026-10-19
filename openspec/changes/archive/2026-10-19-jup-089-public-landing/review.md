@@ -2,7 +2,7 @@
 
 ## Candidato
 
-Rama feat/JUP-089-public-landing; HEAD/base f444ba11e38203b6cfd645a098fd9946d55955e3 más diff de trabajo. Proceso del checkout: CONTRIBUTING.md, 2026-10-18 (JUP-126; excepción PR135 no aplicable a esta entrega). [Evidencia propia](../../../docs/evidence/JUP-089-validation.md). Los bytes nuevos se identifican mediante sus huellas de entrega, no como contenido del commit base.
+Candidato histórico de R1/R2 y adendas finales del 19/10/2026: rama feat/JUP-089-public-landing; HEAD/base f444ba11e38203b6cfd645a098fd9946d55955e3 más diff de trabajo. Proceso del checkout: CONTRIBUTING.md, 2026-10-18 (JUP-126; excepción PR135 no aplicable a esta entrega). [Evidencia propia](../../../../docs/evidence/JUP-089-validation.md). Los bytes nuevos se identifican mediante sus huellas de entrega, no como contenido del commit base.
 
 ## Revisión técnica local independiente
 
@@ -20,4 +20,10 @@ Pendientes: Revision JUP-089 de Alejandro y Validacion JUP-089 de Lucía según 
 
 Diseño: aprobado por Paris el19/10/2026 según comunicación del liderazgo.
 
-Aprobación posterior a validación: PENDIENTE. Archivo particular, publicación y merge conservan permisos separados. No se ha archivado el cambio ni se presenta un dictamen de agente como revisión humana.
+Paris aprobó el cierre local y autorizó archivo, commit y push el 19/10/2026, según comunicación PM. El cambio se archivó como 2026-10-19-jup-089-public-landing y PM publicó el commit 481b4cffaf7f67607068246455834af59c14b4d8, conservando base f444ba11 y fuentes funcionales. Esta autorización no es aprobación de PR, cierre público, permiso de despliegue o merge, ni acredita reviews humanas.
+
+## Corrección posterior de CI — 19/10/2026
+
+PM comunicó el fallo de gobernanza del [run39268057889](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39268057889) sobre481b4cf: dos fallos de CiWorkflowTests en test_evaluation_scripts.py. Reproducción propia antes de editar:2FAIL/2PASS en la clase afectada. La lista literal CI_BLOCK_TODAY omitía node --test tools/landing-turbo.test.mjs; se añade en su posición sin cambiar workflow, aserciones, orden, unicidad o sangría. Después del arreglo:16pruebas del módulo y19del contrato CI favorables. No se repitió la suite remota de1842casos ni se modificó producto/configuración/dependencias.
+
+Nuevo candidato: HEAD481b4cffaf7f67607068246455834af59c14b4d8 más delta local de este fix, misma rama/base estable. Los informes históricos R1/R2 no se modifican ni se extienden automáticamente: evaluación independiente afectada del fix y CI remota sobre su futura publicación PENDIENTES. La aprobación y archivo anteriores se conservan como hechos fechados; no se afirma un nuevo permiso de publicación.

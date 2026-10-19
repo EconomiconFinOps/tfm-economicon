@@ -19,10 +19,12 @@
 ## 4. Revisión y cierre
 
 - [x] 4.1 Candidato fijo, referencias originales y revisión/validación independientes locales con límites
-- [x] 4.2 Atender hallazgos y repetir evaluación afectada (P2 de Turbo resuelto; R2 técnica favorable y funcional local favorable)
+- [x] 4.2 Atender hallazgos y repetir evaluación afectada (P2 de Turbo resuelto en R2; fix posterior del contrato CI con revisión y validación locales afectadas favorables)
 - [x] 4.3 Aprobación humana posterior a validación y archivo autorizado en la misma rama (Paris, 19/10/2026)
 - [ ] 4.4 Publicación autorizada, CI y reviews humanas; dominio/hosting/HTTPS públicos cuando se autoricen
 
 Nota del 19/10/2026: las tareas locales marcadas conservan el alcance y límites de la evidencia: reduced-motion estático, métricas HTTP/tamaño y DOM, sin tiempos de pintado/CWV ni auditoría pública. Dominio, HTTPS/despliegue públicos y cierre humano permanecen pendientes; no se declaran cumplidos por estas casillas.
 
 Cierre local19/10: originales R1/R2 conservados, ambos retornos de integridad conformes y cada evaluador confirma aplicabilidad de la evidencia no afectada. Paris autoriza el archivo, commit y push tras la entrega evaluada; archivado en la misma rama el19/10. NEEDS_CONTEXT global permanece para los criterios públicos; 4.4 continúa pendiente.
+
+Corrección posterior del19/10 sobre481b4cf: falloCI de expectativa literal reproducido2FAIL/2PASS, lista exacta actualizada y16+19pruebas focales conformes. La casilla4.2 se reabre sólo para la evaluación independiente afectada del fix, conservando resultados R1/R2. Archivo/commit/push previos autorizados y ejecutados; nueva publicación del arreglo corresponde al PM.

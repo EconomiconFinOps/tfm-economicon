@@ -19,7 +19,7 @@ El diseño visible fue aprobado por Paris el 19/10/2026 según comunicación del
 | Rendimiento, accesibilidad y SEO medidos | 230138 bytes en 14 archivos, mediana HTTP loopback 1,41ms en 5 muestras; contraste y estructura DOM medidos; metadatos/local-noindex y origen de prueba cubiertos | Sin Lighthouse/FCP/CLS/CWV ni medición del dominio final; no equivalen a tiempos de usuario |
 | Enlaces, vídeo si existe, metadatos y404 | Navegación de secciones, licencias/recursos servidos con hashes, título/description/OG/favicon/robots/sitemap y404 HTTP+visible | No hay vídeo: no se inventa; URLs definitivas dependen de origen aprobado |
 | Deploy y rollback | Build reproducible, _headers generado desde política compartida y [manual de operación](../operations/public-landing.md) | Propuesta de hosting no aprobada, sin despliegue ni rollback público ejecutados |
-| PR revisada, CI y evidencias | Checks locales indicados abajo, job CI adicional con permisos/acciones existentes | Aprobación final, archivo/publicación autorizados y reviews humanas/CI remota |
+| PR revisada, CI y evidencias | Checks locales indicados abajo, job CI adicional con permisos/acciones existentes | Archivo autorizado ya realizado; corrección del contrato CI local comprobada, evaluación afectada y nueva CI remota pendientes, además de PR/reviews humanas y publicación pública |
 
 ## Pruebas y mediciones
 
@@ -62,3 +62,11 @@ R2 independiente: REVIEW_PASS técnico; el Revisor ejecutó21pruebas afectadas (
 ## Participación y cierre
 
 Roles propuestos por la tarjeta: Paris liderazgo, Víctor pairing, Alejandro revisión y Lucía validación. No se acredita participación por asignación. No se ha reutilizado HTML/CSS/JS de PR106; los binarios de marca/fuentes conservan su atribución. No existen aún las dos reviews humanas de esta entrega ni permiso de merge.
+
+## Corrección del contrato CI posterior al archivo — 19/10/2026
+
+PM archivó y publicó481b4cffaf7f67607068246455834af59c14b4d8 con autorización de Paris. En el [run39268057889](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39268057889), PM identificó2fallos del jobOpenSpec en evaluation-dashboard:test, entre1842casos remotos/1skip. No es un fallo demostrado del UI. La clase CiWorkflowTests se reprodujo antes de editar:2FAIL/2PASS. Se conserva la salida adversa y el log remoto íntegro.
+
+Se actualiza únicamente el literal CI_BLOCK_TODAY para incluir la comprobación Turbo ya obligatoria, después de ci:check:test. Las comparaciones completas de orden/igualdad, unicidad y sangría quedan intactas; no se elimina ni se debilita ningún test o paso CI. Comprobaciones propias posteriores: python -B -m unittest discover -s scripts/tests -p test_evaluation_scripts.py -v:16PASS; node --test tools/ci-workflow.test.mjs:19PASS. Estas35pruebas focales no equivalen a una ejecución nueva de los1842casos ni a CI remota.
+
+Producto, fuentes de UI, artefacto público, workflow y dependencias permanecen idénticos a481b4cf. HEAD481b4cf más delta local del fix, misma rama y basef444. Revisión/validación independientes de este delta y nueva CI remota PENDIENTES. Los dictámenes locales anteriores conservan su candidato/fecha; no se usan como aceptación automática del arreglo. Archivo/commit/push previos no autorizan crear PR ni desplegar.
