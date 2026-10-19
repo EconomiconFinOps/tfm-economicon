@@ -36,6 +36,18 @@ def sources():
     return evidence,citations,returned
 
 
+def test_citation_opening_preserves_the_authorized_fragment_not_just_its_prefix():
+    from app.schemas.chat import response_citations
+    evidence, citations, returned = sources()
+    evidence[1]['content'] = 'Introducción. ' + 'Contexto. ' * 20 + 'Actual y amortizado tienen bases distintas.'
+    citations[1]['excerpt'] = evidence[1]['content'][:140]
+    _, result = response_citations({'evidence': returned}, {
+        'authorized_evidence': evidence, 'source_citations': citations})
+    assert result[0]['content'] == evidence[1]['content']
+    assert 'bases distintas' not in result[0]['excerpt']
+    assert result[0]['document_id'] == citations[1]['document_id']
+
+
 def test_truncated_decision_schedules_retry_without_persisting_a_partial_pair(api):
     runtime=service(api[0]);scope={'tenant_id':'t','user_id':'alice','conversation_id':'alice-chat'}
     row,_=runtime.repository.reserve(scope,body(),{'prompt_version':'synthetic'})
@@ -165,7 +177,8 @@ def test_only_used_authorized_corpus_citations_are_preserved_without_fabricating
         final=next(item for item in frame_records(response) if item['type']=='final')
         result=await client.get(final['result_url'],headers=headers())
         metadata=result.json()['metadata']
-        assert metadata['citations']==['doc-two'] and metadata['source_citations']==[citations[1]]
+        assert metadata['citations']==['doc-two']
+        assert metadata['source_citations']==[{**citations[1], 'content': evidence[1]['content']}]
         assert metadata['response']['evidence']==returned
         detail=await client.get('/assistant/conversations/alice-chat',headers=headers())
         assert detail.json()['messages'][1]['metadata']==metadata

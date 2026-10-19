@@ -229,7 +229,8 @@ def test_required_tool_extension_validates_and_persists_only_recovered_sources(a
         saved=messages(api[1])
         assert len(saved)==2
         metadata=next(item['metadata'] for item in saved if item['role']=='assistant')
-        assert metadata['citations']==['manual:4'] and metadata['source_citations']==[citation]
+        assert metadata['citations']==['manual:4']
+        assert metadata['source_citations']==[{**citation, 'content': full['content']}]
         reopened=api[1].fetch_messages('alice-chat','t','alice')
         assert len(reopened)==2
     run(scenario,api)
