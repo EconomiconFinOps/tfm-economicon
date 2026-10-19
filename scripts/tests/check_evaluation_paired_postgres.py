@@ -24,6 +24,45 @@ tool = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(tool)
 
 
+def cleanup_own_container(name, docker):
+    """Ausencia sólo con inventario exitoso; nunca borrar un recurso sin su label."""
+    report = {"container_removed": False, "cleanup_status": "unknown"}
+
+    def inventory():
+        return docker("container", "ls", "--all", "--filter", "name=^/" + name + "$",
+                      "--format", "{{.Names}}", check=False)
+
+    try:
+        before = inventory()
+        if before.returncode != 0:
+            return report
+        names = before.stdout.split()
+        if not names:
+            return {"container_removed": True, "cleanup_status": "already_absent"}
+        if names != [name]:
+            return report
+        owned = docker("inspect", "--format", '{{index .Config.Labels "economicon.jup121.test"}}', name,
+                       check=False)
+        if owned.returncode != 0:
+            return report
+        if owned.stdout.strip() != name:
+            return {"container_removed": False, "cleanup_status": "ownership_mismatch"}
+        removed = docker("rm", "-f", "-v", name, check=False)
+        if removed.returncode != 0:
+            return {"container_removed": False, "cleanup_status": "failed"}
+        after = inventory()
+        if after.returncode != 0:
+            return report
+        if not after.stdout.strip():
+            return {"container_removed": True, "cleanup_status": "removed"}
+        if after.stdout.split() == [name]:
+            return {"container_removed": False, "cleanup_status": "failed"}
+        return report
+    except (OSError, subprocess.SubprocessError):
+        # Daemon, permisos, ejecutable o timeout no demuestran ausencia.
+        return report
+
+
 def main(name=None):
     name = name or "economicon-jup121-paired-test-" + secrets.token_hex(6)
     if re.fullmatch(r"economicon-jup121-paired-test-[0-9a-f]{12}", name) is None:
@@ -112,11 +151,9 @@ def main(name=None):
         summary["dataset_after_sha256"] = hashlib.sha256(collision_before.encode()).hexdigest()
         summary["status"] = "PASS"
     finally:
-        owned = docker("inspect", "--format", '{{index .Config.Labels "economicon.jup121.test"}}', name,
-                       check=False)
-        if owned.returncode == 0 and owned.stdout.strip() == name:
-            docker("rm", "-f", "-v", name, check=False)
-        summary["container_removed"] = docker("container", "inspect", name, check=False).returncode != 0
+        summary.update(cleanup_own_container(name, docker))
+        if not summary["container_removed"]:
+            summary["status"] = "FAIL"
         print(json.dumps(summary, ensure_ascii=False, sort_keys=True))
         if not summary["container_removed"]:
             raise AssertionError("Own temporary container could not be removed")
