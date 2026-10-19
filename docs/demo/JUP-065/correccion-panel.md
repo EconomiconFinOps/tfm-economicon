@@ -51,7 +51,7 @@ python apps/processor/build_tokenizer.py --embedding-only
 # Desde apps/backend y apps/processor, con sus requirements-dev:
 python -m pytest tests -q
 corepack pnpm openspec:validate
-corepack pnpm jup:check -- --change jup-065-panel-actions-citations
+corepack pnpm jup:check:all  # cambios activos; este cambio ya está archivado
 corepack pnpm jup:cleanup:check
 ```
 
@@ -107,3 +107,15 @@ Sin consumo nuevo de modelos. La próxima aceptación generativa debe fijar este
 nuevo SHA/prompt, sin transferir la evidencia anterior. Pairing Lucía, revisión
 Paris y validación Víctor siguen pendientes; ninguna excepción heredada. CI del
 nuevo SHA se registra con enlaces al publicar. Sin merge ni otras PR.
+
+
+## Archivo solicitado por revisión
+
+Atendido el requisito documental de Paris sobre f64a26be conforme a
+CONTRIBUTING.md (Leadership): cambio archivado en
+`openspec/changes/archive/2026-10-19-jup-065-panel-actions-citations/` y requisito
+consolidado en `openspec/specs/assistant-panel-completeness/spec.md`.
+El archivo no equivale a aceptación humana, cierre de tarjeta ni merge.
+El Request changes permanece hasta la decisión del revisor; Víctor conserva
+la validación independiente. La revisión del nuevo SHA debe incluir el delta
+narrativo posterior al candidato revisado por Paris.
