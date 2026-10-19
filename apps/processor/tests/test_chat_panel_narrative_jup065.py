@@ -31,3 +31,14 @@ def test_typed_calculation_may_complete_a_sentence():
 def test_complete_clarification_remains_usable():
     assert 'Indica período y ámbito.' in render_segments([
         {'inference': 'Indica período y ámbito.'}], [])
+
+
+def test_documentary_quote_is_not_a_numeric_continuation():
+    with pytest.raises(ValueError, match='Incomplete narrative'):
+        render_segments([{'inference': 'El aumento es de '},
+                         {'documentary': {'source_id': 'manual', 'passage': 'Revisar costes.'}}], [])
+
+
+def test_adjacent_prose_can_complete_a_sentence_without_inventing_a_quantity():
+    assert 'El período es desconocido.' in render_segments([
+        {'inference': 'El período es '}, {'inference': 'desconocido.'}], [])

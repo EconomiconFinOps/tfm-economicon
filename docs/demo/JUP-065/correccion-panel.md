@@ -2,6 +2,7 @@
 
 Verificado: 19/10/2026. Origen: chat `01a12c49-7488-72f0-9077-1137c5c4f2a6`,
 JUP-065/PR63 y ensayo RC. [Tarjeta](https://trello.com/c/SZUFo4ol).
+[PR143](https://github.com/EconomiconFinOps/tfm-economicon/pull/143) abierta.
 Base `f444ba11e38203b6cfd645a098fd9946d55955e3`; rama independiente
 `fix/JUP-065-panel-actions-citations`, destino develop, sin merge.
 
@@ -30,8 +31,8 @@ histórico `/evidence` no se reconstruye: el visor usa la cita persistida.
 ## Pruebas y reproducción
 
 Antes de implementar fallaron 3 regresiones UI, 4 de narrativa y 1 de contenido
-documental. Después pasan 92 pruebas de componentes/colores, 47 del backend de
-metadatos y 105 del procesador (render/stream/contrato). Typecheck, build y lint
+documental. Después pasan 92 pruebas de componentes/colores, 69 del backend de
+metadatos/operaciones y 107 del procesador (render/stream/contrato). Typecheck, build y lint
 frontend ejecutados; quedan avisos preexistentes en ChatPresentation y tamaño
 del bundle. OpenSpec 82/82, trazabilidad e higiene conformes.
 
@@ -56,9 +57,12 @@ corepack pnpm jup:cleanup:check
 
 La primera suite frontend bajo alta concurrencia falló 5 pruebas; limitando
 concurrencia quedaron Escape propagado y color literal, corregidos y verificados.
-Suite completa final en curso al registrar este corte. Python global 3.14 carecía
+Suite frontend final: **1380/1380 en 92 archivos**. Python global 3.14 carecía
 de dependencias y tenía tokenizer 0.23.1: venv propio preparado con 0.22.1 y recurso
 de embeddings fijado. No presentar errores de aquel entorno como aceptación.
+La primera suite backend con Python global no fijado terminó con 2263 pass,
+367 skip, 209 fail y 102 errores (recursos/contrato y dependencias); no se acepta
+ese corte. Las 69 pruebas afectadas se repitieron conformes en venv fijado.
 La CI usa Linux/Python3.12; resultados/enlaces del SHA publicado se registran en
 la sección Validacion de la nueva PR.
 
