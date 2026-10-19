@@ -55,7 +55,7 @@
     "max_generations": 2,
     "max_searches": 1,
     "missing_spend": "explicit-empty-query-incomplete-ingestion-unknown-total-v1",
-    "narrative_completion": "bounded-dangling-prose-slot-es-en-v1",
+    "narrative_completion": "bounded-prose-completion-and-sentence-spacing-v2",
     "no_search_policy": "authorized-context-or-abstention",
     "policy_retrieval": {
       "distance": "observed-not-replaced",
@@ -206,7 +206,7 @@
     "zero_change": "complete-request-user-zero-baseline-relative-terminal-v2",
     "zero_percentage": "complete-request-eligible-zero-denominator-terminal-v2"
   },
-  "assembler_sha256": "33f6e1a943358f4d6a6bef886a0950c6272b5e7e628e7f8d7929ffa39eef6647",
+  "assembler_sha256": "ec88b7bfcc19ee34f2505b240f21855977fc3fc423ed3854d2135d1c5c289f78",
   "budgets": {
     "model_context_tokens": 1048576,
     "output_tokens": 3200,
@@ -247,7 +247,7 @@
   "response_schema_sha256": "baf067ac8fe35a693848012c5358cb1c6ab8883ebaa02a63166b00f7d8298018",
   "response_subscriptions_policy": "server-canonical-selection-v1",
   "system_base_sha256": "8e3197acc5cc50b4368d547fbde9ea198cad3364414cec489cd9050f922e6edf",
-  "system_sha256": "f7492f1825c3b5a073d9279a2606513dc4583298ea7c616d675e76da20e3fd6b",
+  "system_sha256": "19016f9b48891c1fe8fb8be3ad89b701e9111864b155886e8448b30d0e7ad27f",
   "tokenizer": {
     "bytes": 20217442,
     "library_version": "0.22.1",

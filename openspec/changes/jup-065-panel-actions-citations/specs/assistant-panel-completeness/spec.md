@@ -29,3 +29,13 @@ The renderer SHALL reject detected trailing continuation words without a typed q
 #### Scenario: Grounded calculation
 - **WHEN** the continuation is an authorized typed calculation
 - **THEN** its value and provenance are preserved without browser reconstruction
+
+#### Scenario: Sentence boundary from rehearsal
+- **WHEN** adjacent prose ends in sentence punctuation and begins with an uppercase letter without whitespace
+- **THEN** render and stream insert one space, preserving existing whitespace and literal citations
+- **AND** original concatenation validation and final length limits remain enforced
+
+#### Scenario: Incomplete transition before a citation
+- **WHEN** prose ends in comma, semicolon or colon before a citation or answer end
+- **THEN** the incomplete candidate is rejected
+- **AND** prose or authorized typed continuations remain allowed

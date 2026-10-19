@@ -74,3 +74,36 @@ de merge/pairing/agentes se extiende a esta PR. Faltan CI final, pairing y dos
 dictámenes propios; después de integración autorizada, repetir ensayo generativo
 y narrado para comprobar aclaraciones visibles y citas pertinentes.
 No consumo de modelos, cierre de tarjeta, Discord, otras PR ni merge.
+
+
+## Regresiones del ensayo real de PR143 (19/10/2026)
+
+El ensayo f64a26be completó cinco generaciones y comprobó acciones/citas/historial,
+pero dejó «anómalo.Para» (003), «historia.Puedo» (025), «En cambio,» y una introducción
+acabada en dos puntos antes de cita (004). Evidencia externa:
+materiales/07-evidencias/JUP-065-ensayo-PR143-20261019/README.md.
+
+Se inserta un espacio sólo entre segmentos de prosa con puntuación final .?! y
+mayúscula inicial. Se preservan espacios/saltos existentes, palabras partidas,
+citas literales y cantidades tipadas. Se valida también la concatenación original
+para no debilitar controles de ecuaciones/slots. Backend, processor y streaming
+usan el mismo ensamblado; los espacios cuentan dentro del límite final.
+
+Una coma, punto y coma o dos puntos al final de prosa requieren continuación de
+prosa o cantidad tipada; una cita no la completa. El prompt exige afirmaciones
+completas antes de sus pasajes de apoyo. Contrato:
+`bounded-prose-completion-and-sentence-spacing-v2`. El candidato incompleto se
+rechaza por el flujo existente; no se reescriben afirmaciones, citas o historial.
+Es un control sintáctico acotado, no garantía universal de calidad semántica.
+
+`regresiones-narrativa.json` guarda reproducciones mínimas de las fronteras del
+ensayo, no payloads crudos del proveedor. Cinco regresiones fallaron antes del
+arreglo. Después:197 pruebas processor y73 backend afectadas PASS, incluidas
+fragmentación del stream1/7/todo, literalidad, longitud y cálculos. Un fixture nuevo
+usó inicialmente un dict en lugar del catálogo tipado: corregido antes de la pasada
+verde, sin confundir ese fallo de instrumento con un defecto de producto.
+
+Sin consumo nuevo de modelos. La próxima aceptación generativa debe fijar este
+nuevo SHA/prompt, sin transferir la evidencia anterior. Pairing Lucía, revisión
+Paris y validación Víctor siguen pendientes; ninguna excepción heredada. CI del
+nuevo SHA se registra con enlaces al publicar. Sin merge ni otras PR.

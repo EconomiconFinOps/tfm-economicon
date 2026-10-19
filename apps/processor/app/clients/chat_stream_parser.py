@@ -150,10 +150,10 @@ class SegmentAnswerJSON:
             raise
 
     def _flush(self):
-        from app.core.chat_segments import render_segment
+        from app.core.chat_segments import render_prose_group
         if not self.pending:return ''
         value={('inference' if any(key=='inference' for key,_ in self.pending) else 'text'):''.join(text for _,text in self.pending)}
-        result=self._checked_render(lambda node:render_segment(node,self.records,self.expressions),value,
+        result=self._checked_render(lambda node:render_prose_group(self.pending,self.records,self.expressions),value,
                                     mode='adjacent_prose',first=self.pending_start,
                                     last=self.pending_start+len(self.pending)-1)
         self.pending=[];self.pending_start=None

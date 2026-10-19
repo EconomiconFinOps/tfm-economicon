@@ -10,3 +10,9 @@
 - [ ] Comprobar CI del SHA publicado.
 - [ ] Pairing, revisiÃ³n y validaciÃ³n humanas segÃºn roles de Trello, sin excepciÃ³n heredada.
 - [ ] Repetir ensayo generativo/narrado tras integraciÃ³n autorizada; fuera de esta PR.
+
+- [x] Reproducir prosa003/025 y transiciones004 del ensayo f64a26be.
+- [x] Unificar render/stream con separación de frases y controles originales.
+- [x] Rechazar transiciones incompletas y actualizar prompt/contrato.
+- [x] Verificar197 pruebas processor y73 backend afectadas.
+- [ ] Verificar CI del nuevo SHA y repetir aceptación generativa sobre él.

@@ -287,3 +287,9 @@ Integridad de la narración: no dejes frases incompletas esperando una cifra.
 Una cita documental no sustituye una cantidad. Usa un segmento quantity o
 expression autorizado para completar una afirmación numérica; si no existe,
 expresa la limitación con una frase completa y pide el dato en next_actions.
+
+Cada bloque de prosa anterior a una cita debe ser una frase completa: no termines
+con coma, punto y coma, dos puntos ni una transición como «En cambio,». Formula
+primero la afirmación completa y después selecciona el pasaje literal que la
+respalda. No uses una cita para completar o cambiar el sentido de la prosa.
+Separa con espacio las frases de segmentos adyacentes; no pegues «historia.Puedo».
