@@ -1,0 +1,73 @@
+{
+  "scope": "Muestra pública Microsoft; API Azure simulada, no factura real ni mes completo",
+  "subscription_id": "64e355d7-997c-491d-b0c1-8414dccfcf42",
+  "tenant_id": "tenant-core",
+  "start_date": "2024-06-01",
+  "end_date_exclusive": "2024-06-20",
+  "csv_rows_selected": 40,
+  "persisted_record_count": 38,
+  "totals": [
+    {
+      "currency": "USD",
+      "exact_csv_sum": "0.060113199075769",
+      "cost": "0.06",
+      "record_count": 38
+    }
+  ],
+  "groups": [
+    {
+      "value": "ClancyTest",
+      "currency": "USD",
+      "cost": "0.00",
+      "record_count": 2
+    },
+    {
+      "value": "CLASSICLAB",
+      "currency": "USD",
+      "cost": "0.00",
+      "record_count": 1
+    },
+    {
+      "value": "DevTestLab",
+      "currency": "USD",
+      "cost": "0.03",
+      "record_count": 8
+    },
+    {
+      "value": "fo-0824-x4",
+      "currency": "USD",
+      "cost": "0.00",
+      "record_count": 1
+    },
+    {
+      "value": "ftk-integration-tests",
+      "currency": "USD",
+      "cost": "0.00",
+      "record_count": 21
+    },
+    {
+      "value": "JJExportTest",
+      "currency": "USD",
+      "cost": "0.00",
+      "record_count": 1
+    },
+    {
+      "value": "pulkit-test-rg",
+      "currency": "USD",
+      "cost": "0.00",
+      "record_count": 1
+    },
+    {
+      "value": "zfinops",
+      "currency": "USD",
+      "cost": "0.04",
+      "record_count": 3
+    }
+  ],
+  "group_by": "resource_group",
+  "data_status": "available",
+  "savings_identified": null,
+  "missing_dimension_count": 0,
+  "excluded_undated_count": 0,
+  "precondition": "Solo esta ingesta completada en tenant-core; sin cargas previas/solapadas"
+}
