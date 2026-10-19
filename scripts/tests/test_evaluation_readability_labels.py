@@ -69,6 +69,19 @@ def muestra_no_medido(panel) -> bool:
 
 
 class TipoDeEjecucionTests(unittest.TestCase):
+    def test_comparacion_pareada_conserva_tipo_ancho_y_mapping_no_real(self):
+        panel = R.por_titulo("GLM/DeepSeek — comparación provisional", "A")
+        props = R.propiedades(panel, "estado")
+        self.assertEqual(props["displayName"], TIPO_DE_EJECUCION)
+        self.assertGreaterEqual(props["custom.width"], 180)
+        self.assertEqual(props["custom.cellOptions"], {"type": "color-text"})
+        self.assertTrue(any(m.get("type") == "regex"
+                            and m.get("options", {}).get("pattern") == "^no real.*"
+                            and m.get("options", {}).get("result", {}).get("color") == "purple"
+                            for m in props["mappings"]))
+        self.assertIn("provisional", R.sql_de(panel))
+        self.assertIn("sin aceptación independiente", R.sql_de(panel))
+
     def test_la_columna_estado_se_muestra_como_tipo_de_ejecucion_en_todas_las_tablas_que_la_llevan(self):
         con_estado = [p for p in tablas_de_a_y_b() if re.search(r"(?i)\bAS\s+estado\b", R.sql_de(p))]
         # Ejecuciones, estados de casos, calidad, campaña, calibración, benchmark, robustez y negocio: ocho como mínimo.

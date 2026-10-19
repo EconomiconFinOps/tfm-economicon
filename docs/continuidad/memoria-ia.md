@@ -40,7 +40,14 @@ requiere actualización final. Observación aprobada adicional:
 No se corrigen esos apartados. Presentación Grafana local comprobada por el PM,
 sin nuevas mediciones ni evaluación semántica.
 
-Paris autoriza el cierre de esta entrega e/g y una PR nueva, sin tocar PR #141.
+Paris autoriza el cierre de esta entrega e/g y el 19/10 sustituye la estrategia
+de PR nueva por esta excepción: «Autorizo la excepción para que subamos nuestro
+commit a la #141, manteniendo la revisión y validación independientes.
+No abras otra PR.» Se conserva la implementación histórica de Alejandro,
+autor Iber1to; la documentación e/g es la aportación de Paris.
+La excepción permite aportar el commit, no aprobar el aporte propio, levantar
+reviews previas ni hacer merge. Los dictámenes propios no se extienden a toda
+la PR; la composición requiere la evaluación independiente afectada.
 Persisten comentarios humanos Doc/Trello con fecha/hash, reviews humanas
 y versión final revisada; no se atribuyen esas participaciones.
 La PR revisada/vinculada y sus reviews humanas son hitos de PR/merge, no
@@ -54,6 +61,6 @@ Se promovió la especificación ai-memory sin cambiar sus requisitos.
 Archivo no equivale a aceptación humana ni cierre de JUP-063.
 No hay cambios de producto ni nuevas llamadas a modelos.
 
-La [comparación del 16/10](../evidence/JUP-063-model-selection.md) y su PR #141
-conservan su historia independiente. La PR #95 cerrada sin integrar no acredita
-el cierre actual.
+La [comparación del 16/10](../evidence/JUP-063-model-selection.md) conserva sus
+resultados y atribuciones en PR #141 junto a este aporte, sin reescribirlos.
+La PR #95 cerrada sin integrar no acredita el cierre actual.

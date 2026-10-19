@@ -17,9 +17,23 @@ nueve encabezados de segundo nivel, dos tablas (63 celdas), un diagrama y cinco
 enlaces técnicos fijados a la base. Grafana aparece una vez. Se distinguen
 implementación, configuración, medición y aceptación humana.
 
-El antecedente PR #95 está cerrado sin integrar. La PR #141 y
-[la comparación histórica del 16/10](JUP-063-model-selection.md) son independientes:
-no se reescriben sus resultados ni se trasladan sus aprobaciones a este incremento.
+El antecedente PR #95 está cerrado sin integrar. La PR #141 conserva
+[la comparación histórica del 16/10](JUP-063-model-selection.md): se incorpora
+allí esta aportación e/g sin reescribir sus resultados ni trasladar sus
+aprobaciones a este incremento.
+
+### Composición autorizada en PR #141
+
+Paris autorizó expresamente el 19/10: «Autorizo la excepción para que subamos
+nuestro commit a la #141, manteniendo la revisión y validación independientes.
+No abras otra PR.» Sustituye la estrategia anterior de abrir una PR nueva.
+Se conserva la implementación histórica de Alejandro y su autoría Iber1to;
+Paris aporta la documentación de e/g. La composición local reúne
+`bf7a58fdb212490b8416f3a6ba8bb501160a95cf` y
+`02d96e0d47a39dd92afec8d2442f28046eb6495d`, ambos sobre la base indicada.
+La excepción autoriza aportar el commit, no aprobar la aportación propia,
+levantar revisiones previas ni hacer merge. Los dictámenes de e/g no se
+extienden a todo #141; la composición requiere el control independiente afectado.
 
 ## Versión revisable fuera de Git
 
@@ -171,7 +185,7 @@ Estos dictámenes cubren sus huellas r1/r2, no se extienden unilateralmente a
 esta actualización posterior de hechos. Su aplicabilidad se entrega con el delta.
 
 Los dictámenes locales completan la evaluación técnica de ese candidato, no
-los registros humanos del entregable ni las reviews humanas de la futura PR.
+los registros humanos del entregable ni las reviews humanas de PR #141.
 Los dictámenes anteriores del paquete Grafana sólo cubren datos/configuración
 y restauración; no se utilizan para aceptar el texto.
 
@@ -184,14 +198,15 @@ Trello el 19/10. Esta matriz no marca ni modifica la tarjeta oficial.
 | --- | --- | --- |
 | Resultado funcional verificable. | Aportación e/g incorporada con aprobación; 28 párrafos exactos, dos tablas, fuentes y extracto fechado comprobados. Evaluación local r1/r2 completa; PDF nativo actual de 18 páginas comprobado por coordinación. | Aceptación humana final del entregable y extensión definitiva pendientes: c/h sin terminar, i parcial e índice global por actualizar. |
 | Pruebas necesarias añadidas y en verde. | Controles documentales aplicables conformes: OpenSpec 82/82, trazabilidad, higiene, 150/150 pruebas y comprobaciones de fuentes. No hay producto nuevo que requiera otra batería. | CI del futuro commit/PR y adendas del delta actual, sin repetir campañas ni controles no afectados. |
-| Documentación y decisiones actualizadas. | Evidencia, continuidad y contrato OpenSpec documentan la arquitectura vigente y sus límites; no se introduce una decisión de producto nueva. | Archivo con autorización específica en la etapa de CONTRIBUTING, antes de las reviews de PR; este delta no lo ejecuta. |
-| Pull request revisado y vinculado. | Candidato documental preparado; la PR #95 cerrada sin integrar y la PR #141 histórica no cumplen este criterio para el incremento actual. | Crear y vincular la nueva PR con autorización; después obtener sus reviews humanas. Son hitos de PR/merge, no condiciones previas imposibles para abrirla. |
-| Validación funcional y evidencia enlazadas. | VALIDATION_PASS local, matriz de cobertura, fuentes y hashes del extracto documentados; no se afirma validación del producto desplegado. | Registrar la revisión y validación humanas del entregable en Doc y Trello, nombrando fecha/SHA, y enlazar la evidencia en la futura PR/tarjeta. |
+| Documentación y decisiones actualizadas. | Evidencia, continuidad y contrato OpenSpec documentan la arquitectura vigente y sus límites; archivo autorizado ejecutado sin cambio semántico. | Control de composición y enlaces finales; no se introduce una decisión de producto nueva. |
+| Pull request revisado y vinculado. | Aporte e/g preparado para la PR #141 existente, conservando sus commits y antecedentes. PR #95 cerrada sin integrar no acredita el cierre actual. | Publicar y vincular el aporte autorizado después del control independiente afectado; mantener las reviews humanas de #141 y revisar el nuevo delta sin atribuirlas como recibidas. |
+| Validación funcional y evidencia enlazadas. | VALIDATION_PASS local, matriz de cobertura, fuentes y hashes del extracto documentados; no se afirma validación del producto desplegado ni de toda #141. | Registrar revisión y validación humanas del entregable en Doc y Trello con fecha/SHA, y enlazar el aporte y su evidencia en PR #141/tarjeta. |
 
 Pairing humano: NO_ACREDITADO para este incremento. Persisten los comentarios
 humanos Doc/Trello, reviews humanas de PR, versión final revisada y actualización
-oficial. Paris ha autorizado cerrar esta entrega e/g y encargar una PR nueva;
-esto no acredita esas participaciones ni cierra por sí solo la tarjeta.
+oficial. Paris ha autorizado cerrar esta entrega e/g y aportar su commit a
+PR #141 por la excepción registrada; esto no acredita esas participaciones
+ni cierra por sí solo la tarjeta.
 
 Observaciones aprobadas para la PR: «c y h siguen pendientes; i está parcialmente
 redactado»; «d describe una versión antigua del chat que debe armonizarse con
@@ -201,13 +216,15 @@ memoria. El PDF local de cinco páginas sigue siendo un extracto no nativo;
 el PDF nativo de 18 acredita únicamente la extensión del corte actual.
 
 Paris autorizó expresamente el 19/10 archivar esta entrega e/g y preparar una
-PR borrador con los pendientes humanos visibles. Tras validar el change activo,
+PR borrador con los pendientes humanos visibles; después sustituyó la apertura
+de una PR nueva por la integración autorizada en #141. Tras validar el change activo,
 se archivó en 2026-10-19-jup-063-ai-memory y se promovieron los cuatro requisitos
 de ai-memory sin cambio semántico. La CLI conservó el aviso de cuatro tareas
 incompletas: pairing, comentarios humanos, exportación final y archivo aún no
 marcado al iniciar el traslado. Sólo la tarea de archivo se completa después.
 Las demás conservan su estado; archivar no acredita aceptación ni cierre.
-La publicación conserva su segunda confirmación y las comprobaciones de CI.
+La confirmación de la PR nueva queda obsoleta; la publicación del aporte en
+#141 se rige por la excepción específica y los controles independientes y de CI.
 Los comentarios humanos del entregable exigidos por la gobernanza no se
 convierten aquí en una condición nueva anterior a abrir la primera PR.
 No se modifica Trello ni se declara completada JUP-063.
