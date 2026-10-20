@@ -235,7 +235,7 @@ La proporción de búsquedas vacías es un límite inferior: el denominador incl
 
 ## Robustez (JUP-071)
 
-El manifiesto versionado incluye, como hito, las filas de la primera campaña con el chat real de JUP-071 (`docs/evidence/JUP-071-live-r1-rows.json`, ejecución no real y provisional); sin ellas la sección mostraría «Sin datos». JUP-071 emite un fichero `rows-v1` con `source: JUP-071` (por categoría y tipo de perturbación, comparada con su caso base en `behavior`) y, cuando se le dan el crudo y los recibos de una recogida en vivo, 19 indicadores en los grupos propios `rob_core`, `rob_retrieval`, `rob_system` y `rob_conversation` (ver `docs/validation/JUP-071-robustness.md`). Otra campaña que no sea un hito se carga con un manifiesto local.
+El manifiesto versionado incluye, como hito, las filas de la primera campaña con el chat real de JUP-071 (`docs/evidence/JUP-071-live-r1-rows.json`, ejecución no real y provisional); sin ellas la sección mostraría «Sin datos». JUP-071 emite un fichero `rows-v1` con `source: JUP-071` (por categoría y tipo de perturbación, comparada con su caso base en `behavior`) y, cuando se le dan el crudo y los recibos de una recogida en vivo, 19 filas de indicadores en los grupos propios `rob_core`, `rob_retrieval`, `rob_system` y `rob_conversation` (ver `docs/validation/JUP-071-robustness.md`). Otra campaña que no sea un hito se carga con un manifiesto local.
 
 El panel «Indicadores de robustez (JUP-071)» enseña solo esos indicadores de la última ejecución que los tiene, con su familia, su nombre en lenguaje llano, el valor con su unidad, la base y quién decide (juicio humano o regla). Lo no medido se lee «No medido». «Robustez (JUP-071)» queda como el detalle por fila, para auditar.
 

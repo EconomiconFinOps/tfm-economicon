@@ -102,7 +102,7 @@ Con esto se valida con un backend real, para la tarea 6.6, el contrato de eviden
 
 ### Dashboard
 
-Las filas `rows-v1` están en el manifiesto versionado (`docs/validation/evaluation-runs.json`) como hito, por lo que se cargan con la carga normal del dashboard y no hace falta ningún manifiesto local. Cargadas así (6 ejecuciones y 405 resultados), el panel «Robustez (JUP-071)» devuelve 136 filas por la API de Grafana (117 de la campaña y 19 de indicadores), el panel «Indicadores de robustez (JUP-071)» devuelve los 19 indicadores y la ejecución aparece como `no real: sin_modelo_verificado`.
+Las filas `rows-v1` están en el manifiesto versionado (`docs/validation/evaluation-runs.json`) como hito, por lo que se cargan con la carga normal del dashboard y no hace falta ningún manifiesto local. Cargadas así (6 ejecuciones y 405 resultados), el panel «Robustez (JUP-071)» devuelve 136 filas por la API de Grafana (117 de la campaña y 19 filas de indicadores), el panel «Indicadores de robustez (JUP-071)» devuelve las 19 filas de indicadores y la ejecución aparece como `no real: sin_modelo_verificado`.
 
 ```sh
 corepack pnpm evaluation-dashboard:load
@@ -112,7 +112,7 @@ con la pila de Compose levantada y `GRAFANA_EVALUATION_DB_PASSWORD` definida com
 
 ### Indicadores de la campaña (21/10/2026)
 
-Las mismas filas incluyen ahora 19 indicadores por las cuatro familias de evaluación de un RAG, generados con `rows --raw --receipts` (ver el protocolo). Los valores son provisionales por la misma razón que el informe.
+Las mismas filas incluyen ahora 19 filas de indicadores (18 indicadores) por las cuatro familias de evaluación de un RAG, generados con `rows --raw --receipts` (ver el protocolo). Los valores son provisionales por la misma razón que el informe.
 
 | Familia | Indicador | Valor de `r1` |
 | --- | --- | --- |

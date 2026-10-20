@@ -125,7 +125,7 @@ Los datos salen de tres fuentes: el informe de puntuación (puntos juzgados, par
 | | `unused_retrieval_rate` | muestras con recuperación y sin citas / muestras con recuperación | automático |
 | `rob_system` | `completion_rate` | operaciones completadas / muestras previstas | automático |
 | | `unmeasured_by_cause` | muestras sin recogida verificada por causa (`operation_failed`, `evidence_unverified`) | automático |
-| | `cost_per_query`, `prompt_size_per_query`, `completion_size_per_query` | coste o tokens informados / operaciones que los informan | automático, no atestiguado |
+| | `cost_per_query`, `prompt_size_per_query`, `completion_size_per_query` | coste o tokens informados / operaciones que los informan (en las filas, los tamaños llevan la unidad `unidades`: el escáner de secretos del dashboard rechaza la palabra «token») | automático, no atestiguado |
 | `rob_conversation` | `request_rate` | casos clarify y abstain evaluados con todos sus puntos de petición en pass / los que tienen alguno | humano |
 | | `over_abstention_rate` | casos `answer` evaluados con `behavior` fallido / casos `answer` evaluados | humano |
 | | `pair_degradation` | pares con referencia en pass y perturbación en fail / pares con referencia en pass | humano |
