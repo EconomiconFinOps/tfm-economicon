@@ -205,6 +205,27 @@ Riesgos aceptados por Lucia en esta sesión: el juicio de una sola persona (info
 
 Hallazgos registrados en `openspec/findings/backlog.md` (apartado «JUP-071 — Hallazgos de la primera campaña con el chat real» y ampliación de la entrada del lector numérico): recuperación no expuesta por la API, etiqueta `provider_error` engañosa, falta de petición del dato, abstención de clasificación sin suma de componentes y citas cortadas.
 
+## Adversarial Review (pass 8, grupo 7: indicadores)
+
+Revisión automatizada e independiente de `adf1a702..7849abe6` (herramienta y pruebas), con acceso de solo lectura y sin ver el razonamiento de quien implementó. Veredicto: `changes-required` con 2 HIGH, 4 MEDIUM y 2 LOW, todos reproducidos. No es la `Revision JUP-071` de una persona.
+
+| ID | Sev. | Hallazgo | Resolución |
+| --- | --- | --- | --- |
+| ADV-1 | HIGH | `request_rate` y `over_abstention_rate` contaban como evaluados los casos con juicios pendientes (`not_run`); sin juicios daban 1/19 o un cero medido 0/10. | Solo cuentan los casos con todos los puntos de petición juzgados (pass o fail) y los casos de respuesta con el punto de conducta juzgado. Sin ninguno sale `not_measured`. Prueba nueva. |
+| ADV-2 | HIGH | `literal_quotes` buscaba la cita en toda la evidencia autorizada con el mismo título y no en un fragmento citado. | Se cruza con los identificadores citados del recibo. Prueba nueva con un fragmento no citado que contiene la frase. |
+| ADV-3 | MEDIUM | Formas malformadas en recibos o crudo (metadatos en lista, entradas de recuperación en texto, operación en lista...) terminaban en `AttributeError` sin capturar. | Comprobación de forma de cada recibo al leerlo (`check_receipt`, `part`) con error que nombra la muestra, y `AttributeError` añadido a la red de `main` para que nunca acabe en traceback. Prueba nueva con ocho formas hostiles por el CLI. |
+| ADV-4 | MEDIUM | Una cita vacía o de solo espacios contaba como literal. | Cuenta en el denominador y nunca en el numerador. |
+| ADV-5 | MEDIUM | El patrón de citas tenía coste polinómico: con 16.000 repeticiones de `Fuente: ` no terminaba en 120 s. | Título acotado a 200 caracteres y cita a 4.000. La prueba con 20.000 repeticiones termina en menos de 5 s (8 s toda la suite). |
+| ADV-6 | MEDIUM | Tokens negativos aceptados, aunque el coste negativo se rechaza. | Los tokens se rechazan con error si no son enteros no negativos. |
+| ADV-7 | LOW | Una cita con otro separador que la raya larga no entra en el denominador. | Aceptado y documentado: el formato del backend usa siempre la raya larga. Si todas las citas de una campaña usaran otro, `literal_quotes` saldría no medido. |
+| ADV-8 | LOW | Identificadores duplicados en `evidence_ids` inflaban los fragmentos listados. | Un manifiesto con identificadores repetidos es malformado y se rechaza nombrando la muestra. |
+
+Ataques que resistieron: informe de otro crudo, recibo ausente, duplicado o con otra respuesta, recibo verificado para un caso sin respuesta, una sola de las dos entradas opcionales, carpeta inexistente, salida bajo `docs/evidence`, salida sin las entradas opcionales idéntica a la anterior, grupo de otra fuente, validación del dashboard, manifiesto ausente, operación sin causa, bloqueados fuera de los indicadores de juicio, ceros medidos, coste con `Decimal`, comparación de títulos y citas sin mayúsculas ni espacios repetidos, y crudo atado por hash.
+
+Barrido del patrón: «evaluado es solo lo no bloqueado» (`request_rate` y `over_abstention_rate`; los indicadores de `rob_core` y `pair_degradation` ya filtraban por juzgado), `public_evidence` como sustituto de «citado» (solo `literal_quotes`; la hoja de revisión lo muestra completo a propósito), estructuras sin comprobar en recibos y crudo (`read_receipts`, `indicator_rows`, `execution_usage`), expresiones regulares sin cota (solo la de citas en el diff) y contadores sin cota inferior (tokens). Tras corregir, las filas de la campaña `r1` salen idénticas a las ya cargadas, porque todos sus juicios estaban completos y sus citas venían de fragmentos citados: no cambia ninguna cifra publicada.
+
+La pasada 8 no cierra el grupo: hace falta una segunda pasada sobre las correcciones, y los hallazgos de las dos son de una revisión automatizada, no de una persona.
+
 ## Pattern sweep
 
 - Cifras sin alias y cifras no pedidas: las variantes de cumplimiento eran las únicas con dos cifras o sin alias; JUP-071-010 tiene una cifra y se resuelve por la etiqueta «julio».

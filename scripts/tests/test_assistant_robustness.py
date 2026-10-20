@@ -1942,3 +1942,111 @@ class CampaignIndicatorsTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class CampaignIndicatorsAdversarialTests(CampaignIndicatorsTests.__bases__[0]):
+    """Regressions found by the adversarial review of group 7 (ADV-1 to ADV-8)."""
+
+    build = CampaignIndicatorsTests.build
+    rows = CampaignIndicatorsTests.rows
+
+    def edit_receipt(self, folder, case, change):
+        path = Path(folder, f"{case}-r1.json")
+        document = json.loads(path.read_text(encoding="utf-8"))
+        change(document["results"][0])
+        path.write_text(json.dumps(document), encoding="utf-8")
+
+    def test_pending_judgments_are_not_evaluated_cases(self):
+        def only_one(judgments):
+            for case_id, points in judgments["cases"].items():
+                if case_id != "JUP-071-005":
+                    judgments["cases"][case_id] = {key: [] for key in points}
+        document = self.rows(mutate_judgments=only_one)
+        row = find(document, "request_rate")
+        self.assertEqual((row["status"], row["numerator"], row["denominator"]), ("measured", 1, 1))
+        row = find(document, "over_abstention_rate")
+        self.assertEqual((row["status"], row["value"], row["denominator"]), ("not_measured", None, 0))
+
+    def test_a_quotation_is_checked_only_against_cited_fragments(self):
+        def cite(raw):
+            row = next(r for r in raw["cases"] if r["case"] == "JUP-069-011")
+            row["answer"] += "\nFuente: Glosario X — «frase presente solo en el fragmento no citado»"
+            row["citations"] = ["d:1"]
+            row["public_evidence"] = [
+                {"id": "d:1", "kind": "corpus", "source": "glossary", "title": "Glosario X", "content": "otro contenido"},
+                {"id": "d:2", "kind": "corpus", "source": "glossary", "title": "Glosario X",
+                 "content": "frase presente solo en el fragmento no citado"}]
+        row = find(self.rows(mutate_raw=cite, options={"JUP-069-011": {"cited": ("d:1",)}}), "literal_quotes")
+        self.assertEqual((row["numerator"], row["denominator"]), (0, 1))
+
+    def test_an_empty_quotation_is_never_literal(self):
+        def cite(raw):
+            row = next(r for r in raw["cases"] if r["case"] == "JUP-069-011")
+            row["answer"] += "\nFuente: Glosario X — « »"
+            row["public_evidence"] = [{"id": "d:1", "kind": "corpus", "source": "glossary", "title": "Glosario X", "content": "x"}]
+            row["citations"] = ["d:1"]
+        row = find(self.rows(mutate_raw=cite, options={"JUP-069-011": {"cited": ("d:1",)}}), "literal_quotes")
+        self.assertEqual((row["numerator"], row["denominator"]), (0, 1))
+
+    def test_the_quotation_pattern_is_linear_on_hostile_text(self):
+        import time
+
+        def hostile(raw):
+            next(r for r in raw["cases"] if r["case"] == "JUP-069-011")["answer"] += "\n" + "Fuente: " * 20000
+        started = time.perf_counter()
+        document = self.rows(mutate_raw=hostile)
+        self.assertLess(time.perf_counter() - started, 5)
+        self.assertEqual(find(document, "literal_quotes")["status"], "not_measured")
+
+    def test_negative_tokens_are_rejected_like_a_negative_cost(self):
+        def negative(raw):
+            raw["execution"]["collection"]["server_reported"][0]["usage"]["prompt_tokens"] = -5
+        report, raw, folder = self.build(mutate_raw=negative)
+        with self.assertRaisesRegex(robustness.Error, "tokens"):
+            robustness.rows_v1(report, raw, robustness.read_receipts(folder, raw))
+
+    def test_duplicate_evidence_identifiers_are_a_malformed_manifest(self):
+        report, raw, folder = self.build(options={"JUP-069-011": {"evidence": ("d:1", "d:1")}})
+        with self.assertRaisesRegex(robustness.Error, "JUP-069-011"):
+            robustness.rows_v1(report, raw, robustness.read_receipts(folder, raw))
+
+    def test_a_citation_without_an_identifier_names_the_sample(self):
+        report, raw, folder = self.build()
+        self.edit_receipt(folder, "JUP-069-011", lambda item: item["result"]["metadata"]["response"].update(evidence=[{"title": "x"}]))
+        with self.assertRaisesRegex(robustness.Error, "JUP-069-011"):
+            robustness.rows_v1(report, raw, robustness.read_receipts(folder, raw))
+
+    def test_hostile_shapes_end_with_a_controlled_error_and_write_nothing(self):
+        shapes = {
+            "metadata is a list": lambda item: item["result"].update(metadata=[]),
+            "response is a list": lambda item: item["result"]["metadata"].update(response=[]),
+            "retrieval entry is text": lambda item: item["result"]["metadata"]["generation"]["context_manifest"].update(retrieval=["a"]),
+            "operation is a list": lambda item: item.update(operation=[]),
+            "result is a list": lambda item: item.update(result=[]),
+        }
+        for name, change in shapes.items():
+            with self.subTest(name):
+                report, raw, folder = self.build()
+                self.edit_receipt(folder, "JUP-069-011", change)
+                with tempfile.TemporaryDirectory() as out:
+                    base = Path(out)
+                    report_path, raw_path, target = base / "report.json", base / "raw.json", base / "rows.json"
+                    report_path.write_text(json.dumps(report), encoding="utf-8")
+                    raw_path.write_text(json.dumps(raw), encoding="utf-8")
+                    status, _, stderr = cli(["rows", "--input", report_path, "--raw", raw_path, "--receipts", folder, "--output", target])
+                    self.assertEqual(status, 2, stderr)
+                    self.assertFalse(target.exists())
+        report, raw, folder = self.build()
+        for name, change in {"execution is text": lambda r: r.update(execution="x"),
+                             "reported sample is text": lambda r: r["execution"]["collection"]["server_reported"].__setitem__(0, "x")}.items():
+            with self.subTest(name):
+                broken = copy.deepcopy(raw)
+                change(broken)
+                with tempfile.TemporaryDirectory() as out:
+                    base = Path(out)
+                    report_path, raw_path, target = base / "report.json", base / "raw.json", base / "rows.json"
+                    report_path.write_text(json.dumps(report), encoding="utf-8")
+                    raw_path.write_text(json.dumps(broken), encoding="utf-8")
+                    status, _, _ = cli(["rows", "--input", report_path, "--raw", raw_path, "--receipts", folder, "--output", target])
+                    self.assertEqual(status, 2)
+                    self.assertFalse(target.exists())
