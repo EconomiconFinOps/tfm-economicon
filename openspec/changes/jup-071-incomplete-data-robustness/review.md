@@ -201,7 +201,7 @@ Validación del 2026-10-20 (Windows, Python 3.14):
 - Grupo 7 (indicadores, 2026-10-21): `corepack pnpm assistant-robustness:test` 151 pruebas OK (21 nuevas, vistas fallar antes del código y comprobadas con 12 mutaciones que se detectan todas); `test_evaluation_manifest.py` 44 OK, `test_evaluation_rows_command.py` 114 OK y `tools/test_chat_eval_collect_jup071.py` 33 OK; las 19 filas de indicadores de `r1` pasan `validate_rows` y reproducen las cifras calculadas a mano.
 - No se repitió la batería completa de pruebas de las aplicaciones porque no se tocó código de producción de las aplicaciones.
 
-Riesgos aceptados por Lucia en esta sesión: el juicio de una sola persona (informe provisional), la generación fuera del libro de contabilidad y una sola repetición. Quedan sin aceptar y sin resolver: la falta de segunda revisión independiente, la ausencia de atestación del modelo y el reparto del presupuesto de inferencia con la entrega B.
+Riesgos aceptados por Lucia en esta sesión: los nombres de grupo `rob_*` se asumen adoptados por JUP-129 sin acuerdo previo (si cambian, se renombran); el juicio de una sola persona (informe provisional), la generación fuera del libro de contabilidad y una sola repetición. Quedan sin aceptar y sin resolver: la falta de segunda revisión independiente, la ausencia de atestación del modelo y el reparto del presupuesto de inferencia con la entrega B.
 
 Hallazgos registrados en `openspec/findings/backlog.md` (apartado «JUP-071 — Hallazgos de la primera campaña con el chat real» y ampliación de la entrada del lector numérico): recuperación no expuesta por la API, etiqueta `provider_error` engañosa, falta de petición del dato, abstención de clasificación sin suma de componentes y citas cortadas.
 
