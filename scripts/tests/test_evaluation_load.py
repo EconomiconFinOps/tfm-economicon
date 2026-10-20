@@ -1632,12 +1632,12 @@ class VersionedLoadTest(DbCase):
     def test_carga_con_codigo_0_y_el_resumen_del_conjunto_versionado(self) -> None:
         code, out, err = self.result
         self.assertEqual(code, 0, err)
-        self.assertEqual(out, "5 ejecuciones y 269 resultados cargados\n")
+        self.assertEqual(out, "6 ejecuciones y 405 resultados cargados\n")
         self.assertEqual(err, "")
 
     def test_las_tablas_tienen_las_filas_del_resumen(self) -> None:
-        self.assertEqual(count("runs"), "5")
-        self.assertEqual(count("results"), "269")
+        self.assertEqual(count("runs"), "6")
+        self.assertEqual(count("results"), "405")
 
     def test_el_rol_existe_puede_iniciar_sesion_y_no_tiene_privilegios(self) -> None:
         rows = server().query(
@@ -1695,8 +1695,8 @@ class RoleLoginTest(DbCase):
         self.assertEqual(self.result[0], 0, self.result[2])
 
     def test_lee_ejecuciones_resultados_y_las_dos_vistas(self) -> None:
-        self.assertEqual(role_scalar(PW, "SELECT count(*) FROM evaluation.runs"), "5")
-        self.assertEqual(role_scalar(PW, "SELECT count(*) FROM evaluation.results"), "269")
+        self.assertEqual(role_scalar(PW, "SELECT count(*) FROM evaluation.runs"), "6")
+        self.assertEqual(role_scalar(PW, "SELECT count(*) FROM evaluation.results"), "405")
         for view in ("config_changes", "comparable_runs"):
             with self.subTest(view=view):
                 # Lo que ve el rol es lo que ve el administrador (las vistas calculan sobre las tablas del esquema).
@@ -1758,8 +1758,8 @@ class RoleLoginTest(DbCase):
 
     def test_los_intentos_de_escritura_no_cambiaron_nada(self) -> None:
         # Si algún permiso sobrara, las pruebas de arriba lo habrían notado; aquí se comprueba el estado final.
-        self.assertEqual(count("runs"), "5")
-        self.assertEqual(count("results"), "269")
+        self.assertEqual(count("runs"), "6")
+        self.assertEqual(count("results"), "405")
         self.assertEqual(server().scalar("SELECT count(*) FROM pg_namespace WHERE nspname = 'intruso'"), "0")
         # `GRANT` sin ser dueño no falla (solo avisa): lo que importa es que no se concedió nada.
         as_role(PW, f"GRANT INSERT ON evaluation.runs TO {READER}")
@@ -1800,19 +1800,19 @@ class ReloadAndRotationTest(DbCase):
     def test_la_primera_carga_dejo_entrar_con_la_primera_contrasena(self) -> None:
         self.assertEqual(self.first[0], 0, self.first[2])
         self.assertEqual(self.first_login.returncode, 0, self.first_login.stderr)
-        self.assertEqual(self.first_login.stdout.strip(), "5")
+        self.assertEqual(self.first_login.stdout.strip(), "6")
 
     def test_la_segunda_carga_no_falla_porque_el_rol_ya_existe(self) -> None:
         code, out, err = self.second
         self.assertEqual(code, 0, err)
-        self.assertEqual(out, "5 ejecuciones y 269 resultados cargados\n")
+        self.assertEqual(out, "6 ejecuciones y 405 resultados cargados\n")
         self.assertEqual(err, "")
         self.assertNotIn("already exists", err)
 
     def test_regeneracion_repetida_deja_el_mismo_numero_de_filas(self) -> None:
         # Escenario «Regeneración repetida» de la spec.
-        self.assertEqual(count("runs"), "5")
-        self.assertEqual(count("results"), "269")
+        self.assertEqual(count("runs"), "6")
+        self.assertEqual(count("results"), "405")
 
     def test_la_contrasena_vieja_deja_de_valer(self) -> None:
         self.assertEqual(self.first_login.returncode, 0, self.first_login.stderr)
@@ -1822,8 +1822,8 @@ class ReloadAndRotationTest(DbCase):
         self.assertIn("password authentication failed", result.stderr)
 
     def test_la_nueva_con_comillas_barra_y_unicode_sirve(self) -> None:
-        self.assertEqual(role_scalar(PW_HOSTILE, "SELECT count(*) FROM evaluation.runs"), "5")
-        self.assertEqual(role_scalar(PW_HOSTILE, "SELECT count(*) FROM evaluation.results"), "269")
+        self.assertEqual(role_scalar(PW_HOSTILE, "SELECT count(*) FROM evaluation.runs"), "6")
+        self.assertEqual(role_scalar(PW_HOSTILE, "SELECT count(*) FROM evaluation.results"), "405")
 
     def test_hay_un_unico_rol_aunque_se_cargue_dos_veces(self) -> None:
         self.assertEqual(server().scalar("SELECT count(*) FROM pg_roles WHERE rolname LIKE 'grafana%'"), "1")
@@ -1847,8 +1847,8 @@ class ReloadAndRotationTest(DbCase):
 
     def test_una_tercera_carga_con_la_misma_contrasena_tambien_funciona(self) -> None:
         code, out, err = call_load(PW_HOSTILE, versioned=True)
-        self.assertEqual((code, out, err), (0, "5 ejecuciones y 269 resultados cargados\n", ""))
-        self.assertEqual(role_scalar(PW_HOSTILE, "SELECT count(*) FROM evaluation.runs"), "5")
+        self.assertEqual((code, out, err), (0, "6 ejecuciones y 405 resultados cargados\n", ""))
+        self.assertEqual(role_scalar(PW_HOSTILE, "SELECT count(*) FROM evaluation.runs"), "6")
 
 
 class PreexistingRoleTest(DbCase):
@@ -1907,11 +1907,11 @@ class FailureMidLoadTest(DbCase):
 
     def test_los_datos_anteriores_siguen_enteros(self) -> None:
         # El `TRUNCATE` estaba en la misma transacción que los `INSERT` que fallaron: se deshizo con ellos.
-        self.assertEqual(count("runs"), "5")
-        self.assertEqual(count("results"), "269")
+        self.assertEqual(count("runs"), "6")
+        self.assertEqual(count("results"), "405")
 
     def test_el_rol_y_su_contrasena_anteriores_siguen_igual(self) -> None:
-        self.assertEqual(role_scalar(PW, "SELECT count(*) FROM evaluation.runs"), "5")
+        self.assertEqual(role_scalar(PW, "SELECT count(*) FROM evaluation.runs"), "6")
         result = as_role(self.OTHER, "SELECT 1")
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("password authentication failed", result.stderr)
@@ -1953,7 +1953,7 @@ class NoLeakTest(DbCase):
 
     def test_no_esta_ni_en_stdout_ni_en_stderr_de_la_herramienta(self) -> None:
         self.assertEqual(self.result[0], 0, self.result[2])
-        self.assertEqual(self.result[1], "5 ejecuciones y 269 resultados cargados\n")
+        self.assertEqual(self.result[1], "6 ejecuciones y 405 resultados cargados\n")
         self.assertNotIn(self.SECRET, self.result[1])
         self.assertNotIn(self.SECRET, self.result[2])
 
@@ -2009,8 +2009,8 @@ class EmptyDatabaseTest(DbCase):
     def test_cargar_despues_con_datos_no_pierde_los_permisos(self) -> None:
         # Del vacío al versionado y de vuelta: el rol sobrevive a los dos `TRUNCATE`.
         code, out, err = call_load(PW, versioned=True)
-        self.assertEqual((code, out, err), (0, "5 ejecuciones y 269 resultados cargados\n", ""))
-        self.assertEqual(role_scalar(PW, "SELECT count(*) FROM evaluation.runs"), "5")
+        self.assertEqual((code, out, err), (0, "6 ejecuciones y 405 resultados cargados\n", ""))
+        self.assertEqual(role_scalar(PW, "SELECT count(*) FROM evaluation.runs"), "6")
         code, out, err = call_load(PW, versioned=False)
         self.assertEqual((code, out), (0, "0 ejecuciones y 0 resultados cargados\n"))
         self.assertEqual(role_scalar(PW, "SELECT count(*) FROM evaluation.runs"), "0")

@@ -605,7 +605,29 @@ HUMAN_INDICATORS = frozenset({"invention_rate", "required_coverage", "behavior_m
 VERIFIED = "VERIFIED_PUBLIC_SNAPSHOT"
 # Which required points ask to request something is a heuristic on the rubric text; a test freezes it for the shipped suite.
 REQUEST_POINT = re.compile(r"\b(pedir|solicitar|proponer aportar)\b", re.IGNORECASE)
-QUOTATION = re.compile(r"Fuente: ([^\n«»]{1,200}?) — «([^»]{1,4000})»")
+
+
+def quotations(answer):
+    """The `Fuente: <title> — «<text>»` attributions of an answer, with no length limit and in linear time."""
+    found, start, separator, newline = [], 0, -1, -1
+    while True:
+        head = answer.find("Fuente: ", start)
+        if head < 0:
+            return found
+        if separator < head:
+            separator = answer.find(" — «", head)
+            if separator < 0:
+                return found
+        if newline < head:
+            newline = answer.find("\n", head)
+        if 0 <= newline < separator:
+            start = head + 8
+            continue
+        end = answer.find("»", separator + 4)
+        if end < 0:
+            return found
+        found.append((answer[head + 8:separator], answer[separator + 4:end]))
+        start = end + 1
 
 
 def request_points(case):
@@ -634,7 +656,12 @@ def ratio(grp, metric_id, numerator, denominator):
 def mean(grp, metric_id, unit, total, denominator):
     if not denominator:
         return indicator_row(grp, metric_id, "all", unit, "automatic", "not_measured", denominator=denominator)
-    return indicator_row(grp, metric_id, "all", unit, "automatic", "measured", value=float(total) / denominator, denominator=denominator)
+    try:
+        value = float(total) / denominator
+    except OverflowError:
+        value = math.inf
+    require(math.isfinite(value), f"{metric_id}: the value is out of range")
+    return indicator_row(grp, metric_id, "all", unit, "automatic", "measured", value=value, denominator=denominator)
 
 
 def part(value, where):
@@ -671,15 +698,17 @@ def read_receipts(folder, raw):
     repetition = {}
     for item in reported:
         case, _, number = str(item.get("sample_id")).rpartition(":r")
-        require(number.isdigit() and case not in repetition, "the raw collection does not identify its samples")
+        require(re.fullmatch("[0-9]+", number) is not None and case not in repetition, "the raw collection does not identify its samples")
         repetition[case] = int(number)
     found = {}
-    for path in sorted(Path(folder).glob("*.json")):
+    for path in sorted(p for p in Path(folder).glob("*.json") if p.is_file()):
         document = json.loads(path.read_text(encoding="utf-8"))
         results = document.get("results") if isinstance(document, dict) else None
         if not isinstance(results, list):
             continue
         require(len(results) == 1 and isinstance(results[0], dict), f"{path.name}: a receipt holds exactly one result")
+        require(isinstance(results[0].get("id"), str) and type(results[0].get("repetition")) is int,
+                f"{path.name}: a receipt names its case and its repetition")
         key = (results[0].get("id"), results[0].get("repetition"))
         require(key not in found, f"{key[0]}: more than one receipt for the same sample")
         found[key] = results[0]
@@ -702,13 +731,14 @@ def read_receipts(folder, raw):
 
 
 def squash(text):
-    return " ".join(text.split()).lower()
+    return evaluation.normalize(text)
 
 
 def indicator_rows(report, raw, receipts, cases):
     require(report.get("raw_sha256") == digest(raw), "the report was not scored from this raw collection")
     require(raw["execution"].get("kind") == "live_unverified" and report.get("kind") == "live_unverified",
             "indicators need a live collection with receipts")
+    require(isinstance(report.get("pairs"), list), "the report has no pairs")
     by_id = {c["id"]: c for c in cases}
     raw_by_id = {r["case"]: r for r in raw["cases"]}
     require(set(receipts) == set(raw_by_id), "the receipts do not cover the raw collection")
@@ -748,7 +778,7 @@ def indicator_rows(report, raw, receipts, cases):
         row = raw_by_id[case]
         cited_ids = set(cited)
         fragments = [e for e in row.get("public_evidence", []) if e.get("id") in cited_ids]
-        for title, quote in QUOTATION.findall(row["answer"]):
+        for title, quote in quotations(row["answer"]):
             quotes += 1
             literal += bool(squash(quote)) and any(squash(title) == squash(e.get("title", "")) and squash(quote) in squash(e.get("content", ""))
                                                    for e in fragments)
@@ -773,13 +803,18 @@ def indicator_rows(report, raw, receipts, cases):
     for cause in ("operation_failed", "evidence_unverified"):
         out.append(indicator_row("rob_system", "unmeasured_by_cause", cause, "casos", "automatic", "measured",
                                  value=causes[cause], denominator=planned))
-    usage = [x["usage"] for x in execution_usage(raw) if isinstance(x.get("usage"), dict)]
+    usage = []
+    for entry in execution_usage(raw):
+        reported = entry.get("usage")
+        require(reported is None or isinstance(reported, dict), f"{entry.get('sample_id')}: malformed usage")
+        if reported:
+            usage.append(reported)
     costs = [exact(x.get("cost_usd")) for x in usage if x.get("cost_usd") is not None]
     out.append(mean("rob_system", "cost_per_query", "usd", sum(costs, Decimal(0)), len(costs)))
-    for name, field in (("prompt_tokens_per_query", "prompt_tokens"), ("completion_tokens_per_query", "completion_tokens")):
+    for name, field in (("prompt_size_per_query", "prompt_tokens"), ("completion_size_per_query", "completion_tokens")):
         counts = [x[field] for x in usage if x.get(field) is not None]
         require(all(type(v) is int and v >= 0 for v in counts), "server-reported tokens are not valid")
-        out.append(mean("rob_system", name, "tokens", sum(counts), len(counts)))
+        out.append(mean("rob_system", name, "unidades", sum(counts), len(counts)))
 
     asks = [(c, request_points(by_id[c["case"]])) for c in report["cases"]
             if c["behavior"] in ("clarify", "abstain") and c["outcome"] != "blocked"]
@@ -879,8 +914,8 @@ def outside(path):
     return not is_unc(path) and evaluation.outside_repository(path) and not normalised(path).is_relative_to(normalised(ROOT))
 
 
-def protect_outputs(outputs, inputs):
-    """Never destroy raw evidence, judgments, code or versioned references."""
+def protect_outputs(outputs, inputs, folders=()):
+    """Never destroy raw evidence, judgments, code, versioned references or the public receipts."""
     require(not any(is_unc(p) for p in outputs), "network share paths are not accepted for outputs")
     outputs = [normalised(p) for p in outputs]
     reserved = {normalised(p) for p in inputs}
@@ -888,6 +923,8 @@ def protect_outputs(outputs, inputs):
     require(all(not p.is_relative_to(normalised(ROOT)) or
                 (p.parent == evidence and re.fullmatch(r"jup-071-[a-z0-9._-]+-(report\.(json|md)|rows\.json)", p.name, re.IGNORECASE)) for p in outputs),
             "outputs inside the repository are limited to generated JUP-071 reports in docs/evidence")
+    guarded = [normalised(p) for p in folders]
+    require(not any(p == f or p.is_relative_to(f) for p in outputs for f in guarded), "output would overwrite or enter an input folder")
     require(len(set(outputs)) == len(outputs), "output paths must be distinct")
     require(not (set(outputs) & reserved), "output would overwrite an input or reference")
     require(all(p.parent.is_dir() for p in outputs), "create output directories before execution")
@@ -902,7 +939,8 @@ def main(argv=None):
         inputs = [getattr(args, key) for key in ("raw", "judgments", "run_info", "input") if getattr(args, key, None)]
         protect_outputs(outputs, [*inputs, SUITE, BASELINE, SERVICE, Path(__file__), evaluation.RULES_PATH,
                                   ROOT / "tools/assistant-eval.py", ROOT / suite["methodology"]["path"],
-                                  *(ROOT / s["path"] for s in suite["sources"].values())])
+                                  *(ROOT / s["path"] for s in suite["sources"].values())],
+                        [args.receipts] if getattr(args, "receipts", None) else [])
         if args.command == "validate":
             print(f"JUP-071: {len(suite['cases'])} perturbations, {len(cases)} cases including baselines; hashes OK")
         elif args.command == "prepare":

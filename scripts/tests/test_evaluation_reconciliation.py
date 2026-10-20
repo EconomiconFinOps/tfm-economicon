@@ -59,14 +59,16 @@ RUTAS = {
     "jup078": "docs/evidence/JUP-078-benchmark-results.json",
     "jup022": "docs/spikes/JUP-022-retrieval-calibration.json",
     "jup068-entrada": "docs/validation/JUP-068-example.json",
+    "jup071": "docs/evidence/JUP-071-live-r1-rows.json",
 }
-# Resultados que deben existir: lo que se deduce de los informes (2 x 48 + 10 + 140 + 23). Se escribe en el test para
+# Resultados que deben existir: lo que se deduce de los informes (2 x 48 + 10 + 140 + 23 + 136). Se escribe en el test para
 # que un cambio de los datos obligue a mirar este número y no se acepte «lo que haya».
 FILAS_JUP070 = 48
 FILAS_JUP078 = 10
 FILAS_JUP022 = 140
 FILAS_JUP068 = 23
-TOTAL_ESPERADO = 2 * FILAS_JUP070 + FILAS_JUP078 + FILAS_JUP022 + FILAS_JUP068
+FILAS_JUP071 = 136
+TOTAL_ESPERADO = 2 * FILAS_JUP070 + FILAS_JUP078 + FILAS_JUP022 + FILAS_JUP068 + FILAS_JUP071
 ESTADOS_DE_CASO = ("pass", "fail", "blocked", "not_run")
 
 
@@ -102,7 +104,7 @@ def server() -> evaluation_pg_helper.PostgresServer:
 
 def _cargar_versionado(instance) -> None:
     tool = evaluation_pg_helper.load_tool()
-    # Conjunto VERSIONADO tal cual lo carga `corepack pnpm evaluation-dashboard:load`: las cinco ejecuciones del manifiesto.
+    # Conjunto VERSIONADO tal cual lo carga `corepack pnpm evaluation-dashboard:load`: las seis ejecuciones del manifiesto.
     dataset = tool.build_dataset([tool.DEFAULT_MANIFEST])
     guion = tool.build_sql(dataset) + "\n" + tool.build_role_sql(secrets.token_urlsafe(18))
     resultado = instance.psql(stdin=guion)
@@ -381,12 +383,12 @@ def run_de(fuente: str, run_at: str | None = None, run_id: str | None = None) ->
 
 
 class InformesPresentesTests(ConciliacionCase):
-    def test_las_cinco_ejecuciones_estan_cargadas_y_cada_una_corresponde_a_su_informe(self):
+    def test_las_seis_ejecuciones_estan_cargadas_y_cada_una_corresponde_a_su_informe(self):
         # «Que ningún informe desaparezca»: dos campañas de JUP-070 (halladas por su fecha y su commit originales), el
         # benchmark, la calibración (por su `generated_at`) y la ejecución de negocio (por su `run_id` propio).
         cargadas = ejecuciones()
-        self.assertEqual(len(cargadas), 5, [e["run_id"] for e in cargadas])
-        self.assertEqual(sorted(e["source"] for e in cargadas), ["JUP-022", "JUP-068", "JUP-070", "JUP-070", "JUP-078"])
+        self.assertEqual(len(cargadas), 6, [e["run_id"] for e in cargadas])
+        self.assertEqual(sorted(e["source"] for e in cargadas), ["JUP-022", "JUP-068", "JUP-070", "JUP-070", "JUP-071", "JUP-078"])
         for clave in ("jup070-1", "jup070-2"):
             informe = leer(clave)
             run_id = run_de("JUP-070", run_at=informe["run"]["date"])
@@ -395,6 +397,7 @@ class InformesPresentesTests(ConciliacionCase):
         run_de("JUP-078")
         run_de("JUP-022", run_at=leer("jup022")["generated_at"])
         run_de("JUP-068", run_id=informe_de_negocio()["run_id"])
+        run_de("JUP-071", run_id=leer("jup071")["run"]["run_id"])
 
     def test_la_tabla_de_ejecuciones_del_dashboard_las_lista_con_su_fecha_y_commit_originales(self):
         # El panel a1 es lo primero que ve quien abre el dashboard: no puede perder una ejecución ni inventar su fecha.
@@ -421,15 +424,15 @@ class InformesPresentesTests(ConciliacionCase):
         esperado = (
             len(esperado_jup070(leer("jup070-1"))) + len(esperado_jup070(leer("jup070-2")))
             + 5 * len(leer("jup078")["models"]) + 5 * len(leer("jup022")["points"])
-            + len(esperado_jup068(informe_de_negocio())))
-        # El número no se acepta «porque sí»: 96 + 10 + 140 + 23.
+            + len(esperado_jup068(informe_de_negocio())) + len(leer("jup071")["results"]))
+        # El número no se acepta «porque sí»: 96 + 10 + 140 + 23 + 136.
         self.assertEqual(esperado, TOTAL_ESPERADO)
-        self.assertEqual(TOTAL_ESPERADO, 269)
+        self.assertEqual(TOTAL_ESPERADO, 405)
         filas = con_el_rol("SELECT count(*) AS n FROM evaluation.results")
         self.assertEqual(filas[0]["n"], TOTAL_ESPERADO)
         por_ejecucion = {f["run_id"]: f["n"] for f in con_el_rol(
             "SELECT run_id, count(*) AS n FROM evaluation.results GROUP BY run_id")}
-        self.assertEqual(sorted(por_ejecucion.values()), sorted([FILAS_JUP070, FILAS_JUP070, FILAS_JUP078, FILAS_JUP022, FILAS_JUP068]))
+        self.assertEqual(sorted(por_ejecucion.values()), sorted([FILAS_JUP070, FILAS_JUP070, FILAS_JUP078, FILAS_JUP022, FILAS_JUP068, FILAS_JUP071]))
 
     def test_ninguna_fila_medida_es_nula_ni_ninguna_no_medida_lleva_valor(self):
         # Regla 1 del contrato comprobada sobre los datos reales cargados: lo no medido es NULL y lo medido tiene valor.
@@ -454,10 +457,12 @@ class InformesPresentesTests(ConciliacionCase):
             esperado["measured"] = esperado.get("measured", 0) + medidas
             esperado["not_measured"] = esperado.get("not_measured", 0) + 3 - medidas
         esperado["measured"] += 5 * len(leer("jup022")["points"])
+        for fila in leer("jup071")["results"]:
+            esperado[fila["status"]] = esperado.get(fila["status"], 0) + 1
         obtenido = {f["status"]: f["n"] for f in con_el_rol(
             "SELECT status, count(*) AS n FROM evaluation.results GROUP BY status")}
         self.assertEqual(obtenido, esperado)
-        self.assertEqual(obtenido["not_measured"], 1)
+        self.assertEqual(obtenido["not_measured"], 1 + sum(1 for f in leer("jup071")["results"] if f["status"] == "not_measured"))
         self.assertEqual(sum(obtenido.values()), TOTAL_ESPERADO)
 
 
@@ -728,12 +733,12 @@ class LoQueSeVeTests(ConciliacionCase):
             with self.subTest(fila=(f["metric_id"], f["behavior"], f["status"])):
                 self.assertEqual(f["valor_texto"], texto_visible(origen["unit"], origen["value"], origen["count"], minutos=True))
 
-    def test_los_paneles_juntos_muestran_cada_una_de_las_269_filas_de_la_base(self):
-        # Cobertura: si una consulta de panel perdiera filas (un filtro de más, un grupo que falta) la suma no llegaría a 269.
+    def test_los_paneles_juntos_muestran_cada_una_de_las_405_filas_de_la_base(self):
+        # Cobertura: si una consulta de panel perdiera filas (un filtro de más, un grupo que falta) la suma no llegaría a 405.
         # Estados de casos (4 filas de la base por fila del panel) y benchmark (5 por modelo) vienen pivotados.
         visibles = (
             4 * len(del_panel("a2")) + len(del_panel("a3")) + len(del_panel("a4")) + len(del_panel("a7"))
-            + 5 * len(del_panel("a8")) + len(de_los_paneles_de_negocio()))
+            + 5 * len(del_panel("a8")) + len(de_los_paneles_de_negocio()) + len(del_panel("a9")))
         self.assertEqual(visibles, TOTAL_ESPERADO)
         self.assertEqual(con_el_rol("SELECT count(*) AS n FROM evaluation.results")[0]["n"], visibles)
 

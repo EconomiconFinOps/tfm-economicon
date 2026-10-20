@@ -544,11 +544,13 @@ class ConjuntoVersionadoTests(unittest.TestCase):
                 self.assertTrue(casi(fila["cost"], coste), fila["cost"])
         comprobar_rotulo_real(self, resultado["filas"], lambda f: f["run_id"], runs_de_la_base())
 
-    def test_a9_robustez_vacia_sin_informes_de_jup_071(self):
-        # Sin informe de robustez no hay filas: el panel muestra «Sin datos» (su `noValue`) y no un 0 %. Las filas STR
-        # de JUP-070 son de la campaña (a4), no de robustez futura: no aparecen aquí.
+    def test_a9_robustez_solo_muestra_la_campana_de_jup_071_del_manifiesto(self):
+        # El manifiesto versionado trae la campaña de robustez (136 filas): el panel las muestra y solo ellas. Las filas STR
+        # de JUP-070 son de la campaña (a4), no de robustez: no aparecen aquí.
         resultado = de_panel("a9", REAL)
-        self.assertEqual(resultado["filas"], [])
+        self.assertEqual(len(resultado["filas"]), 136)
+        self.assertEqual({f["run_id"] for f in resultado["filas"]}, {"JUP-071-a543144c9a55"})
+        self.assertEqual({f["source"] for f in resultado["filas"]}, {"JUP-071"})
         self.assertIn("run_id", nombres(resultado))
 
     def test_b_la_tabla_de_negocio_muestra_tiempo_asignacion_y_ahorro_con_lo_no_medido_como_nulo(self):

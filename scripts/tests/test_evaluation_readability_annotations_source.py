@@ -265,13 +265,14 @@ class EstadoDeLosCasosContraPostgresTests(unittest.TestCase):
 
     def test_sin_el_filtro_la_ejecucion_de_jup_071_si_se_mostraria(self):
         # Valida el PROPIO escenario: si quitando el filtro (sustitución de texto en memoria) la ejecución de JUP-071 también
-        # desapareciera, la prueba anterior no discriminaría nada. Con el filtro quitado salen 3 filas, y la de JUP-071 trae
+        # desapareciera, la prueba anterior no discriminaría nada. Con el filtro quitado salen 4 filas (la campaña de robustez
+        # versionada también cuenta como JUP-071), y la de este escenario trae
         # sus recuentos (6, 2, 1, 1 sobre 10): se lee como una campaña más, que es el defecto.
         sin_filtro = sin_filtro_de_fuente(self.sql)
         self.assertNotEqual(sin_filtro, self.sql, "no se pudo quitar el filtro de fuente de la consulta: no está o es raro")
         datos = R.ejecutar(sin_filtro, CON_ROBUSTEZ)
         por_run = {f["run_id"]: f for f in datos["filas"]}
-        self.assertEqual(len(por_run), 3, sorted(por_run))
+        self.assertEqual(len(por_run), 4, sorted(por_run))
         fila = por_run["rob-071"]
         self.assertEqual((fila["pass"], fila["fail"], fila["blocked"], fila["not_run"], fila["denominator"]),
                          (6, 2, 1, 1, 10))

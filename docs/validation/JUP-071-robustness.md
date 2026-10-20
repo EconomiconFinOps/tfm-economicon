@@ -89,7 +89,7 @@ python tools/assistant-robustness.py compare ../evaluacion-jup071/report-1.json 
 
 ## Indicadores de la campaña para el dashboard
 
-Con el crudo y los recibos públicos de una recogida en vivo, `rows` añade a la misma ejecución 19 filas de indicadores por las cuatro familias de evaluación de un RAG: calidad del core (`rob_core`), recuperación (`rob_retrieval`), rendimiento del sistema (`rob_system`) y conversación (`rob_conversation`). Sin esas dos entradas la salida es la de siempre, y con ellas las filas anteriores no cambian.
+Con el crudo y los recibos públicos de una recogida en vivo, `rows` añade a la misma ejecución 19 filas de indicadores (18 indicadores: la medida «sin medir por causa» ocupa dos filas) por las cuatro familias de evaluación de un RAG: calidad del core (`rob_core`), recuperación (`rob_retrieval`), rendimiento del sistema (`rob_system`) y conversación (`rob_conversation`). Sin esas dos entradas la salida es la de siempre, y con ellas las filas anteriores no cambian.
 
 ```sh
 python tools/assistant-robustness.py rows --input informe.json --raw crudo.json --receipts recibos --output docs/evidence/JUP-071-<nombre>-rows.json
@@ -103,7 +103,7 @@ python tools/assistant-robustness.py rows --input informe.json --raw crudo.json 
 | | `required_coverage` | requeridos en pass / requeridos juzgados | humano |
 | | `behavior_match_rate` | puntos de conducta en pass / juzgados | humano |
 | | `valid_citations` | ids citados dentro de la evidencia de su operación / ids citados | automático |
-| | `literal_quotes` | citas «» con fuente que aparecen literalmente en el fragmento citado de esa fuente / citas con fuente | automático |
+| | `literal_quotes` | citas «» con fuente que aparecen en el fragmento citado de esa fuente, literalmente tras normalizar (sin distinguir mayúsculas, acentos, marcado ni espacios) / citas con fuente | automático |
 | `rob_retrieval` | `empty_retrieval_rate` | muestras sin evidencia en el manifiesto / muestras verificadas | automático |
 | | `fragments_per_query` | fragmentos listados / muestras con recuperación | automático |
 | | `neighbor_share` | fragmentos admitidos como vecinos / fragmentos listados | automático |
@@ -111,7 +111,7 @@ python tools/assistant-robustness.py rows --input informe.json --raw crudo.json 
 | | `unused_retrieval_rate` | muestras con recuperación y sin citas / muestras con recuperación | automático |
 | `rob_system` | `completion_rate` | operaciones completadas / muestras previstas | automático |
 | | `unmeasured_by_cause` | muestras sin recogida verificada por causa: `operation_failed` y `evidence_unverified` | automático |
-| | `cost_per_query`, `prompt_tokens_per_query`, `completion_tokens_per_query` | coste o tokens informados por el servidor / operaciones que los informan | automático |
+| | `cost_per_query`, `prompt_size_per_query`, `completion_size_per_query` | coste o tokens informados (en las filas, los tamaños llevan la unidad «unidades» porque el filtro de secretos del dashboard rechaza la palabra «token») por el servidor / operaciones que los informan | automático |
 | `rob_conversation` | `request_rate` | casos de aclaración o abstención evaluados con todos sus puntos de petición en pass / los que tienen alguno | humano |
 | | `over_abstention_rate` | casos de respuesta evaluados con la conducta fallida / casos de respuesta evaluados | humano |
 | | `pair_degradation` | pares con la referencia en pass y la perturbación en fail / pares con la referencia en pass | humano |

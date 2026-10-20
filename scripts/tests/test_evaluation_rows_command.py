@@ -73,6 +73,7 @@ JUP_070_RUN_2 = EVIDENCE / "JUP-070-run-2-report.json"
 JUP_078_REPORT = EVIDENCE / "JUP-078-benchmark-results.json"
 JUP_022_REPORT = ROOT / "docs" / "spikes" / "JUP-022-retrieval-calibration.json"
 JUP_068_EXAMPLE = ROOT / "docs" / "validation" / "JUP-068-example.json"
+JUP_071_ROWS = EVIDENCE / "JUP-071-live-r1-rows.json"
 
 # Valores literales del contrato (no se leen de la herramienta para poder comparar contra ella).
 RUN_KEYS = (
@@ -99,7 +100,7 @@ JUP_022_SHA = hashlib.sha256(json.dumps(JUP_022_DOCUMENT, sort_keys=True, separa
 JUP_022_RUN_ID = "jup-022-{}-{}".format(
     datetime.fromisoformat(JUP_022_RUN_AT).astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ"), JUP_022_SHA[:8])
 
-# Cinco ejecuciones del manifiesto versionado, con lo esperado escrito a mano. Los `run_id` derivados y las huellas
+# Seis ejecuciones del manifiesto versionado, con lo esperado escrito a mano. Los `run_id` derivados y las huellas
 # se fijaron a partir del JSON canónico de cada informe; no cambian mientras el informe (evidencia) no cambie.
 # (La de JUP-022 es la excepción descrita arriba y se deriva del informe vigente.)
 REAL_CASES = (
@@ -137,6 +138,15 @@ REAL_CASES = (
         "run_id": "JUP-068-synthetic-example-v1",
         "sha": "0d8641661c5b0f5df9b20c6a05c7ce104c1cd82f45821b159f4a77333dfd7834",
         "rows": 23, "reasons": ["sintetica"],
+    },
+    {
+        "path": JUP_071_ROWS, "format": "rows-v1", "source": "JUP-071",
+        "report_path": "docs/evidence/JUP-071-live-r1-rows.json",
+        "run_id": "JUP-071-a543144c9a55",
+        # Evidencia regenerable de la campaña: la huella se calcula del propio fichero, no se escribe a mano.
+        "sha": hashlib.sha256(json.dumps(json.loads(JUP_071_ROWS.read_text(encoding="utf-8-sig")), sort_keys=True,
+                                         separators=(",", ":"), ensure_ascii=True).encode("utf-8")).hexdigest(),
+        "rows": 136, "reasons": ["sin_modelo_verificado"],
     },
 )
 REAL_RUN_IDS = [case["run_id"] for case in REAL_CASES]
@@ -377,7 +387,7 @@ class NormalizeRealReportsTest(unittest.TestCase):
         cls.entries = tool.read_manifest(MANIFEST_FILE, root=ROOT)
         cls.normalized = [tool.normalize_entry(entry, root=ROOT) for entry in cls.entries]
 
-    def test_el_manifiesto_versionado_lista_los_cinco_informes_en_orden(self) -> None:
+    def test_el_manifiesto_versionado_lista_los_seis_informes_en_orden(self) -> None:
         self.assertEqual([entry["path"] for entry in self.entries], [case["path"].resolve() for case in REAL_CASES])
 
     def test_forma_de_la_salida_y_orden_exacto_de_las_claves_de_run(self) -> None:
@@ -390,7 +400,7 @@ class NormalizeRealReportsTest(unittest.TestCase):
     def test_run_id_derivado_y_del_informe(self) -> None:
         self.assertEqual([output["run"]["run_id"] for output in self.normalized], REAL_RUN_IDS)
         # Todos distintos entre sí.
-        self.assertEqual(len(set(REAL_RUN_IDS)), 5)
+        self.assertEqual(len(set(REAL_RUN_IDS)), 6)
 
     def test_huella_del_informe_parseado_y_report_path_relativo(self) -> None:
         for case, output in zip(REAL_CASES, self.normalized):
@@ -447,11 +457,11 @@ class NormalizeRealReportsTest(unittest.TestCase):
     def test_valores_de_fecha_y_modelo_de_los_informes_reales(self) -> None:
         runs = [output["run"] for output in self.normalized]
         self.assertEqual([run["run_at"] for run in runs], [
-            "2026-10-08T20:13:54Z", "2026-10-08T21:01:44Z", None, JUP_022_RUN_AT, None])
+            "2026-10-08T20:13:54Z", "2026-10-08T21:01:44Z", None, JUP_022_RUN_AT, None, "2026-10-20T20:57:34Z"])
         # Actualizado tras integrar develop: la fecha de la calibración (antes el literal
         # 2026-10-03T07:15:32.826486+00:00) es la `generated_at` del informe regenerado, copiada sin normalizar.
         self.assertEqual([run["generation_model"] for run in runs],
-                         ["plantilla-sin-modelo", "plantilla-sin-modelo", None, None, None])
+                         ["plantilla-sin-modelo", "plantilla-sin-modelo", None, None, None, None])
 
     def test_cada_salida_pasa_la_validacion_comun_y_serializa_a_json(self) -> None:
         for case, output in zip(REAL_CASES, self.normalized):
@@ -956,12 +966,12 @@ class BuildDatasetTest(TmpCase):
         document["run"]["run_id"] = run_id
         return document
 
-    def test_el_manifiesto_versionado_da_cinco_ejecuciones_distintas_en_orden(self) -> None:
+    def test_el_manifiesto_versionado_da_seis_ejecuciones_distintas_en_orden(self) -> None:
         dataset = tool.build_dataset([MANIFEST_FILE], root=ROOT)
         self.assertEqual(list(dataset), ["dataset_version", "runs"])
         self.assertEqual(dataset["dataset_version"], 1)
         self.assertEqual([item["run"]["run_id"] for item in dataset["runs"]], REAL_RUN_IDS)
-        self.assertEqual([len(item["results"]) for item in dataset["runs"]], [48, 48, 10, 140, 23])
+        self.assertEqual([len(item["results"]) for item in dataset["runs"]], [48, 48, 10, 140, 23, 136])
         for item, entry in zip(dataset["runs"], tool.read_manifest(MANIFEST_FILE, root=ROOT)):
             self.assertEqual(item, tool.normalize_entry(entry, root=ROOT))
         json.dumps(dataset, allow_nan=False)
@@ -970,12 +980,12 @@ class BuildDatasetTest(TmpCase):
         local = self.rows_manifest("local", ROWS_DOCUMENT)
         dataset = tool.build_dataset([MANIFEST_FILE, local], root=ROOT)
         self.assertEqual([item["run"]["run_id"] for item in dataset["runs"]], REAL_RUN_IDS + ["JUP-071-demo-1"])
-        extra = dataset["runs"][5]
+        extra = dataset["runs"][6]
         self.assertIs(extra["run"]["milestone"], False)
         self.assertEqual(extra["run"]["format"], "rows-v1")
         self.assertIsNone(extra["run"]["report_path"])
         self.assertEqual(extra["results"], EXPECTED_ROWS_RESULTS)
-        self.assertTrue(all(item["run"]["milestone"] is True for item in dataset["runs"][:5]))
+        self.assertTrue(all(item["run"]["milestone"] is True for item in dataset["runs"][:6]))
 
     def test_el_orden_es_el_de_los_manifiestos_dados(self) -> None:
         local = self.rows_manifest("local", ROWS_DOCUMENT)
@@ -1145,7 +1155,7 @@ class CliTest(TmpCase):
         dataset = json.loads(completed.stdout)
         self.assertEqual(dataset["dataset_version"], 1)
         self.assertEqual([item["run"]["run_id"] for item in dataset["runs"]], REAL_RUN_IDS)
-        self.assertEqual([len(item["results"]) for item in dataset["runs"]], [48, 48, 10, 140, 23])
+        self.assertEqual([len(item["results"]) for item in dataset["runs"]], [48, 48, 10, 140, 23, 136])
         self.assertEqual([item["run"]["report_path"] for item in dataset["runs"]],
                          [case["report_path"] for case in REAL_CASES])
 
@@ -1180,8 +1190,8 @@ class CliTest(TmpCase):
         self.assert_ok(completed)
         dataset = json.loads(completed.stdout)
         self.assertEqual([item["run"]["run_id"] for item in dataset["runs"]], REAL_RUN_IDS + ["JUP-071-demo-1"])
-        self.assertIs(dataset["runs"][5]["run"]["milestone"], False)
-        self.assertIsNone(dataset["runs"][5]["run"]["report_path"])
+        self.assertIs(dataset["runs"][6]["run"]["milestone"], False)
+        self.assertIsNone(dataset["runs"][6]["run"]["report_path"])
 
     def test_varios_manifest_conservan_el_orden_de_la_linea_de_comandos(self) -> None:
         second = self.local_manifest("segundo", self.document_with_id("JUP-071-segundo"))

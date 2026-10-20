@@ -161,7 +161,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "| Qué mide | De dónde salen los datos | Qué no demuestra |\n| --- | --- | --- |\n| La calidad de las respuestas del asistente a una **batería fija de casos**, con rúbrica | Campañas de **JUP-070** sobre la batería de **JUP-069** y las métricas de **JUP-067**; calibración de la recuperación de **JUP-022**; benchmark de modelos de **JUP-078**; robustez de **JUP-071** (todavía sin informe) | El comportamiento con usuarios reales ni con preguntas fuera de la batería |\n\n- **Ejecuciones «no real».** Hechas con plantilla, dobles de prueba, datos sintéticos o sin modelo verificado: son una prueba del flujo, no calidad del asistente. Se rotulan `no real` con su motivo y sus series se dibujan discontinuas.\n- **«No medido» no es 0 %.** Una métrica que no se pudo medir se muestra «No medido» y «—» indica que esa ejecución no la tiene; un 0 % que se ve es un cero medido.\n- **Evolución.** Una serie solo se dibuja con al menos dos puntos medidos de ejecuciones comparables; si ninguna llega a dos, el panel dice «Sin datos: no hay con qué comparar».",
+        "content": "| Qué mide | De dónde salen los datos | Qué no demuestra |\n| --- | --- | --- |\n| La calidad de las respuestas del asistente a una **batería fija de casos**, con rúbrica | Campañas de **JUP-070** sobre la batería de **JUP-069** y las métricas de **JUP-067**; calibración de la recuperación de **JUP-022**; benchmark de modelos de **JUP-078**; robustez de **JUP-071** (primera campaña con el chat real, provisional) | El comportamiento con usuarios reales ni con preguntas fuera de la batería |\n\n- **Ejecuciones «no real».** Hechas con plantilla, dobles de prueba, datos sintéticos o sin modelo verificado: son una prueba del flujo, no calidad del asistente. Se rotulan `no real` con su motivo y sus series se dibujan discontinuas.\n- **«No medido» no es 0 %.** Una métrica que no se pudo medir se muestra «No medido» y «—» indica que esa ejecución no la tiene; un 0 % que se ve es un cero medido.\n- **Evolución.** Una serie solo se dibuja con al menos dos puntos medidos de ejecuciones comparables; si ninguna llega a dos, el panel dice «Sin datos: no hay con qué comparar».",
         "mode": "markdown"
       },
       "title": "Cómo leer la sección A",
@@ -2009,7 +2009,262 @@
         "type": "grafana-postgresql-datasource",
         "uid": "evaluation-postgres"
       },
-      "description": "Tipo: A\nMide: robustez por categoría y perturbación, a partir del informe de JUP-071 cuando exista\nNo demuestra: el comportamiento con usuarios reales ni con preguntas fuera de la batería; todavía no hay ningún informe de robustez",
+      "description": "Tipo: A\nMide: indicadores de robustez de la última campaña del chat con datos incompletos o ambiguos, agrupados por las cuatro familias de evaluación de un RAG (calidad del core, recuperación, rendimiento y conversación)\nNo demuestra: calidad con usuarios reales. Un cero o un porcentaje alto aquí no significa que el chat sea robusto: en la primera campaña solo 7 de 29 casos pasaron la rúbrica completa y 5 quedaron sin medir. Esa campaña es provisional (una persona y una repetición), el modelo no está verificado y el coste lo informa el servidor sin atestiguar; el detalle de cada campaña está en su informe",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false,
+            "inspect": false
+          },
+          "mappings": [
+            {
+              "type": "special",
+              "options": {
+                "match": "null",
+                "result": {
+                  "text": "No medido",
+                  "index": 0
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "noValue": "Sin datos: todavía no hay indicadores de robustez de JUP-071",
+          "decimals": 0
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "run_at"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Fecha"
+              },
+              {
+                "id": "custom.width",
+                "value": 160
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "null",
+                      "result": {
+                        "text": "No registrada",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "estado"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Tipo de ejecución"
+              },
+              {
+                "id": "custom.width",
+                "value": 170
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "regex",
+                    "options": {
+                      "pattern": "^no real.*",
+                      "result": {
+                        "color": "purple",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "familia"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Familia"
+              },
+              {
+                "id": "custom.width",
+                "value": 190
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "indicador"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Indicador"
+              },
+              {
+                "id": "custom.width",
+                "value": 410
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto",
+                  "wrapText": true
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "valor_texto"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Valor"
+              },
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "base"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Base"
+              },
+              {
+                "id": "custom.width",
+                "value": 110
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "null",
+                      "result": {
+                        "text": "—",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "decide"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Quién decide"
+              },
+              {
+                "id": "custom.width",
+                "value": 140
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 25,
+        "w": 24,
+        "x": 0,
+        "y": 117
+      },
+      "id": 25,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH ultima AS (\n  SELECT r.run_id, r.run_at,\n         CASE WHEN r.is_real THEN 'real'\n              ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n         END AS estado\n  FROM evaluation.runs r\n  WHERE r.suite = 'JUP-071'\n    AND EXISTS (SELECT 1 FROM evaluation.results y WHERE y.run_id = r.run_id AND left(y.grp, 4) = 'rob_')\n  ORDER BY r.run_at DESC NULLS LAST, r.run_id\n  LIMIT 1\n)\nSELECT\n  u.run_at,\n  u.estado,\n  CASE x.grp\n    WHEN 'rob_core' THEN 'Calidad del core'\n    WHEN 'rob_retrieval' THEN 'Recuperación'\n    WHEN 'rob_system' THEN 'Rendimiento del sistema'\n    ELSE 'Conversación y usuario'\n  END AS familia,\n  CASE x.metric_id\n    WHEN 'invention_rate' THEN 'Invenciones: prohibiciones incumplidas'\n    WHEN 'required_coverage' THEN 'Cobertura de lo requerido'\n    WHEN 'behavior_match_rate' THEN 'Conducta esperada cumplida'\n    WHEN 'valid_citations' THEN 'Citas válidas'\n    WHEN 'literal_quotes' THEN 'Citas literales'\n    WHEN 'empty_retrieval_rate' THEN 'Consultas sin recuperación'\n    WHEN 'fragments_per_query' THEN 'Fragmentos recuperados por consulta'\n    WHEN 'neighbor_share' THEN 'Fragmentos vecinos sobre el total'\n    WHEN 'context_utilization' THEN 'Fragmentos recuperados que se citan'\n    WHEN 'unused_retrieval_rate' THEN 'Consultas con recuperación y sin citas'\n    WHEN 'completion_rate' THEN 'Operaciones completadas'\n    WHEN 'unmeasured_by_cause' THEN 'Casos sin medir'\n    WHEN 'cost_per_query' THEN 'Coste por consulta (informado por el servidor)'\n    WHEN 'prompt_size_per_query' THEN 'Tamaño de la entrada por consulta'\n    WHEN 'completion_size_per_query' THEN 'Tamaño de la salida por consulta'\n    WHEN 'request_rate' THEN 'Casos de aclaración que piden el dato'\n    WHEN 'over_abstention_rate' THEN 'Abstenciones cuando debía responder'\n    WHEN 'pair_degradation' THEN 'Referencias acertadas que empeoran al perturbarlas'\n    ELSE x.metric_id\n  END\n  || CASE x.behavior\n       WHEN 'operation_failed' THEN ' · operación fallida'\n       WHEN 'evidence_unverified' THEN ' · evidencia sin verificar'\n       ELSE ''\n     END AS indicador,\n  CASE\n    WHEN x.unit = 'tasa' THEN to_char(x.value * 100, 'FM990.0') || ' %'\n    WHEN x.unit = 'usd' THEN to_char(x.value, 'FM990.0000') || ' USD'\n    WHEN x.unit = 'fragmentos' THEN to_char(x.value, 'FM990.0') || ' fragmentos'\n    WHEN x.unit = 'casos' THEN to_char(x.value, 'FM9999999990') || ' casos'\n    WHEN x.metric_id IN ('prompt_size_per_query', 'completion_size_per_query')\n      THEN to_char(round(x.value::numeric), 'FM999999990') || ' ' || x.unit\n    ELSE trim_scale(round(x.value::numeric, 4))::text || ' ' || x.unit\n  END AS valor_texto,\n  CASE\n    WHEN x.numerator IS NOT NULL THEN x.numerator::numeric::int::text || ' de ' || x.denominator::numeric::int::text\n    WHEN x.denominator IS NOT NULL THEN 'sobre ' || x.denominator::numeric::int::text\n  END AS base,\n  CASE x.judgment WHEN 'human' THEN 'Juicio humano' ELSE 'Automático' END AS decide\nFROM evaluation.results x\nJOIN ultima u ON u.run_id = x.run_id\nWHERE left(x.grp, 4) = 'rob_'\nORDER BY CASE x.grp WHEN 'rob_core' THEN 1 WHEN 'rob_retrieval' THEN 2 WHEN 'rob_system' THEN 3 ELSE 4 END,\n         array_position(ARRAY['invention_rate', 'required_coverage', 'behavior_match_rate', 'valid_citations', 'literal_quotes', 'empty_retrieval_rate', 'fragments_per_query', 'neighbor_share', 'context_utilization', 'unused_retrieval_rate', 'completion_rate', 'unmeasured_by_cause', 'cost_per_query', 'prompt_size_per_query', 'completion_size_per_query', 'request_rate', 'over_abstention_rate', 'pair_degradation'], x.metric_id),\n         array_position(ARRAY['operation_failed', 'evidence_unverified'], x.behavior), x.behavior",
+          "refId": "A"
+        }
+      ],
+      "title": "Indicadores de robustez (JUP-071)",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
+      "description": "Tipo: A\nMide: robustez por categoría y perturbación, en el detalle por fila del informe de JUP-071; los indicadores calculados están en el panel de arriba\nNo demuestra: el comportamiento con usuarios reales ni con preguntas fuera de la batería; sin un informe de robustez cargado el panel sale vacío",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2351,7 +2606,7 @@
         "h": 5,
         "w": 24,
         "x": 0,
-        "y": 117
+        "y": 142
       },
       "id": 11,
       "options": {
@@ -2753,7 +3008,7 @@
         "h": 36,
         "w": 24,
         "x": 0,
-        "y": 122
+        "y": 147
       },
       "id": 5,
       "options": {
@@ -3155,7 +3410,7 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 158
+        "y": 183
       },
       "id": 6,
       "options": {
@@ -3192,7 +3447,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 172
+        "y": 197
       },
       "id": 12,
       "panels": [],
@@ -3205,7 +3460,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 173
+        "y": 198
       },
       "id": 13,
       "options": {
@@ -3754,7 +4009,7 @@
         "h": 26,
         "w": 24,
         "x": 0,
-        "y": 179
+        "y": 204
       },
       "id": 14,
       "options": {
@@ -3791,7 +4046,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 205
+        "y": 230
       },
       "id": 15,
       "panels": [],
@@ -3804,7 +4059,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 206
+        "y": 231
       },
       "id": 16,
       "options": {
@@ -3875,7 +4130,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 214
+        "y": 239
       },
       "hideTimeOverride": false,
       "id": 17,
@@ -3965,7 +4220,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 214
+        "y": 239
       },
       "hideTimeOverride": false,
       "id": 18,
@@ -4055,7 +4310,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 214
+        "y": 239
       },
       "hideTimeOverride": false,
       "id": 19,
@@ -4146,7 +4401,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 222
+        "y": 247
       },
       "hideTimeOverride": false,
       "id": 20,
@@ -4237,7 +4492,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 222
+        "y": 247
       },
       "hideTimeOverride": false,
       "id": 21,

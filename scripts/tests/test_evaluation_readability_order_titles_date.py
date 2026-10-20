@@ -59,6 +59,7 @@ EVOLUCIONES = ("Evolución de las métricas automáticas", "Evolución de la lat
                "Evolución con juicio humano (solo hitos)")
 CALIBRACION = "Calibración de la recuperación (JUP-022)"
 BENCHMARK = "Benchmark de modelos (JUP-078)"
+INDICADORES = "Indicadores de robustez (JUP-071)"
 ROBUSTEZ = "Robustez (JUP-071)"
 DETALLE_CALIDAD = "Exactitud, relevancia y fundamento (detalle)"
 DETALLE_CAMPANA = "Latencia, formato y disponibilidad de la campaña (detalle)"
@@ -74,6 +75,7 @@ TRAMOS = (
     set(EVOLUCIONES),
     {CALIBRACION},
     {BENCHMARK},
+    {INDICADORES},
     {ROBUSTEZ},
     {DETALLE_CALIDAD},
     {DETALLE_CAMPANA},

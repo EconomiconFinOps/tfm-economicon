@@ -1751,7 +1751,7 @@ class CampaignIndicatorsTests(unittest.TestCase):
         for metric in ("invention_rate", "required_coverage", "behavior_match_rate", "valid_citations", "literal_quotes",
                        "empty_retrieval_rate", "fragments_per_query", "neighbor_share", "context_utilization",
                        "unused_retrieval_rate", "request_rate", "over_abstention_rate", "pair_degradation",
-                       "cost_per_query", "prompt_tokens_per_query", "completion_tokens_per_query"):
+                       "cost_per_query", "prompt_size_per_query", "completion_size_per_query"):
             row = find(document, metric)
             self.assertEqual((row["status"], row["value"], row["numerator"], row["count"]), ("not_measured", None, None, None), metric)
             self.assertIsNotNone(row["denominator"] if metric != "literal_quotes" else 0, metric)
@@ -1820,7 +1820,7 @@ class CampaignIndicatorsTests(unittest.TestCase):
         row = find(document, "cost_per_query")
         self.assertEqual((row["unit"], row["denominator"]), ("usd", 28))
         self.assertAlmostEqual(row["value"], 0.01)
-        self.assertEqual((find(document, "prompt_tokens_per_query")["value"], find(document, "completion_tokens_per_query")["denominator"]), (1000, 28))
+        self.assertEqual((find(document, "prompt_size_per_query")["value"], find(document, "completion_size_per_query")["denominator"]), (1000, 28))
 
     def test_an_operation_that_is_not_terminal_has_no_cause_and_is_an_error(self):
         def block_one(raw):
@@ -2050,3 +2050,112 @@ class CampaignIndicatorsAdversarialTests(CampaignIndicatorsTests.__bases__[0]):
                     status, _, _ = cli(["rows", "--input", report_path, "--raw", raw_path, "--receipts", folder, "--output", target])
                     self.assertEqual(status, 2)
                     self.assertFalse(target.exists())
+
+
+class CampaignIndicatorsSecondPassTests(unittest.TestCase):
+    """Regressions found by the second adversarial pass (ADV-1 to ADV-8 of pass 9)."""
+
+    build = CampaignIndicatorsTests.build
+    rows = CampaignIndicatorsTests.rows
+    edit_receipt = CampaignIndicatorsAdversarialTests.edit_receipt
+
+    def quote_case(self, quote, title="Glosario X", content="El coste amortizado se reparte"):
+        def cite(raw):
+            row = next(r for r in raw["cases"] if r["case"] == "JUP-069-011")
+            row["answer"] += f"\nFuente: {title} — «{quote}»"
+            row["citations"] = ["d:1"]
+            row["public_evidence"] = [{"id": "d:1", "kind": "corpus", "source": "glossary", "title": title, "content": content}]
+        return find(self.rows(mutate_raw=cite, options={"JUP-069-011": {"cited": ("d:1",)}}), "literal_quotes")
+
+    def run_rows(self, report, raw, folder, output):
+        with tempfile.TemporaryDirectory() as out:
+            base = Path(out)
+            report_path, raw_path = base / "report.json", base / "raw.json"
+            report_path.write_text(json.dumps(report), encoding="utf-8")
+            raw_path.write_text(json.dumps(raw), encoding="utf-8")
+            return cli(["rows", "--input", report_path, "--raw", raw_path, "--receipts", folder, "--output", output(base)])
+
+    def test_the_output_can_never_overwrite_or_enter_the_receipts_folder(self):
+        report, raw, folder = self.build()
+        receipt = Path(folder, "JUP-069-011-r1.json")
+        before = receipt.read_bytes()
+        status, _, stderr = self.run_rows(report, raw, folder, lambda base: receipt)
+        self.assertEqual(status, 2, stderr)
+        self.assertEqual(receipt.read_bytes(), before)
+        inside = Path(folder, "rows.json")
+        status, _, _ = self.run_rows(report, raw, folder, lambda base: inside)
+        self.assertEqual(status, 2)
+        self.assertFalse(inside.exists())
+
+    def test_long_quotations_and_titles_are_never_dropped_from_the_denominator(self):
+        row = self.quote_case("inventado " * 600)
+        self.assertEqual((row["numerator"], row["denominator"]), (0, 1))
+        row = self.quote_case("El coste amortizado", title="T" * 300)
+        self.assertEqual((row["numerator"], row["denominator"]), (1, 1))
+
+    def test_quotations_are_compared_with_the_neighbouring_normalisation(self):
+        row = self.quote_case("STRASSE", content="la straße del informe")
+        self.assertEqual((row["numerator"], row["denominator"]), (1, 1))
+        row = self.quote_case("café", content="un café amargo")
+        self.assertEqual((row["numerator"], row["denominator"]), (1, 1))
+        row = self.quote_case("coste amortizado", title="**Glosario X**", content="El coste amortizado se reparte")
+        self.assertEqual((row["numerator"], row["denominator"]), (1, 1))
+
+    def test_the_recognised_citation_format_is_frozen(self):
+        row = self.quote_case("coste amortizado", title="Glosario X")
+        self.assertEqual(row["denominator"], 1)
+
+        def other_separator(raw):
+            next(r for r in raw["cases"] if r["case"] == "JUP-069-011")["answer"] += "\nFuente: Glosario X - «coste amortizado»"
+        self.assertEqual(find(self.rows(mutate_raw=other_separator), "literal_quotes")["status"], "not_measured")
+
+    def test_a_value_that_overflows_a_float_is_a_controlled_error(self):
+        def huge(raw):
+            raw["execution"]["collection"]["server_reported"][0]["usage"]["cost_usd"] = "1e400"
+        report, raw, folder = self.build(mutate_raw=huge)
+        with self.assertRaisesRegex(robustness.Error, "range|finite"):
+            robustness.rows_v1(report, raw, robustness.read_receipts(folder, raw))
+        status, _, _ = self.run_rows(report, raw, folder, lambda base: base / "rows.json")
+        self.assertEqual(status, 2)
+
+    def test_more_malformed_inputs_are_controlled_errors(self):
+        report, raw, folder = self.build()
+        self.edit_receipt(folder, "JUP-069-011", lambda item: item.update(id=["JUP-069-011"]))
+        with self.assertRaises(robustness.Error):
+            robustness.read_receipts(folder, raw)
+        report, raw, folder = self.build()
+        Path(folder, "dir.json").mkdir()
+        self.assertEqual(len(robustness.read_receipts(folder, raw)), 29)
+        receipts = robustness.read_receipts(folder, raw)
+        broken = copy.deepcopy(report)
+        broken.pop("pairs")
+        with self.assertRaises(robustness.Error):
+            robustness.rows_v1(broken, raw, receipts)
+
+        def bad_usage(raw):
+            raw["execution"]["collection"]["server_reported"][0]["usage"] = "x"
+        report, raw, folder = self.build(mutate_raw=bad_usage)
+        with self.assertRaises(robustness.Error):
+            robustness.rows_v1(report, raw, robustness.read_receipts(folder, raw))
+
+    def test_repetitions_are_plain_integers(self):
+        report, raw, folder = self.build()
+        self.edit_receipt(folder, "JUP-069-011", lambda item: item.update(repetition=True))
+        with self.assertRaisesRegex(robustness.Error, "JUP-069-011"):
+            robustness.read_receipts(folder, raw)
+        report, raw, folder = self.build()
+        raw["execution"]["collection"]["server_reported"][0]["sample_id"] = "JUP-069-002:r١"
+        with self.assertRaises(robustness.Error):
+            robustness.read_receipts(folder, raw)
+
+    def test_a_title_never_spans_lines_and_hostile_line_layouts_stay_linear(self):
+        import time
+        lf = chr(10)
+        self.assertEqual(robustness.quotations("Fuente: A" + lf + "B — «q»"), [])
+        self.assertEqual(robustness.quotations("Fuente: A — «uno»" + lf + "Fuente: B — «dos»"), [("A", "uno"), ("B", "dos")])
+        self.assertEqual(robustness.quotations("sin cita Fuente: A — «sin cierre"), [])
+        started = time.perf_counter()
+        robustness.quotations(("Fuente: " * 20000 + lf) * 5 + " — «a»")
+        robustness.quotations("Fuente: " * 20000 + lf + " — «a»")
+        robustness.quotations("Fuente: A — «" * 20000)
+        self.assertLess(time.perf_counter() - started, 3)

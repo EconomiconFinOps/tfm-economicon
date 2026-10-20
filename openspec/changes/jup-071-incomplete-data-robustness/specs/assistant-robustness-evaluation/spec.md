@@ -323,7 +323,7 @@ The retrieval indicators SHALL be computed from the context manifest of each ver
 
 ### Requirement: System indicators separate cause and are not attested
 
-The system indicators SHALL be: `completion_rate`, the completed operations over the planned samples; `unmeasured_by_cause`, the samples without a verified collection grouped by cause, where `operation_failed` is an operation in a failed state and `evidence_unverified` is a completed operation whose collection is incomplete; and `cost_per_query`, `prompt_tokens_per_query` and `completion_tokens_per_query`, the server-reported cost and tokens over the operations that report them. They SHALL be marked as automatic. Cost and tokens are reported by the server and SHALL NOT be presented as attested. No latency indicator SHALL be emitted while the collection does not measure latency.
+The system indicators SHALL be: `completion_rate`, the completed operations over the planned samples; `unmeasured_by_cause`, the samples without a verified collection grouped by cause, where `operation_failed` is an operation in a failed state and `evidence_unverified` is a completed operation whose collection is incomplete; and `cost_per_query`, `prompt_size_per_query` and `completion_size_per_query`, the server-reported cost and tokens over the operations that report them. They SHALL be marked as automatic. Cost and tokens are reported by the server and SHALL NOT be presented as attested. No latency indicator SHALL be emitted while the collection does not measure latency.
 
 #### Scenario: Two different causes
 - **WHEN** one sample failed in the validator and another completed with unverifiable evidence
