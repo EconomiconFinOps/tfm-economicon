@@ -176,6 +176,34 @@ Revisión adversarial automatizada sobre `1f0cdb36` (base `ee4e8031`). Veredicto
 
 Validación: 130 pruebas de robustez, `assistant-robustness:validate`, `openspec:validate` (75/75), `jup:check` y `jup:cleanup:check` en verde, y 11 mutantes propios sobre una copia, todos detectados, con el control sin mutar en verde. No hay stack, backend ni modelo reales en este PR, que no toca código de producción. Los arreglos posteriores a esta revisión no se sometieron a otra. No sustituye a la `Revision JUP-071` ni a la `Validacion JUP-071` de una persona.
 
+## Primera campaña con el chat real (2026-10-20)
+
+Se hizo una primera medición parcial con el chat generativo de JUP-035 activado en local: una repetición de los 29 casos y el juicio de una sola revisora (Lucia) sobre las 24 muestras verificadas, con `--provisional`. Los resultados, las cifras y los límites están en `docs/evidence/JUP-071-validation.md` (apartado «Primera campaña con el chat real»): 7 pass, 17 fail y 5 blocked; 0 de 55 prohibiciones incumplidas; 16 de 46 puntos `required` fallidos, en su mayoría por no pedir el dato que falta. La ejecución sigue `live_unverified` y `generative_robustness_accepted` sigue en falso. No cierra el grupo 6 de `tasks.md`.
+
+Decisiones tomadas por Lucia durante la campaña:
+
+- Primera medición ligera: una sola repetición y una sola revisora, con el informe provisional. Quedan abiertas la segunda revisión y las otras dos repeticiones (6.1 y 6.3).
+- Generar las 29 conversaciones con un script fuera del repositorio y fuera del libro de contabilidad del equipo de JUP-123. No se acordó el reparto del presupuesto con quien lidera la entrega B (6.5 sigue abierta).
+- Reconstruir la recuperación que la API pública no expone desde la base de datos vectorial, aceptando solo lo que reproduce el hash del manifiesto, y dejar bloqueadas las tres muestras que no lo reproducen.
+- No modificar el banco ni las rúbricas durante la campaña. `JUP-069-005` se juzgó contra la rúbrica vigente aunque el chat se abstiene a propósito en ese tipo de pregunta (limitación conocida registrada en el backlog).
+- Cargar la ejecución en el dashboard con un manifiesto local (`milestone: false`) y no en el versionado, que solo lista hitos y cuya prueba fija cinco entradas.
+
+Desviaciones y cosas que no se hicieron: el reintento de las cuatro operaciones fallidas usó `retry_of_operation_id` porque `resume` solo vale para operaciones en pausa; los resultados de `JUP-071-008` y `JUP-071-014` son los del segundo intento. La reconstrucción de la recuperación se hizo con un script no versionado, de modo que esa parte solo se reproduce con acceso a la misma base de datos. No se hizo revisión adversarial de este cambio documental ni se rellena ningún bloque de aprobación humana.
+
+Validación del 2026-10-20 (Windows, Python 3.14):
+
+- `python tools/assistant-robustness.py validate`: 16 variantes, 29 casos, hashes válidos.
+- `python tools/assistant-robustness.py score ... --provisional`: 29 total, 7 pass, 17 fail, 5 blocked, 0 not run; `assessment_complete` falso.
+- `python tools/assistant-robustness.py rows`: 117 filas `rows-v1`; `python tools/evaluation-dashboard.py rows` construye el conjunto con las seis ejecuciones.
+- `python tools/evaluation-dashboard.py load --manifest <local>`: 6 ejecuciones y 386 resultados; el panel «Robustez (JUP-071)» devuelve 117 filas por la API de Grafana y el origen de datos responde `OK`.
+- `python -m unittest discover -s scripts/tests -p test_evaluation_manifest.py`: 44 pruebas OK con el manifiesto versionado sin cambios.
+- `corepack pnpm openspec:validate` (82 de 82), `corepack pnpm jup:check -- --change jup-071-incomplete-data-robustness` y `corepack pnpm jup:cleanup:check`: OK.
+- No se repitió la batería completa de pruebas de las aplicaciones porque no se tocó código de producción.
+
+Riesgos aceptados por Lucia en esta sesión: el juicio de una sola persona (informe provisional), la generación fuera del libro de contabilidad y una sola repetición. Quedan sin aceptar y sin resolver: la falta de segunda revisión independiente, la ausencia de atestación del modelo y el reparto del presupuesto de inferencia con la entrega B.
+
+Hallazgos registrados en `openspec/findings/backlog.md` (apartado «JUP-071 — Hallazgos de la primera campaña con el chat real» y ampliación de la entrada del lector numérico): recuperación no expuesta por la API, etiqueta `provider_error` engañosa, falta de petición del dato, abstención de clasificación sin suma de componentes y citas cortadas.
+
 ## Pattern sweep
 
 - Cifras sin alias y cifras no pedidas: las variantes de cumplimiento eran las únicas con dos cifras o sin alias; JUP-071-010 tiene una cifra y se resuelve por la etiqueta «julio».

@@ -105,6 +105,35 @@ El comando `rows --input <informe> --output <fichero>` convierte el informe de p
 
 Los nombres de grupo y métrica son una propuesta: la guía de ese PR dice que la lectura del panel «Robustez» se cerrará con el informe real y no fija nombres. Se comprobó con el validador de las cabezas `e4b403d4` y `b6695100` del PR #132 (acepta el conjunto de filas y lo clasifica como no real por `plantilla` y `sintetica`) y no depende de que ese PR esté integrado. Los ficheros generados de `docs/evidence` se llaman `JUP-071-*-rows.json` y se regeneran junto a los informes.
 
+### 15. Indicadores de la campaña como insumo para el dashboard
+
+La tarjeta JUP-129 rediseña la presentación de la evaluación en Grafana por las cuatro familias de un RAG y deja fuera crear métricas nuevas. JUP-071 es quien tiene datos reales de un chat generativo, así que calcula aquí un conjunto acotado de indicadores y los emite como filas `rows-v1`; la presentación, los umbrales y la señal de empeoramiento son de JUP-129. Se decidió no crear un comando nuevo: el comando `rows` acepta opcionalmente el crudo y los recibos y añade los indicadores a la misma ejecución, porque dos ficheros de filas con el mismo `run_id` no se pueden cargar a la vez.
+
+Los datos salen de tres fuentes: el informe de puntuación (puntos juzgados, pares, estados), el crudo (respuestas, citas, uso y coste informados por el servidor) y los recibos públicos (manifiesto de contexto con los fragmentos listados y su forma de admisión, y el estado de cada operación). Se descartó ampliar la exportación del colector con los recuentos de recuperación porque ese formato lo mantiene el equipo de JUP-123, y ampliar `score` porque no recibe los recibos. El enlace entre fuentes es el hash del crudo que nombra el informe y la igualdad de la respuesta de cada recibo con la del crudo.
+
+| Familia | Indicador | Fórmula | Marca |
+| --- | --- | --- | --- |
+| `rob_core` | `invention_rate` | prohibiciones fallidas / prohibiciones juzgadas | humano |
+| | `required_coverage` | requeridos en pass / requeridos juzgados | humano |
+| | `behavior_match_rate` | puntos `behavior` en pass / juzgados | humano |
+| | `valid_citations` | ids citados dentro de la evidencia de su operación / ids citados | automático |
+| | `literal_quotes` | citas «» localizadas literalmente en el fragmento citado / citas con fuente | automático |
+| `rob_retrieval` | `empty_retrieval_rate` | muestras sin evidencia en el manifiesto / muestras verificadas | automático |
+| | `fragments_per_query` | fragmentos listados / muestras con recuperación | automático |
+| | `neighbor_share` | fragmentos admitidos como vecinos / fragmentos listados | automático |
+| | `context_utilization` | fragmentos citados / fragmentos listados | automático |
+| | `unused_retrieval_rate` | muestras con recuperación y sin citas / muestras con recuperación | automático |
+| `rob_system` | `completion_rate` | operaciones completadas / muestras previstas | automático |
+| | `unmeasured_by_cause` | muestras sin recogida verificada por causa (`operation_failed`, `evidence_unverified`) | automático |
+| | `cost_per_query`, `prompt_tokens_per_query`, `completion_tokens_per_query` | coste o tokens informados / operaciones que los informan | automático, no atestiguado |
+| `rob_conversation` | `request_rate` | casos clarify y abstain evaluados con todos sus puntos de petición en pass / los que tienen alguno | humano |
+| | `over_abstention_rate` | casos `answer` evaluados con `behavior` fallido / casos `answer` evaluados | humano |
+| | `pair_degradation` | pares con referencia en pass y perturbación en fail / pares con referencia en pass | humano |
+
+Valores de referencia de la campaña `r1` (20/10/2026) para la conciliación, ya calculados a mano y recogidos en la evidencia: `invention_rate` 0 de 55, `required_coverage` 30 de 46, `behavior_match_rate` 22 de 24, `literal_quotes` 27 de 27, `empty_retrieval_rate` 0 de 24, 253 fragmentos listados (96 primarios y 157 vecinos), `context_utilization` 22 de 253, `unused_retrieval_rate` 14 de 24, `completion_rate` 27 de 29, 2 `operation_failed` y 3 `evidence_unverified`, `over_abstention_rate` 1 de 9 y `pair_degradation` 3 de 6. `valid_citations` y `request_rate` se fijarán al conciliar. La implementación debe reproducir estas cifras, o explicar con una prueba por qué difiere.
+
+Límites: `request_rate` depende de una heurística (los puntos requeridos cuyo texto pide o solicita algo) y su clasificación en la batería actual queda fijada por una prueba; las citas «completas» no se incluyen porque detectar el corte de un fragmento es una heurística frágil y ya está registrada como hallazgo; la latencia no se calcula porque `total_ms` es nulo; no hay indicador de distancia porque es nula en todos los fragmentos; y la relevancia por fragmento y la fidelidad por afirmación exigen etiquetado. Los indicadores heredan el carácter provisional del informe y no mejoran la evidencia.
+
 ## Risks / Trade-offs
 
 - La batería es pequeña, sintética y diseñada; no demuestra robustez universal ni del tenant real. Se publican tamaños y casos concretos.

@@ -264,3 +264,107 @@ Evidence SHALL identify the execution date, application commit, suite version an
 - **WHEN** three reports are compared and they differ in suite, configuration, code (commit or hash), Python version or provisional status, or two of them share the same raw collection
 - **THEN** the comparison is refused
 - **AND** a summary that lacks the expected fields is refused with a controlled error
+
+### Requirement: Campaign indicators are computed from the report, the raw collection and the public receipts
+
+The `rows` command SHALL accept an optional raw collection and an optional directory of public receipts. When both are given it SHALL append the campaign indicators to the rows of the same run, and when neither is given its output SHALL stay exactly as before. The command SHALL refuse inputs that do not belong together: the report SHALL name the sha256 of the raw collection, every raw case SHALL have exactly one receipt for the same sample, and the answer in each receipt SHALL equal the answer in the raw collection. It SHALL read no judgments file and no reviewer name, and its outputs SHALL follow the existing rules for output locations.
+
+#### Scenario: Matching inputs
+- **WHEN** the report, the raw collection and the receipts come from the same campaign
+- **THEN** the rows contain the existing groups plus the indicator groups under one run identifier, and the existing rows are unchanged
+
+#### Scenario: Report scored from another collection
+- **WHEN** the sha256 named by the report differs from the raw collection supplied
+- **THEN** the command fails and writes nothing
+
+#### Scenario: Receipt missing or different
+- **WHEN** a raw case has no receipt, has two, or its receipt holds a different answer
+- **THEN** the command fails naming the sample and writes nothing
+
+#### Scenario: Only one of the two optional inputs
+- **WHEN** the raw collection is given without receipts, or the receipts without the raw collection
+- **THEN** the command fails with a usage error and writes nothing
+
+### Requirement: Core quality indicators have fixed formulas and null rules
+
+Every indicator SHALL state its numerator or sum and its denominator, and a denominator of zero SHALL produce a not measured row that keeps the denominator, never a zero. The core quality indicators SHALL be: `invention_rate`, the forbidden points judged as failed over the forbidden points judged in cases that are not blocked; `required_coverage`, the required points judged as passed over the required points judged; `behavior_match_rate`, the behavior points judged as passed over the behavior points judged; `valid_citations`, the cited identifiers that belong to the evidence listed in the context manifest of the same operation over the cited identifiers; and `literal_quotes`, the quotations attributed to a source that appear literally, ignoring case and runs of whitespace, in a cited fragment of that source over the quotations attributed to a source. The first three SHALL be marked as human judgment and the last two as automatic.
+
+#### Scenario: Blocked cases are not counted
+- **WHEN** a case is blocked
+- **THEN** none of its points enters the numerator or the denominator of the judgment-based indicators
+
+#### Scenario: A measured zero
+- **WHEN** no forbidden point failed and at least one was judged
+- **THEN** `invention_rate` is a measured zero with its numerator and denominator, not a not measured row
+
+#### Scenario: No quotation to check
+- **WHEN** no answer attributes a quotation to a source
+- **THEN** `literal_quotes` is not measured and keeps a denominator of zero
+
+#### Scenario: Quotation not found in the cited fragment
+- **WHEN** a quotation does not appear in any cited fragment of its source
+- **THEN** it counts in the denominator and not in the numerator
+
+### Requirement: Retrieval indicators use the context manifest and never invent a distance
+
+The retrieval indicators SHALL be computed from the context manifest of each verified sample: `empty_retrieval_rate`, the samples whose manifest lists no evidence over the verified samples; `fragments_per_query`, the evidence identifiers listed over the samples with retrieval; `neighbor_share`, the fragments admitted as neighbours over the fragments listed; `context_utilization`, the cited fragments over the fragments listed; and `unused_retrieval_rate`, the samples with retrieval and no citation over the samples with retrieval. They SHALL be marked as automatic. No indicator that depends on a retrieval distance SHALL be emitted, and no value SHALL be derived from a distance that the server did not report.
+
+#### Scenario: Retrieval that is never cited
+- **WHEN** a sample lists evidence in its manifest but cites none
+- **THEN** it counts in `unused_retrieval_rate` and its listed fragments count in the denominator of `context_utilization`
+
+#### Scenario: Sample without a manifest
+- **WHEN** a verified sample has no context manifest
+- **THEN** the command fails naming the sample, because a missing manifest is not the same as an empty retrieval
+
+#### Scenario: Distance reported as null
+- **WHEN** every fragment of the campaign has a null distance
+- **THEN** no distance-based row is emitted and the absence is not shown as zero
+
+### Requirement: System indicators separate cause and are not attested
+
+The system indicators SHALL be: `completion_rate`, the completed operations over the planned samples; `unmeasured_by_cause`, the samples without a verified collection grouped by cause, where `operation_failed` is an operation in a failed state and `evidence_unverified` is a completed operation whose collection is incomplete; and `cost_per_query`, `prompt_tokens_per_query` and `completion_tokens_per_query`, the server-reported cost and tokens over the operations that report them. They SHALL be marked as automatic. Cost and tokens are reported by the server and SHALL NOT be presented as attested. No latency indicator SHALL be emitted while the collection does not measure latency.
+
+#### Scenario: Two different causes
+- **WHEN** one sample failed in the validator and another completed with unverifiable evidence
+- **THEN** they are counted under `operation_failed` and `evidence_unverified` respectively, never together
+
+#### Scenario: Operation without reported usage
+- **WHEN** an operation reports no usage
+- **THEN** it is left out of the numerator and the denominator of the cost and token means
+
+#### Scenario: Latency is not measured
+- **WHEN** the total duration of every case is null
+- **THEN** no latency row is emitted
+
+### Requirement: Conversation indicators are explicit about their heuristic
+
+The conversation indicators SHALL be: `request_rate`, the evaluated clarify and abstain cases in which every required point whose rubric text asks to request something passes over the evaluated clarify and abstain cases that have at least one such point; `over_abstention_rate`, the evaluated answer cases whose behavior point fails over the evaluated answer cases; and `pair_degradation`, the pairs whose baseline passes and whose perturbation fails over the pairs whose baseline passes. A required point SHALL count as a request point when its rubric text contains the Spanish verb for requesting or asking for, in either of the forms used by the suite, and the classification of the points of the shipped suite SHALL be fixed by a test. They SHALL be marked as human judgment.
+
+#### Scenario: Case without any request point
+- **WHEN** a clarify case has no required point that asks to request something
+- **THEN** it is left out of both sides of `request_rate`
+
+#### Scenario: Pair with a blocked side
+- **WHEN** the baseline or the perturbation of a pair is blocked
+- **THEN** the pair is left out of `pair_degradation`
+
+#### Scenario: Numeric false negative
+- **WHEN** a perturbation fails only because of the numeric check
+- **THEN** it still counts as failed in `pair_degradation`, and the evidence states that reading by hand can differ
+
+### Requirement: Indicator rows follow the dashboard contract
+
+The indicator rows SHALL use the groups `rob_core`, `rob_retrieval`, `rob_system` and `rob_conversation`, none of which is a JUP-070 group, SHALL carry identifiers and numbers only, SHALL keep what was not measured as null, and SHALL pass the common validation of the dashboard contract. A rate SHALL have unit `tasa`, with the numerator not above the denominator, and a mean SHALL carry the unit of what it counts. The rows SHALL NOT upgrade the evidence: the run keeps its kind, its lack of a verified model and its provisional review.
+
+#### Scenario: Validation by the dashboard tool
+- **WHEN** the rows with indicators are validated by the dashboard tool
+- **THEN** they pass the common validation and the dataset is built without repeated run identifiers
+
+#### Scenario: Group of another source
+- **WHEN** an indicator would use a group that belongs to JUP-070
+- **THEN** the command fails, because several panels read those groups without filtering by source
+
+#### Scenario: Provisional report
+- **WHEN** the report is provisional
+- **THEN** the rows with indicators are emitted under the same run, which keeps the classification of a run without a verified model
