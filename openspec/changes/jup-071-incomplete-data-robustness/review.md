@@ -198,7 +198,8 @@ Validación del 2026-10-20 (Windows, Python 3.14):
 - `python tools/evaluation-dashboard.py load --manifest <local>`: 6 ejecuciones y 386 resultados; el panel «Robustez (JUP-071)» devuelve 117 filas por la API de Grafana y el origen de datos responde `OK`.
 - `python -m unittest discover -s scripts/tests -p test_evaluation_manifest.py`: 44 pruebas OK con el manifiesto versionado sin cambios.
 - `corepack pnpm openspec:validate` (82 de 82), `corepack pnpm jup:check -- --change jup-071-incomplete-data-robustness` y `corepack pnpm jup:cleanup:check`: OK.
-- No se repitió la batería completa de pruebas de las aplicaciones porque no se tocó código de producción.
+- Grupo 7 (indicadores, 2026-10-21): `corepack pnpm assistant-robustness:test` 151 pruebas OK (21 nuevas, vistas fallar antes del código y comprobadas con 12 mutaciones que se detectan todas); `test_evaluation_manifest.py` 44 OK, `test_evaluation_rows_command.py` 114 OK y `tools/test_chat_eval_collect_jup071.py` 33 OK; las 19 filas de indicadores de `r1` pasan `validate_rows` y reproducen las cifras calculadas a mano.
+- No se repitió la batería completa de pruebas de las aplicaciones porque no se tocó código de producción de las aplicaciones.
 
 Riesgos aceptados por Lucia en esta sesión: el juicio de una sola persona (informe provisional), la generación fuera del libro de contabilidad y una sola repetición. Quedan sin aceptar y sin resolver: la falta de segunda revisión independiente, la ausencia de atestación del modelo y el reparto del presupuesto de inferencia con la entrega B.
 

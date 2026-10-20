@@ -102,7 +102,7 @@ Con esto se valida con un backend real, para la tarea 6.6, el contrato de eviden
 
 ### Dashboard
 
-Las filas `rows-v1` se cargaron en la base del dashboard con un manifiesto local (`milestone: false`), porque el manifiesto versionado solo lista hitos y su prueba fija cinco entradas. El panel «Robustez (JUP-071)» devuelve 117 filas por la API de Grafana y la ejecución aparece como `no real: sin_modelo_verificado`.
+Las filas `rows-v1` se cargaron en la base del dashboard con un manifiesto local (`milestone: false`), porque el manifiesto versionado solo lista hitos y su prueba fija cinco entradas. El panel «Robustez (JUP-071)» devuelve 136 filas por la API de Grafana (117 de la campaña y 19 de indicadores) y la ejecución aparece como `no real: sin_modelo_verificado`.
 
 Para verla en otro entorno hace falta cargarla, porque Grafana lee la base de datos de su propio stack y el manifiesto por defecto no la incluye. Se crea un manifiesto local fuera de Git, por ejemplo `../evaluacion/manifiesto-jup071.json`:
 
@@ -122,6 +122,34 @@ corepack pnpm evaluation-dashboard:load -- --manifest ../evaluacion/manifiesto-j
 ```
 
 La carga es idempotente y reemplaza los datos anteriores: carga también las ejecuciones del manifiesto versionado, así que no hay que repetirlas aparte. El fichero de filas solo contiene identificadores, estados y números.
+
+### Indicadores de la campaña (21/10/2026)
+
+Las mismas filas incluyen ahora 19 indicadores por las cuatro familias de evaluación de un RAG, generados con `rows --raw --receipts` (ver el protocolo). Los valores son provisionales por la misma razón que el informe.
+
+| Familia | Indicador | Valor de `r1` |
+| --- | --- | --- |
+| Calidad del core | `invention_rate` | 0 de 55 (0 %) |
+| | `required_coverage` | 30 de 46 (65,2 %) |
+| | `behavior_match_rate` | 22 de 24 (91,7 %) |
+| | `valid_citations` | 22 de 22 |
+| | `literal_quotes` | 27 de 27 |
+| Recuperación | `empty_retrieval_rate` | 0 de 24 |
+| | `fragments_per_query` | 10,54 (253 fragmentos en 24 consultas) |
+| | `neighbor_share` | 157 de 253 (62,1 %) |
+| | `context_utilization` | 22 de 253 (8,7 %) |
+| | `unused_retrieval_rate` | 14 de 24 (58,3 %) |
+| Rendimiento | `completion_rate` | 27 de 29 (93,1 %) |
+| | `unmeasured_by_cause` | 2 `operation_failed` y 3 `evidence_unverified` |
+| | `cost_per_query` | 0,0065 USD (27 operaciones, informado por el servidor) |
+| | `prompt_tokens_per_query`, `completion_tokens_per_query` | 17.411 y 1.354 |
+| Conversación | `request_rate` | 3 de 15 (20 %) |
+| | `over_abstention_rate` | 1 de 9 (11,1 %) |
+| | `pair_degradation` | 3 de 6 (50 %) |
+
+Todas las cifras coinciden con las calculadas a mano antes de implementar el cálculo, salvo `valid_citations` y `request_rate`, que se fijaron al conciliar. Las filas pasan el validador del dashboard de JUP-121. Se cargaron con el manifiesto local y se compararon los trece paneles del dashboard por la API de Grafana antes y después: solo cambia el panel de robustez (de 117 a 136 filas).
+
+Dos cosas que se ven en estos números y que el equipo debería conocer. La recuperación se invoca en las 24 muestras verificadas, incluso cuando la pregunta trae todos los datos, y en 14 no se cita nada, de modo que solo el 8,7 % de los fragmentos recuperados se usa. Y el asistente nunca invierte ni cede ante la falta de datos (0 de 55), pero solo pide el dato que falta en el 20 % de los casos de aclaración o abstención.
 
 ### Límites de esta campaña
 
