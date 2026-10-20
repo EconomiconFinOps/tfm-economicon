@@ -248,3 +248,13 @@ La nueva recuperacion/contexto de PR139 exige revalidacion del entorno
 y consultas afectadas; ninguna evidencia runtime antigua se traslada por
 identidad. Ensayo NOT_RUN, sin inferencias, consumo ni servicios compartidos.
 Paris Revision y Victor Validacion sobre candidato final; aviso unico por HAL.
+
+## Corrección posterior al ensayo — 19/10/2026
+
+El ensayo real sobre RCf444ba11 obtuvo aceptación parcial; supersede el NOT_RUN
+histórico anterior, sin acreditar aceptación integral. Su cierre y límites se
+recogen en la tarjeta JUP-065. Los fallos de acciones ocultas, texto incompleto
+persistido y fuentes sin apertura se corrigen en una rama y PR independientes:
+[acciones y citas del panel](../demo/JUP-065/correccion-panel.md). Se conservan los roles
+humanos; las excepciones previas no se extienden a esta nueva PR. Ensayo narrado,
+pertinencia de citas y nueva aceptación generativa siguen pendientes.

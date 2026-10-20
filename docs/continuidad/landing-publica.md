@@ -23,3 +23,34 @@ El run39268057889 de481b4cf detectó dos fallos del contrato esperado de goberna
 ## Pendientes
 
 Archivo y commit/push previos ya autorizados y ejecutados. Pendientes: evaluación independiente del fixCI, commit/push del arreglo por PM y nueva CI remota; autorización de PR/publicación y reviews humanas. Dominio/renovación, hosting/HTTPS público y destino de demo real no están decididos; no se cierra la JUP con localhost. Direct Upload de Pages se documenta sólo como propuesta y no permite convertir el mismo proyecto a Git integration. No se ha desplegado, comprado ni modificado DNS.
+
+## Reconciliación con develop — 20/10/2026
+
+Paris autoriza reconciliar PR142 conservando su estado de borrador. El candidato
+parte de a5a3e9f1c87a89142c8f7dc52883a126f5cc55d6 e incorpora
+88a6ce4c8a6c523c061e82a0a1f63f495f5db8ec. La preparación local anterior al
+commit final no se atribuye a un SHA nuevo todavía inexistente. El único conflicto
+es el índice de continuidad: se conservan la fila de landing y la del panel JUP-065.
+Se actualizan únicamente este tema, su fila y la evidencia de JUP-089.
+
+Los20 archivos de apps/landing permanecen idénticos a a5a3e9f1, así como sus
+contratos de Turbo/CI y dependencias. Los2177 archivos de develop ajenos a la
+aportación original permanecen byte a byte iguales. La instalación frozen-lockfile
+es correcta. Pasan163 pruebas focales/nativas (104política PR,19CI,15gobernanza,
+7landing,2Turbo y16contrato de scripts CI), OpenSpec83/83 y las9trazas activas.
+Dos builds desde la raíz respetan el destino externo y el origen HTTPS sintético;
+el manifiesto local conserva SHA256e9393f135b66bc8af7f6b8c6f7f988b5d31d1641d0edd9a8ccbac0ce46c0a7f0.
+HTTP local200/404, HEAD, cabeceras y ruta privada404 comprobados; servidor propio
+retirado. No se repiten UI completa ni suites de chat/RAG ajenas a la landing.
+
+Estos datos actualizan los pendientes históricos del fixCI: según comprobación
+PM del20/10, a5a3e9f1 ya está publicado en PR142Draft y su CI/SQL son correctas.
+Los dictámenes de esta composición y la CI del commit resultante deben identificar
+el candidato final; la evidencia antigua conserva su fecha y cobertura. La
+revisión y validación independientes afectadas preceden al commit/push del PM.
+
+El alcance público completo sigue pendiente: dominio/titular/renovación,
+alojamiento, HTTPS, despliegue/reversión y destino auténtico de demo. Tampoco se
+acreditan pairing de Víctor o reviews humanas de Alejandro/Lucía por asignación
+o por informes de agentes. Sin publicación web, DNS, gasto, nuevos accesos,
+cambios de roles, Trello o merge. Las previews previas41789/41790 se conservan.

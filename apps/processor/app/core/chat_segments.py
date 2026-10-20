@@ -1,5 +1,6 @@
 """Private, bounded response segments; public response fields remain strings."""
 import copy
+import re
 
 from app.core.chat_calculations import render_text
 from app.core.chat_claims import documentary_schema, render_documentary
@@ -354,9 +355,57 @@ def render_segment(segment, records, expressions=None):
     raise ValueError('Invalid response segment.')
 
 
+def join_prose(parts):
+    """Separate completed sentences at segment boundaries, preserving literals.
+
+    Do not split words, decimal quantities, existing whitespace or quotations.
+    Documentary segments never enter this helper.
+    """
+    result = ''
+    for part in parts:
+        if result and part and result[-1] in '.?!' and part[0].isupper():
+            result += ' '
+        result += part
+    return result
+
+
+def render_prose_group(pending, records, expressions=None):
+    key = 'inference' if any(kind == 'inference' for kind, _ in pending) else 'text'
+    raw = ''.join(text for _, text in pending)
+    # Check the original concatenation too: display spacing must not weaken
+    # detection of equations/slots split across provider segments.
+    checked = render_segment({key: raw}, records, expressions)
+    joined = join_prose(text for _, text in pending)
+    return checked if joined == raw else render_segment({key: joined}, records, expressions)
+
+
+def validate_narrative_segments(segments):
+    """Reject dangling prose slots; a citation is not a numeric operand.
+
+    This bounded Spanish/English syntax check is not a semantic quality judge.
+    Adjacent prose is joined first; a typed quantity/calculation can complete it.
+    """
+    pending = []
+    for segment in [*segments, {}]:
+        if not isinstance(segment, dict):
+            raise ValueError('Invalid response segment.')
+        if 'inference' in segment or 'text' in segment:
+            if not isinstance(segment.get('inference', segment.get('text')), str):
+                raise ValueError('Invalid segment text.')
+            pending.append(segment.get('inference', segment.get('text', '')))
+            continue
+        if pending and not any(key in segment for key in ('quantity', 'expression', 'calculation_id')):
+            text = join_prose(pending).rstrip()
+            if (text.endswith((',', ':', ';')) or
+                    re.search(r'\b(?:es|son|de|del|con|como|entre|frente a|respecto a|is|are|of|with|from|to)\s*$', text, re.I)):
+                raise ValueError('Incomplete narrative: missing continuation or typed quantity.')
+        pending = []
+
+
 def render_segments(segments, records, *, limit=4000, expressions=None):
     if not isinstance(segments,list) or not 1<=len(segments)<=128:
         raise ValueError('Invalid segment collection.')
+    validate_narrative_segments(segments)
     parts=[];pending=[]
     for segment in segments:
         # Validate shape before grouping adjacent text. Group validation closes
@@ -365,9 +414,9 @@ def render_segments(segments, records, *, limit=4000, expressions=None):
         if 'text' in segment or 'inference' in segment:
             pending.append((('inference' if 'inference' in segment else 'text'),segment.get('inference',segment.get('text'))))
         else:
-            if pending:parts.append(render_segment({('inference' if any(key=='inference' for key,_ in pending) else 'text'):''.join(text for _,text in pending)},records,expressions));pending=[]
+            if pending:parts.append(render_prose_group(pending,records,expressions));pending=[]
             parts.append(rendered)
-    if pending:parts.append(render_segment({('inference' if any(key=='inference' for key,_ in pending) else 'text'):''.join(text for _,text in pending)},records,expressions))
+    if pending:parts.append(render_prose_group(pending,records,expressions))
     result=''.join(parts)
     if len(result)>limit:raise ValueError('Rendered text limit.')
     result=result.strip()

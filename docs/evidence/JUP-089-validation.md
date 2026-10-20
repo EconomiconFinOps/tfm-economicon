@@ -70,3 +70,39 @@ PM archivó y publicó481b4cffaf7f67607068246455834af59c14b4d8 con autorización
 Se actualiza únicamente el literal CI_BLOCK_TODAY para incluir la comprobación Turbo ya obligatoria, después de ci:check:test. Las comparaciones completas de orden/igualdad, unicidad y sangría quedan intactas; no se elimina ni se debilita ningún test o paso CI. Comprobaciones propias posteriores: python -B -m unittest discover -s scripts/tests -p test_evaluation_scripts.py -v:16PASS; node --test tools/ci-workflow.test.mjs:19PASS. Estas35pruebas focales no equivalen a una ejecución nueva de los1842casos ni a CI remota.
 
 Producto, fuentes de UI, artefacto público, workflow y dependencias permanecen idénticos a481b4cf. HEAD481b4cf más delta local del fix, misma rama y basef444. Revisión/validación independientes de este delta y nueva CI remota PENDIENTES. Los dictámenes locales anteriores conservan su candidato/fecha; no se usan como aceptación automática del arreglo. Archivo/commit/push previos no autorizan crear PR ni desplegar.
+
+## Reconciliación de PR142 con develop — 20/10/2026
+
+La información histórica anterior conserva su corte. PM confirma que el fixCI
+fue evaluado y publicado como a5a3e9f1c87a89142c8f7dc52883a126f5cc55d6 y que
+PR142 permanece Draft, con CI39278498235 y SQL39278498254 correctas sobre ese
+SHA. Paris autoriza ahora reconciliar con develop88a6ce4c8a6c523c061e82a0a1f63f495f5db8ec,
+evaluar independientemente el efecto y subir el resultado conservando el borrador.
+No autoriza despliegue ni cambios de participantes, Trello o merge.
+
+La composición local anterior al commit conserva los20 archivos de la landing,
+su diseño, configuración y dependencias originales. Se verifica la igualdad de
+2177 archivos entrantes fuera de nuestra aportación; el único conflicto es el
+índice documental, resuelto conservando ambas filas. Cambios propios de contenido:
+docs/continuidad/README.md, docs/continuidad/landing-publica.md y esta evidencia.
+Ningún cambio correctivo en chat, RAG, frontend privado o configuración entrante.
+
+Comprobaciones propias nuevas: instalación con lockfile congelado;104pruebas de
+política PR,19CI,15gobernanza,7landing,2planesTurbo y16contrato CI de scripts,
+todas favorables (163en total). OpenSpec83elementos y9changes activos correctos.
+Build y lint de landing favorables. Dos compilaciones reales desde la tarea raíz
+respetan origen y salida externos; modo local14archivos/230138bytes y modo con
+origen HTTPS sintético14/230395bytes. El manifiesto local es idéntico al de R2:
+e9393f135b66bc8af7f6b8c6f7f988b5d31d1641d0edd9a8ccbac0ce46c0a7f0.
+Servidor creado desde ese artefacto en puerto efímero propio: home200, desconocida404,
+ruta privada404, HEAD200sin cuerpo y nosniff; cerrado al finalizar. No son pruebas
+de HTTPS público, renderizado de usuario ni conexión con la aplicación auténtica.
+
+Por identidad de fuentes y artefacto se conserva la evidencia visual anterior
+con sus límites. Cada evaluador debe confirmar expresamente su aplicabilidad a
+esta composición y comprobar de forma independiente el efecto pertinente. Los
+informes originales, controles PM y CI del nuevo commit se conservan por separado;
+no se presenta CI histórica como ejecución del SHA futuro ni se suman baterías
+anteriores como pruebas nuevas. El archivo de OpenSpec se mantiene, sin bootstrap
+ni aceptación nueva de dominio/hosting/demo. La validación pública global y las
+aportaciones humanas siguen pendientes, por lo que PR142 conserva su borrador.

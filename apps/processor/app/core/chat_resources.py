@@ -71,6 +71,7 @@ ASSEMBLER_CONTRACT.update(tool_protocol='server-documentation-v4', decision_sche
     boolean_rules='complete-role-declarations-and-complete-section-rule-v3',
     retrieval_neighbors='same-snapshot-tenant-provider-immediate-bounded20-contiguous-priority-v2',
     evidence_order='local-visible-support-no-root-decoration-v2',
+    narrative_completion='bounded-prose-completion-and-sentence-spacing-v2',
     excerpt_repetition='deduplicate-source-and-literal-passage-in-main-answer-v1',
     answer_generation_blocks=24,
     resource_actions={'version':'bounded-direct-command-readonly-capability-v1',
