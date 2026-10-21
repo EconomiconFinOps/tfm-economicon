@@ -1940,6 +1940,56 @@ class CampaignIndicatorsTests(unittest.TestCase):
             self.assertEqual(status, 2)
 
 
+    def test_the_cost_mean_only_counts_operations_that_report_a_cost(self):
+        def no_cost(raw):
+            next(x for x in raw["execution"]["collection"]["server_reported"]
+                 if x["sample_id"].startswith("JUP-071-001"))["usage"].pop("cost_usd")
+        document = self.rows(mutate_raw=no_cost)
+        row = find(document, "cost_per_query")
+        self.assertEqual(row["denominator"], 28)
+        self.assertAlmostEqual(row["value"], 0.01)
+        self.assertEqual(find(document, "prompt_size_per_query")["denominator"], 29)
+
+    def test_a_pair_whose_reference_does_not_pass_is_not_a_degradation(self):
+        def break_both(judgments):
+            judgments["cases"]["JUP-069-012"]["required-1"][0]["result"] = "fail"
+            judgments["cases"]["JUP-071-001"]["required-1"][0]["result"] = "fail"
+        report, raw, folder = self.build(mutate_judgments=break_both)
+        pair = next(p for p in report["pairs"] if p["perturbation"] == "JUP-071-001")
+        self.assertEqual((pair["before"], pair["after"]), ("fail", "fail"))
+        left_out = [p for p in report["pairs"] if p["before"] != "pass"]
+        row = find(robustness.rows_v1(report, raw, robustness.read_receipts(folder, raw)), "pair_degradation")
+        self.assertEqual((row["numerator"], row["denominator"]), (0, len(report["pairs"]) - len(left_out)))
+
+    def test_a_citation_outside_the_context_manifest_is_not_used_context(self):
+        document = self.rows(options={"JUP-069-011": {"evidence": ("d:1", "d:2"), "neighbors": (), "cited": ("d:1", "d:9")}})
+        row = find(document, "context_utilization")
+        self.assertEqual(row["numerator"], 1)
+        self.assertEqual(find(document, "valid_citations")["numerator"], 1)
+
+    def test_unmeasured_causes_are_counted_each_on_its_own(self):
+        def two_failed(raw):
+            block(raw, "JUP-071-001")
+            block(raw, "JUP-071-002")
+            block(raw, "JUP-071-003")
+        options = {"JUP-071-003": {"state": "completed", "collection": "INCOMPLETE", "answer": "texto sin verificar"}}
+        document = self.rows(mutate_raw=two_failed, options=options)
+        self.assertEqual(find(document, "unmeasured_by_cause", "operation_failed")["value"], 2)
+        self.assertEqual(find(document, "unmeasured_by_cause", "evidence_unverified")["value"], 1)
+
+    def test_a_case_with_two_request_points_needs_both_to_pass(self):
+        report, raw, folder = self.build()
+        cases = copy.deepcopy(CASES)
+        target = next(c for c in cases if c["id"] == "JUP-071-005")
+        target["expected"]["required"] = ["Pedir resolver la propiedad.", "Solicitar una regla de precedencia."]
+        judgments = judgments_fixture(raw)
+        judgments["cases"]["JUP-071-005"]["required-1"][0]["result"] = "fail"
+        report = robustness.score(SUITE, CASES, raw, judgments, False)
+        document = robustness.rows_v1(report, raw, robustness.read_receipts(folder, raw), cases)
+        row = find(document, "request_rate")
+        self.assertEqual((row["numerator"], row["denominator"]), (len(REQUEST_POINTS) - 1, len(REQUEST_POINTS)))
+
+
 if __name__ == "__main__":
     unittest.main()
 
