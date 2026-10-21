@@ -141,6 +141,59 @@ class Summarize(unittest.TestCase):
         self.assertEqual({m: s.queries for m, s in result.by_model.items()}, {CHAT: 1, "economicon-chat-deepseek": 1})
 
 
+class OpenRouterCost(unittest.TestCase):
+    """La respuesta de OpenRouter se valida: solo un número no negativo cuenta como coste facturado."""
+
+    def cost(self, body=None, error=None):
+        from unittest import mock
+        fetch = tool.openrouter_cost("https://openrouter.test/api/v1", PROVIDER_KEY)
+        patched = mock.patch.object(tool, "_http_get", side_effect=error) if error else mock.patch.object(tool, "_http_get", return_value=body)
+        with patched:
+            return fetch("gen-1")
+
+    def test_a_valid_total_cost_is_read_as_an_exact_decimal(self):
+        self.assertEqual(self.cost({"data": {"total_cost": 0.002639085}}), Decimal("0.002639085"))
+
+    def test_zero_is_a_valid_billed_cost(self):
+        self.assertEqual(self.cost({"data": {"total_cost": 0}}), Decimal("0"))
+
+    def test_a_negative_cost_is_not_accepted(self):
+        self.assertIsNone(self.cost({"data": {"total_cost": -0.5}}))
+
+    def test_a_boolean_cost_is_not_accepted(self):
+        self.assertIsNone(self.cost({"data": {"total_cost": True}}))
+
+    def test_a_text_or_missing_or_null_cost_is_not_accepted(self):
+        for body in ({"data": {"total_cost": "0.5"}}, {"data": {"total_cost": None}}, {"data": {}}, {"data": None},
+                     {"data": []}, [], "texto", {}):
+            self.assertIsNone(self.cost(body), body)
+
+    def test_a_404_is_unconfirmed_and_any_other_error_aborts(self):
+        self.assertIsNone(self.cost(error=tool.ApiUnavailable("http_404")))
+        for code in ("http_401", "http_429", "http_500", "conexion", "respuesta_invalida"):
+            with self.assertRaises(tool.ApiUnavailable, msg=code):
+                self.cost(error=tool.ApiUnavailable(code))
+
+    def test_the_identifier_is_url_encoded(self):
+        from unittest import mock
+        fetch = tool.openrouter_cost("https://openrouter.test/api/v1", PROVIDER_KEY)
+        with mock.patch.object(tool, "_http_get", return_value={"data": {"total_cost": 1}}) as patched:
+            fetch("gen-1&x=1 ")
+        self.assertEqual(patched.call_args.args[0], "https://openrouter.test/api/v1/generation?id=gen-1%26x%3D1%20")
+
+
+class CapOrder(unittest.TestCase):
+    def test_the_cap_takes_the_oldest_generations_whatever_their_identifiers(self):
+        looked = []
+
+        def fetch(identifier):
+            looked.append(identifier)
+            return Decimal("1")
+        rows = [chat("gen-1", 1.0, day="2026-10-18"), chat("gen-9", 1.0, day="2026-10-13"), chat("gen-5", 1.0, day="2026-10-15")]
+        tool.summarize_spend(rows, START, END, fetch, 2)
+        self.assertEqual(looked, ["gen-9", "gen-5"])
+
+
 class Rejections(unittest.TestCase):
     def summary(self, rows):
         return tool.summarize_spend(rows, START, END, None, 200)
