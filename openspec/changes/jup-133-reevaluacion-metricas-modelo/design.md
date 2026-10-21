@@ -58,6 +58,7 @@ No hace falta ADR nuevo: la decisión de dónde vive la identidad del modelo es 
 - [El hash del gateway parte las series por cambios irrelevantes] → D4 lo limita a la entrada del chat; cualquier cambio dentro de ella es, por definición, un cambio de condiciones de la medida.
 - [Solape con JUP-129 y otras tarjetas que tocan `evaluation-runs.json` y el JSON del dashboard] → Cambios mínimos en el JSON de Grafana (columnas), rama corta, y rebase sobre `develop` antes del PR. Coordinar el orden con quien lleve JUP-129.
 - [Gasto fuera de control en la reejecución] → Presupuesto máximo escrito, parada al alcanzarlo y autorización explícita por campaña; sin ella, la tarea queda bloqueada, no se asume.
+- [JUP-132 cambia el modelo y los recursos del chat (prompts y tokenizer v4) en la misma entrega, y el instrumento no atestigua el hash del prompt] → El informe registra la versión de los recursos de cada ejecución, rotula la comparación como «límite de la comparación» y no atribuye la diferencia solo al modelo.
 - [Comparar con una batería o corpus distintos y atribuirlo al modelo] → El informe señala la diferencia como límite y no declara dirección (spec).
 
 ## Migration Plan

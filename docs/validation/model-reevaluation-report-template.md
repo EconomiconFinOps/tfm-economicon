@@ -15,7 +15,7 @@ Se rellena al terminar la reejecución. La columna «Después» empieza en «No 
 | Fecha de la ejecución (UTC) | | |
 | Identidad atestiguada por el instrumento | No | No |
 
-Los valores de identidad son los que declara la configuración del gateway. El instrumento no verifica qué modelo respondió; si cambiara el contrato de JUP-035 para atestiguarlo, esta fila lo diría.
+Se anota también la versión de los recursos del chat (prompts y tokenizer) de cada ejecución, porque el cambio de modelo y el de recursos van juntos y no se pueden separar con esta medición. Los valores de identidad son los que declara la configuración del gateway. El instrumento no verifica qué modelo respondió; si cambiara el contrato de JUP-035 para atestiguarlo, esta fila lo diría.
 
 ## 2. Medida a medida
 
@@ -36,7 +36,7 @@ Una fila por medida clasificada `dependiente` en el inventario.
 La columna «Lectura» solo puede decir una de estas cosas, y se aplican por este orden:
 
 1. **sin comparación:** falta alguna de las dos mediciones. No se escribe «mejora» ni «empeora».
-2. **límite de la comparación:** las dos existen pero difieren en la batería, el corpus, los parámetros de recuperación o la revisora. La diferencia no se atribuye al modelo.
+2. **límite de la comparación:** las dos existen pero difieren en la batería, el corpus, los parámetros de recuperación, la revisora o los recursos del chat (el cambio de modelo de JUP-132 llega junto con los prompts y el tokenizer v4 frente a los v3 anteriores). La diferencia no se atribuye al modelo.
 3. **diferencia no distinguible:** los intervalos de confianza al 95 % se solapan, o no hay intervalo porque la muestra es de una repetición. No se declara dirección.
 4. **mejora** o **empeora:** solo si las condiciones son iguales y los intervalos no se solapan, con ambos intervalos escritos en la fila.
 

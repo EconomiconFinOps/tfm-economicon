@@ -25,6 +25,7 @@ El tope no equivale a una orden de gastar. Antes de lanzar cada campaña con gas
 - JUP-132 integrado, o un gateway aislado con `economicon-chat` apuntando a DeepSeek V4.1 Flash.
 - La identidad del modelo anotada en la entrada del manifiesto (`model_identity`) con los valores de `gateway-config-hash`. Son valores declarados por la configuración: el instrumento no atestigua qué modelo respondió.
 - Nombre de la ejecución, commit del producto y configuración del gateway apuntados en el registro de gasto de abajo.
+- La versión de los recursos del chat (prompts y tokenizer) que usa la ejecución nueva. JUP-132 cambia modelo y recursos a la vez, así que el informe no puede atribuir al modelo una diferencia que también puede ser del prompt.
 - Una pila de Grafana real disponible para verificar la carga (tarea 4.4b).
 
 ## Medidas dependientes y decisión de reejecución
