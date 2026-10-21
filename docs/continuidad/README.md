@@ -18,7 +18,7 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
-| [CI/CD AWS](cloud-aws.md) | JUP-131 implementado y ensayo1 preparado offline; appEspaña/controlParís, defensa29Oct. Ejemplos bloqueados por entradas reales y aceptación de aplicación pendientes. Sin despliegue AWS. | 2026-10-21 |
+| [CI/CD AWS](cloud-aws.md) | JUP-131: PostgreSQL y Cognito adaptados y probados localmente;1397frontendPASS y SQL real PG/Cockroach. Objetivo en curso: Bedrock, bootstrap/checks y receta pendientes. Sin despliegue AWS. | 2026-10-21 |
 | [Indicadores medibles para la memoria](indicadores-memoria.md) | JUP-130: precisión, recall y retraso del detector de anomalías (5/7 eventos, 5/5 los detectables por diseño), coste de IA facturado frente a estimado (OpenRouter confirma 100/100 consultas) y reconciliación y frescura de los datos, con tres paneles en el dashboard de evaluación. Medido con datos sintéticos y el gateway local; sin publicar, revisión adversarial y aprobaciones pendientes. | 2026-10-21 |
 | [Acciones y citas del panel](../demo/JUP-065/correccion-panel.md) | JUP-065: corrección separada de acciones ocultas, narrativa incompleta y visor de fuentes; pruebas y límites documentados, reviews y aceptación integrada pendientes. | 2026-10-19 |
 | [Demo funcional](demo-funcional.md) | PR63 incorpora develop6d9e6710/PR139; paquete fijo intacto. CI y dictamenes del SHA final pendientes; ensayo NOT_RUN. | 2026-10-18 |

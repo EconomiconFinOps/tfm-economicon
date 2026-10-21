@@ -6,15 +6,15 @@ def upgrade(connection) -> None:
         text(
             """
             CREATE TABLE IF NOT EXISTS azure_cost_ingestion_runs (
-                id STRING PRIMARY KEY,
-                tenant_id STRING NOT NULL,
-                subscription_id STRING NOT NULL,
+                id TEXT PRIMARY KEY,
+                tenant_id TEXT NOT NULL,
+                subscription_id TEXT NOT NULL,
                 request JSONB NOT NULL,
-                status STRING NOT NULL CHECK (status IN ('running', 'completed', 'failed')),
+                status TEXT NOT NULL CHECK (status IN ('running', 'completed', 'failed')),
                 page_count INT8 NOT NULL DEFAULT 0,
                 retry_count INT8 NOT NULL DEFAULT 0,
                 row_count INT8 NOT NULL DEFAULT 0,
-                error_code STRING,
+                error_code TEXT,
                 started_at TIMESTAMPTZ NOT NULL,
                 completed_at TIMESTAMPTZ
             )
@@ -33,15 +33,15 @@ def upgrade(connection) -> None:
         text(
             """
             CREATE TABLE IF NOT EXISTS azure_cost_records (
-                id STRING PRIMARY KEY,
-                ingestion_id STRING NOT NULL REFERENCES azure_cost_ingestion_runs (id),
-                tenant_id STRING NOT NULL,
-                subscription_id STRING NOT NULL,
+                id TEXT PRIMARY KEY,
+                ingestion_id TEXT NOT NULL REFERENCES azure_cost_ingestion_runs (id),
+                tenant_id TEXT NOT NULL,
+                subscription_id TEXT NOT NULL,
                 usage_date DATE,
                 pretax_cost DECIMAL(38, 12) NOT NULL,
-                currency STRING NOT NULL,
+                currency TEXT NOT NULL,
                 dimensions JSONB NOT NULL,
-                source_row_hash STRING NOT NULL,
+                source_row_hash TEXT NOT NULL,
                 created_at TIMESTAMPTZ NOT NULL
             )
             """

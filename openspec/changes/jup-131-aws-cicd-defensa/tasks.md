@@ -6,6 +6,10 @@
 - [x] 1.4 Parametrizar perfil de retirada sin alterar arquitectura.
 - [x] 1.5 Añadir pruebas locales/mock y CI sin credenciales AWS.
 - [x] 1.6 Generar paquete local bloqueado de ensayo1 y runbook con entradas pendientes.
+- [x] 1.7 Adaptar DSN/migraciones/consulta de costes a PostgreSQL y probar esquema completo, reejecución y tenant en PostgreSQL16 real; conservar contratos Cockroach.
+- [x] 1.8 Integrar Cognito con frontend PKCE y verificación de identidad/tenant en backend; pruebas locales sin pool AWS.
+- [ ] 1.9 Integrar Bedrock y dimensión/reindexación coherentes en backend/processor.
+- [ ] 1.10 Implementar bootstrap privado, datos reproducibles y checks funcionales; completar receta/evidencia local sin simular aceptación AWS.
 - [ ] 2.1 Completar cuenta/DNS/saldo/motores y aceptación de aplicación antes de ensayo real.
 - [ ] 2.2 Obtener revisión/validación oficiales por roles humanos asignados.
 - [ ] 2.3 Tras autorización futura, ejecutar ensayo1 y registrar tiempos/coste/retirada.

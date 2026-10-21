@@ -19,3 +19,11 @@ La preparación local es libre de APIs AWS y produce readiness negativo cuando
 faltan cuenta/DNS/motores/CI/aceptación. El runtime real no se habilita sin receta
 y evidencias de adaptación asociadas al hash de aplicación. El runbook distingue
 pruebas offline, campos pendientes y futuras acciones con coste.
+
+El 21/10 el usuario amplía la implementación a las adaptaciones de aplicación y
+scripts, conservando la prohibición de desplegar. Se aplica el
+[plan de adaptación](../../../docs/planning/aws-application-adaptations.md).
+PostgreSQL usa tipos TEXT comunes, catálogo nativo validado y DSN explícito;
+se conserva Cockroach. Cognito vincula el sub firmado al id del usuario local
+creado por bootstrap, nunca por coincidencia de correo ni por claims de tenant.
+Las membresías y permisos siguen siendo autoridad de la base operativa.

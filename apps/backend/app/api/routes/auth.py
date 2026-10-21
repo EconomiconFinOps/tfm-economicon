@@ -11,6 +11,9 @@ router = APIRouter(tags=["auth"])
 
 @router.post("/auth/login", response_model=LoginResponse)
 def login(payload: LoginRequest, database=Depends(get_database)) -> LoginResponse:
+    settings = get_settings()
+    if settings.auth_provider == "cognito":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Use the configured identity provider.")
     user = database.fetch_user_by_email(payload.email)
     if user is None or not verify_password(payload.password, user["password_hash"]):
         raise HTTPException(
@@ -18,7 +21,6 @@ def login(payload: LoginRequest, database=Depends(get_database)) -> LoginRespons
             detail="Invalid email or password.",
         )
 
-    settings = get_settings()
     access_token = create_access_token(
         user_id=user["id"],
         secret_key=settings.auth_secret_key.get_secret_value(),

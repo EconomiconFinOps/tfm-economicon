@@ -76,6 +76,9 @@ async def maintain_documents(service):
 async def lifespan(app: FastAPI):
     try:
         settings = get_settings()
+        if settings.auth_provider == "cognito":
+            from app.core.cognito import CognitoVerifier
+            app.state.cognito_verifier = CognitoVerifier(settings.cognito_issuer, settings.cognito_client_id)
         configure_logging()
         reference_date.configure(settings.cost_reference_date)
         with ExitStack() as resources:

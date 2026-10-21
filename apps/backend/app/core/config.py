@@ -98,7 +98,10 @@ class Settings(BaseSettings):
                 raise ValueError("A dedicated single-line gateway credential is required")
         return value
 
-    auth_secret_key: SecretStr
+    auth_provider: Literal["local", "cognito"] = "local"
+    cognito_issuer: str | None = None
+    cognito_client_id: str | None = None
+    auth_secret_key: SecretStr | None = None
     auth_token_ttl_minutes: int = Field(default=480, gt=0)
     cors_allowed_origins: Json[list[StrictStr]] = Field(default_factory=list)
     demo_seed_enabled: bool = False
@@ -258,11 +261,19 @@ class Settings(BaseSettings):
                 or (self.runtime_environment == "production" and url.scheme != "https")
             ):
                 raise ValueError("CORS origins must be exact serialized origins for this environment")
-        key = self.auth_secret_key.get_secret_value()
-        if not key.strip() or any(c in key for c in ("\r", "\n")):
-            raise ValueError("JWT signing key must be nonempty and single-line")
-        if self.runtime_environment != "test" and (len(key) < 32 or key.lower() in PLACEHOLDERS):
-            raise ValueError("JWT signing key must have at least 32 characters and not be a placeholder")
+        if self.auth_provider == "cognito":
+            from app.core.cognito import validate_issuer
+            validate_issuer(self.cognito_issuer or "")
+            if not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", self.cognito_client_id or ""):
+                raise ValueError("An explicit Cognito app client is required")
+            if self.demo_seed_enabled:
+                raise ValueError("Local password demo seeding is forbidden in Cognito mode")
+        else:
+            key = self.auth_secret_key.get_secret_value() if self.auth_secret_key else ""
+            if not key.strip() or any(c in key for c in ("\r", "\n")):
+                raise ValueError("JWT signing key must be nonempty and single-line")
+            if self.runtime_environment != "test" and (len(key) < 32 or key.lower() in PLACEHOLDERS):
+                raise ValueError("JWT signing key must have at least 32 characters and not be a placeholder")
         if self.demo_seed_enabled:
             password = self.demo_password.get_secret_value() if self.demo_password else ""
             if not password.strip() or any(c in password for c in ("\r", "\n")):

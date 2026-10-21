@@ -7,6 +7,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "react-router";
 import { advanceSessionGeneration, clearSessionMutations, getSessionGeneration, login } from "../services/api";
 import { SESSION_KEY } from "../layouts/SessionGate";
+import { usesCognito } from "../services/cognito";
+import { CognitoLoginPage } from "./CognitoAccess";
 
 interface LoginFormState {
   email: string;
@@ -22,6 +24,10 @@ function hasSessionExpiredFlag(state: unknown): boolean {
 }
 
 export function LoginPage() {
+  return usesCognito() ? <CognitoLoginPage /> : <PasswordLoginPage />;
+}
+
+function PasswordLoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();

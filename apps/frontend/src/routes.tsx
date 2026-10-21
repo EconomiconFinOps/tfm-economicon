@@ -4,6 +4,7 @@ import { Layout, TenantScopedOutlet } from "./layouts/Layout";
 import { ExecutiveCostDashboard } from "./pages/ExecutiveCostDashboard";
 import { AnomaliesPanel } from "./pages/AnomaliesPanel";
 import { LoginPage } from "./pages/LoginPage";
+import { CognitoCallbackPage } from "./pages/CognitoAccess";
 import { IngestPage } from "./pages/IngestPage";
 import { ConversationsPage } from "./pages/ConversationsPage";
 import { DashboardPage } from "./pages/DashboardPage";
@@ -24,6 +25,7 @@ import { SystemHealthDashboard } from "./pages/SystemHealthDashboard";
 // divergir del real. `createBrowserRouter` en producción y `createMemoryRouter`
 // en test consumen exactamente este mismo array.
 export const routeConfig: RouteObject[] = [
+  { path: "/auth/callback", Component: CognitoCallbackPage },
   { path: "/login", Component: LoginPage },
   {
     path: "/",

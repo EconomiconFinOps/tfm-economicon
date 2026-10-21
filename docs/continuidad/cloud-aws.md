@@ -1,5 +1,39 @@
 # Cloud AWS — arquitectura documental
 
+## Adaptaciones autorizadas y en curso — 21/10/2026
+
+El usuario autoriza completar aplicación y scripts para desbloquear el ensayo,
+sin desplegar. Se conserva JUP-131/PR146 y el worktree aislado; plan adicional
+en [aws-application-adaptations](../planning/aws-application-adaptations.md).
+El objetivo completo sigue activo: Bedrock, bootstrap/checks, fixtures y receta
+real permanecen pendientes, junto con las entradas externas de cuenta/DNS/IAM/
+crédito. No declarar READY por completar estos dos primeros bloques.
+
+PostgreSQL: DSN operativo aceptado y SQL común; integración real PostgreSQL16 con
+backend/processor/pgvector, migraciones dos veces y coste EUR12.50 aislado por
+tenant PASS. Cockroach24.1.11:50PASS de esquema/chat/reconciliación y4PASS de
+resumen tras preparar venv/tokenizer correctos. Ver
+[evidencia SQL](../evidence/JUP-131-postgresql.md). CI añade job PostgreSQL real.
+
+Cognito: backend RS256/JWKS y modo explícito; sub firmado debe existir como id
+local y las membresías siguen en DB. Sin enlace por email ni login local en ese
+modo. Frontend code/PKCE/state/callback, expiración y logout. Backend31PASS,
+frontend1397PASS, tipadoPASS, lint0errores/1aviso previo. Ver
+[evidencia Cognito](../evidence/JUP-131-cognito.md). Aún sin pool/usuario AWS.
+
+Los tests SQL utilizan exclusivamente contenedores propios desechables
+`economicon-jup131-pg-test` y `economicon-jup131-crdb-test`, sin volúmenes;
+puertos remotos loopback25432/25433 a través de túneles SSH. No tocar despliegues
+existentes. Entornos locales propios en `.work/aws-application/venv` y
+node_modules ignorados; estado detallado en `.work/aws-application/progress.md`.
+Retirar contenedores y túneles al terminar la validación del objetivo.
+
+Siguiente: Bedrock nativo y coherencia de dimensión/espacio vectorial (TitanV2
+ofrece256/512/1024; RAG verificado actual1536), después tareas privadas y guion
+funcional. Catálogo público no acredita acceso de la cuenta. Sin AWS/API, DNS,
+credenciales cloud, gasto, merge ni dictámenes oficiales. La CI verde anterior
+corresponde a7f11f0d2; nuevos cambios requieren su propia CI al publicarse.
+
 ## CI/CD implementado sin despliegue — 21/10/2026
 
 Origen: petición directa «Adelante, implementa el CI/CD siguiendo el plan y deja
