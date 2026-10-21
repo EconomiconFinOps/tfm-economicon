@@ -251,7 +251,7 @@ class Report(unittest.TestCase):
         for metric in ("cost_billed_total", "cost_per_query", "cost_gap"):
             self.assertEqual(row(report, metric)["status"], "not_measured", metric)
         self.assertEqual(row(report, "cost_estimated_total")["status"], "measured")
-        self.assertEqual(row(report, "billed_coverage")["value"], 0.0)
+        self.assertEqual(row(report, "billed_coverage")["status"], "not_measured")
         self.assertIn("no está contrastado", table)
 
     def test_a_window_without_queries_has_zero_total_and_no_unit_cost(self):
@@ -308,6 +308,63 @@ class Report(unittest.TestCase):
         report, _ = self.report(rows, billed({"gen-1": "1", "gen-2": None}))
         self.assertEqual(row(report, "cost_per_query")["value"], 1.0)
         self.assertEqual(row(report, "billed_coverage")["value"], 0.5)
+
+
+class CoverageNeedsAConsultation(unittest.TestCase):
+    """ADV-1: la cobertura solo es medida si se consultó a OpenRouter; «no consultado» no es 0 %."""
+
+    def report(self, fetch):
+        rows = [chat("gen-1", 0.5), chat("gen-2", 0.5)]
+        return tool.ai_cost_report(rows, START, END, fetch, 200, commit=None, run_at=None)[0]
+
+    def test_without_a_fetch_the_coverage_is_not_measured(self):
+        coverage = row(self.report(None), "billed_coverage")
+        self.assertEqual((coverage["status"], coverage.get("value")), ("not_measured", None))
+
+    def test_when_openrouter_is_unreachable_the_coverage_is_not_measured(self):
+        coverage = row(self.report(billed({"gen-1": ApiDown, "gen-2": ApiDown})), "billed_coverage")
+        self.assertEqual(coverage["status"], "not_measured")
+
+    def test_when_openrouter_answers_404_for_everything_the_coverage_is_a_measured_zero(self):
+        coverage = row(self.report(billed({"gen-1": None, "gen-2": None})), "billed_coverage")
+        self.assertEqual((coverage["status"], coverage["value"], coverage["numerator"], coverage["denominator"]),
+                         ("measured", 0.0, 0, 2))
+
+    def test_when_nothing_has_a_generation_id_but_openrouter_was_consulted_the_coverage_is_a_measured_zero(self):
+        rows = [chat("90b5a1c0-aaaa-4bbb-8ccc-000000000000", 0.5)]
+        report = tool.ai_cost_report(rows, START, END, billed({}), 200, commit=None, run_at=None)[0]
+        self.assertEqual((row(report, "billed_coverage")["status"], row(report, "billed_coverage")["value"]), ("measured", 0.0))
+
+
+class CauseOfWhatIsNotMeasured(unittest.TestCase):
+    """ADV-2: lo no medido lleva su causa, como identificador, dentro del informe."""
+
+    def causes(self, report):
+        return sorted(r["behavior"] for r in report["results"] if r["metric_id"] == "measurement_cause")
+
+    def test_a_measured_report_has_no_cause_rows(self):
+        rows = [chat("gen-1", 0.5)]
+        report = tool.ai_cost_report(rows, START, END, billed({"gen-1": "0.5"}), 200, commit=None, run_at=None)[0]
+        self.assertEqual(self.causes(report), [])
+
+    def test_the_causes_given_to_the_report_are_written_as_rows(self):
+        report = tool.ai_cost_report(None, START, END, None, 200, commit=None, run_at=None, causes=("gateway:conexion",))[0]
+        self.assertEqual(self.causes(report), ["gateway:conexion"])
+        found = [r for r in report["results"] if r["metric_id"] == "measurement_cause"]
+        self.assertEqual((found[0]["status"], found[0]["value"], found[0]["unit"]), ("measured", 1, "recuento"))
+
+    def test_an_openrouter_failure_midway_reports_its_cause(self):
+        rows = [chat("gen-1", 0.5), chat("gen-2", 0.5)]
+        report = tool.ai_cost_report(rows, START, END, billed({"gen-1": "0.5", "gen-2": ApiDown}), 200, commit=None, run_at=None)[0]
+        self.assertEqual(self.causes(report), ["openrouter:conexion"])
+
+    def test_a_cause_that_is_not_an_identifier_is_rejected_by_the_contract(self):
+        with self.assertRaises(tool.IndicatorError):
+            tool.ai_cost_report(None, START, END, None, 200, commit=None, run_at=None, causes=("con espacios",))
+
+    def test_the_table_names_the_causes(self):
+        table = tool.ai_cost_report(None, START, END, None, 200, commit=None, run_at=None, causes=("gateway:clave_ausente",))[1]
+        self.assertIn("gateway:clave_ausente", table)
 
 
 class FakeServers:
@@ -414,7 +471,7 @@ class Command(unittest.TestCase):
             result = self.run_tool(*self.base(servers, directory), env={"OPENROUTER_API_KEY": PROVIDER_KEY})
             self.assertEqual(result.returncode, 0, result.stderr)
             report = json.loads((Path(directory) / "JUP-130-ai-cost.rows.json").read_text("utf-8"))
-            self.assertTrue(all(r["status"] == "not_measured" for r in report["results"]))
+            self.assertTrue(all(r["status"] == "not_measured" for r in report["results"] if r["metric_id"] != "measurement_cause"))
         self.assertEqual(servers.seen, [])
 
     def test_a_gateway_that_rejects_the_key_leaves_everything_not_measured(self):
@@ -423,7 +480,7 @@ class Command(unittest.TestCase):
             result = self.run_tool(*self.base(servers, directory), env={"LITELLM_MASTER_KEY": "otra", "OPENROUTER_API_KEY": PROVIDER_KEY})
             self.assertEqual(result.returncode, 0, result.stderr)
             report = json.loads((Path(directory) / "JUP-130-ai-cost.rows.json").read_text("utf-8"))
-            self.assertTrue(all(r["status"] == "not_measured" for r in report["results"]))
+            self.assertTrue(all(r["status"] == "not_measured" for r in report["results"] if r["metric_id"] != "measurement_cause"))
             self.assertNotIn("otra", result.stdout + result.stderr)
 
     def test_an_unreachable_gateway_leaves_everything_not_measured(self):
@@ -432,7 +489,27 @@ class Command(unittest.TestCase):
                                    "http://127.0.0.1:9", env={"LITELLM_MASTER_KEY": GATEWAY_KEY})
             self.assertEqual(result.returncode, 0, result.stderr)
             report = json.loads((Path(directory) / "JUP-130-ai-cost.rows.json").read_text("utf-8"))
-            self.assertTrue(all(r["status"] == "not_measured" for r in report["results"]))
+            self.assertTrue(all(r["status"] == "not_measured" for r in report["results"] if r["metric_id"] != "measurement_cause"))
+
+    def test_the_report_records_why_it_could_not_measure(self):
+        cases = (
+            ("clave_ausente_del_gateway", {}, ["--gateway-url", "http://127.0.0.1:9"], "gateway:clave_ausente"),
+            ("gateway_caido", {"LITELLM_MASTER_KEY": GATEWAY_KEY}, ["--gateway-url", "http://127.0.0.1:9"], "gateway:conexion"),
+            ("clave_rechazada", {"LITELLM_MASTER_KEY": "otra"}, [], "gateway:http_401"),
+            ("sin_clave_del_proveedor", {"LITELLM_MASTER_KEY": GATEWAY_KEY}, [], "openrouter:clave_ausente"),
+        )
+        for name, env, extra, cause in cases:
+            servers = self.servers()
+            with self.subTest(caso=name), tempfile.TemporaryDirectory() as directory:
+                arguments = self.base(servers, directory)
+                if extra:
+                    arguments[arguments.index("--gateway-url") + 1] = extra[1]
+                result = self.run_tool(*arguments, env=env)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                report = json.loads((Path(directory) / "JUP-130-ai-cost.rows.json").read_text("utf-8"))
+                self.assertIn(cause, [r["behavior"] for r in report["results"] if r["metric_id"] == "measurement_cause"])
+                for secret in (GATEWAY_KEY, PROVIDER_KEY, "otra"):
+                    self.assertNotIn(secret, json.dumps(report))
 
     def test_the_window_must_be_ordered_and_real(self):
         for window in (("2026-10-21", "2026-10-12"), ("2026-10-12", "2026-10-12"), ("2026-13-01", "2026-10-12")):

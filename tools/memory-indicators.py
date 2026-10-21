@@ -213,6 +213,7 @@ def build_table(report: dict, events: list[dict], episodes: list, match: Match, 
         "",
         f"- Son {len(events)} eventos de un conjunto de datos sintéticos: las cifras son ilustrativas y no tienen validez estadística.",
         "- Las etiquetas las escribió quien diseñó los datos y los datos se diseñaron para esta regla, así que una precisión de 1,00 y un retraso de 0 días son en parte esperables.",
+        "- El retraso va del inicio del evento al día en que la regla diaria abre el episodio: como el episodio se abre el mismo día evaluado, vale 0 por construcción y no mide la latencia real de la detección (en producción el mínimo es de un día, porque solo se evalúan días completos).",
         "- Un pico desde cero o la primera aparición de un servicio no se detectan por diseño: la regla exige una semana de referencia con coste positivo.",
         "- No demuestra el comportamiento con facturas reales de Azure ni con otras reglas o umbrales.",
         "",
@@ -459,6 +460,8 @@ class SpendSummary:
     confirmed: int = 0
     billed_total: Decimal | None = None
     gap: Decimal | None = None
+    billed_available: bool = False
+    billed_cause: str | None = None
     by_model: dict[str, ModelSummary] = field(default_factory=dict)
 
 
@@ -470,10 +473,10 @@ def _error_information(item: dict) -> dict:
     return (item.get("metadata") or {}).get("error_information") or {}
 
 
-def _confirm(queries: list[dict], fetch, cap: int) -> dict[str, Decimal] | None:
-    """Coste facturado por identificador de generación; None si no se pudo consultar a OpenRouter."""
+def _confirm(queries: list[dict], fetch, cap: int) -> tuple[dict[str, Decimal] | None, str | None]:
+    """Coste facturado por identificador de generación y causa; None si no se pudo consultar a OpenRouter."""
     if fetch is None:
-        return None
+        return None, None
     candidates = sorted((q for q in queries if str(q["request_id"]).startswith(GENERATION_PREFIX)),
                         key=lambda q: (q["startTime"], q["request_id"]))[:cap]
     confirmed: dict[str, Decimal] = {}
@@ -482,9 +485,9 @@ def _confirm(queries: list[dict], fetch, cap: int) -> dict[str, Decimal] | None:
             value = fetch(query["request_id"])
             if value is not None:
                 confirmed[query["request_id"]] = value
-    except ApiUnavailable:
-        return None
-    return confirmed
+    except ApiUnavailable as error:
+        return None, f"openrouter:{error}"
+    return confirmed, None
 
 
 def summarize_spend(rows: list[dict], start: date, end: date, fetch, cap: int) -> SpendSummary:
@@ -512,7 +515,8 @@ def summarize_spend(rows: list[dict], start: date, end: date, fetch, cap: int) -
         model = summary.by_model.setdefault(item["model"], ModelSummary())
         model.queries += 1
         model.estimated += spend
-    confirmed = _confirm(queries, fetch, cap)
+    confirmed, summary.billed_cause = _confirm(queries, fetch, cap)
+    summary.billed_available = confirmed is not None
     if confirmed:
         by_id = {q["request_id"]: q for q in queries}
         summary.confirmed = len(confirmed)
@@ -558,7 +562,8 @@ def _ai_rows(summary: SpendSummary) -> list[dict]:
         _ai_row("cost_billed_total", "usd", _usd(summary.billed_total)),
         _ai_row("cost_per_query", "usd", _usd(per_query), denominator=summary.confirmed or None),
         _ai_row("cost_gap", "usd", _usd(summary.gap)),
-        _rate_ai("billed_coverage", summary.confirmed, summary.queries),
+        (_rate_ai("billed_coverage", summary.confirmed, summary.queries) if summary.billed_available
+         else _ai_row("billed_coverage", "tasa", denominator=summary.queries)),
         _ai_row("cost_embeddings_estimated", "usd", _usd(summary.embeddings_estimated)),
         _ai_row("zero_spend_queries", "recuento", summary.zero_spend_queries),
         _ai_row("failures", "recuento", summary.failures),
@@ -581,9 +586,11 @@ def _unavailable_ai_rows() -> list[dict]:
 
 
 def ai_cost_report(rows: list[dict] | None, start: date, end: date, fetch, cap: int, *, commit: str | None,
-                   run_at: str | None) -> tuple[dict, str]:
+                   run_at: str | None, causes: tuple[str, ...] = ()) -> tuple[dict, str]:
     summary = None if rows is None else summarize_spend(rows, start, end, fetch, cap)
     results = _unavailable_ai_rows() if summary is None else _ai_rows(summary)
+    why = list(dict.fromkeys([*causes, *([summary.billed_cause] if summary is not None and summary.billed_cause else [])]))
+    results += [_ai_row("measurement_cause", "recuento", 1, behavior=cause) for cause in why]
     run = {"run_id": f"jup130-ai-cost-{start.isoformat()}-to-{end.isoformat()}", "source": AI_COST_SOURCE, "run_at": run_at,
            "commit": commit, "suite": "jup130-ai-cost", "suite_version": SUITE_VERSION}
     document = {"contract_version": 1, "run": {k: v for k, v in run.items() if v is not None}, "results": results}
@@ -591,7 +598,8 @@ def ai_cost_report(rows: list[dict] | None, start: date, end: date, fetch, cap: 
         dashboard.adapt_rows_v1(document)
     except dashboard.AdapterError as error:
         raise IndicatorError(f"el informe incumple el contrato rows-v1: {error}") from error
-    return document, build_ai_cost_table(summary, start, end, contrasted=fetch is not None and summary is not None and summary.billed_total is not None)
+    contrasted = fetch is not None and summary is not None and summary.billed_total is not None
+    return document, build_ai_cost_table(summary, start, end, contrasted, why)
 
 
 def _money(value: Decimal | None) -> str:
@@ -602,7 +610,8 @@ def _share(count: int, total: int) -> str:
     return "no medido" if total == 0 else f"{count / total * 100:.1f}".replace(".", ",") + f" % ({count}/{total})"
 
 
-def build_ai_cost_table(summary: SpendSummary | None, start: date, end: date, contrasted: bool) -> str:
+def build_ai_cost_table(summary: SpendSummary | None, start: date, end: date, contrasted: bool,
+                        causes: list[str] | None = None) -> str:
     lines = [
         "# Coste de IA por consulta (JUP-130)",
         "",
@@ -611,6 +620,8 @@ def build_ai_cost_table(summary: SpendSummary | None, start: date, end: date, co
         "Con `--run-at` y `--commit` se fijan la fecha y el commit del informe.",
         "",
     ]
+    if causes:
+        lines += ["Causas de lo no medido: " + ", ".join(f"`{cause}`" for cause in causes) + ".", ""]
     if summary is None:
         lines += ["**No se pudo leer el registro del gateway en esta ejecución: todas las cifras figuran como no medidas.**", ""]
     else:
@@ -696,20 +707,24 @@ def _read_secret(env_name: str, file_path: Path | None) -> str | None:
 def _ai_cost_command(args, commit: str | None) -> tuple[dict, str]:
     gateway_key = _read_secret(GATEWAY_KEY_ENV, args.gateway_key_file)
     provider_key = _read_secret(OPENROUTER_KEY_ENV, args.openrouter_key_file)
-    rows, fetch = None, None
+    rows, fetch, causes = None, None, []
     if not gateway_key:
+        causes.append("gateway:clave_ausente")
         print(f"aviso: falta {GATEWAY_KEY_ENV}; las cifras de coste de IA quedan como no medidas", file=sys.stderr)
     else:
         try:
             rows = read_spend_logs(args.gateway_url, gateway_key)
         except ApiUnavailable as error:
+            causes.append(f"gateway:{error}")
             print(f"aviso: el gateway no está disponible ({error}); las cifras de coste de IA quedan como no medidas", file=sys.stderr)
     if rows is not None:
         if not provider_key:
+            causes.append("openrouter:clave_ausente")
             print(f"aviso: falta {OPENROUTER_KEY_ENV}; el coste facturado queda como no medido", file=sys.stderr)
         else:
             fetch = openrouter_cost(args.openrouter_url, provider_key)
-    return ai_cost_report(rows, args.start, args.end, fetch, args.max_generations, commit=commit, run_at=args.run_at)
+    return ai_cost_report(rows, args.start, args.end, fetch, args.max_generations, commit=commit, run_at=args.run_at,
+                          causes=tuple(causes))
 
 
 def _git_head() -> str | None:
