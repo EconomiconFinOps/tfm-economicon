@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import argparse
 import csv
-import hashlib
 import importlib.util
 import json
 import os
@@ -26,6 +25,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = "JUP-130"
+# Una sola batería para las tres mediciones: la vista de cambios de configuración compara cada ejecución con la anterior
+# de su misma fuente, y distintas baterías o huellas se anotarían entre sí como un cambio que no lo es.
+SUITE = "jup130-indicators"
+SUITE_VERSION = "1"
 EVENTS_PATH = ROOT / "docs" / "validation" / "JUP-130-injected-events.json"
 DEFAULT_OUT = ROOT / "docs" / "evidence" / "JUP-130"
 DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}", re.ASCII)
@@ -153,8 +156,7 @@ def build_report(events: list[dict], episodes: list, *, tolerance: int, referenc
                 _count_row("fp", match.fp), _count_row("fn", match.fn)]
     results += [_count_row("event_detected", int(e["id"] in match.delays), e["id"]) for e in events]
     run = {"run_id": f"jup130-anomalies-{reference.isoformat()}", "source": SOURCE, "run_at": run_at, "commit": commit,
-           "suite": "jup130-anomalies", "suite_version": "1",
-           "suite_sha256": hashlib.sha256(EVENTS_PATH.read_bytes()).hexdigest(), "synthetic": True}
+           "suite": SUITE, "suite_version": SUITE_VERSION, "synthetic": True}
     document = {"contract_version": 1, "run": {k: v for k, v in run.items() if v is not None}, "results": results}
     try:
         dashboard.adapt_rows_v1(document)
@@ -376,7 +378,7 @@ def data_report(*, fetch, reference_date_from_api: date | None, reference: date,
             results.append(_data_row("reconciliation_delta_minor", behavior, "centimos", delta))
             results.append(_data_row("reconciled", behavior, "recuento", None if delta is None else int(delta == 0)))
     run = {"run_id": f"jup130-data-{reference.isoformat()}", "source": SOURCE, "run_at": run_at, "commit": commit,
-           "suite": "jup130-data", "suite_version": "1", "synthetic": True}
+           "suite": SUITE, "suite_version": SUITE_VERSION, "synthetic": True}
     document = {"contract_version": 1, "run": {k: v for k, v in run.items() if v is not None}, "results": results}
     try:
         dashboard.adapt_rows_v1(document)
@@ -580,7 +582,7 @@ def ai_cost_report(rows: list[dict] | None, start: date, end: date, fetch, cap: 
     summary = None if rows is None else summarize_spend(rows, start, end, fetch, cap)
     results = _unavailable_ai_rows() if summary is None else _ai_rows(summary)
     run = {"run_id": f"jup130-ai-cost-{start.isoformat()}-to-{end.isoformat()}", "source": SOURCE, "run_at": run_at,
-           "commit": commit, "suite": "jup130-ai-cost", "suite_version": "1"}
+           "commit": commit, "suite": SUITE, "suite_version": SUITE_VERSION}
     document = {"contract_version": 1, "run": {k: v for k, v in run.items() if v is not None}, "results": results}
     try:
         dashboard.adapt_rows_v1(document)
