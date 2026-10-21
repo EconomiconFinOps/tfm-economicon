@@ -71,6 +71,7 @@ FORMATS = (
     "jup-022-calibration-v1",
     "jup-068-input-v1",
     "rows-v1",
+    "jup-063-paired-v1",
 )
 # Regla 3 del contrato: los identificadores no pueden ser texto libre (un enunciado de pregunta, por
 # ejemplo). Se admite solo un alfabeto cerrado de hasta 80 caracteres. El patrón conserva `$` porque es
@@ -693,6 +694,96 @@ def adapt_jup078(report, run_id: str) -> tuple[dict, list[dict]]:
     return _benchmark_run(run_id), results
 
 
+# --- Comparación local pareada de JUP-063 -------------------------------------------------------------
+
+PAIRED_STATE = "PAIRED_LOCAL_PROVISIONAL_COMPARISON"
+PAIRED_MODELS = ("DeepSeekV4.1Flash", "GLM5.2")
+PAIRED_VERDICTS = ("provisional_pass", "provisional_fail", "pending")
+PAIRED_LATENCY_SCOPE = (
+    "provider generation phases only; excludes startup, resources, preflight and scheduler"
+)
+
+
+def adapt_jup063_paired(report, run_id: str) -> tuple[dict, list[dict]]:
+    """Proyecta agregados publicados, nunca textos ni una aceptación funcional.
+
+    Los juicios provisionales NO son estados `cases/pass` ni ACC-1. Se conservan como
+    recuentos de rúbrica local provisional bajo `paired_local_provisional`, separados del benchmark
+    JUP-078 y de las campañas canónicas. La observación del agregador no fecha la
+    ejecución y no aporta hashes de corpus/configuración: esos metadatos quedan null.
+    """
+    if not isinstance(report, dict) or report.get("state") != PAIRED_STATE:
+        raise _bad("state", f"debe ser {PAIRED_STATE}")
+    models = report.get("models")
+    if not isinstance(models, dict) or set(models) != set(PAIRED_MODELS):
+        raise _bad("models", "se requieren exactamente DeepSeekV4.1Flash y GLM5.2")
+    run = dict.fromkeys(RUN_KEYS)
+    # Este formato conserva la comparación de llamadas de proveedor, no un doble.
+    # `synthetic` es obligatorio booleano en rows-v1; no equivale a aceptación.
+    run.update(run_id=run_id, source="JUP-063", synthetic=False)
+    results = []
+    totals = []
+    for alias in PAIRED_MODELS:
+        model = models[alias]
+        where = f"models.{alias}"
+        if not isinstance(model, dict):
+            raise _bad(where, "debe ser un objeto")
+        if model.get("acceptance") != "NOT_ASSESSED":
+            raise _bad(f"{where}.acceptance", "debe ser NOT_ASSESSED")
+        n = model.get("responses")
+        if not _is_count(n) or n <= 0:
+            raise _bad(f"{where}.responses", "debe ser un entero positivo")
+        totals.append(n)
+        verdicts = model.get("verdicts")
+        if not isinstance(verdicts, dict) or set(verdicts) - set(PAIRED_VERDICTS):
+            raise _bad(f"{where}.verdicts", "solo admite los tres juicios provisionales")
+        if any(not _is_count(value) or value < 0 for value in verdicts.values()):
+            raise _bad(f"{where}.verdicts", "los recuentos deben ser enteros no negativos")
+        if sum(verdicts.values()) != n:
+            raise _bad(f"{where}.verdicts", "la suma debe coincidir con responses")
+        for metric in PAIRED_VERDICTS:
+            # Un estado omitido tiene cero ocurrencias únicamente tras conciliar la
+            # partición completa del total. No se convierte una medición ausente en cero.
+            results.append(_row("paired_local_provisional", metric, alias, "recuento", None,
+                                status="measured", value=verdicts.get(metric, 0), denominator=n))
+        results.append(_row("paired_local_provisional", "sample_size", alias, "recuento", "automatic",
+                            status="measured", value=n, denominator=n))
+        unknown = model.get("phases_with_unknown_cost")
+        if not _is_count(unknown) or unknown < 0:
+            raise _bad(f"{where}.phases_with_unknown_cost", "debe ser un entero no negativo")
+        results.append(_row("paired_local_provisional", "unknown_cost_phases", alias, "recuento", "automatic",
+                            status="measured", value=unknown))
+        cost = model.get("reported_phase_cost_usd")
+        # El informe registra decimales como cadenas. No aceptar NaN/Infinity ni bool,
+        # y no confundir coste de fases con liquidación de cuenta o gasto total.
+        if cost is not None:
+            if not isinstance(cost, str) or re.fullmatch(r"[0-9]+(?:\.[0-9]+)?", cost) is None:
+                raise _bad(f"{where}.reported_phase_cost_usd", "debe ser decimal no negativo o null")
+            cost = float(cost)
+            if not math.isfinite(cost):
+                raise _bad(f"{where}.reported_phase_cost_usd", "debe ser finito")
+        results.append(_row("paired_local_provisional", "reported_phase_cost_usd", alias, "usd", "automatic",
+                            status="not_measured" if cost is None else "measured", value=cost))
+        if model.get("latency_scope") != PAIRED_LATENCY_SCOPE:
+            raise _bad(f"{where}.latency_scope", "el alcance no es el de fases de generación")
+        latency_values = []
+        for quantile in ("p50", "p95", "max"):
+            metric = f"generation_seconds_{quantile}"
+            value = model.get(metric)
+            if value is not None and (not _is_number(value) or value < 0):
+                raise _bad(f"{where}.{metric}", "debe ser finito no negativo o null")
+            latency_values.append(value)
+            results.append(_row("paired_local_provisional", metric, alias, "s", "automatic",
+                                status="not_measured" if value is None else "measured", value=value,
+                                denominator=n))
+        measured = [value for value in latency_values if value is not None]
+        if measured != sorted(measured):
+            raise _bad(f"{where}.generation_seconds", "se exige p50 <= p95 <= max")
+    if totals[0] != totals[1]:
+        raise _bad("models.responses", "la comparación pareada exige el mismo tamaño")
+    return run, results
+
+
 # --- Adaptador de la calibración de JUP-022 -----------------------------------------------------------
 
 CALIBRATION_SCHEMA_VERSION = 1
@@ -1290,6 +1381,12 @@ def _validate_row_judgment(row: dict, where: str) -> None:
     # El tipo A es `automatic` o `human`; el B no tiene rúbrica y su juicio es null (tabla del contrato).
     # Cuando se llega aquí `measure_type` ya está validado, así que la comparación con "A" es segura.
     if row["measure_type"] == "A":
+        # La rúbrica local provisional no acredita ni checks automáticos ni
+        # adjudicación humana independiente. NULL conserva esa atribución ausente
+        # sin cambiar el CHECK existente de PostgreSQL ni clasificar otros datos.
+        if (row["judgment"] is None and row["grp"] == "paired_local_provisional"
+                and row["metric_id"] in PAIRED_VERDICTS):
+            return
         _check_member(row, "judgment", JUDGMENTS, where)
     elif row["judgment"] is not None:
         raise _bad(f"{where}.judgment", "debe ser null en el tipo B")
@@ -1592,7 +1689,7 @@ REPORT_PATH_RE = re.compile(r"[A-Za-z0-9._/-]+")
 PROVISIONAL_RUN_ID = "pendiente"
 # Formatos cuyo `run_id` se deriva si la entrada no lo fija: los tres informes de los que el adaptador recibe el
 # documento ya parseado. JUP-068 (lo lee Node) y `rows-v1` traen su propio `run_id`.
-DERIVED_RUN_ID_FORMATS = ("jup-070-report-v1", "jup-078-benchmark-v1", "jup-022-calibration-v1")
+DERIVED_RUN_ID_FORMATS = ("jup-070-report-v1", "jup-078-benchmark-v1", "jup-022-calibration-v1", "jup-063-paired-v1")
 
 
 def derive_run_id(source: str, run_at, report_sha256: str) -> str:
@@ -1684,6 +1781,8 @@ def _adapt_entry(entry: dict, document) -> tuple[dict, list[dict]]:
         return adapt_jup070(document, run_id)
     if fmt == "jup-078-benchmark-v1":
         return adapt_jup078(document, run_id)
+    if fmt == "jup-063-paired-v1":
+        return adapt_jup063_paired(document, run_id)
     return adapt_jup022(document, run_id)
 
 
@@ -2154,6 +2253,40 @@ def build_sql(dataset) -> str:
     return "\n\n".join(blocks) + "\n"
 
 
+def build_comparison_sql(dataset) -> str:
+    """Proyecta SOLO el informe pareado en una base evaluation ya existente.
+
+    No crea/migra esquema, no cambia permisos, no vacía otras ejecuciones. La
+    repetición del mismo informe reemplaza sus mismas filas en una transacción.
+    Un run_id preexistente con otra huella/fuente no se borra: el INSERT colisiona
+    con su PK y aborta TODO (psql debe usar ON_ERROR_STOP=1). No es un importador
+    genérico ni una sustitución silenciosa del modo histórico de carga.
+    """
+    pairs = _validate_dataset(dataset)
+    if len(pairs) != 1:
+        raise SqlError("comparison: se requiere exactamente un informe pareado")
+    run, rows = pairs[0]
+    digest = run["report_sha256"]
+    if (run["source"] != "JUP-063" or run["format"] != "jup-063-paired-v1"
+            or not isinstance(digest, str) or re.fullmatch(r"[0-9a-f]{64}", digest) is None
+            or run["run_id"] != derive_run_id(run["source"], run["run_at"], digest)
+            or {r["behavior"] for r in rows} != set(PAIRED_MODELS)
+            or any(r["grp"] != "paired_local_provisional" for r in rows)):
+        raise SqlError("comparison: solo admite el informe JUP-063 con identidad derivada y sus dos modelos")
+    # Borrado acotado por identidad COMPLETA, no por el prefijo de 8 caracteres.
+    # El caso de colisión no elimina nada; el INSERT posterior aborta por PK.
+    predicate = (f"run_id = {sql_literal(run['run_id'])} AND source = 'JUP-063' "
+                 f"AND report_sha256 = {sql_literal(digest)}")
+    blocks = [
+        "BEGIN;", SESSION_SQL,
+        f"DELETE FROM {SCHEMA_NAME}.results WHERE run_id IN "
+        f"(SELECT run_id FROM {SCHEMA_NAME}.runs WHERE {predicate});",
+        f"DELETE FROM {SCHEMA_NAME}.runs WHERE {predicate};",
+        *_insert_blocks(pairs), "COMMIT;",
+    ]
+    return "\n\n".join(blocks) + "\n"
+
+
 def _write_atomically(target: Path, text: str) -> None:
     # Se escribe a un fichero temporal del MISMO directorio y se renombra al final: `os.replace` es atómico en el
     # mismo sistema de ficheros, así que una interrupción o un error de disco nunca deja un `--output` truncado ni
@@ -2398,11 +2531,14 @@ def _build_parser() -> argparse.ArgumentParser:
         help="imprime el conjunto de datos normalizado (JSON) de los informes del manifiesto",
         description="Normaliza los informes de los manifiestos al contrato de filas planas y los imprime como JSON.",
     )
-    commands.add_parser(
+    sql = commands.add_parser(
         "sql", parents=[common, output], help="imprime el script SQL transaccional que carga ese conjunto de datos",
         description="Genera el script SQL (esquema, vaciado y carga en una transacción) del conjunto de datos "
                     "normalizado. No se conecta a ninguna base ni contiene credenciales.",
     )
+    sql.add_argument("--preserve-existing", action="store_true",
+                     help="solo comparación JUP-063: reemplaza su run_id sin DDL, roles ni vaciar otros datos; "
+                          "requiere --no-versioned y manifiesto suplementario")
     load = commands.add_parser(
         "load", parents=[common],
         help="carga el conjunto de datos en PostgreSQL y crea o actualiza el rol de solo lectura de Grafana",
@@ -2520,7 +2656,10 @@ def main(argv=None) -> int:
             _write_stdout(run_load(dataset, password, psql_command=command) + "\n")
             return 0
         # Se genera el texto ANTES de tocar `--output`: si algo falla no se crea ni se modifica el fichero.
-        text = _render_rows(dataset) if args.command == "rows" else _render_sql(dataset)
+        if args.command == "sql" and args.preserve_existing:
+            text = build_comparison_sql(dataset)
+        else:
+            text = _render_rows(dataset) if args.command == "rows" else _render_sql(dataset)
         if args.output is None:
             _write_stdout(text)
         else:

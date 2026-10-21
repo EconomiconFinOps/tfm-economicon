@@ -2009,6 +2009,331 @@
         "type": "grafana-postgresql-datasource",
         "uid": "evaluation-postgres"
       },
+      "description": "Tipo: A\nMide: recuentos de rúbrica local provisional, coste reportado de fases y segundos de generación por modelo en la misma comparación pareada; aceptación NO EVALUADA; no son checks automáticos de calidad\nNo demuestra: aceptación independiente, calidad con usuarios reales ni fuera de la batería, latencia extremo a extremo o coste total de cuenta; excluye arranque, recursos, preflight y scheduler",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false,
+            "inspect": false
+          },
+          "mappings": [
+            {
+              "type": "special",
+              "options": {
+                "match": "null",
+                "result": {
+                  "text": "No medido",
+                  "index": 0
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "noValue": "No medido"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "run_id"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Informe"
+              },
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "model"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Modelo"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "estado"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Tipo de ejecución"
+              },
+              {
+                "id": "custom.width",
+                "value": 180
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "regex",
+                    "options": {
+                      "pattern": "^no real.*",
+                      "result": {
+                        "color": "purple",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sample_size"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Muestras"
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "provisional_pass"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Pasa provisional"
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "provisional_fail"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Falla provisional"
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pending"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Pendiente"
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "reported_phase_cost_usd"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Coste fases (USD)"
+              },
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 9
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "unknown_cost_phases"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Fases sin coste"
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "generation_seconds_p50"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Generación p50"
+              },
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "decimals",
+                "value": 3
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "generation_seconds_p95"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Generación p95"
+              },
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "decimals",
+                "value": 3
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "generation_seconds_max"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Generación máxima"
+              },
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "decimals",
+                "value": 3
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 117
+      },
+      "id": 25,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT r.run_id, x.behavior AS model,\n  CASE WHEN r.is_real THEN 'real, provisional: sin aceptación independiente'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ') || ', sin aceptación independiente' END AS estado,\n  max(x.value) FILTER (WHERE x.metric_id = 'sample_size' AND x.status = 'measured') AS sample_size,\n  max(x.value) FILTER (WHERE x.metric_id = 'provisional_pass' AND x.status = 'measured') AS provisional_pass,\n  max(x.value) FILTER (WHERE x.metric_id = 'provisional_fail' AND x.status = 'measured') AS provisional_fail,\n  max(x.value) FILTER (WHERE x.metric_id = 'pending' AND x.status = 'measured') AS pending,\n  max(x.value) FILTER (WHERE x.metric_id = 'reported_phase_cost_usd' AND x.status = 'measured') AS reported_phase_cost_usd,\n  max(x.value) FILTER (WHERE x.metric_id = 'unknown_cost_phases' AND x.status = 'measured') AS unknown_cost_phases,\n  max(x.value) FILTER (WHERE x.metric_id = 'generation_seconds_p50' AND x.status = 'measured') AS generation_seconds_p50,\n  max(x.value) FILTER (WHERE x.metric_id = 'generation_seconds_p95' AND x.status = 'measured') AS generation_seconds_p95,\n  max(x.value) FILTER (WHERE x.metric_id = 'generation_seconds_max' AND x.status = 'measured') AS generation_seconds_max\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE x.grp = 'paired_local_provisional'\n  AND r.source = 'JUP-063' AND r.format = 'jup-063-paired-v1'\nGROUP BY r.run_id, x.behavior\nORDER BY r.run_id, x.behavior",
+          "refId": "A"
+        }
+      ],
+      "title": "GLM/DeepSeek — comparación provisional",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
       "description": "Tipo: A\nMide: robustez por categoría y perturbación, a partir del informe de JUP-071 cuando exista\nNo demuestra: el comportamiento con usuarios reales ni con preguntas fuera de la batería; todavía no hay ningún informe de robustez",
       "fieldConfig": {
         "defaults": {
@@ -2351,7 +2676,7 @@
         "h": 5,
         "w": 24,
         "x": 0,
-        "y": 117
+        "y": 125
       },
       "id": 11,
       "options": {
@@ -2721,9 +3046,9 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 122
+        "y": 130
       },
-      "id": 25,
+      "id": 26,
       "options": {
         "cellHeight": "sm",
         "footer": {
@@ -3123,7 +3448,7 @@
         "h": 36,
         "w": 24,
         "x": 0,
-        "y": 136
+        "y": 144
       },
       "id": 5,
       "options": {
@@ -3525,7 +3850,7 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 172
+        "y": 180
       },
       "id": 6,
       "options": {
@@ -3562,7 +3887,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 186
+        "y": 194
       },
       "id": 12,
       "panels": [],
@@ -3575,7 +3900,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 187
+        "y": 195
       },
       "id": 13,
       "options": {
@@ -4124,7 +4449,7 @@
         "h": 26,
         "w": 24,
         "x": 0,
-        "y": 193
+        "y": 201
       },
       "id": 14,
       "options": {
@@ -4494,9 +4819,9 @@
         "h": 11,
         "w": 24,
         "x": 0,
-        "y": 219
+        "y": 227
       },
-      "id": 26,
+      "id": 27,
       "options": {
         "cellHeight": "sm",
         "footer": {
@@ -4864,9 +5189,9 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 230
+        "y": 238
       },
-      "id": 27,
+      "id": 28,
       "options": {
         "cellHeight": "sm",
         "footer": {
@@ -4901,7 +5226,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 239
+        "y": 247
       },
       "id": 15,
       "panels": [],
@@ -4914,7 +5239,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 240
+        "y": 248
       },
       "id": 16,
       "options": {
@@ -4985,7 +5310,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 248
+        "y": 256
       },
       "hideTimeOverride": false,
       "id": 17,
@@ -5075,7 +5400,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 248
+        "y": 256
       },
       "hideTimeOverride": false,
       "id": 18,
@@ -5165,7 +5490,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 248
+        "y": 256
       },
       "hideTimeOverride": false,
       "id": 19,
@@ -5256,7 +5581,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 256
+        "y": 264
       },
       "hideTimeOverride": false,
       "id": 20,
@@ -5347,7 +5672,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 256
+        "y": 264
       },
       "hideTimeOverride": false,
       "id": 21,

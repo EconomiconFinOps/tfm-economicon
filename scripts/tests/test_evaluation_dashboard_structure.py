@@ -211,6 +211,8 @@ def clasificar(panel):
         return None
     if tipo != "table":
         return None
+    if re.search(r"grp\s*=\s*'paired_local_provisional'", sql):
+        return "a_paired_local"
     if re.search(r"source\s*=\s*'JUP-071'|source\s+IN\s*\([^)]*'JUP-071'", sql):
         return "a9"
     if re.search(r"grp\s*=\s*'calibration'", sql):
