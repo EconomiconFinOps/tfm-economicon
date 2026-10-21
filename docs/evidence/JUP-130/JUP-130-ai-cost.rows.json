@@ -1,0 +1,140 @@
+{
+  "contract_version": 1,
+  "run": {
+    "run_id": "jup130-ai-cost-2026-10-09-to-2026-10-21",
+    "source": "JUP-130",
+    "run_at": "2026-10-21T07:36:31Z",
+    "commit": "49917f34220ad93196f41167861dea6e9d46deb9",
+    "suite": "jup130-ai-cost",
+    "suite_version": "1"
+  },
+  "results": [
+    {
+      "measure_type": "B",
+      "grp": "ai_cost",
+      "metric_id": "queries",
+      "behavior": "all",
+      "status": "measured",
+      "value": 100,
+      "unit": "recuento"
+    },
+    {
+      "measure_type": "B",
+      "grp": "ai_cost",
+      "metric_id": "cost_estimated_total",
+      "behavior": "all",
+      "status": "measured",
+      "value": 0.250393898,
+      "unit": "usd"
+    },
+    {
+      "measure_type": "B",
+      "grp": "ai_cost",
+      "metric_id": "cost_billed_total",
+      "behavior": "all",
+      "status": "measured",
+      "value": 0.260095865,
+      "unit": "usd"
+    },
+    {
+      "measure_type": "B",
+      "grp": "ai_cost",
+      "metric_id": "cost_per_query",
+      "behavior": "all",
+      "status": "measured",
+      "value": 0.002600959,
+      "unit": "usd",
+      "numerator": 0.260095865,
+      "denominator": 100
+    },
+    {
+      "measure_type": "B",
+      "grp": "ai_cost",
+      "metric_id": "cost_gap",
+      "behavior": "all",
+      "status": "measured",
+      "value": -0.009701968,
+      "unit": "usd"
+    },
+    {
+      "measure_type": "B",
+      "grp": "ai_cost",
+      "metric_id": "billed_coverage",
+      "behavior": "all",
+      "status": "measured",
+      "value": 1.0,
+      "unit": "tasa",
+      "numerator": 100,
+      "denominator": 100
+    },
+    {
+      "measure_type": "B",
+      "grp": "ai_cost",
+      "metric_id": "cost_embeddings_estimated",
+      "behavior": "all",
+      "status": "measured",
+      "value": 0.00148478,
+      "unit": "usd"
+    },
+    {
+      "measure_type": "B",
+      "grp": "ai_cost",
+      "metric_id": "zero_spend_queries",
+      "behavior": "all",
+      "status": "measured",
+      "value": 4,
+      "unit": "recuento"
+    },
+    {
+      "measure_type": "B",
+      "grp": "ai_cost",
+      "metric_id": "failures",
+      "behavior": "all",
+      "status": "measured",
+      "value": 9,
+      "unit": "recuento"
+    },
+    {
+      "measure_type": "B",
+      "grp": "ai_cost",
+      "metric_id": "gateway_rejection_rate",
+      "behavior": "all",
+      "status": "measured",
+      "value": 0.003247,
+      "unit": "tasa",
+      "numerator": 3,
+      "denominator": 924
+    },
+    {
+      "measure_type": "B",
+      "grp": "ai_cost",
+      "metric_id": "provider_error_rate",
+      "behavior": "all",
+      "status": "measured",
+      "value": 0.006494,
+      "unit": "tasa",
+      "numerator": 6,
+      "denominator": 924
+    },
+    {
+      "measure_type": "B",
+      "grp": "ai_cost",
+      "metric_id": "queries",
+      "behavior": "openrouter/z-ai/glm-5.2",
+      "status": "measured",
+      "value": 100,
+      "unit": "recuento"
+    },
+    {
+      "measure_type": "B",
+      "grp": "ai_cost",
+      "metric_id": "cost_per_query",
+      "behavior": "openrouter/z-ai/glm-5.2",
+      "status": "measured",
+      "value": 0.002600959,
+      "unit": "usd",
+      "numerator": 0.260095865,
+      "denominator": 100
+    }
+  ]
+}

@@ -22,13 +22,13 @@
 
 ## 4. Medición de coste de IA
 
-- [ ] 4.1 Subcomando `ai-cost`: cliente de `/spend/logs` con la clave de administración leída de entorno o fichero, sin imprimirla, y ventana indicada
+- [x] 4.1 Subcomando `ai-cost`: cliente de `/spend/logs` con la clave de administración leída de entorno o fichero, sin imprimirla, y ventana indicada
 - [x] 4.2 Comprobado con el gateway real (924 filas): las filas de chat traen el identificador `gen-…` de OpenRouter en `request_id` y las de embeddings no; los 429 son del límite por clave del gateway y los fallos del proveedor son 500. Spec y diseño ajustados
-- [ ] 4.3 Agregar consultas de chat, coste estimado, por alias de modelo, embeddings aparte, consultas con gasto cero, y las tasas de rechazo del gateway (429) y de error del proveedor (5xx) con numerador y denominador
-- [ ] 4.4 Cliente de solo lectura de `GET /api/v1/generation` con la clave de OpenRouter leída de entorno o fichero, tope de generaciones por ejecución y sin imprimir identificadores; calcular coste facturado, cobertura y diferencia con la estimación sobre las confirmadas
-- [ ] 4.5 Gateway caído, OpenRouter caído, claves ausentes, 404 y ventana sin consultas dan filas `not_measured` o cobertura reducida, nunca coste 0; `/api/v1/key` no se usa como coste de la ventana
-- [ ] 4.6 Pruebas con un gateway y un OpenRouter simulados: todo confirmado, una generación 404, fila sin identificador, sin consultas, sin 429, ambos caídos, claves ausentes, y comprobación de que las claves de prueba y los identificadores de generación no aparecen en informe, tabla ni salida
-- [ ] 4.7 Ejecutar con el gateway aislado y gasto real registrado, versionar informe y tabla; si no hay gasto disponible, documentar «Sin datos» y la causa
+- [x] 4.3 Agregar consultas de chat, coste estimado, por alias de modelo, embeddings aparte, consultas con gasto cero, y las tasas de rechazo del gateway (429) y de error del proveedor (5xx) con numerador y denominador
+- [x] 4.4 Cliente de solo lectura de `GET /api/v1/generation` con la clave de OpenRouter leída de entorno o fichero, tope de generaciones por ejecución y sin imprimir identificadores; calcular coste facturado, cobertura y diferencia con la estimación sobre las confirmadas
+- [x] 4.5 Gateway caído, OpenRouter caído, claves ausentes, 404 y ventana sin consultas dan filas `not_measured` o cobertura reducida, nunca coste 0; `/api/v1/key` no se usa como coste de la ventana
+- [x] 4.6 Pruebas con un gateway y un OpenRouter simulados: todo confirmado, una generación 404, fila sin identificador, sin consultas, sin 429, ambos caídos, claves ausentes, y comprobación de que las claves de prueba y los identificadores de generación no aparecen en informe, tabla ni salida
+- [x] 4.7 Ejecutar con el gateway aislado y gasto real registrado, versionar informe y tabla; si no hay gasto disponible, documentar «Sin datos» y la causa
 
 ## 5. Carga y paneles
 
