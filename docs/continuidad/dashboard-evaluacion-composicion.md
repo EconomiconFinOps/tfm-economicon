@@ -2,6 +2,18 @@
 
 Actualización documental: 21/10/2026. [Tarjeta](https://trello.com/c/07J4M5ZN). [Diseño y tareas](../../openspec/changes/jup-129-grafana-evaluation-composition/design.md). Implementación local en `feat/JUP-129-grafana-evaluation-composition`, base `bc94a4daea98e97b574d00f019d347fc61c2f915`; sin commit ni publicación.
 
+## Estado vigente tras reconciliación con develop — 21/10/2026
+
+El candidato remoto comunicado por PM es `a542e8cb`, sobre `bc94a4da`. Paris autoriza incorporar exclusivamente `develop` `b7c8b708`; el merge local sin commit termina sin conflictos. No se incorpora la rama independiente de cambio de modelo. Los apartados siguientes conservan los cortes históricos anteriores.
+
+El manifiesto integrado incorpora robustez: **9 ejecuciones/444 filas**. La nueva composición y el provisioning no requieren cambios de producto: la portada elige la campaña experimental más reciente y conserva 7/29 favorables, 17/29 fallidos, 5/29 sin medir y 24/29 puntuables, con modelo sin verificar. El suplemento de modelos sigue fuera del default; sin él el XY indica «Sin datos».
+
+Pruebas propias del delta: **266 PASS** de composición, manifiesto, carga, conciliación e indicadores; no suite completa. Grafana 11.3.0 real del Compose general aprovisiona los tres UID y **28 consultas** de la composición/selectores devuelven 200 con la carga 9/444. Capturas nuevas en la matriz de evidencia. Las correcciones anteriores 110/322/903/114 se conservan; no cambian dependencias, servicios ni modelos.
+
+R2 original terminó con revisión técnica (10 PASS) y validación focal (9 PASS y 15 consultas) favorables, custodiadas por PM. No se extienden automáticamente al nuevo candidato: revisión y validación afectadas de la reconciliación pendientes al fijar esta documentación. Lectura humana NOT_VALIDATED; omisiones e históricos conservados. PM conserva aprobación final, archivo, commit, push, PR y publicación.
+
+## Cortes históricos conservados
+
 Paris aprobó composición y lenguaje funcional y autorizó implementar con evaluación independiente antes de subir. La entrada nueva `economicon-assistant-evidence` selecciona señales de los dos dashboards previos; sus UID y archivos se conservan para no romper consumidores, auditoría o contratos. [Guía](../validation/evaluation-dashboard.md) y [matriz de evidencia](../evidence/JUP-129-validation.md).
 
 No se cambia loader, datos, permisos, provisioning, backend, frontend o dependencias de producción. La base tiene 8 ejecuciones/308 filas y no incluye la campaña experimental ni el suplemento de modelos. Se prueba además una proyección experimental separada de 10/462, sin introducir esos datos en el manifiesto versionado ni incorporar producto de PR144. Cero llamadas a modelos o campañas nuevas.

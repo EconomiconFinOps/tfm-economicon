@@ -126,3 +126,24 @@ Comprobación real del XY en Grafana 11.3.0 del Compose general, con definicione
 Los dos primeros intentos visuales eliminaron Err pero dejaban el área vacía sin etiqueta explícita; se completó la disponibilidad visible antes de entregar. El primer intento de recarga base omitió la variable del lector en el ejecutor temporal; se conserva el fallo y el reintento correcto, sin cambio de producto ni servicio compartido. Recursos propios retirados: tres contenedores, seis volúmenes, dos redes y credenciales. No se cargó el suplemento en el manifiesto por defecto ni se ejecutaron campañas nuevas.
 
 Esta evidencia pertenece a la corrección propia. Los dictámenes originales siguen siendo desfavorables y no se extienden al nuevo candidato: corresponde reevaluar lo afectado con roles independientes. Lectura humana **NOT_VALIDATED**, omisiones 368 backend/144 processor y proceso final pendientes.
+
+## Reconciliación con develop — 21/10/2026 (R3)
+
+Paris autoriza retomar sobre el commit publicado `a542e8cb` e integrar exclusivamente `develop` `b7c8b708`. Merge `--no-commit --no-ff`, sin conflictos. Se conserva HEAD a542 hasta el commit del PM. El delta de develop modifica 33 archivos e integra robustez y sus 136 filas; no se incorpora la rama independiente del nuevo modelo. Las cifras 8/308 y resultados anteriores pertenecen a sus candidatos históricos.
+
+La carga normal del loader existente pasa a **9 ejecuciones y 444 filas**. La portada elige la campaña experimental más reciente y muestra 7/29 favorables provisionales, 17/29 fallidos, cinco sin medir y 24/29 puntuables; mantiene una repetición/persona evaluadora y modelo sin verificar. El informe histórico de modelos no entra en default: XY «Sin datos», sin Err ni puntos inventados. Añadir únicamente su suplemento produce 10/462; su comportamiento R2 se reutiliza sólo en la cobertura que confirme cada evaluador.
+
+| Comprobación propia del delta | Resultado |
+| --- | --- |
+| Composición, manifiesto, carga, conciliación e indicadores | **266 PASS**, cero FAIL/SKIP, 32,771 s, PostgreSQL desechable real; sin repetir la suite de evaluación ni backend/processor/frontend |
+| Compose general, Grafana 11.3.0, PostgreSQL 17, Prometheus 2.55.1 | Tres dashboards provisionados del mismo Grafana; paneles/variables servidos coinciden con sus fuentes; carga existente 9/444; **28 consultas 200** entre paneles y variables |
+| Navegador sobre default 9/444 | Portada experimental con cifras/limitaciones correctas; sólo Campaña/Referencia visibles; bloque modelos «Sin datos» sin Err/puntos |
+
+- [Portada tras integrar el informe de robustez](JUP-129/portada-reconciliada-default.png).
+- [Modelos sin suplemento en el default reconciliado](JUP-129/modelos-reconciliados-default.png).
+
+Evidencia y recursos aislados fuera del producto, sin importación manual ni stack nuevo de producto. La verificación temporal encontró inicialmente una clave opcional ausente en el dashboard técnico; se corrigió sólo ese ejecutor, preservando el intento. La retirada comprobó primero ausencia de los recursos propios y luego listeners: un bind inmediato observó conexiones TIME_WAIT, sin servicio escuchando. No es fallo del producto ni justifica modificar el host. Recibos finales de limpieza conservados en la entrega.
+
+R2 se conserva íntegra: revisión técnica favorable con diez pruebas y validación técnica focal favorable con nueve pruebas y15 consultas; operación CUA por el principal bajo instrucciones, inspección y dictamen del Validador. No son aprobación humana ni se extienden automáticamente al candidato reconciliado. Al fijar esta evidencia faltan nuevas referencias PM y evaluación independiente sólo de lo afectado.
+
+Lectura humana **NOT_VALIDATED**; 368 SKIP backend/144 SKIP processor e históricos conservados. La CI push previa comunicada por PM corresponde a a542 antes de esta integración, no acredita el candidato sin commit. Aprobaciones humanas, archivo y publicación conservan su etapa y permisos.

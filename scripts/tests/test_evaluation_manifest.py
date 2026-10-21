@@ -113,9 +113,9 @@ class ContractSurfaceTests(unittest.TestCase):
 
 class RealManifestTests(unittest.TestCase):
     def test_manifiesto_versionado_se_lee_completo(self) -> None:
-        # El manifiesto real de hitos: ocho informes existentes, todos de hito, sin run_id declarado.
+        # El manifiesto real de hitos: nueve informes existentes, todos de hito, sin run_id declarado.
         entries = tool.read_manifest(REAL_MANIFEST)
-        self.assertEqual(len(entries), 8)
+        self.assertEqual(len(entries), 9)
         self.assertEqual(
             [entry["format"] for entry in entries],
             [
@@ -124,6 +124,7 @@ class RealManifestTests(unittest.TestCase):
                 "jup-078-benchmark-v1",
                 "jup-022-calibration-v1",
                 "jup-068-input-v1",
+                "rows-v1",
                 "rows-v1",
                 "rows-v1",
                 "rows-v1",
@@ -469,8 +470,8 @@ class MergeManifestsTests(ManifestTestCase):
             name="local.json.manifest.json",
         )
         merged = tool.merge_manifests([REAL_MANIFEST, local], root=ROOT)
-        self.assertEqual(len(merged), 9)
-        self.assertEqual([entry["milestone"] for entry in merged], [True] * 8 + [False])
+        self.assertEqual(len(merged), 10)
+        self.assertEqual([entry["milestone"] for entry in merged], [True] * 9 + [False])
         self.assertEqual(merged[-1]["path"], local_report)
 
 

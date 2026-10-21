@@ -21,3 +21,7 @@ Dos selectores, campaña y referencia. Se exige distinta identidad, fechas regis
 
 ## D6. Evidencia y límites
 La integración se prueba con el JSON del candidato, Grafana real y PostgreSQL lector en espacios propios: manifiesto real bc94 y proyección experimental verificada por separado. Sin llamadas a modelos ni servicios compartidos. Se conservan capturas antes/después y conciliación. La prueba de lectura exige una persona ajena al dashboard: los agentes no la sustituyen. Revisor y Validador independientes, controles originales del PM antes de evaluarlos y sin publicación automática.
+
+## Reconciliación posterior con develop
+
+La base b7c8b708 integra el informe provisional de robustez: el manifiesto existente carga 9/444 y el selector elige la campaña experimental fechada más reciente. Se mantienen la composición aprobada, fuentes, consultas y límites. El suplemento histórico de modelos permanece opcional (18 filas adicionales, total10/462). Los apartados D2/D6 describen el corte original bc94; sus ausencias y resultados se conservan históricamente. No se modifica el loader, provisioning o contrato ni se crea métrica/campaña por la reconciliación. Revisión y validación confirman sólo la cobertura afectada del candidato fijo nuevo.

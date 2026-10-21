@@ -87,6 +87,39 @@ python tools/assistant-robustness.py compare ../evaluacion-jup071/report-1.json 
 
 `generative_robustness_accepted` permanece falso en todos los informes de esta versión. Para una conclusión generativa faltan contraste de JUP-035 integrado, evidencia del commit/modelo/prompt desplegado, tres recogidas reales iguales y los juicios independientes. Entonces el equipo debe revisar explícitamente el contrato de procedencia y la interpretación de resultados; no editar el booleano a mano. La presente entrega completa el instrumento y su evaluación local acotada. No declara la tarjeta aceptada, las revisiones humanas hechas ni robustez generativa.
 
+## Indicadores de la campaña para el dashboard
+
+Con el crudo y los recibos públicos de una recogida en vivo, `rows` añade a la misma ejecución 19 filas de indicadores (18 indicadores: la medida «sin medir por causa» ocupa dos filas) por las cuatro familias de evaluación de un RAG: calidad del core (`rob_core`), recuperación (`rob_retrieval`), rendimiento del sistema (`rob_system`) y conversación (`rob_conversation`). Sin esas dos entradas la salida es la de siempre, y con ellas las filas anteriores no cambian.
+
+```sh
+python tools/assistant-robustness.py rows --input informe.json --raw crudo.json --receipts recibos --output docs/evidence/JUP-071-<nombre>-rows.json
+```
+
+`--raw` y `--receipts` van siempre juntos. El informe tiene que nombrar el hash del crudo; cada caso del crudo necesita su recibo (uno solo, de la misma muestra); un caso con respuesta necesita un recibo verificado con esa misma respuesta y un caso sin respuesta, uno no verificado. La herramienta no lee juicios ni nombres, y una operación que ni ha fallado ni ha completado se rechaza porque no tiene causa. El fichero resultante lleva solo identificadores, estados y números.
+
+| Grupo | Indicador | Fórmula | Marca |
+| --- | --- | --- | --- |
+| `rob_core` | `invention_rate` | prohibiciones fallidas / prohibiciones juzgadas | humano |
+| | `required_coverage` | requeridos en pass / requeridos juzgados | humano |
+| | `behavior_match_rate` | puntos de conducta en pass / juzgados | humano |
+| | `valid_citations` | ids citados dentro de la evidencia de su operación / ids citados | automático |
+| | `literal_quotes` | citas «» con fuente que aparecen en el fragmento citado de esa fuente, literalmente tras normalizar (sin distinguir mayúsculas, acentos, marcado ni espacios) / citas con fuente | automático |
+| `rob_retrieval` | `empty_retrieval_rate` | muestras sin evidencia en el manifiesto / muestras verificadas | automático |
+| | `fragments_per_query` | fragmentos listados / muestras con recuperación | automático |
+| | `neighbor_share` | fragmentos admitidos como vecinos / fragmentos listados | automático |
+| | `context_utilization` | fragmentos citados / fragmentos listados | automático |
+| | `unused_retrieval_rate` | muestras con recuperación y sin citas / muestras con recuperación | automático |
+| `rob_system` | `completion_rate` | operaciones completadas / muestras previstas | automático |
+| | `unmeasured_by_cause` | muestras sin recogida verificada por causa: `operation_failed` y `evidence_unverified` | automático |
+| | `cost_per_query`, `prompt_size_per_query`, `completion_size_per_query` | coste o tokens informados (en las filas, los tamaños llevan la unidad «unidades» porque el filtro de secretos del dashboard rechaza la palabra «token») por el servidor / operaciones que los informan | automático |
+| `rob_conversation` | `request_rate` | casos de aclaración o abstención evaluados con todos sus puntos de petición en pass / los que tienen alguno | humano |
+| | `over_abstention_rate` | casos de respuesta evaluados con la conducta fallida / casos de respuesta evaluados | humano |
+| | `pair_degradation` | pares con la referencia en pass y la perturbación en fail / pares con la referencia en pass | humano |
+
+Con denominador cero, una fila sale `not_measured` conservando el denominador, nunca cero. Los casos bloqueados no entran en ningún denominador de los indicadores de juicio.
+
+Límites que conviene tener presentes al leerlos. Los indicadores de juicio heredan el carácter provisional del informe. `request_rate` se apoya en una heurística sobre el texto de la rúbrica (los puntos requeridos que contienen «pedir», «solicitar» o «proponer aportar»), cuya clasificación en la batería actual fija una prueba. `pair_degradation` cuenta como fallo el que viene solo de la comprobación numérica, que tiene falsos negativos conocidos. Las citas solo se reconocen con el formato del backend `Fuente: <título> — «<texto>»`, con la raya larga, y se buscan solo en los fragmentos citados. Coste y tokens los informa el servidor y no están atestiguados. No hay indicador de latencia, porque la recogida no la mide, ni de distancia de recuperación, porque es nula en todos los fragmentos, ni de relevancia por fragmento o fidelidad por afirmación, que necesitan etiquetado.
+
 ## Re-fijar la batería cuando cambia un fichero que referencia
 
 La batería (`JUP-071-robustness-cases.json`) fija el hash del banco de JUP-069 (`baseline.sha256` y `baseline.suite_version`), el de la metodología de JUP-070 (`methodology.sha256`) y los de las fuentes del corpus (`sources`), que deben ser idénticos a los del propio banco de JUP-069. La herramienta fija además el hash de `apps/backend/app/services/assistant.py` (`TEMPLATE_SHA256`, en `tools/assistant-robustness.py`) porque la ejecución offline usa el servicio real. Si un PR cambia uno de esos ficheros, `assistant-robustness:validate` y la CI («OpenSpec») fallan hasta re-fijar. Pasos: (1) comprobar que las preguntas, las reglas y las cifras de las variantes siguen vigentes con el contenido nuevo; (2) si cambia una fuente del corpus, el banco de JUP-069 debe actualizar primero su propia referencia (y su `suite_version`), porque la validación exige que la batería y el banco declaren las mismas fuentes; después se copian a la batería `baseline.sha256`, `baseline.suite_version` y `sources`; (3) para obtener un hash se usa el resumen que calcula `file_digest` de la herramienta, que lee el fichero como texto UTF-8 y no depende de los finales de línea (por ejemplo, `python -c "import hashlib,pathlib,sys;print(hashlib.sha256(pathlib.Path(sys.argv[1]).read_text(encoding='utf-8').encode()).hexdigest())" <fichero>`); (4) si cambia `assistant.py`, actualizar `TEMPLATE_SHA256`, lo que cambia `harness_sha256` y `harness_commit` de los informes; (5) regenerar los informes de plantilla y sus `rows` de `docs/evidence/` y anotar la regeneración en el registro de la evidencia. La identidad de la batería es su hash (`suite_sha256`), que cambia con cualquier edición; el número `suite_version` es una etiqueta humana.
