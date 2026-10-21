@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Coste de IA por consulta y por modelo desde el registro del gateway
-El sistema DEBE (SHALL) calcular, a partir de `/spend/logs` del gateway aislado, el coste total, el número de consultas y el coste por consulta, en conjunto y por alias de modelo, para una ventana temporal indicada. El coste por consulta estimado es la suma del gasto de las filas de la ventana dividida por el número de filas con consulta terminada, y es una contabilidad derivada de la tarifa por token, no una factura. La herramienta solo DEBE (SHALL) leer el gasto y los metadatos técnicos, nunca el contenido de las consultas.
+El sistema DEBE (SHALL) calcular, a partir de `/spend/logs` del gateway aislado, el coste total, el número de consultas y el coste por consulta, en conjunto y por alias de modelo, para una ventana temporal indicada. Una consulta es una fila de chat (`acompletion`) terminada con éxito. El coste por consulta estimado es la suma del gasto de esas filas dividida por su número, y es una contabilidad derivada de la tarifa por token, no una factura. Las filas de embeddings (`aembedding`) se informan aparte como coste estimado y nunca entran en el coste por consulta, porque no llevan identificador de generación de OpenRouter y no se pueden contrastar. La herramienta solo DEBE (SHALL) leer el gasto y los metadatos técnicos, nunca el contenido de las consultas.
 
 #### Scenario: Ventana con consultas
 - **WHEN** la ventana contiene consultas registradas
@@ -19,6 +19,15 @@ El sistema DEBE (SHALL) calcular, a partir de `/spend/logs` del gateway aislado,
 #### Scenario: Fila con gasto cero
 - **WHEN** una fila de fallo tiene gasto cero o ausente
 - **THEN** no se interpreta como una llamada gratuita y se cuenta aparte en el recuento de fallos
+
+#### Scenario: Consulta correcta con gasto cero
+- **WHEN** una consulta de chat terminó con éxito y el gateway registra gasto cero
+- **THEN** su coste estimado es cero medido solo si OpenRouter lo confirma, y si no lo confirma queda como no confirmada
+- **AND** el recuento de consultas con gasto estimado cero se informa aparte
+
+#### Scenario: Embeddings
+- **WHEN** la ventana contiene llamadas de embeddings
+- **THEN** su coste estimado se informa en una fila propia y no se suma al coste por consulta ni a la cobertura
 
 ### Requirement: Coste facturado por OpenRouter y diferencia con la estimación
 El sistema DEBE (SHALL) consultar a OpenRouter el coste facturado (`/api/v1/generation`) de cada generación de la ventana cuyo identificador conste en el registro del gateway, y calcular el coste facturado total, el coste facturado por consulta, la cobertura (generaciones con coste confirmado / generaciones de la ventana) y la diferencia entre el coste estimado por el gateway y el facturado sobre las generaciones confirmadas. El coste por consulta del indicador DEBE (SHALL) salir del importe facturado cuando exista, y el estimado del gateway se informa siempre con la etiqueta «estimado». Una generación que OpenRouter no devuelve (por ejemplo, 404) NO DEBE (SHALL NOT) contarse como coste 0: cuenta como no confirmada y reduce la cobertura. El `usage` acumulado de la clave (`/api/v1/key`) NO DEBE (SHALL NOT) usarse como coste de la ventana.
@@ -44,16 +53,28 @@ El sistema DEBE (SHALL) consultar a OpenRouter el coste facturado (`/api/v1/gene
 - **WHEN** el `usage` de la clave supera lo facturado por las generaciones de la ventana
 - **THEN** la diferencia no se atribuye a la ventana ni se suma al coste
 
-### Requirement: Tasa de 429 del proveedor
-El sistema DEBE (SHALL) informar la tasa de respuestas 429 como proporción de las peticiones de la ventana, con su numerador y su denominador, distinguiendo un cero medido de la ausencia de datos.
+### Requirement: Rechazos del gateway y errores del proveedor por separado
+El sistema DEBE (SHALL) informar, como proporciones de las peticiones de la ventana con su numerador y su denominador, la tasa de rechazos 429 del propio gateway (límite por clave, `ProxyRateLimitError`) y la tasa de errores del proveedor (códigos 5xx de `APIError`), sin mezclarlas ni llamar «del proveedor» a un 429 del gateway. Un cero medido se distingue de la ausencia de datos.
 
-#### Scenario: Sin 429 en la ventana
-- **WHEN** hay peticiones y ninguna terminó en 429
-- **THEN** la tasa es 0 medido con su denominador
+#### Scenario: Rechazo por límite de la clave
+- **WHEN** una petición falla con código 429 y clase `ProxyRateLimitError`
+- **THEN** cuenta en la tasa de rechazos del gateway y no en la de errores del proveedor
+
+#### Scenario: Error del proveedor
+- **WHEN** una petición falla con código 5xx y clase `APIError`
+- **THEN** cuenta en la tasa de errores del proveedor y no en la de rechazos del gateway
+
+#### Scenario: Sin fallos en la ventana
+- **WHEN** hay peticiones y ninguna falló
+- **THEN** ambas tasas son 0 medido con su denominador
+
+#### Scenario: Fallo de otra clase
+- **WHEN** una petición falla con un código o una clase que no es ninguna de las dos
+- **THEN** cuenta en el recuento total de fallos pero en ninguna de las dos tasas
 
 #### Scenario: Sin peticiones
 - **WHEN** la ventana no tiene peticiones
-- **THEN** la tasa es `not_measured`
+- **THEN** ambas tasas son `not_measured`
 
 ### Requirement: Secretos y contenido fuera del informe
 El sistema DEBE (SHALL) leer la clave de administración del gateway y la clave de OpenRouter de una variable de entorno o de un fichero cada una, y nunca imprimirlas, escribirlas en el informe, en el manifiesto ni en la tabla de la memoria. Los informes solo DEBEN (SHALL) contener recuentos, sumas e identificadores permitidos por el contrato `rows-v1`, sin prompts, respuestas, identificadores de generación ni mensajes de error del proveedor.

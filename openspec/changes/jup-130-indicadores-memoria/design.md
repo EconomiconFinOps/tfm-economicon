@@ -43,6 +43,12 @@ El coste por consulta del indicador es el facturado cuando existe. Se informa ad
 
 *Por qué:* el gateway calcula el gasto con una tarifa por token anotada a mano («derived accounting, not an individual upstream invoice», README del gateway) y ya se han visto desajustes con lo facturado; OpenRouter es quien factura. El gateway sigue siendo necesario porque es quien sabe qué consultas hubo y a qué modelo fueron. Grafana no entra en la red `gateway`, no hay rol ni contraseña nuevos y el dashboard no se acopla a una tabla interna de LiteLLM. *Alternativas descartadas:* un datasource de solo lectura sobre `LiteLLM_SpendLogs` (más superficie de seguridad y mantenimiento, y el importe seguiría siendo estimado) y usar solo OpenRouter (no distingue consultas, modelos ni 429 por consulta, y `/key` no se puede atribuir a una ventana).
 
+### D2b. Lo que el registro real enseñó (2026-10-21)
+
+- Los 429 del registro (3) son `ProxyRateLimitError`, el límite por clave del propio gateway; los fallos del proveedor (6) son errores 500 `APIError`. Se informan como dos tasas separadas y no como «429 del proveedor».
+- Hay 4 consultas de chat correctas con gasto cero en el gateway. Es el caso en el que el contraste con OpenRouter aporta valor: solo OpenRouter puede decir si fue gratis o un error de contabilidad.
+- Una consulta de chat es una fila `acompletion` con éxito; `aembedding` se informa aparte.
+
 ### D3. Verdad conocida de las anomalías escrita desde el generador
 
 Los eventos inyectados se versionan en `docs/validation/JUP-130-injected-events.json` con servicio, día de inicio, naturaleza y si son detectables por diseño. Una prueba comprueba contra `anomaly_levels()` que cada evento corresponde a un salto real del generador, y que todo salto significativo del generador tiene su evento, para que la lista no derive del generador ni quede incompleta.
@@ -60,7 +66,7 @@ La regla del detector exige una semana de referencia con coste positivo (`refere
 | Indicador | `measure_type` | `grp` | Métricas |
 | --- | --- | --- | --- |
 | Anomalías | A (`judgment: automatic`) | `anomaly_detection` | `precision`, `recall_all`, `recall_designed`, `detection_delay_days`, y recuentos `tp`, `fp`, `fn` |
-| Coste de IA | B | `ai_cost` | `cost_per_query` (facturado), `cost_billed_total`, `cost_estimated_total`, `cost_gap`, `billed_coverage`, `rate_limited` (tasa de 429) |
+| Coste de IA | B | `ai_cost` | `cost_per_query` (facturado), `cost_billed_total`, `cost_estimated_total`, `cost_gap`, `billed_coverage`, `cost_embeddings_estimated`, `zero_spend_queries`, `gateway_rejection_rate` (429 del gateway), `provider_error_rate` (5xx del proveedor) |
 | Datos | B | `data_quality` | `freshness_days`, `reconciliation_delta_minor`, `reconciled` |
 
 La fuente de las ejecuciones es `JUP-130`. Los indicadores de coste y de datos van como tipo B (decidido por Lucia el 2026-10-21); JUP-129 podrá reagruparlos en sus familias al rediseñar.
@@ -93,5 +99,5 @@ La decisión D2 amplía ADR-0022 (resultados de evaluación en Grafana) sin camb
 
 ## Open Questions
 
-- ¿El registro `/spend/logs` del gateway aislado guarda el identificador de generación de OpenRouter en cada fila? Los identificadores `gen-…` de la evidencia de JUP-123 lo sugieren pero no está comprobado; se verifica con el gateway real en la tarea 4.2. Si no estuviera, el coste facturado se queda en `not_measured` y se documenta, sin recurrir a `/key`.
+- Resuelto el 2026-10-21 con el gateway real (924 filas, del 9 al 20 de octubre): las 100 filas de chat llevan el identificador `gen-…` de OpenRouter en `request_id` y las filas de embeddings llevan un UUID del gateway, sin identificador de OpenRouter. Por eso el coste por consulta se calcula solo sobre chat y los embeddings se informan aparte como estimados. Una consulta de `GET /api/v1/generation` con esa clave devolvió `total_cost` idéntico al gasto del gateway en la muestra.
 - ¿De qué ejecución sale la primera medición real de coste de IA que se versiona (la del gasto de las pruebas de JUP-123/JUP-071 en la máquina de Lucia o una medición dedicada)? Hasta que haya una, el panel muestra «Sin datos».
