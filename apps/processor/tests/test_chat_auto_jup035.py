@@ -50,7 +50,7 @@ def test_final_schema_contains_only_effective_authenticated_evidence(monkeypatch
     records=asyncio.run(exercise())
     assert records[-1]['type']=='candidate' and len(requests)==2
     assert requests[0]['response_format']['json_schema']['name']=='PrivateAnswerPlan'
-    assert requests[-1]['reasoning']=={'effort':'high','exclude':True}
+    assert requests[-1]['reasoning']=={'enabled':False}
     assert requests[-1]['max_tokens']==2200 and requests[0]['max_tokens']==1000
     assert requests[0]['timeout']<=60 and requests[0]['num_retries']==0
     schema=requests[-1]['response_format']['json_schema']['schema']
@@ -111,7 +111,7 @@ def test_reviewed_final_failures_never_retry_or_change_provider(monkeypatch,fail
         assert records[-1]['type']=='error' and not any(r['type']=='candidate' for r in records)
         assert len(requests)==2
         assert all(item['num_retries']==0 for item in requests)
-        assert requests[0]['num_retries']==0 and requests[0]['provider']=={'order':['deepinfra/fp4'],'allow_fallbacks':False,'require_parameters':True}
+        assert requests[0]['num_retries']==0 and requests[0]['provider']=={'order':['deepinfra/fp8'],'allow_fallbacks':False,'require_parameters':True}
     assert searches==[DECISION]
 
 
@@ -221,6 +221,7 @@ def provider(monkeypatch, responses, read_size=7):
 
 class SyntheticResources:
     """Payload transport fixture; real tokenizer/contract checks have dedicated tests."""
+    def check_generation(self): pass
     def count(self, text): return len(text)
     def check_messages(self, messages, schema):
         assert isinstance(messages, list) and isinstance(schema, dict)

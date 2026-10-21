@@ -15,12 +15,17 @@ spec.loader.exec_module(tokenizer)
 
 class TokenizerBuildTests(unittest.TestCase):
     def test_pins_match_current_chat_and_summary_manifests(self):
-        for bundle in ("chat/v3", "summary/v3"):
+        for bundle in ("chat/v4", "summary/v4"):
             manifest = json.loads((ROOT / "apps/processor/app/agents/prompt_resources/jup035" / bundle / "manifest.json").read_text())
             self.assertEqual(manifest["tokenizer"]["revision"], tokenizer.REVISION)
             self.assertEqual(manifest["tokenizer"]["sha256"], tokenizer.SHA256)
             self.assertEqual(manifest["tokenizer"]["bytes"], tokenizer.SIZE)
-        self.assertEqual(tokenizer.URL, "https://huggingface.co/zai-org/GLM-5.2/resolve/" + tokenizer.REVISION + "/tokenizer.json")
+        self.assertEqual(tokenizer.URL, "https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash/resolve/" + tokenizer.REVISION + "/tokenizer.json")
+        for version in ("v2", "v3"):
+            manifest = json.loads((ROOT / "apps/processor/app/agents/prompt_resources/jup035/summary" / version / "manifest.json").read_text())
+            self.assertEqual(manifest["tokenizer"]["sha256"], tokenizer.LEGACY_SHA256)
+            self.assertEqual(manifest["tokenizer"]["revision"], tokenizer.LEGACY_REVISION)
+            self.assertEqual(manifest["tokenizer"]["bytes"], tokenizer.LEGACY_SIZE)
 
     def test_verified_download_replaces_only_after_integrity_check(self):
         with tempfile.TemporaryDirectory() as directory:

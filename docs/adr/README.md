@@ -132,6 +132,11 @@ Local implementation details, small refactors and documentation-only changes wit
 
 ## Selección del modelo del candidato local B
 
+Configuración actual del repositorio: [ADR-0026 / JUP-132](ADR-0026-default-chat-model.md)
+selecciona Flash por DeepInfra FP8 normal como único generador. Su implementación
+está autorizada por Paris; la ratificación del equipo permanece pendiente.
+ADR-0025 conserva exclusivamente la decisión documental y campaña históricas.
+
 | Registro | Estado | Fecha |
 | --- | --- | --- |
 | [ADR-0025: selección de modelo para B](ADR-0025-chat-model-selection.md) | Accepted por excepción humana documental del18/10; mantiene configuración histórica N5 y límites de forwarding/rutas/sin traza upstream, sin cambiar runtime o ADR-0002. Alias0023 de modelo preserva enlaces; 0023 canónico sigue siendo chunking. [Comparativa común histórica](../evidence/JUP-063/glm-deepseek-20261016/README.md) publicada por separado, sin transferir aceptación. | 2026-10-18 |

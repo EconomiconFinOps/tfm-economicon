@@ -148,6 +148,8 @@ class Settings(BaseSettings):
         ChunkingConfig(self.embedding_chunk_target_tokens, self.embedding_chunk_max_tokens,
                        self.embedding_chunk_overlap_ratio)
         providers = {self.llm_provider, self.embedding_provider}
+        if self.llm_provider == "litellm" and self.llm_model != "economicon-chat":
+            raise ValueError("economicon-chat is the only active generative alias")
         if self.ai_execution_mode == "evaluation" and "mock" in providers:
             raise ValueError("evaluation mode does not allow mock AI providers")
         if "litellm" in providers and (

@@ -201,21 +201,19 @@ The timeout is per attempt, not a whole-job deadline.
 
 | Product alias | LiteLLM provider model |
 | --- | --- |
-| `economicon-chat` | `openrouter/z-ai/glm-5.2` |
-| `economicon-chat-deepseek` | `openrouter/deepseek/deepseek-v4-pro` |
+| `economicon-chat` | `openrouter/deepseek/deepseek-v4.1-flash` |
 | `economicon-embedding` | `openrouter/openai/text-embedding-3-small` |
 
-For the approved compatibility trial, only `economicon-chat` restricts OpenRouter
-to `provider.only: [deepinfra/fp4]` with `require_parameters: true`. GLM-5.2,
-the complete strict response schema, privacy flags, disabled reasoning, 30-second
-timeout and 800-token output cap remain intact. That routing selection left the
-secondary and embedding aliases unchanged; the approved embedding pricing
-correction is described below. The real smoke passed within the limited scope documented
-below. An incompatible route must still fail without fallback or relaxing the
-contract; this remains an OpenRouter route, not a direct DeepInfra connection.
-
-Select the secondary alias explicitly for evaluation, never as a fallback. Both
-chat aliases disable optional reasoning within the 800-token cap. Every alias
+JUP-132 selects DeepInfra FP8 normal: `provider.only: [deepinfra/fp8]`,
+`require_parameters: true`, with disabled reasoning and fallback. The secondary
+Pro alias is retired; historical reports remain unchanged. Chat, summary and
+authorized health diagnostics request that same route, not the old FP4 variant.
+The ingestion adapter retains its 30-second/800-token limits; conversational and
+summary reserves remain governed by their existing private contracts.
+This is versioned configuration, not a shared-gateway deployment or a new real
+smoke. Prior GLM smoke results below describe only their historical configuration.
+An incompatible route must fail without fallback or relaxing the contract.
+Every alias
 sets `zdr: true`, `data_collection: deny` and `allow_fallbacks: false`;
 incompatible routes must fail closed.
 

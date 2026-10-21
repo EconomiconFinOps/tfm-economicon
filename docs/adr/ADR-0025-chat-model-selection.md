@@ -1,5 +1,10 @@
 # ADR-0025: Configuración de evaluación del chat B
 
+Nota de vigencia21/10/2026: [JUP-132 / ADR-0026](ADR-0026-default-chat-model.md)
+selecciona Flash/DeepInfra FP8 normal para la configuración versionada actual.
+Las tablas y resultados siguientes conservan su corte histórico; no describen
+el nuevo defecto ni acreditan su calidad o despliegue. No se altera la N5.
+
 - Estado: Accepted (ratificación documental por excepción humana, 2026-10-18)
 - Fecha de revisión técnica histórica: 2026-10-17
 - Fecha de regularización y ratificación documental: 2026-10-18

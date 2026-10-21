@@ -67,11 +67,11 @@ def test_chat_output_budget_reserves_configured_output(monkeypatch):
         budget('chat')
 
 
-def test_v3_prompt_has_general_hypothetical_and_documentary_rules():
+def test_v4_prompt_has_general_hypothetical_and_documentary_rules():
     # This is a packaging guard, not semantic acceptance of a model response.
     from app.core.chat_resources import load_resources
     resource=load_resources()
-    assert resource.prompt_version.startswith('jup-035.chat.v3:')
+    assert resource.prompt_version.startswith('jup-035.chat.v4:')
     text=' '.join(resource.system.split())
     for rule in [
         'hipotéticos/no verificados', 'shared identificado no es unallocated',

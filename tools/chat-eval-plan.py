@@ -39,6 +39,19 @@ def campaign(bank, repetitions):
             for repeat in range(1, repetitions + 1) for case in bank['cases']]
 
 
+def tokenizer_artifacts(archive):
+    root = 'apps/processor/app/agents/prompt_resources/jup035/'
+    artifacts = {}
+    for version, target in ((4, 'chat/v4/tokenizer.json'), (3, 'chat/v2/tokenizer.json')):
+        pins = [json.load(archive.extractfile(root + f'{kind}/v{version}/manifest.json'))['tokenizer']
+                for kind in ('chat', 'summary')]
+        identity = {key: pins[0][key] for key in ('revision', 'sha256', 'bytes')}
+        if any({key: pin[key] for key in identity} != identity for pin in pins):
+            raise ValueError('Chat and summary tokenizer pins differ')
+        artifacts[root + target] = identity
+    return artifacts
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--repetitions', type=int, choices=[3, 5], default=3)
@@ -71,21 +84,14 @@ def main():
     with tarfile.open(fileobj=io.BytesIO(archive_bytes)) as archive:
         hashes = {path: hashlib.sha256(archive.extractfile(path).read()).hexdigest()
                   for path in paths}
-        prompt_root = 'apps/processor/app/agents/prompt_resources/jup035/'
-        pins = [json.load(archive.extractfile(prompt_root + bundle + '/manifest.json'))['tokenizer']
-                for bundle in ('chat/v3', 'summary/v3')]
-        if any({key:pin[key] for key in ('revision','sha256','bytes')} !=
-               {key:pins[0][key] for key in ('revision','sha256','bytes')} for pin in pins):
-            raise ValueError('Chat and summary tokenizer pins differ')
-        artifacts = {prompt_root + 'chat/v2/tokenizer.json':
-                     {key:pins[0][key] for key in ('revision','sha256','bytes')}}
+        artifacts = tokenizer_artifacts(archive)
     data = {'version': 1, 'state': 'NOT_RUN', 'commit': git('rev-parse', 'HEAD'),
             'bank_sha256': EXPECTED_BANK, 'file_hashes': hashes,
             'file_hash_basis': 'git-archive-committed-bytes',
             'generated_artifacts': artifacts,
             'repetitions': args.repetitions, 'samples': campaign(bank, args.repetitions),
-            'provider_constraint': {'provider': 'OpenRouter', 'model': 'z-ai/glm-5.2',
-                                    'routing': 'DeepInfra', 'fallbacks': False},
+            'provider_constraint': {'provider': 'OpenRouter', 'model': 'deepseek/deepseek-v4.1-flash',
+                                    'routing': 'DeepInfra FP8 normal', 'fallbacks': False},
             'budget': {'absolute_cumulative_cap_usd': '20.00',
                        'last_confirmed_cumulative_usd': '0.957927619',
                        'live_accounting_verified': False,
