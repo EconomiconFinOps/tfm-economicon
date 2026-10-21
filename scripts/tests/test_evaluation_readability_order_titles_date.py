@@ -61,6 +61,7 @@ EVOLUCIONES = ("Evolución de las métricas automáticas", "Evolución de la lat
 CALIBRACION = "Calibración de la recuperación (JUP-022)"
 BENCHMARK = "Benchmark de modelos (JUP-078)"
 COMPARACION_PAREADA = "GLM/DeepSeek — comparación provisional"
+INDICADORES = "Indicadores de robustez (JUP-071)"
 ROBUSTEZ = "Robustez (JUP-071)"
 ANOMALIAS = "Calidad de la detección de anomalías"
 DETALLE_CALIDAD = "Exactitud, relevancia y fundamento (detalle)"
@@ -78,6 +79,7 @@ TRAMOS = (
     {CALIBRACION},
     {BENCHMARK},
     {COMPARACION_PAREADA},
+    {INDICADORES},
     {ROBUSTEZ},
     {ANOMALIAS},
     {DETALLE_CALIDAD},
@@ -114,7 +116,8 @@ class OrdenDeLecturaDeLaSeccionATests(unittest.TestCase):
     def test_comparacion_pareada_ocupa_su_puesto_sin_desplazar_el_orden_historico(self):
         # Adición explícita: se conservan calibración/benchmark antes y robustez/detalle después.
         self.assertEqual(posicion(COMPARACION_PAREADA), posicion(BENCHMARK) + 1)
-        self.assertEqual(posicion(ROBUSTEZ), posicion(COMPARACION_PAREADA) + 1)
+        self.assertEqual(posicion(INDICADORES), posicion(COMPARACION_PAREADA) + 1)
+        self.assertEqual(posicion(ROBUSTEZ), posicion(INDICADORES) + 1)
         self.assertLess(posicion(CALIBRACION), posicion(BENCHMARK))
         self.assertLess(posicion(ROBUSTEZ), posicion(DETALLE_CALIDAD))
 

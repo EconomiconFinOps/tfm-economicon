@@ -127,8 +127,8 @@ class DescripcionesTests(unittest.TestCase):
     def test_el_detalle_de_calidad_remite_a_la_matriz(self):
         self.assertIn("la lectura principal es la tabla «resultados por metrica y ejecucion»", descripcion(CALIDAD)["mide"])
 
-    def test_la_robustez_dice_que_todavia_no_hay_informe(self):
-        self.assertIn("todavia no hay ningun informe de robustez", descripcion(ROBUSTEZ)["no_demuestra"])
+    def test_la_robustez_dice_que_sin_informe_cargado_sale_vacia(self):
+        self.assertIn("sin un informe de robustez cargado el panel sale vacio", descripcion(ROBUSTEZ)["no_demuestra"])
 
     def test_la_latencia_p95_dice_que_no_es_la_del_asistente_y_donde_esta_esa(self):
         mide = descripcion(P95)["mide"]

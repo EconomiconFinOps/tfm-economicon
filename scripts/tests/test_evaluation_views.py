@@ -668,7 +668,7 @@ class ConfigChangesRealDataTest(ViewsTestCase):
         for run_id, source, moment, provider, *values in rows:
             fields = dict(zip(columns, (None if value == absent else value for value in values)))
             runs.append({"run_id": run_id, "source": source, "run_at": moment or None, "provider": provider, **fields})
-        self.assertEqual(len(runs), 8)
+        self.assertEqual(len(runs), 9)
 
         expected = []
         for source in sorted({run["source"] for run in runs}):
@@ -779,12 +779,12 @@ class ComparableRunsTest(ViewsTestCase):
     def test_los_dos_informes_reales_de_jup_070_tienen_claves_distintas_y_no_aparecen(self) -> None:
         # Escenario «Una sola ejecución comparable» con los datos versionados: las ejecuciones 1 y 2 de JUP-070 cambian el
         # proveedor de embeddings y la recuperación, así que su clave difiere y el panel debe mostrar «Sin datos». Las
-        # otras tres ejecuciones reales son claves únicas o no tienen fecha.
+        # otras cuatro ejecuciones reales son claves únicas o no tienen fecha.
         dataset = tool.build_dataset([tool.DEFAULT_MANIFEST])
         keys = [item["run"]["comparability_key"] for item in dataset["runs"]]
-        self.assertEqual(len(set(keys)), 8)
+        self.assertEqual(len(set(keys)), 9)
         server().load_dataset(dataset, tool)
-        self.assertEqual(server().scalar("SELECT count(*) FROM evaluation.runs"), "8")
+        self.assertEqual(server().scalar("SELECT count(*) FROM evaluation.runs"), "9")
         self.assertEqual(comparable_rows(), [])
 
     def test_is_real_y_milestone_se_propagan_desde_la_ejecucion(self) -> None:
