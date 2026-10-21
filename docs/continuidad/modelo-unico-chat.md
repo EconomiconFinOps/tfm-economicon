@@ -48,3 +48,9 @@ como `2026-10-21-jup-132-default-chat-model`, con requisitos promovidos y enlace
 actualizados. La ratificación, el pairing y las reviews humanas siguen pendientes;
 la publicación de la PR requiere aprobación del mensaje. Este cierre local no
 acredita despliegue ni cierre de la tarjeta.
+
+La CI posterior sobre 21441d23 detectó 11 fallos en dos suites processor.
+Reproducidos localmente y corregidos sólo en fixtures: expectativa v4 y guard
+de generación real en el doble de recursos. Las dos suites pasan 19/19,
+incluidos dos controles negativos nuevos; no cambia producto. Se conserva el
+fallo remoto y queda pendiente la reevaluación independiente del delta y su CI.

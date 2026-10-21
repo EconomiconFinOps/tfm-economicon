@@ -9,6 +9,7 @@ import pytest
 from pydantic import SecretStr
 from app.clients.chat_gateway import ChatGateway,diagnostic_scope
 from app.core.chat_review import validate_draft,draft_schema,phase_messages,admission_tokens
+from app.core.chat_resources import ChatResources, FLASH_TOKENIZER
 
 PLAN={'claims':[{'claim':'The user greets us.','source_ids':[]}],'coverage':[],'risks':[],'uncertainties':[],'next_steps':[]}
 FINAL={'schema_version':'1.0','basis':'greeting','status':'no_data','answer':[{'text':'Hola 😀'}],
@@ -23,6 +24,10 @@ def wire(value,finish='stop',usage=True):
     return ('data: '+json.dumps(event)+'\n\ndata: [DONE]\n\n').encode()
 
 class Resources:
+    manifest_bytes = b'{"v":4}'
+    tokenizer_sha256 = FLASH_TOKENIZER['sha256']
+    # Keep the real generation guard while simulating counting and transport.
+    check_generation = ChatResources.check_generation
     def count(self,text):return len(text.encode())
     def check_messages(self,messages,schema):
         assert messages[0]==CONTEXT['messages'][0]
@@ -41,6 +46,17 @@ def gateway(monkeypatch,responses):
 def execute(instance,deadline=None):
     async def run():return [item async for item in instance(CONTEXT,deadline or time.time()+120)]
     return asyncio.run(run())
+
+@pytest.mark.parametrize('field,value', [
+    ('manifest_bytes', b'{"v":3}'),
+    ('tokenizer_sha256', 'historical-tokenizer'),
+])
+def test_historical_resources_never_admit_draft(monkeypatch,field,value):
+    instance,requests,streams=gateway(monkeypatch,[])
+    setattr(instance.resources,field,value)
+    with pytest.raises(ValueError,match='Historical chat resources are read-only'):
+        execute(instance)
+    assert requests == [] and streams == []
 
 def test_private_plan_then_only_final_stream_and_aggregate_usage(monkeypatch,caplog):
     instance,requests,streams=gateway(monkeypatch,[wire(PLAN),wire(FINAL)])

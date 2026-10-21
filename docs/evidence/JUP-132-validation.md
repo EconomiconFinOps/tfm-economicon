@@ -119,6 +119,25 @@ cambiar plazos. Windows dejó incompleto un ensayo del fetcher; se retiró sólo
 ese proceso propio y las cinco pruebas equivalentes pasaron en Linux. No se
 declara una causa Windows no demostrada ni se ocultan esos intentos.
 
+## Corrección focal de CI posterior al archivado
+
+La CI 39662397196 sobre 21441d23 terminó con 11 fallos, 2596 pruebas
+superadas y 144 omitidas en processor. Se conserva el log original. Las dos
+suites afectadas reproducen localmente los mismos 11 fallos y 6 éxitos.
+La expectativa del prompt aún exigía v3; el doble de recursos del flujo de
+revisión carecía de check_generation. Las dos esperas de cancelación tampoco
+se alcanzaban por ese AttributeError, no por un timeout de producto demostrado.
+
+Se actualiza la expectativa a v4 y el doble utiliza el guard real de
+ChatResources con identidad v4/Flash. Se conservan todas las aserciones previas
+de contenido, consumo, plazos y cancelación. Dos controles adicionales rechazan
+versión histórica y tokenizer ajeno antes de abrir transporte. Las dos suites
+completas pasan 19/19, sin omisiones, en 2,43 segundos con red deshabilitada.
+No cambia código de producción ni recursos empaquetados.
+
+La reevaluación independiente de este delta y la CI posterior a su publicación
+se registran por separado; el resultado local no sustituye la CI remota fallida.
+
 ## Lo no validado y siguientes pasos
 
 No se ejecutan inferencias contra OpenRouter, campañas, calidad o costes reales.
