@@ -144,7 +144,7 @@ class PlanTests(unittest.TestCase):
         self.assertIn("Sensibilidad a la infraestructura local", self.text)
         catalogue = {m["id"] for m in load(ROOT / "docs" / "validation" / "JUP-067-metrics-catalogue.json")["metrics"]}
         section = self.text.split("## Sensibilidad a la infraestructura local")[1].split("## Qué queda fuera")[0]
-        mentioned = set(re.findall(r"(?:LAT|AVL|STR)-\d", section))
+        mentioned = set(re.findall(r"(?:LAT|AVL|STR)-[0-9]", section))
         self.assertTrue({"LAT-1", "LAT-2", "LAT-4", "AVL-1", "STR-2"} <= mentioned)
         self.assertLessEqual(mentioned, catalogue)
 
