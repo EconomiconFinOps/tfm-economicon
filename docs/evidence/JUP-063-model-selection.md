@@ -1,5 +1,21 @@
 # JUP-063: análisis de modelos para la memoria
 
+## Publicación y regularización documental — 18/10/2026
+
+Por autorización humana expresa en HAL 9000 se publica la
+[comparativa histórica GLM/DeepSeek](JUP-063/glm-deepseek-20261016/README.md),
+con informe original,336 filas de coste/duración sin peticiones ni respuestas,
+procedencia por hash y comprobador offline. Las cifras82/84 frente77/84 y49,3%
+pertenecen sólo al replay común del16/10; no describen la N5 posterior ni el
+producto actual. No hubo nueva inferencia ni modificación de la memoria canónica.
+
+La decisión se regulariza en [ADR-0025](../adr/ADR-0025-chat-model-selection.md),
+Accepted como registro documental por la excepción humana del18/10, sin atribuir
+consenso del equipo o aceptación nueva de campañas. ADR-0023 queda reservado al
+chunking; el archivo0023 de modelos conserva sólo la redirección histórica.
+Los estados Proposed/N5 pendiente y las rutas operativas descritos debajo son
+el **corte histórico del16/10**, no el estado vigente recién comprobado.
+
 Verificado 16/10/2026. Encargo: analizar los modelos, justificar el elegido y
 preparar material para la memoria. Origen: chat
 `01a1270c-e332-7462-9c90-706d49ade92c`. Preparación asistida por Codex;
