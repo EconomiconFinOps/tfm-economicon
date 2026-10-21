@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Coste de IA por consulta y por modelo desde el registro del gateway
-El sistema DEBE (SHALL) calcular, a partir de `/spend/logs` del gateway aislado, el coste total, el número de consultas y el coste por consulta, en conjunto y por alias de modelo, para una ventana temporal indicada. El coste por consulta es la suma del gasto de las filas de la ventana dividida por el número de filas con consulta terminada. La herramienta solo DEBE (SHALL) leer el gasto y los metadatos técnicos, nunca el contenido de las consultas.
+El sistema DEBE (SHALL) calcular, a partir de `/spend/logs` del gateway aislado, el coste total, el número de consultas y el coste por consulta, en conjunto y por alias de modelo, para una ventana temporal indicada. El coste por consulta estimado es la suma del gasto de las filas de la ventana dividida por el número de filas con consulta terminada, y es una contabilidad derivada de la tarifa por token, no una factura. La herramienta solo DEBE (SHALL) leer el gasto y los metadatos técnicos, nunca el contenido de las consultas.
 
 #### Scenario: Ventana con consultas
 - **WHEN** la ventana contiene consultas registradas
@@ -20,6 +20,30 @@ El sistema DEBE (SHALL) calcular, a partir de `/spend/logs` del gateway aislado,
 - **WHEN** una fila de fallo tiene gasto cero o ausente
 - **THEN** no se interpreta como una llamada gratuita y se cuenta aparte en el recuento de fallos
 
+### Requirement: Coste facturado por OpenRouter y diferencia con la estimación
+El sistema DEBE (SHALL) consultar a OpenRouter el coste facturado (`/api/v1/generation`) de cada generación de la ventana cuyo identificador conste en el registro del gateway, y calcular el coste facturado total, el coste facturado por consulta, la cobertura (generaciones con coste confirmado / generaciones de la ventana) y la diferencia entre el coste estimado por el gateway y el facturado sobre las generaciones confirmadas. El coste por consulta del indicador DEBE (SHALL) salir del importe facturado cuando exista, y el estimado del gateway se informa siempre con la etiqueta «estimado». Una generación que OpenRouter no devuelve (por ejemplo, 404) NO DEBE (SHALL NOT) contarse como coste 0: cuenta como no confirmada y reduce la cobertura. El `usage` acumulado de la clave (`/api/v1/key`) NO DEBE (SHALL NOT) usarse como coste de la ventana.
+
+#### Scenario: Todas las generaciones confirmadas
+- **WHEN** OpenRouter devuelve el coste de todas las generaciones de la ventana
+- **THEN** la cobertura es 1, el coste por consulta es el facturado y se informa la diferencia con la estimación del gateway con su signo
+
+#### Scenario: Una generación sin respuesta
+- **WHEN** OpenRouter responde 404 para una generación de la ventana
+- **THEN** esa generación cuenta como no confirmada y la cobertura baja
+- **AND** su estimación del gateway queda fuera del cálculo de la diferencia
+
+#### Scenario: OpenRouter no alcanzable
+- **WHEN** OpenRouter no responde o la clave del proveedor no está definida
+- **THEN** el coste facturado, la cobertura y la diferencia son `not_measured`, el coste estimado sigue medido y se declara que no está contrastado
+
+#### Scenario: Registro del gateway sin identificador de generación
+- **WHEN** una fila del gateway no trae identificador de generación
+- **THEN** no se consulta a OpenRouter por ella y cuenta como no confirmada
+
+#### Scenario: Gasto acumulado de la clave
+- **WHEN** el `usage` de la clave supera lo facturado por las generaciones de la ventana
+- **THEN** la diferencia no se atribuye a la ventana ni se suma al coste
+
 ### Requirement: Tasa de 429 del proveedor
 El sistema DEBE (SHALL) informar la tasa de respuestas 429 como proporción de las peticiones de la ventana, con su numerador y su denominador, distinguiendo un cero medido de la ausencia de datos.
 
@@ -32,15 +56,15 @@ El sistema DEBE (SHALL) informar la tasa de respuestas 429 como proporción de l
 - **THEN** la tasa es `not_measured`
 
 ### Requirement: Secretos y contenido fuera del informe
-El sistema DEBE (SHALL) leer la clave de administración del gateway de una variable de entorno o de un fichero y nunca imprimirla, escribirla en el informe, en el manifiesto ni en la tabla de la memoria. Los informes solo DEBEN (SHALL) contener identificadores, recuentos y sumas, sin prompts, respuestas ni mensajes de error del proveedor.
+El sistema DEBE (SHALL) leer la clave de administración del gateway y la clave de OpenRouter de una variable de entorno o de un fichero cada una, y nunca imprimirlas, escribirlas en el informe, en el manifiesto ni en la tabla de la memoria. Los informes solo DEBEN (SHALL) contener recuentos, sumas e identificadores permitidos por el contrato `rows-v1`, sin prompts, respuestas, identificadores de generación ni mensajes de error del proveedor.
 
 #### Scenario: Clave ausente
-- **WHEN** la clave no está definida
-- **THEN** la herramienta lo comunica sin mostrar valores y las filas quedan como no medidas
+- **WHEN** alguna de las dos claves no está definida
+- **THEN** la herramienta lo comunica sin mostrar valores y lo que dependa de esa clave queda como no medido
 
 #### Scenario: Comprobación de fuga
-- **WHEN** se ejecutan las pruebas con una clave de prueba
-- **THEN** ni el informe ni la tabla ni la salida estándar contienen el valor de la clave
+- **WHEN** se ejecutan las pruebas con claves de prueba
+- **THEN** ni el informe ni la tabla ni la salida estándar contienen el valor de ninguna de las dos claves ni identificadores de generación
 
 ### Requirement: Salida de la medición de coste de IA
 El sistema DEBE (SHALL) emitir un informe `rows-v1` con fuente `JUP-130`, grupo `ai_cost` y tipo B, con la ventana y el commit, y una tabla Markdown reproducible. DEBE (SHALL) declarar que el gasto es local a la máquina que ejecutó las consultas y que no demuestra el coste de un uso real.

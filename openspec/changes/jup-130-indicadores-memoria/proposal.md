@@ -13,7 +13,7 @@ Se hace ahora, antes de que JUP-129 rediseñe los dashboards, para que Paris int
 
 - Una herramienta de medición con un subcomando por indicador que emite un informe `rows-v1` versionado y una tabla Markdown reproducible para la memoria:
   - Anomalías: precisión, recall (total y de los eventos detectables por diseño) y retraso hasta la detección, comparando el detector real con una lista versionada de eventos inyectados escrita a partir del generador de datos, no de la salida del detector.
-  - Coste de IA: coste por consulta y por modelo y tasa de 429 del proveedor, a partir de la API `/spend/logs` del gateway aislado.
+  - Coste de IA: coste facturado por consulta y por modelo, con la diferencia respecto a la estimación del gateway y la cobertura de lo confirmado, y tasa de 429. El gateway aislado (`/spend/logs`) aporta qué consultas hubo y OpenRouter (`/api/v1/generation`) lo que se facturó.
   - Datos: frescura (antigüedad del último día con datos frente a la fecha de referencia) y reconciliación (total normalizado frente a la fuente, con aritmética independiente).
 - Los informes se versionan en `docs/evidence/JUP-130/`, se listan en el manifiesto de evaluación y se cargan con el comando existente `evaluation-dashboard:load`. No hay pasos manuales nuevos ni datasource nuevo.
 - Paneles nuevos en el dashboard de evaluación, uno por indicador, con tipo, «Mide:» y «No demuestra:». Lo no medido se ve como «No medido» o «Sin datos», nunca como 0.
@@ -26,7 +26,7 @@ No cambia el detector de anomalías, el gateway ni el backend. Un hallazgo sobre
 ### New Capabilities
 
 - `anomaly-detection-quality`: medición de precisión, recall y retraso del detector de episodios frente a eventos inyectados etiquetados de forma independiente.
-- `ai-cost-indicators`: coste de IA por consulta y por modelo y tasa de 429, calculados desde el registro de gasto del gateway sin contenido de las consultas.
+- `ai-cost-indicators`: coste de IA facturado por consulta y por modelo, diferencia con la estimación del gateway, cobertura y tasa de 429, sin contenido de las consultas.
 - `data-freshness-reconciliation`: frescura de los datos de coste y reconciliación del total normalizado con su fuente.
 
 ### Modified Capabilities
@@ -39,4 +39,4 @@ No cambia el detector de anomalías, el gateway ni el backend. Un hallazgo sobre
 - `tools/evaluation-dashboard.py` (adaptación a `rows-v1` si hace falta una fuente nueva) y `apps/monitoring/grafana/dashboards/assistant-evaluation.json`, que también tocan los PR #144 (JUP-071) y #141: puede haber conflicto menor al integrar.
 - `docs/validation/evaluation-runs.json` (manifiesto) y `docs/validation/evaluation-dashboard.md`.
 - Evidencia en `docs/evidence/JUP-130/` y nota en `docs/continuidad/`.
-- Dependencias: el coste de IA necesita el gateway aislado (perfil `ai`) con gasto registrado; sin él los paneles muestran «Sin datos». La reconciliación necesita la pila levantada. JUP-109 (apartado de evaluación de la memoria) consumirá las cifras.
+- Dependencias: el coste de IA necesita el gateway aislado (perfil `ai`) con gasto registrado y la clave de OpenRouter para confirmar lo facturado (consulta de solo lectura, sin gasto de modelo); sin ellos los paneles muestran «Sin datos». La reconciliación necesita la pila levantada. JUP-109 (apartado de evaluación de la memoria) consumirá las cifras.

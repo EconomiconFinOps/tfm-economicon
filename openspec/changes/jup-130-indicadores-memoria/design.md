@@ -35,11 +35,13 @@ Una herramienta `tools/memory-indicators.py` con subcomandos `anomalies`, `ai-co
 
 *Por qué:* es el mismo patrón que el resto de fuentes; la carga sigue siendo determinista y offline, y funciona en una pila en modo mock; la cifra de la memoria queda atada a un commit y una fecha. *Alternativa descartada:* que `load` consulte el gateway en vivo en cada carga. Haría que la carga dependa de un servicio opcional y que dos cargas den cifras distintas.
 
-### D2. Coste de IA desde `/spend/logs`, no desde un datasource sobre `litellm-db` (decidido por Lucia el 2026-10-21)
+### D2. Coste de IA: el gateway dice qué consultas hubo y OpenRouter lo que se facturó (decidido por Lucia el 2026-10-21)
 
-La herramienta consulta `/spend/logs` del gateway con la clave de administración, que lee de variable de entorno o fichero y nunca imprime ni escribe en el informe. Agrega y escribe solo recuentos, sumas y alias de modelo.
+La herramienta consulta `/spend/logs` del gateway con la clave de administración para saber qué consultas hubo (recuentos, alias de modelo, estado, 429) y su coste **estimado**. Después consulta `GET /api/v1/generation` de OpenRouter por cada generación de la ventana cuyo identificador conste en ese registro, para obtener el coste **facturado**. Las dos claves se leen de variable de entorno o fichero y nunca se imprimen ni se escriben en el informe. Se escriben solo recuentos, sumas y alias de modelo.
 
-*Por qué:* Grafana no entra en la red `gateway`, no hay rol ni contraseña nuevos y el dashboard no se acopla a una tabla interna de LiteLLM que cambia entre versiones. *Alternativa descartada:* datasource de solo lectura sobre `LiteLLM_SpendLogs`: datos en vivo, pero más superficie de seguridad y mantenimiento.
+El coste por consulta del indicador es el facturado cuando existe. Se informa además la cobertura (generaciones confirmadas / generaciones de la ventana) y la diferencia entre estimado y facturado sobre las confirmadas, que cuantifica cuánto se puede fiar de la contabilidad del gateway. Una generación que OpenRouter no devuelve es «no confirmada» y nunca coste 0. `GET /api/v1/key` no se usa como coste de la ventana: es el acumulado de toda la clave, incluido el uso previo.
+
+*Por qué:* el gateway calcula el gasto con una tarifa por token anotada a mano («derived accounting, not an individual upstream invoice», README del gateway) y ya se han visto desajustes con lo facturado; OpenRouter es quien factura. El gateway sigue siendo necesario porque es quien sabe qué consultas hubo y a qué modelo fueron. Grafana no entra en la red `gateway`, no hay rol ni contraseña nuevos y el dashboard no se acopla a una tabla interna de LiteLLM. *Alternativas descartadas:* un datasource de solo lectura sobre `LiteLLM_SpendLogs` (más superficie de seguridad y mantenimiento, y el importe seguiría siendo estimado) y usar solo OpenRouter (no distingue consultas, modelos ni 429 por consulta, y `/key` no se puede atribuir a una ventana).
 
 ### D3. Verdad conocida de las anomalías escrita desde el generador
 
@@ -58,7 +60,7 @@ La regla del detector exige una semana de referencia con coste positivo (`refere
 | Indicador | `measure_type` | `grp` | Métricas |
 | --- | --- | --- | --- |
 | Anomalías | A (`judgment: automatic`) | `anomaly_detection` | `precision`, `recall_all`, `recall_designed`, `detection_delay_days`, y recuentos `tp`, `fp`, `fn` |
-| Coste de IA | B | `ai_cost` | `cost_per_query`, `cost_total`, `rate_limited` (tasa de 429) |
+| Coste de IA | B | `ai_cost` | `cost_per_query` (facturado), `cost_billed_total`, `cost_estimated_total`, `cost_gap`, `billed_coverage`, `rate_limited` (tasa de 429) |
 | Datos | B | `data_quality` | `freshness_days`, `reconciliation_delta_minor`, `reconciled` |
 
 La fuente de las ejecuciones es `JUP-130`. Los indicadores de coste y de datos van como tipo B (decidido por Lucia el 2026-10-21); JUP-129 podrá reagruparlos en sus familias al rediseñar.
@@ -83,10 +85,13 @@ La decisión D2 amplía ADR-0022 (resultados de evaluación en Grafana) sin camb
 
 - **[Cifra circular]** Los datos se diseñaron para esta regla y la lista de eventos la escribe su diseñador, así que precisión 1,00 y retraso 0 son en parte esperables → «No demuestra» lo dice, la prueba de D3 ata las etiquetas al generador y no se presenta como validez estadística (7 eventos, datos sintéticos).
 - **[Primera cifra real de coste de IA]** El gasto del gateway es local a cada máquina; solo hay datos en quien haya usado el gateway → el informe declara el origen y la ventana, y el panel muestra «Sin datos» si no hay medición.
-- **[Clave de administración]** La herramienta la maneja → se lee de entorno o fichero, no se imprime, no entra en informes ni en el manifiesto, y una prueba comprueba que ningún informe contiene el valor.
+- **[Claves del gateway y de OpenRouter]** La herramienta maneja las dos → se leen de entorno o fichero, no se imprimen, no entran en informes ni en el manifiesto, y una prueba comprueba que ningún informe contiene su valor ni identificadores de generación.
+- **[Llamada externa a un tercero]** Consultar `generation` envía a OpenRouter solo identificadores de generaciones propias con la clave del proyecto, es de solo lectura y no consume crédito de modelo → se ejecuta a mano, no en la carga ni en la CI, y con un tope de generaciones por ejecución.
+- **[Cobertura incompleta]** OpenRouter puede no devolver alguna generación → se informa la cobertura y la diferencia solo se calcula sobre las confirmadas; una cobertura baja se declara en «No demuestra».
 - **[Conflicto con #144 y #141]** Tocan manifiesto o Grafana → el cambio es aditivo y se reconcilia al integrar.
 - **[Retraso hasta detección limitado por la regla]** La regla es diaria, así que el retraso mínimo es de cero a un día por construcción → se declara.
 
 ## Open Questions
 
+- ¿El registro `/spend/logs` del gateway aislado guarda el identificador de generación de OpenRouter en cada fila? Los identificadores `gen-…` de la evidencia de JUP-123 lo sugieren pero no está comprobado; se verifica con el gateway real en la tarea 4.2. Si no estuviera, el coste facturado se queda en `not_measured` y se documenta, sin recurrir a `/key`.
 - ¿De qué ejecución sale la primera medición real de coste de IA que se versiona (la del gasto de las pruebas de JUP-123/JUP-071 en la máquina de Lucia o una medición dedicada)? Hasta que haya una, el panel muestra «Sin datos».
