@@ -70,6 +70,12 @@ class MatchEvents(unittest.TestCase):
         result = self.match(events, [episode("Compute", "2026-09-10")])
         self.assertEqual((result.tp, result.fp, result.fn), (1, 0, 1))
 
+    def test_the_earlier_event_wins_a_contested_episode_whatever_the_input_order(self):
+        early, late = event("EV-1", "Compute", "2026-09-09"), event("EV-2", "Compute", "2026-09-10")
+        for events in ([early, late], [late, early]):
+            result = self.match(events, [episode("Compute", "2026-09-10")])
+            self.assertEqual(sorted(result.delays), ["EV-1"], events)
+
     def test_an_episode_with_no_event_is_a_false_positive(self):
         result = self.match([], [episode("Storage", "2026-10-20")])
         self.assertEqual((result.tp, result.fp, result.fn), (0, 1, 0))
@@ -155,6 +161,16 @@ class RealDetector(unittest.TestCase):
         report, _ = self.measure("2026-09-21")
         counts = {name: row(report, name)["value"] for name in ("events", "episodes", "tp", "fp", "fn")}
         self.assertEqual(counts, {"events": 5, "episodes": 3, "tp": 3, "fp": 0, "fn": 2})
+
+    def test_an_event_on_the_last_evaluated_day_is_counted_and_detected(self):
+        report, _ = self.measure("2026-09-17")
+        self.assertEqual(row(report, "events")["value"], 5)
+        self.assertEqual(row(report, "event_detected", "EV-05")["value"], 1)
+
+    def test_an_event_the_day_after_the_last_evaluated_day_is_not_counted(self):
+        report, _ = self.measure("2026-09-16")
+        self.assertEqual(row(report, "events")["value"], 4)
+        self.assertEqual([r for r in report["results"] if r["behavior"] == "EV-05"], [])
 
     def test_the_harness_opens_the_same_episodes_as_the_reference_file_of_the_demo(self):
         for reference, wanted in EXPECTED["episodes_by_reference"].items():
