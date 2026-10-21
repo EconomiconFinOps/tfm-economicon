@@ -32,7 +32,7 @@ Trello: https://trello.com/c/Yv1ETc2G
 ## 4. Reejecución y informe (bloqueado por JUP-132 y por autorización de presupuesto)
 
 - [ ] 4.1 Confirmar que JUP-132 está integrado, o que existe un gateway aislado con `economicon-chat` apuntando a DeepSeek V4.1 Flash
-- [ ] 4.2 Obtener de Lucia el presupuesto máximo por campaña y la autorización expresa de gasto en OpenRouter; registrarlos en el plan
+- [ ] 4.2 Confirmar con Lucia el lanzamiento del gasto (tope autorizado: 1,5 USD en total, clave de OpenRouter de Lucia, proveedor el que fije JUP-132) y registrarlo en el plan; parar al alcanzar el tope
 - [ ] 4.3 Reejecutar las campañas `dependiente` dentro del presupuesto, con identidad completa del modelo en cada ejecución
 - [ ] 4.4 Añadir las ejecuciones nuevas al manifiesto versionado y cargarlas con `evaluation-dashboard:load`
 - [ ] 4.4b Verificar en una pila real de Grafana (no solo con `rows`) que las ejecuciones nuevas y las de GLM-5.2 salen como ejecuciones distintas con su modelo, que no comparten serie y que cada panel afectado (ejecuciones, matriz por métrica, indicadores de robustez de JUP-071, coste de IA de JUP-130) responde sin error; guardar capturas en `docs/evidence/JUP-133/`
