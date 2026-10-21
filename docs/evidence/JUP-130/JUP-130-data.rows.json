@@ -1,0 +1,104 @@
+{
+  "contract_version": 1,
+  "run": {
+    "run_id": "jup130-data-2026-10-30",
+    "source": "JUP-130",
+    "run_at": "2026-10-21T07:41:26Z",
+    "commit": "87b7b4db9b182a8291a994c145fb1e9b20b6cd29",
+    "suite": "jup130-data",
+    "suite_version": "1",
+    "synthetic": true
+  },
+  "results": [
+    {
+      "measure_type": "B",
+      "grp": "data_quality",
+      "metric_id": "freshness_days",
+      "behavior": "tenant-core",
+      "status": "measured",
+      "value": 0,
+      "unit": "dias"
+    },
+    {
+      "measure_type": "B",
+      "grp": "data_quality",
+      "metric_id": "source_missing_days",
+      "behavior": "tenant-core",
+      "status": "measured",
+      "value": 0,
+      "unit": "dias"
+    },
+    {
+      "measure_type": "B",
+      "grp": "data_quality",
+      "metric_id": "reconciliation_delta_minor",
+      "behavior": "tenant-core/EUR",
+      "status": "measured",
+      "value": 0,
+      "unit": "centimos"
+    },
+    {
+      "measure_type": "B",
+      "grp": "data_quality",
+      "metric_id": "reconciled",
+      "behavior": "tenant-core/EUR",
+      "status": "measured",
+      "value": 1,
+      "unit": "recuento"
+    },
+    {
+      "measure_type": "B",
+      "grp": "data_quality",
+      "metric_id": "freshness_days",
+      "behavior": "tenant-growth",
+      "status": "measured",
+      "value": 0,
+      "unit": "dias"
+    },
+    {
+      "measure_type": "B",
+      "grp": "data_quality",
+      "metric_id": "source_missing_days",
+      "behavior": "tenant-growth",
+      "status": "measured",
+      "value": 0,
+      "unit": "dias"
+    },
+    {
+      "measure_type": "B",
+      "grp": "data_quality",
+      "metric_id": "reconciliation_delta_minor",
+      "behavior": "tenant-growth/USD",
+      "status": "measured",
+      "value": 0,
+      "unit": "centimos"
+    },
+    {
+      "measure_type": "B",
+      "grp": "data_quality",
+      "metric_id": "reconciled",
+      "behavior": "tenant-growth/USD",
+      "status": "measured",
+      "value": 1,
+      "unit": "recuento"
+    },
+    {
+      "measure_type": "B",
+      "grp": "data_quality",
+      "metric_id": "reconciliation_delta_minor",
+      "behavior": "tenant-growth/EUR",
+      "status": "measured",
+      "value": 0,
+      "unit": "centimos"
+    },
+    {
+      "measure_type": "B",
+      "grp": "data_quality",
+      "metric_id": "reconciled",
+      "behavior": "tenant-growth/EUR",
+      "status": "measured",
+      "value": 1,
+      "unit": "recuento"
+    }
+  ]
+}
