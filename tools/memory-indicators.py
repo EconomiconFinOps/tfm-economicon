@@ -153,7 +153,7 @@ def build_report(events: list[dict], episodes: list, *, tolerance: int, referenc
 def _percent(row: dict) -> str:
     if row["status"] != "measured":
         return "no medido"
-    return f"{row['value'] * 100:.1f} % ({row['numerator']}/{row['denominator']})"
+    return f"{row['value'] * 100:.1f}".replace(".", ",") + f" % ({row['numerator']}/{row['denominator']})"
 
 
 def _result_by_id(report: dict, metric_id: str) -> dict:
@@ -162,7 +162,7 @@ def _result_by_id(report: dict, metric_id: str) -> dict:
 
 def build_table(report: dict, events: list[dict], episodes: list, match: Match, reference: date, last_day: date) -> str:
     delay = _result_by_id(report, "detection_delay_days")
-    delay_text = "no medido" if delay["status"] != "measured" else f"{delay['value']:.1f} días"
+    delay_text = "no medido" if delay["status"] != "measured" else f"{delay['value']:.1f}".replace(".", ",") + " días"
     lines = [
         "# Calidad del detector de anomalías (JUP-130)",
         "",

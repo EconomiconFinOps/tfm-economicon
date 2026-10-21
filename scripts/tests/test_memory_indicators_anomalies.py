@@ -202,6 +202,12 @@ class RealDetector(unittest.TestCase):
                        "python tools/memory-indicators.py anomalies --reference 2026-10-30"):
             self.assertIn(phrase, table)
 
+    def test_the_table_writes_decimals_with_a_comma(self):
+        _, table = self.measure("2026-10-30")
+        for text in ("100,0 % (5/5)", "71,4 % (5/7)", "0,0 días"):
+            self.assertIn(text, table)
+        self.assertNotRegex(table, r"\d\.\d %")
+
     def test_the_table_lists_every_event_with_its_outcome(self):
         _, table = self.measure("2026-10-30")
         for identifier in ("EV-01", "EV-02", "EV-03", "EV-04", "EV-05", "EV-06", "EV-07"):
