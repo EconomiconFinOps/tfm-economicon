@@ -107,6 +107,7 @@ CI_BLOCK_TODAY = [
     "corepack pnpm demo-dataset:test",
     "corepack pnpm demo-data:test",
     "corepack pnpm llm-gateway:test",
+    "corepack pnpm gateway-config-hash:test",
     "python -m unittest discover -s tools -p test_litellm_product_keys.py -v",
     "corepack pnpm docker:validate",
     "corepack pnpm local:test",
