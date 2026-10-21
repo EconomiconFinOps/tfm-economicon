@@ -71,5 +71,6 @@ No hace falta ADR nuevo: la decisión de dónde vive la identidad del modelo es 
 
 1. ¿Cómo obtiene el ejecutor la identidad real en tiempo de ejecución: de la respuesta del gateway (cabecera o `/model/info` de LiteLLM) o de la configuración que arrancó el stack? Depende de lo que implante JUP-132; hasta entonces se define el contrato de entrada y se prueba con valores de ejemplo.
 2. ¿Presupuesto máximo y proveedor para la reejecución? Lo decide Lucia antes de la fase bloqueada; el plan lo deja como campo obligatorio vacío.
-3. ¿Se reejecutan también las campañas con tres repeticiones o solo la ligera de JUP-071 (una repetición, una revisora, provisional)? Afecta al coste y a lo que se podrá afirmar.
-4. ¿JUP-063 (comparativa histórica) se carga en el dashboard versionado o sigue con manifiesto local? Hoy está fuera del manifiesto versionado.
+3. Resuelta (Lucia, 2026-10-21): la campaña de JUP-071 se reejecuta en su versión ligera (una repetición, una revisora, informe provisional). Lo que se podrá afirmar es por tanto provisional y el informe lo rotula así. Las demás campañas dependientes siguen sin presupuesto fijado (pregunta 2).
+4. Resuelta (Lucia, 2026-10-21): entra en el alcance que las mediciones nuevas lleguen a Grafana y se verifiquen en una pila real (requisito «Las mediciones nuevas llegan a Grafana», tarea 4.4b). La documentación de continuidad de JUP-063 dice que su Grafana live no se cargó ni verificó en ese incremento.
+5. ¿JUP-063 (comparativa histórica) se carga en el dashboard versionado o sigue con manifiesto local? Hoy está fuera del manifiesto versionado.

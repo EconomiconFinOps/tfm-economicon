@@ -58,6 +58,23 @@ El sistema DEBE (SHALL) producir un informe que compare, medida a medida, la eje
 - **WHEN** se cierra el informe
 - **THEN** incluye el gasto real y el presupuesto autorizado, y lo que no se reevaluó con su motivo
 
+### Requirement: Las mediciones nuevas llegan a Grafana
+Toda ejecución nueva de una medida `dependiente` DEBE (SHALL) entrar en el manifiesto versionado `docs/validation/evaluation-runs.json` como `rows-v1` o con el formato de su informe, cargarse con `corepack pnpm evaluation-dashboard:load` y ser visible en el dashboard `economicon-assistant-evaluation` de una pila real de Grafana, no solo en el JSON normalizado. La verificación DEBE (SHALL) comprobar en la pila real que las ejecuciones con GLM-5.2 y con DeepSeek V4.1 Flash aparecen como ejecuciones distintas con su modelo, proveedor y cuantización, que no comparten serie de evolución y que cada panel afectado responde sin error. Las campañas reejecutadas cubren las cuatro familias de indicadores de robustez de JUP-071 (19 filas) y los paneles de JUP-130 que dependan del modelo (coste de IA).
+
+#### Scenario: Ejecución nueva visible
+- **WHEN** se carga la campaña ligera de JUP-071 con DeepSeek V4.1 Flash
+- **THEN** el panel de ejecuciones y la tabla «Resultados por métrica y ejecución» muestran una columna nueva con su modelo
+- **AND** los paneles de indicadores de robustez muestran sus filas
+
+#### Scenario: Series separadas en Grafana
+- **WHEN** el dashboard muestra la evolución de una métrica que existe con GLM-5.2 y con DeepSeek V4.1 Flash
+- **THEN** no dibuja una línea que una ambas ejecuciones
+- **AND** cada una muestra «Sin datos: no hay con qué comparar» mientras no tenga otra ejecución comparable
+
+#### Scenario: Solo se verificó el JSON
+- **WHEN** la verificación se hizo con `evaluation-dashboard:rows` y no sobre Grafana real
+- **THEN** la evidencia y el informe lo dicen y la tarjeta no puede darse por validada en ese punto
+
 ### Requirement: Cifras de la memoria afectadas
 El sistema DEBE (SHALL) entregar una lista de las cifras de la memoria que cambian o quedan obsoletas por el cambio de modelo, con el valor anterior, el valor nuevo (o «no medido»), la medida del inventario de la que sale y la ruta de la evidencia. La lista NO DEBE (SHALL NOT) copiar el texto de la memoria al repositorio ni modificar el documento compartido; la actualización la hacen los responsables de la memoria.
 
