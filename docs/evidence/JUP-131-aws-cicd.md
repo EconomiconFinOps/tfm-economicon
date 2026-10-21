@@ -49,6 +49,14 @@ AWS6.13.0. La CI posterior registra su resultado en PR146; no se oculta el fallo
 El hash de aplicación normalizado coincide Windows/Linux:
 `8ac0ac1319ff23cbf734b8fd6fb73107536e074b2044ee898d41ca270ea32903`.
 
+CI Linux en6ee134c1: **AWS demo offline SUCCESS**, Python24 y Terraform1+7mocks,
+[run39637883410](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39637883410).
+El chequeoSQL separado también SUCCESS. Reconciliación posterior de IAM S3:
+GetBucketAcl/Location y GetObjectVersion acotados a los buckets/prefijos de
+bootstrap, según [permisos mínimos CodeBuild](https://docs.aws.amazon.com/codebuild/latest/userguide/setting-up-service-role.html).
+JUP reviews permanece bloqueado por ausencia de títulos oficiales Revision y
+Validacion; no se evade esa protección ni se integra esta PR.
+
 ## Revisión técnica asistida
 
 Un revisor independiente, según la guía de ejecución del plan, hizo revisión

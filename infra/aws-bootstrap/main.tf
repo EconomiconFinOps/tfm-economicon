@@ -178,10 +178,10 @@ resource "aws_iam_role" "build" {
 resource "aws_iam_role_policy" "build_control" {
   role = aws_iam_role.build.id
   policy = jsonencode({ Version = "2012-10-17", Statement = [
-    { Effect = "Allow", Action = ["s3:ListBucket", "s3:GetBucketVersioning"], Resource = aws_s3_bucket.control.arn },
-    { Effect = "Allow", Action = ["s3:GetBucketLocation", "s3:GetBucketVersioning"], Resource = aws_s3_bucket.artifacts.arn },
+    { Effect = "Allow", Action = ["s3:ListBucket", "s3:GetBucketVersioning", "s3:GetBucketLocation", "s3:GetBucketAcl"], Resource = aws_s3_bucket.control.arn },
+    { Effect = "Allow", Action = ["s3:GetBucketLocation", "s3:GetBucketVersioning", "s3:GetBucketAcl"], Resource = aws_s3_bucket.artifacts.arn },
     { Effect = "Allow", Action = ["s3:GetObject", "s3:GetObjectVersion", "s3:PutObject"], Resource = "${aws_s3_bucket.artifacts.arn}/*" },
-    { Effect = "Allow", Action = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"], Resource = ["${aws_s3_bucket.control.arn}/economicon/*", "${aws_s3_bucket.control.arn}/cycles/*", "${aws_s3_bucket.control.arn}/configs/*", "${aws_s3_bucket.control.arn}/pipelines/*"] },
+    { Effect = "Allow", Action = ["s3:GetObject", "s3:GetObjectVersion", "s3:PutObject", "s3:DeleteObject"], Resource = ["${aws_s3_bucket.control.arn}/economicon/*", "${aws_s3_bucket.control.arn}/cycles/*", "${aws_s3_bucket.control.arn}/configs/*"] },
     { Effect = "Allow", Action = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:DeleteItem"], Resource = aws_dynamodb_table.lease.arn },
     { Effect = "Allow", Action = ["logs:CreateLogStream", "logs:PutLogEvents"], Resource = "${aws_cloudwatch_log_group.build.arn}:*" },
     { Effect = "Allow", Action = "secretsmanager:GetSecretValue", Resource = [var.github_token_secret_arn, var.mq_password_secret_arn] },
@@ -222,7 +222,7 @@ resource "aws_iam_role_policy" "pipeline" {
   role = aws_iam_role.pipeline.id
   policy = jsonencode({ Version = "2012-10-17", Statement = [
     { Effect = "Allow", Action = ["codestar-connections:UseConnection", "codeconnections:UseConnection"], Resource = var.connection_arn },
-    { Effect = "Allow", Action = ["s3:GetBucketVersioning", "s3:GetBucketLocation"], Resource = aws_s3_bucket.artifacts.arn },
+    { Effect = "Allow", Action = ["s3:GetBucketVersioning", "s3:GetBucketLocation", "s3:GetBucketAcl"], Resource = aws_s3_bucket.artifacts.arn },
     { Effect = "Allow", Action = ["s3:GetObject", "s3:GetObjectVersion", "s3:PutObject"], Resource = "${aws_s3_bucket.artifacts.arn}/*" },
     { Effect = "Allow", Action = ["codebuild:StartBuild", "codebuild:BatchGetBuilds"], Resource = aws_codebuild_project.runner.arn }
   ] })
