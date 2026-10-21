@@ -24,10 +24,10 @@ Trello: https://trello.com/c/Yv1ETc2G
 
 ## 3. Plan, plantillas y cifras de la memoria (sin modelo nuevo)
 
-- [ ] 3.1 Escribir `docs/validation/model-reevaluation-plan.md`: por campaña dependiente, llamadas, coste estimado, proveedor, presupuesto máximo (vacío hasta que lo fije Lucia) y autorización
-- [ ] 3.2 Escribir la plantilla del informe antes/después con la columna «después» vacía, las reglas de lectura (intervalos solapados, condiciones distintas, no medido) y el apartado de gasto
-- [ ] 3.3 Escribir la lista de cifras de la memoria afectadas, por referencia a las secciones de `docs/memoria/README.md`, con valor anterior y valor nuevo «no medido»
-- [ ] 3.4 Prueba que comprueba que cada cifra enlaza con una entrada del inventario o consta «sin origen verificable»
+- [x] 3.1 Escribir `docs/validation/model-reevaluation-plan.md`: por campaña dependiente, llamadas, coste estimado, proveedor, presupuesto máximo (vacío hasta que lo fije Lucia) y autorización
+- [x] 3.2 Escribir la plantilla del informe antes/después con la columna «después» vacía, las reglas de lectura (intervalos solapados, condiciones distintas, no medido) y el apartado de gasto
+- [x] 3.3 Escribir la lista de cifras de la memoria afectadas, por referencia a las secciones de `docs/memoria/README.md`, con valor anterior y valor nuevo «no medido»
+- [x] 3.4 Prueba que comprueba que cada cifra enlaza con una entrada del inventario o consta «sin origen verificable»
 
 ## 4. Reejecución y informe (bloqueado por JUP-132 y por autorización de presupuesto)
 

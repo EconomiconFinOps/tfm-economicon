@@ -1,0 +1,171 @@
+{
+  "figures_version": 1,
+  "source_note": "Cifras tomadas de la hoja de hechos del encargo de redacción de la memoria (21/10/2026) y contrastadas con la evidencia del repositorio. No se copia texto de la memoria; los apartados (a-i) son los de docs/memoria/README.md.",
+  "figures": [
+    {
+      "id": "robustness-outcomes",
+      "sections": ["h"],
+      "figure": "Robustez con el chat real: aciertos, fallos y bloqueadas de 29 casos",
+      "previous_value": "7 aciertos, 17 fallos, 5 bloqueadas de 29 (20/10/2026, una repetición, una revisora, provisional)",
+      "new_value": "No medido",
+      "status": "cambia",
+      "inventory_id": "live-robustness-jup071",
+      "evidence": "docs/evidence/JUP-071-live-r1-report.json",
+      "note": "El valor nuevo será provisional y no podrá compararse con el anterior como mejora o empeoramiento si cambian la batería o la revisora. El modelo de la medición anterior no está atestiguado."
+    },
+    {
+      "id": "robustness-prohibitions",
+      "sections": ["h"],
+      "figure": "Prohibiciones incumplidas en la campaña de robustez",
+      "previous_value": "0 de 55",
+      "new_value": "No medido",
+      "status": "cambia",
+      "inventory_id": "live-robustness-jup071",
+      "evidence": "docs/evidence/JUP-071-validation.md",
+      "note": "Una cifra en cero se declara solo si se mide; sin medición se rotula «No medido»."
+    },
+    {
+      "id": "robustness-indicators",
+      "sections": ["h"],
+      "figure": "Indicadores de las cuatro familias de un RAG (19 filas) de la campaña de robustez",
+      "previous_value": "Valores de la ejecución del 20/10/2026 cargados en el dashboard",
+      "new_value": "No medido",
+      "status": "cambia",
+      "inventory_id": "live-robustness-jup071",
+      "evidence": "docs/evidence/JUP-071-live-r1-rows.json",
+      "note": "Salen de las mismas respuestas generadas; se recalculan con la campaña ligera."
+    },
+    {
+      "id": "template-baseline",
+      "sections": ["h"],
+      "figure": "Línea base del chat sin modelo: casos aceptados",
+      "previous_value": "0 de 20 casos de respuesta aceptados (plantilla con fragmentos)",
+      "new_value": "No aplica: antecedente histórico",
+      "status": "se_mantiene",
+      "inventory_id": "template-baseline-jup070",
+      "evidence": "docs/evidence/JUP-070-validation.md",
+      "note": "La plantilla no usa modelo de generación; la cifra no cambia con el modelo."
+    },
+    {
+      "id": "ai-cost-billed-vs-estimated",
+      "sections": ["h", "b"],
+      "figure": "Coste de IA contrastado con OpenRouter",
+      "previous_value": "100 de 100 consultas contrastadas con OpenRouter; estimado frente a facturado (periodo 9-20/10/2026, todas con GLM-5.2)",
+      "new_value": "No medido",
+      "status": "cambia",
+      "inventory_id": "ai-cost-jup130",
+      "evidence": "docs/evidence/JUP-130/JUP-130-ai-cost.md",
+      "note": "Se recalcula leyendo el registro del gateway durante la campaña ligera; solo cubre ese periodo y esas consultas."
+    },
+    {
+      "id": "cost-per-100-queries",
+      "sections": ["b"],
+      "figure": "Estimación del coste por 100 consultas del caso de negocio",
+      "previous_value": "Aproximadamente 0,64 USD por 100 consultas (medido con GLM-5.2 sobre 28 consultas)",
+      "new_value": "No medido",
+      "status": "cambia",
+      "inventory_id": "ai-cost-jup130",
+      "evidence": "docs/evidence/JUP-130/JUP-130-ai-cost.md",
+      "note": "Depende de la tarifa por token y de los tokens por consulta del modelo servido."
+    },
+    {
+      "id": "latency-live-vs-target",
+      "sections": ["b", "h"],
+      "figure": "Latencia p95 del chat frente al objetivo de 10 s",
+      "previous_value": "Objetivo de 10 s no cumplido con el modelo anterior",
+      "new_value": "No medido",
+      "status": "cambia",
+      "inventory_id": "live-signals-prometheus",
+      "evidence": "docs/validation/JUP-067-metrics.md",
+      "note": "Sin tráfico tras el cambio o sin campaña que mida la latencia total, queda «No medido». La campaña de robustez no mide latencia."
+    },
+    {
+      "id": "models-acceptable-27-of-28",
+      "sections": ["e", "g", "h"],
+      "figure": "Comparativa GLM-5.2 frente a DeepSeek V4.1 Flash: respuestas aceptables",
+      "previous_value": "27 de 28 aceptables en cada modelo (19/10/2026)",
+      "new_value": "No aplica: antecedente histórico",
+      "status": "sin_origen_verificable",
+      "inventory_id": "glm-deepseek-comparison-jup063",
+      "evidence": "docs/evidence/JUP-063/glm-deepseek-20261016/comparison.json",
+      "note": "El paquete versionado del 16/10/2026 trae otras cifras (84 respuestas por modelo, veredictos provisionales 82 y 77, sin aceptación). La cifra del 19/10 no consta en el repositorio: hay que indicar su fuente antes de mantenerla."
+    },
+    {
+      "id": "models-latency-p95",
+      "sections": ["e", "g", "h"],
+      "figure": "Comparativa: p95 de tiempo por modelo",
+      "previous_value": "22,5 s (GLM-5.2) y 40,8 s (DeepSeek V4.1 Flash)",
+      "new_value": "No aplica: antecedente histórico",
+      "status": "sin_origen_verificable",
+      "inventory_id": "glm-deepseek-comparison-jup063",
+      "evidence": "docs/evidence/JUP-063/glm-deepseek-20261016/comparison.json",
+      "note": "El paquete versionado da un p95 de generación de 22,4 s (GLM-5.2) y 9,7 s (DeepSeek V4.1 Flash), solo de las fases de generación del proveedor. Alcance distinto del de la cifra citada; la fuente de esta no consta en el repositorio."
+    },
+    {
+      "id": "models-cost",
+      "sections": ["e", "g", "h"],
+      "figure": "Comparativa: coste comparable por modelo",
+      "previous_value": "0,1806 USD frente a 0,0392 USD (-78,3 %)",
+      "new_value": "No aplica: antecedente histórico",
+      "status": "sin_origen_verificable",
+      "inventory_id": "glm-deepseek-comparison-jup063",
+      "evidence": "docs/evidence/JUP-063/glm-deepseek-20261016/comparison.json",
+      "note": "El paquete versionado da un coste de fases de 0,347 USD (GLM-5.2) y 0,176 USD (DeepSeek V4.1 Flash) sobre 84 respuestas. La cifra citada no consta en el repositorio."
+    },
+    {
+      "id": "rag-campaigns-useful-context",
+      "sections": ["e", "h"],
+      "figure": "Campañas RAG A-D: contexto útil en preguntas originales y adicionales",
+      "previous_value": "Originales A 60,7 %, B 56,9 %, C 51,7 %, D 47,8 %; adicionales A 68,8 %, B 65,6 %, C 75,0 %, D 84,4 % (17/10/2026)",
+      "new_value": "Sin clasificar",
+      "status": "sin_origen_verificable",
+      "inventory_id": null,
+      "evidence": "no consta en el repositorio",
+      "note": "Ningún fichero del repositorio recoge estas cifras. Miden la recuperación, que no pasa por el modelo de chat, pero la campaña no está en el manifiesto del dashboard ni en el inventario. Hay que localizar su fuente y clasificarla antes de afirmar que se mantiene."
+    },
+    {
+      "id": "rag-campaigns-cost",
+      "sections": ["e", "h"],
+      "figure": "Campañas RAG A-D: coste de las preguntas por campaña",
+      "previous_value": "Entre 0,18 y 0,20 USD por campaña",
+      "new_value": "Sin clasificar",
+      "status": "sin_origen_verificable",
+      "inventory_id": null,
+      "evidence": "no consta en el repositorio",
+      "note": "Ningún fichero del repositorio recoge esta cifra y no consta si el coste incluye generación; si la incluye, depende del modelo. Hay que localizar su fuente y clasificarla antes de afirmar que se mantiene."
+    },
+    {
+      "id": "anomaly-detector",
+      "sections": ["h"],
+      "figure": "Detector de anomalías: eventos detectados",
+      "previous_value": "5 de 7 eventos; 5 de 5 los detectables por diseño",
+      "new_value": "No se repite",
+      "status": "se_mantiene",
+      "inventory_id": "anomalies-jup130",
+      "evidence": "docs/evidence/JUP-130/JUP-130-anomalies.md",
+      "note": "Reglas deterministas; no pasan por el modelo de generación."
+    },
+    {
+      "id": "data-freshness-reconciliation",
+      "sections": ["h"],
+      "figure": "Reconciliación y frescura de los datos",
+      "previous_value": "Valores de JUP-130 sobre datos sintéticos",
+      "new_value": "No se repite",
+      "status": "se_mantiene",
+      "inventory_id": "data-jup130",
+      "evidence": "docs/evidence/JUP-130/JUP-130-data.md",
+      "note": "Compara con el API de facturación; no pasa por el modelo."
+    },
+    {
+      "id": "retrieval-calibration",
+      "sections": ["e", "h"],
+      "figure": "Calibración de la recuperación: umbral de distancia 0,6 y máximo de 4 resultados",
+      "previous_value": "Umbral 0,6 y 4 resultados",
+      "new_value": "No se repite",
+      "status": "se_mantiene",
+      "inventory_id": "retrieval-calibration-jup022",
+      "evidence": "docs/spikes/JUP-022-retrieval-calibration.json",
+      "note": "Depende del modelo de embeddings, que este cambio no toca."
+    }
+  ]
+}
