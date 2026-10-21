@@ -28,4 +28,4 @@ Las cifras de la reevaluación son provisionales (una repetición, una revisora)
 
 ## Human Approval
 
-Pendiente de Lucia.
+Aprobado por Lucia el 22/10/2026, después de la revisión adversarial y de las pruebas anteriores, con las cifras provisionales y los límites descritos arriba.
