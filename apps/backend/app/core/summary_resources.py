@@ -5,10 +5,10 @@ select canonical SQL sources. Its caller supplies an authorized ordered snapshot
 """
 from dataclasses import dataclass,field
 from app.core.context_budget import budget, SUMMARY_BYTES
-import hashlib,json,re
+import hashlib,json,re,os
 from pathlib import Path
 from app.schemas.chat import canonical,_validate
-from app.core.chat_resources import TOKENIZER_SHA,TOKENIZER_REVISION
+from app.core.chat_resources import TOKENIZER_SHA,TOKENIZER_REVISION,FLASH_TOKENIZER
 
 SCHEMA_SHA='72404e66533f03268bf53727e7ed01cad00a71c31ad483f823ee4c3c8e06783e'
 INPUT_SHA='46afc2e372abbf117956a709047a7dc036f17a0836bc9acfeffc21553611f1d3'
@@ -17,6 +17,7 @@ POLICY_SHA='e8c326b37b86bbdb30dcb2202d739e33de6d8d1169567449b62d8a977dd1c9e8'
 BUDGETS={'input_total_tokens':4096,'output_tokens':800,'payload_tokens':768,'content_tokens':512}
 V3_BUDGETS={'input_total_tokens':1048576,'output_tokens':10000,'payload_tokens':8192,'content_tokens':6144}
 V3_MANIFEST_SHA='b77cb54456152e08db25c57fef510b5864b0f2679db76e743cfe7a5b8a9c8634'
+V4_MANIFEST_SHA='ba51412f3ab4cf752cf67aff4a12844acaf66c4a193d7befdf2082a439997052'
 LEGACY_MANIFEST_SHA='f724d3fc8379d7926c667c9f5f3c43ed9074d34080a11fb5a1c76b2cd43b8b94'
 PAIR_KEYS={'question_ref','question','answer_ref','answer'}
 
@@ -105,9 +106,9 @@ class BackendSummaryResources:
         if not isinstance(value,dict) or any(type(value.get(k)) is not type(v) or value.get(k)!=v for k,v in expected.items()):
             raise ValueError('Summary contract mismatch.')
 
-def load_resources(directory=None,tokenizer_file=None):
+def load_resources(directory=None,tokenizer_file=None,legacy_tokenizer_file=None):
     import tokenizers
-    root=Path(directory or '/opt/economicon/summary/v3');names={'system.md','input.md','schema.json','manifest.json'}
+    root=Path(directory or '/opt/economicon/summary/v4');names={'system.md','input.md','schema.json','manifest.json'}
     if root.is_symlink() or not root.is_dir() or {p.name for p in root.iterdir()}!=names:
         raise ValueError('Invalid summary bundle.')
     data={}
@@ -118,8 +119,10 @@ def load_resources(directory=None,tokenizer_file=None):
         if not 0<len(data[name])<=limit:raise ValueError('Summary resource limit.')
     manifest=json.loads(data['manifest.json'],object_pairs_hook=unique)
     version=manifest.get('v')
-    if type(version) is not int or version not in (2,3):raise ValueError('Unsupported summary bundle.')
+    if type(version) is not int or version not in (2,3,4):raise ValueError('Unsupported summary bundle.')
     if version==3 and sha(data['manifest.json'])!=V3_MANIFEST_SHA:raise ValueError('Summary bundle pin mismatch.')
+    if version==4 and sha(data['manifest.json'])!=V4_MANIFEST_SHA:raise ValueError('Summary bundle pin mismatch.')
+    tokenizer=FLASH_TOKENIZER if version==4 else {'library_version':'0.22.1','revision':TOKENIZER_REVISION,'sha256':TOKENIZER_SHA,'bytes':20217442}
     schema=json.loads(data['schema.json'],object_pairs_hook=unique)
     if sha(data['schema.json'])!=SCHEMA_SHA or data['schema.json']!=canonical(schema).encode():
         raise ValueError('Summary schema differs from authority.')
@@ -128,15 +131,15 @@ def load_resources(directory=None,tokenizer_file=None):
         'input_contract':manifest.get('input_contract'),'input_contract_sha256':INPUT_SHA,
         'assembler_contract':manifest.get('assembler_contract'),'assembler_sha256':ASSEMBLER_SHA,
         'policy':manifest.get('policy'),'policy_sha256':POLICY_SHA,
-        'tokenizer':{'library_version':'0.22.1','revision':TOKENIZER_REVISION,'sha256':TOKENIZER_SHA,'bytes':20217442},'budgets':V3_BUDGETS if version==3 else BUDGETS}
+        'tokenizer':tokenizer,'budgets':V3_BUDGETS if version>=3 else BUDGETS}
     if canonical(manifest)!=canonical(expected) or tokenizers.__version__!='0.22.1':raise ValueError('Summary contract mismatch.')
     for key,pin in [('input_contract',INPUT_SHA),('assembler_contract',ASSEMBLER_SHA),('policy',POLICY_SHA)]:
         if sha(canonical(manifest[key]).encode())!=pin:raise ValueError('Summary policy mismatch.')
-    asset=Path(tokenizer_file or '/opt/economicon/chat/v3/tokenizer.json')
-    if asset.is_symlink() or not asset.is_file() or asset.stat().st_size!=20217442 or sha(asset.read_bytes())!=TOKENIZER_SHA:
+    asset=Path(tokenizer_file or ('/opt/economicon/chat/v4/tokenizer.json' if version==4 else '/opt/economicon/chat/v3/tokenizer.json'))
+    if asset.is_symlink() or not asset.is_file() or asset.stat().st_size!=tokenizer['bytes'] or sha(asset.read_bytes())!=tokenizer['sha256']:
         raise ValueError('Summary tokenizer mismatch.')
     counter=tokenizers.Tokenizer.from_file(str(asset))
-    if (sha(asset.read_bytes())!=TOKENIZER_SHA or any((root/n).is_symlink() or (root/n).read_bytes()!=raw for n,raw in data.items())):
+    if (sha(asset.read_bytes())!=tokenizer['sha256'] or any((root/n).is_symlink() or (root/n).read_bytes()!=raw for n,raw in data.items())):
         raise ValueError('Summary resource changed during load.')
     counter.no_truncation();counter.no_padding();counter.encode('Control € 漢字',add_special_tokens=False)
     frozen=canonical(manifest).encode()
@@ -145,5 +148,10 @@ def load_resources(directory=None,tokenizer_file=None):
         previous=load_resources(root.parent/'v2',asset)
         if sha(previous.manifest_bytes)!=LEGACY_MANIFEST_SHA:raise ValueError('Legacy summary pin mismatch.')
         legacy=(previous,)
+    elif version==4:
+        historical=legacy_tokenizer_file or os.getenv('CHAT_LEGACY_TOKENIZER_FILE') or '/opt/economicon/chat/v3/tokenizer.json'
+        previous=load_resources(root.parent/'v3',historical)
+        if sha(previous.manifest_bytes)!=V3_MANIFEST_SHA:raise ValueError('Legacy summary pin mismatch.')
+        legacy=(previous,)+previous.legacy_resources
     return BackendSummaryResources(f'jup-035.summary.v{version}:'+sha(frozen),data['system.md'].decode('utf-8'),
-        data['input.md'].decode('utf-8'),frozen,data['schema.json'],TOKENIZER_SHA,SCHEMA_SHA,counter,legacy_resources=legacy)
+        data['input.md'].decode('utf-8'),frozen,data['schema.json'],tokenizer['sha256'],SCHEMA_SHA,counter,legacy_resources=legacy)

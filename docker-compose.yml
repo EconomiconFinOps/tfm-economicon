@@ -261,9 +261,10 @@ services:
       CHAT_CONTEXT_TOKENS: ${CHAT_CONTEXT_TOKENS:-1048576}
       CHAT_MAX_OUTPUT_TOKENS: ${CHAT_MAX_OUTPUT_TOKENS:-3200}
       SUMMARY_CONTEXT_TOKENS: ${SUMMARY_CONTEXT_TOKENS:-1048576}
-      CHAT_RESOURCE_DIRECTORY: /opt/economicon/chat/v3
-      SUMMARY_RESOURCE_DIRECTORY: /opt/economicon/summary/v3
-      CHAT_TOKENIZER_FILE: /opt/economicon/chat/v3/tokenizer.json
+      CHAT_RESOURCE_DIRECTORY: /opt/economicon/chat/v4
+      SUMMARY_RESOURCE_DIRECTORY: /opt/economicon/summary/v4
+      CHAT_TOKENIZER_FILE: /opt/economicon/chat/v4/tokenizer.json
+      CHAT_LEGACY_TOKENIZER_FILE: /opt/economicon/chat/v3/tokenizer.json
       PROCESSOR_CHAT_BASE_URL: http://processor-chat:8003
       CHAT_SERVICE_HMAC_KEY_FILE: /run/secrets/chat-hmac
       RUNTIME_ENVIRONMENT: ${RUNTIME_ENVIRONMENT:-production}
@@ -353,9 +354,10 @@ services:
       PROCESSOR_CHAT_BIND_HOST: ${PROCESSOR_CHAT_PRIVATE_IP:-172.30.35.3}
       PROCESSOR_CHAT_PORT: 8003
       CHAT_SIGNING_KEY_FILE: /run/secrets/chat-hmac
-      CHAT_RESOURCE_DIRECTORY: /app/app/agents/prompt_resources/jup035/chat/v3
-      SUMMARY_RESOURCE_DIRECTORY: /app/app/agents/prompt_resources/jup035/summary/v3
-      CHAT_TOKENIZER_FILE: /app/app/agents/prompt_resources/jup035/chat/v2/tokenizer.json
+      CHAT_RESOURCE_DIRECTORY: /app/app/agents/prompt_resources/jup035/chat/v4
+      SUMMARY_RESOURCE_DIRECTORY: /app/app/agents/prompt_resources/jup035/summary/v4
+      CHAT_TOKENIZER_FILE: /app/app/agents/prompt_resources/jup035/chat/v4/tokenizer.json
+      CHAT_LEGACY_TOKENIZER_FILE: /app/app/agents/prompt_resources/jup035/chat/v2/tokenizer.json
       RUNTIME_ENVIRONMENT: ${RUNTIME_ENVIRONMENT:-production}
       ALLOW_INSECURE_LOCAL_DATABASE: ${ALLOW_INSECURE_LOCAL_DATABASE:-false}
       PROCESSOR_CONCURRENCY: ${PROCESSOR_CONCURRENCY:-2}

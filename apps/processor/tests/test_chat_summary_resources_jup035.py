@@ -173,11 +173,15 @@ def test_summary_descriptor_authentication_nonce_replay_and_public_isolation(sum
 
 def test_packaged_bundle_schema_is_generated_from_loaded_authority(resources,monkeypatch):
     monkeypatch.delenv('SUMMARY_RESOURCE_DIRECTORY',raising=False)
+    packaged=Path(__file__).parents[1]/'app/agents/prompt_resources/jup035'
+    monkeypatch.setenv('CHAT_RESOURCE_DIRECTORY',str(packaged/'chat/v4'))
+    monkeypatch.setenv('CHAT_TOKENIZER_FILE',str(packaged/'chat/v4/tokenizer.json'))
+    monkeypatch.setenv('CHAT_LEGACY_TOKENIZER_FILE',str(packaged/'chat/v2/tokenizer.json'))
     async def scenario(client,application):
         result=await client.get(ROUTE,headers=signed('GET',ROUTE))
         assert result.status_code==200,result.text
         loaded=application.state.summary_resources
-        root=Path(__file__).parents[1]/'app/agents/prompt_resources/jup035/summary/v2'
+        root=packaged/'summary/v4'
         assert {path.name for path in root.iterdir()}=={'system.md','input.md','schema.json','manifest.json'}
         assert (root/'schema.json').read_bytes()==canonical(loaded.response_model.model_json_schema())
         assert result.json()['response_schema_sha256']==digest((root/'schema.json').read_bytes())

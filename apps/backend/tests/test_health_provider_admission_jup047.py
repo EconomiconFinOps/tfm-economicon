@@ -51,7 +51,7 @@ def policy(**overrides):
 class Gateway:
     def __init__(self, receipt=None, error=None):
         self.requests = []
-        self.receipt = receipt or {"model": "openrouter/z-ai/glm-5.2", "provider": "deepinfra/fp4", "usage": {"prompt_tokens": 10, "completion_tokens": 2}, "cost_usd": "0.00002", "route_verified": True, "result_valid": True}
+        self.receipt = receipt or {"model": "openrouter/deepseek/deepseek-v4.1-flash", "provider": "deepinfra/fp8", "usage": {"prompt_tokens": 10, "completion_tokens": 2}, "cost_usd": "0.00002", "route_verified": True, "result_valid": True}
         self.error = error
         self.before_send = None
     def __call__(self, payload, *, timeout_seconds):
