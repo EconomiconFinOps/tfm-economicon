@@ -1,7 +1,8 @@
 JUP: JUP-123
 
-Decisión de modelo documentada en [ADR-0023](../../../../docs/adr/ADR-0023-chat-model-selection.md)
-(Proposed): gateway histórico DeepSeek V4.1 Flash/DeepInfra FP8, con forwarding
+Decisión de modelo documentada en [ADR-0025](../../../../docs/adr/ADR-0025-chat-model-selection.md)
+(antes ADR-0023 modelo; registro documental ratificado por excepción humana el
+18/10/2026): gateway histórico DeepSeek V4.1 Flash/DeepInfra FP8, con forwarding
 high/exclude y order FP4 del processor documentados; no sustituye
 ADR-0002 ni activa B. Análisis para memoria trazado a JUP-063/JUP-109.
 

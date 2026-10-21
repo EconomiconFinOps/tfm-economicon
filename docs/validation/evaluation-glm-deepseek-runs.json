@@ -1,0 +1,10 @@
+{
+  "manifest_version": 1,
+  "runs": [
+    {
+      "path": "docs/evidence/JUP-063/glm-deepseek-20261016/comparison.json",
+      "format": "jup-063-paired-v1",
+      "milestone": false
+    }
+  ]
+}

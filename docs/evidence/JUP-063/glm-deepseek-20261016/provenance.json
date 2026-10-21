@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "task": "JUP-063",
+  "published_preparation_date": "2026-10-18",
+  "publication_base_commit": "6d9e6710b7306faced8f811121a757267789120f",
+  "source_observed_at_utc": "2026-10-15T22:58:08.490236+00:00",
+  "source_file": "materiales/07-evidencias/PR121-local-evaluation/matched-model-comparison-final-v1.json",
+  "source_sha256": "d8dff405f58063c79757d3f29abd290c8015a42bd7b2da0e785205f007e30380",
+  "source_bytes": 119291,
+  "copy_policy": "comparison.json is a byte-identical copy; phases.csv is an explicit numeric/hash allowlist projection of 336 existing phase receipts. Raw request/response/context and ledger are not published.",
+  "inputs_bundle_sha256": "58dd768070b1aa86f240454ba8966d89333a085980772e7af074c43993c19620",
+  "runtime_images_at_input_freeze": {
+    "backend": "sha256:fd3399f5855b64585f76bdaa97258f1d687611cb84e7046e56eff686b48414bf",
+    "processor": "sha256:643e42d440fcf7b542a32d7a2573011ba2be433966316e44991ce6e3cb993dcb",
+    "frontend": "sha256:292cb1e8c124bc6ea12b1fbe4346d259e3dcf94536017b3737b63717249f8962"
+  },
+  "product_commit_at_campaign": "Not recorded as a single full Git commit in the matched report; input bundle and runtime images identify this historical replay, not current develop.",
+  "models": {
+    "DeepSeekV4.1Flash": {
+      "model_id": "deepseek/deepseek-v4.1-flash",
+      "provider_route": [
+        "coreweave/fp8"
+      ],
+      "method": "FROZEN_CONTEXT_GENERATION_REPLAY_NOT_API_E2E",
+      "snapshot_sha256": "abb6f33b1b326c5cd7a5c2153813839a1c51d5d3064d1772782e6a1b31b44779",
+      "review_sha256": "4156a2748d8170677681cb30d95c4d4ce6b0ba5f96ad3bcb66b8a0ef0de6840b",
+      "bank_sha256": "0bd8a31792d68ff82c2bb222d42593f139d9596e2d24ad37f77c08d648a9f2e7",
+      "frozen_review_sha256": "0ff052588d8466ed3132aba93263eb97ba6bfc718b0a4d226876861709ddcdc5",
+      "notes_sha256": "08496375e85c03a6205101660068615ac27993e82f23a4527a57d9a0f0167e33",
+      "snapshot_observed_at_utc": "2026-10-15T21:51:15.355833+00:00",
+      "collection_finished_at_utc": "2026-10-15T21:50:35.824824+00:00",
+      "phase_count": 168,
+      "new_unknown_cost_usd": "0"
+    },
+    "GLM5.2": {
+      "model_id": "z-ai/glm-5.2",
+      "provider_route": [
+        "deepinfra/fp4"
+      ],
+      "method": "FROZEN_CONTEXT_GENERATION_REPLAY_NOT_API_E2E",
+      "snapshot_sha256": "88a7a99490b073659578e930a77807488aa33de02a61e8de53b0484eb8d8919c",
+      "review_sha256": "090e1919a4c68716f7cb347f230e4d16f5a1c9c0a37bfff50f0b382624334026",
+      "bank_sha256": "0bd8a31792d68ff82c2bb222d42593f139d9596e2d24ad37f77c08d648a9f2e7",
+      "frozen_review_sha256": "0ff052588d8466ed3132aba93263eb97ba6bfc718b0a4d226876861709ddcdc5",
+      "notes_sha256": "688694c567fe1108d925352dc6e92426d8821f91db40f60bd0f4ba22f1fe0258",
+      "snapshot_observed_at_utc": "2026-10-15T22:54:47.937117+00:00",
+      "collection_finished_at_utc": "2026-10-15T22:52:44.882008+00:00",
+      "phase_count": 168,
+      "new_unknown_cost_usd": "0"
+    }
+  },
+  "denominators": {
+    "cases": 28,
+    "repetitions_per_case": 3,
+    "responses_per_model": 84,
+    "phases_per_response": [
+      "draft",
+      "final"
+    ],
+    "phases_per_model": 168
+  },
+  "metric_units": {
+    "reported_phase_cost_usd": "USD; sum provider-reported cost of draft+final phases, not cumulative account spend",
+    "generation_seconds_p50": "seconds; percentile of sum of draft+final provider generation durations per response",
+    "generation_seconds_p95": "seconds; same response-level population",
+    "percentile_method": "linear interpolation at (n-1)*p"
+  },
+  "acceptance": "NOT_ASSESSED",
+  "independent_adjudication": false,
+  "api_ui_validated": false,
+  "new_inference_executed": false,
+  "inputs_bundle_source_file": "materiales/07-evidencias/PR121-local-evaluation/model-comparison-inputs-v1.json",
+  "phase_receipts_matching_inputs_bundle_hashes": 336
+}

@@ -7,7 +7,8 @@ Tres requisitos de la spec (decisiones D5, D6 y D7 del diseño), tras la segunda
    de alto) están justo debajo de la matriz y empujan las gráficas de evolución al final de la sección. Se fija el orden
    de lectura (por `gridPos.y` y luego `x`, que es también el orden de la lista `panels`, porque una prueba congelada lo
    exige): rótulo de fila -> (resumen y «Cómo leer») -> ejecuciones -> estado de los casos -> matriz -> las tres
-   evoluciones (SIN ninguna tabla entre la matriz y ellas) -> calibración -> benchmark -> robustez -> las dos tablas
+   evoluciones (SIN ninguna tabla entre la matriz y ellas) -> calibración -> benchmark -> comparación pareada
+   GLM/DeepSeek (JUP-063/JUP-121) -> robustez -> las dos tablas
    «(detalle)» al final, y todo antes de la fila de la sección B. Sin solapes ni huecos verticales: cada panel empieza
    donde termina el anterior (las dos evoluciones de proporciones y de latencia pueden compartir fila). Las tablas
    «(detalle)» siguen siendo las que usa la conciliación: no cambian de consulta, y se comprueba que devuelven las mismas
@@ -59,6 +60,7 @@ EVOLUCIONES = ("Evolución de las métricas automáticas", "Evolución de la lat
                "Evolución con juicio humano (solo hitos)")
 CALIBRACION = "Calibración de la recuperación (JUP-022)"
 BENCHMARK = "Benchmark de modelos (JUP-078)"
+COMPARACION_PAREADA = "GLM/DeepSeek — comparación provisional"
 INDICADORES = "Indicadores de robustez (JUP-071)"
 ROBUSTEZ = "Robustez (JUP-071)"
 DETALLE_CALIDAD = "Exactitud, relevancia y fundamento (detalle)"
@@ -75,6 +77,7 @@ TRAMOS = (
     set(EVOLUCIONES),
     {CALIBRACION},
     {BENCHMARK},
+    {COMPARACION_PAREADA},
     {INDICADORES},
     {ROBUSTEZ},
     {DETALLE_CALIDAD},
@@ -108,6 +111,14 @@ def posicion(prefijo: str) -> int:
 
 
 class OrdenDeLecturaDeLaSeccionATests(unittest.TestCase):
+    def test_comparacion_pareada_ocupa_su_puesto_sin_desplazar_el_orden_historico(self):
+        # Adición explícita: se conservan calibración/benchmark antes y robustez/detalle después.
+        self.assertEqual(posicion(COMPARACION_PAREADA), posicion(BENCHMARK) + 1)
+        self.assertEqual(posicion(INDICADORES), posicion(COMPARACION_PAREADA) + 1)
+        self.assertEqual(posicion(ROBUSTEZ), posicion(INDICADORES) + 1)
+        self.assertLess(posicion(CALIBRACION), posicion(BENCHMARK))
+        self.assertLess(posicion(ROBUSTEZ), posicion(DETALLE_CALIDAD))
+
     def test_la_seccion_a_se_lee_en_el_orden_esperado(self):
         # Caso principal (spec «Orden de lectura de la sección A»): lo principal primero (resumen, ejecuciones, estado de
         # los casos, matriz y evoluciones), después calibración, benchmark y robustez, y al final el detalle por fila.

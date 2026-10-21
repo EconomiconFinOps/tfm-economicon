@@ -94,6 +94,7 @@ Los informes siguen siendo la fuente de verdad. La base es una proyección que s
 | `jup-022-calibration-v1` | Calibración de la recuperación de JUP-022 (`schema_version` 1) |
 | `jup-068-input-v1` | Entrada de JUP-068; la herramienta ejecuta `tools/business-metrics.mjs report` y normaliza su salida |
 | `rows-v1` | Filas ya normalizadas, según el contrato de más abajo |
+| `jup-063-paired-v1` | Comparación local pareada GLM/DeepSeek; agregados provisionales separados de aceptación. [Carga acotada y límites](evaluation-glm-deepseek.md) |
 
 Una ruta que no existe, un formato desconocido, una versión de esquema desconocida, un campo obligatorio ausente o un `run_id` repetido entre manifiestos terminan la carga con un error que nombra el fichero y el campo. No se carga ninguna fila de esa regeneración.
 
@@ -145,7 +146,7 @@ En un fichero `rows-v1` son obligatorias `measure_type`, `grp`, `metric_id`, `be
 | `value`, `unit` | Valor y unidad (`tasa`, `ms`, `recuento`, `similitud`, `eur`…) |
 | `numerator`, `denominator` | Numerador y denominador cuando la métrica es una proporción |
 | `ci_low`, `ci_high` | Intervalo de confianza cuando el informe lo trae |
-| `judgment` | `automatic` o `human` en el tipo A; `null` en el tipo B |
+| `judgment` | `automatic` o `human` en el tipo A; `null` en el tipo B. Excepción acotada: `null` en los tres contadores de rúbrica local provisional del grupo `paired_local_provisional` (ver abajo) |
 | `selected` | `true` en el candidato que eligió la calibración; `false` en los demás |
 
 ### Reglas
@@ -160,6 +161,16 @@ En un fichero `rows-v1` son obligatorias `measure_type`, `grp`, `metric_id`, `be
 8. **Coherencia por estado.** Un estado de caso (`pass`, `fail`, `blocked`, `not_run`) exige `count` y no lleva `value` ni `numerator`; `measured` exige `value` y no lleva `count`; `not_measured` no lleva `count`, `value`, `numerator` ni intervalo, y puede conservar el `denominator`. El intervalo lleva siempre sus dos límites. Con unidad `tasa`, `0 <= numerator <= denominator`. No puede haber dos filas con la misma `(grp, metric_id, behavior, status)` en una ejecución.
 
 ## Tablas del esquema `evaluation`
+
+**Extensión JUP-063 (18/10/2026):** las filas A con grupo
+`paired_local_provisional` y métrica `provisional_pass`, `provisional_fail` o
+`pending` admiten `judgment: null`: el informe no acredita ni checks automáticos
+de calidad ni adjudicación humana independiente. No equivale a juicio humano o
+automático y no entra en sus series. La excepción no se aplica a otras métricas
+ni a otros grupos; las mediciones técnicas de esa comparación son `automatic`.
+El `CHECK` existente de PostgreSQL ya admite `NULL`, así que no requiere migración.
+El resto de las reglas de filas se conserva. Detalle y modo sin vaciado global:
+[evaluation-glm-deepseek.md](evaluation-glm-deepseek.md).
 
 `python tools/evaluation-dashboard.py sql` (y `corepack pnpm evaluation-dashboard:load`, que lo ejecuta contra la base) genera un script transaccional que crea el esquema `evaluation` si no existe, vacía las dos tablas y las vuelve a llenar a partir del conjunto de datos de `rows`. Es idempotente (dos cargas seguidas dejan lo mismo) y atómico (si algo falla, la transacción deshace el vaciado y quedan los datos de la carga anterior). Usa `TRUNCATE` y no `DROP`, así que los permisos que se concedan después sobreviven. El script nunca lleva credenciales; el rol de solo lectura de Grafana lo crea la carga con otro script.
 

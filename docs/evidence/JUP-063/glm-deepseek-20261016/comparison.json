@@ -1,0 +1,3510 @@
+{
+  "state": "PAIRED_LOCAL_PROVISIONAL_COMPARISON",
+  "observed_at": 1792105088.4902358,
+  "models": {
+    "DeepSeekV4.1Flash": {
+      "responses": 84,
+      "verdicts": {
+        "provisional_pass": 77,
+        "provisional_fail": 6,
+        "pending": 1
+      },
+      "bank_requirements": {
+        "pass": 327
+      },
+      "additional_local_rubric": {
+        "pass": 160,
+        "fail": 7,
+        "uncertain": 1
+      },
+      "causal_failure_clusters": {
+        "documentary_method_without_visible_support": 2,
+        "documentary_policy_without_visible_support": 2,
+        "declared_period_denied": 1,
+        "unsupported_costcenter_catalog": 1
+      },
+      "reported_phase_cost_usd": "0.176012028",
+      "phases_with_unknown_cost": 0,
+      "generation_seconds_p50": 5.539938807487488,
+      "generation_seconds_p95": 9.662804579734802,
+      "percentile_method": "linear interpolation at (n-1)*p, identical for both models",
+      "generation_seconds_max": 18.75554323196411,
+      "latency_scope": "provider generation phases only; excludes startup, resources, preflight and scheduler",
+      "acceptance": "NOT_ASSESSED"
+    },
+    "GLM5.2": {
+      "responses": 84,
+      "verdicts": {
+        "provisional_pass": 82,
+        "provisional_fail": 2
+      },
+      "bank_requirements": {
+        "pass": 326,
+        "fail": 1
+      },
+      "additional_local_rubric": {
+        "pass": 166,
+        "fail": 2
+      },
+      "causal_failure_clusters": {
+        "documentary_policy_without_visible_support": 1,
+        "forecast_accumulated_spend_omitted": 1,
+        "documentary_method_without_visible_support": 1
+      },
+      "reported_phase_cost_usd": "0.3470654625",
+      "phases_with_unknown_cost": 0,
+      "generation_seconds_p50": 11.657198786735535,
+      "generation_seconds_p95": 22.429071259498585,
+      "percentile_method": "linear interpolation at (n-1)*p, identical for both models",
+      "generation_seconds_max": 34.92861986160278,
+      "latency_scope": "provider generation phases only; excludes startup, resources, preflight and scheduler",
+      "acceptance": "NOT_ASSESSED"
+    }
+  },
+  "paired_requirement_transitions": [
+    {
+      "origin": "bank",
+      "transition": "pass -> fail",
+      "count": 1
+    },
+    {
+      "origin": "bank",
+      "transition": "pass -> pass",
+      "count": 326
+    },
+    {
+      "origin": "provisional-local-rubric-v1",
+      "transition": "fail -> fail",
+      "count": 1
+    },
+    {
+      "origin": "provisional-local-rubric-v1",
+      "transition": "fail -> pass",
+      "count": 6
+    },
+    {
+      "origin": "provisional-local-rubric-v1",
+      "transition": "pass -> fail",
+      "count": 1
+    },
+    {
+      "origin": "provisional-local-rubric-v1",
+      "transition": "pass -> pass",
+      "count": 159
+    },
+    {
+      "origin": "provisional-local-rubric-v1",
+      "transition": "uncertain -> pass",
+      "count": 1
+    }
+  ],
+  "cases": {
+    "JUP-069-001": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 3
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-002": {
+      "DeepSeekV4.1Flash": {
+        "provisional_fail": 2,
+        "provisional_pass": 1
+      },
+      "GLM5.2": {
+        "provisional_pass": 2,
+        "provisional_fail": 1
+      }
+    },
+    "JUP-069-003": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 3
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-004": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 3
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-005": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 3
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-006": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 3
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-007": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 3
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-008": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 3
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-009": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 3
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-010": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 3
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-011": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 3
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-012": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 2,
+        "provisional_fail": 1
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-013": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 3
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-014": {
+      "DeepSeekV4.1Flash": {
+        "provisional_fail": 2,
+        "provisional_pass": 1
+      },
+      "GLM5.2": {
+        "provisional_pass": 2,
+        "provisional_fail": 1
+      }
+    },
+    "JUP-069-015": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 3
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-016": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 3
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-017": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 3
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-018": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 3
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-019": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 3
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-020": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 3
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-021": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 3
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-022": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 3
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-023": {
+      "DeepSeekV4.1Flash": {
+        "pending": 1,
+        "provisional_pass": 2
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-024": {
+      "DeepSeekV4.1Flash": {
+        "provisional_fail": 1,
+        "provisional_pass": 2
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-025": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 3
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-026": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 3
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-027": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 3
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    },
+    "JUP-069-028": {
+      "DeepSeekV4.1Flash": {
+        "provisional_pass": 3
+      },
+      "GLM5.2": {
+        "provisional_pass": 3
+      }
+    }
+  },
+  "paired_samples": [
+    {
+      "case_id": "JUP-069-001",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "cf777b53c926b666c5d039e2f70402433e19ee90979e88fb57745fa4dd237edc"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "bef46e6f1989524d181c227e09f3b09a1c0f099fad3403f40e2474cffa5e1a62"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "12e0bb099cdfb32bfb083bbabfae32c9d958a6c274e3f8a59b40df2f2db97f8b"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "9d8e3dfd6307bc665fa434e74d3d19abec15d6d78e73d28ba8abcccc8f6a99c5"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c5db104a49f06e220578c96e40856edadcb4a568f4c2a8330aba93a8aa4b1ace"
+        },
+        "numbers-3": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "863ef93d2b7e9ac6b6ae0ae05554b28f03e0d8f543a72ed4916ea19f65d49ba0"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-002",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_fail",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "2712d72b123ebc28f3f153c8eb5579c3c300edbc1464408f23e9952349a41e73"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "f0dfb8ef94be29bad4968d97921230eaa9670c5bb6f37d9d5990b5262c761264"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "083270c2eb896a56355237ec8bf728ea335d4980f68799ee80a4760734502ecb"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c7516164dc3bf9a3d3d6932a56e90a186f8388cf49b1770abaf8c95cc680a6c9"
+        },
+        "quality-grounding": {
+          "from": "fail",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-003",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "6379b71e3d2f31ce4952e4ae3290dc009dd090b45dc16b8c311690c2c0cc87a2"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "fed52bbc6335ee1aea64d0505fed45e106c97ed624efffce7bcaecd8bf232029"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "fa348d9175524d239dfba4e2a5cbb9911e8d67e20ce7e3a5eb98703478d4c4a1"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-004",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "5533fa14e9b1246e001c54f7d5c2f1d95767a08e58bacb0ce35005890e9c722f"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "68dc3eb5563b2574f504fe84452dd45e0b8e784feed8f1a813783f3b4f326dba"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "9c993c297279d1d1c524fd5b36fe948a8a40a3458ce3d7be199750b3f7c40b38"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-005",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "f2fa07698151b0c3e9124b2730abfb5cf6175e97c08f0046a0d82687e58d8d55"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "bdfb07af276e67cacafa8f73ac272cf6d401eccec2374492b831857c0ab62e4d"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "cac1eb4ebdc182adb433a93db088052f3367de11d356d493c814ffae4a5a1f12"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "b13df38b94564e2b57e1ca9c4d7c710246a846c27a0ba55096c07fd933c72328"
+        },
+        "forbidden-3": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "f45653d8efa8b279eb1e72f9b4489aa8ef10eb6419f3767ce57bb73ca2d3ffa8"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "9723feb369f64416332521da66c8e3247a4ea0e70e5e597e2a45152a08ae468a"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "ca4c0c62411eebf225b0a5890c8214b17eee527b851be8bcec1af8f4cf9acfe4"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-006",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c598834e7d7db74872462193e2d6e36b109ba6a110de77000cc023ad647e2a50"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "05ea6efd10a687b6bee1987810e2a49b8b2c50ce9440e194f7af1fd6ceed478d"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "5ff6e01bcc67c6b00460f2fc220acd72573ec5c19a023ee6e723dd786df5de1f"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-007",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "0da12bd8b6f8c20e2a0ae9fd0b0e54035448fe261fc60b7649fa4d517199abdc"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "33cc0d3560a0f186a2b9402f7500c4daf4f26d72f0bacdbcdac4127219f7c36e"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "fd1d49d7a87cb2be19fb76298d6b084cd8738ebc6f5e3eebd955e84711cd3f73"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-008",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "3725b13c28d6a02f96de662f801d226f034b111f46e83ac602ff46fab19d488e"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "ed9a0994056af016301fb3de84039c523263449340e15d7b1b01756e6fb3e3b5"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "1399e03c57daa90fdaf46ddcc810e9ef09e431ff9107435fc949d1db4e378c2d"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c5769dc222073f8d1b6e5a60d8c34239d987ed49d813f9522ce0e2e91b7bb614"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-009",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "a81c68cc683dec897db8ad175b435de20b696faa47f5c572e8959c3af57480ca"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "ad7596aa99d15d384c84f8e1d2aaa83a91ec995e16e56d55186f531d1c333224"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "8f0950df7d35da0ab5fb47c27b19e680517df77b7dab6afcaae6748e91045b55"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-010",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "53598b805338360fa384c9e916e64944be3aed0df9966204d03dcb4867ff22af"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "be6cdc5a7c3ac5d68022d477247ec93bd4aa12136a2d6a28463857445f750060"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "5189927a97ee7bcb29965979840d8af1a60cbf76b64734e766fa54f22e88d5d4"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-011",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "1688d5f8484685711ad6456121e935a759e036fdea8f85f1e0d75a25ef8829b6"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "0235467a6562865056354bab11b7df194bd14dc17fe44d4ad9f34d5d23575b7a"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "5d5b64a571e4df54a7de8e765ff6eb85605ad394494f87ed3dea4e20c88316eb"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-012",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "cf32188d6bc4a549ca1b34fd0d89081941311c74c7bffa5267bc162b33cb2ad3"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "703bc90cc20467583d8eaa40315a7a599d7933e084d927ec0b553f284ba1fbe4"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c2589694dd5c06f220a166a03af30916471612631bc15da7db439a476eb938f0"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-013",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "81a8a2a83e9e8b78a315e2789bf8d86e278d7a43f3e2b91359f01468398277af"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "71df2685fc8a335a1d3249e94ac8149ce92747924b8396bac08cf4dd8cc0e9ec"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "1307bb5e0ad48b4d66f839330b580086f70f0874b02373c8ed1b073b0e6d8dc8"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "ca97f0d67dccd9c0798e09f50d211faa3cca301300ecd1c1c676e1d72691542a"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-014",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_fail",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "e6d113addae219d8dea22baa2df4df2ca96e00f73ea6b80fdd37a4f77377b36a"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "fbd091aafdf94aff2c7bdf0547b149dfb1dc1002020e9e3f48969a1b7eda789a"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "8b3c059ea24eb21933f23ae805c1fe0c1917bd7ece91dbb08d3b2836abcca76d"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "56e4512fdeea22dfd8fb353b23979e8700a60615074cdb78548888c29692fcb6"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "8f20e13a3acd75c2c580377f5e4ebb0dfc7e7055aac072dc180ecbef02cac36a"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "e9229fd98707f620d335468447022c3849fa123d00c3057079c9b18385e9f273"
+        },
+        "quality-grounding": {
+          "from": "fail",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-015",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "66cb8fc5024639c30ac4e2cf4857842c5790f896a66aac0acc61596f10f7b786"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "41ccd2001a8cf411607c782be90b8c9df003f61f1ab7a24991e45e2be608d3a9"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-016",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "0e110c9e2e3e0d37911215fba94863dd6b089dd7bfeb4ac13879b69f0bde82f5"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c8d8ce09ccf272450180dfc797d427e6927cd649a016aac3a3ac4eb08701a654"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "96a3e2cc203f66f37d9bd42206c768fae826ff034a2660a15eec2129b1ac9c68"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "4fe4d57d6565a49c736e7a8f18ae3ed4c29224b8aad6c0dc3689dcac54021ed3"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "ab20a7d7a53f12687d1a1b3028dd56f93d2336e5a3321ed99bba78ae4e507a26"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-017",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "007999ad7ea9558ceaa612aa4f896dca471783733426c606f365d7fbb290aa53"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "666763dd9b06e1f2e7d2077829b0b2688ebe639f1b24e40c19c5c107a3070f23"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "83c0c129a658a7aab958c53d8abe8dd5bbffef581dd7934eadb1a607f00fd858"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "07b7cd2d0a99307e4e30dcfb86ae233ea76190637e73a4ae4d80e38da5de22d2"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "fbe5390c0dadc010cfb5d80830f67aee3d8cb9b878fb7d322eb2ce7d1b25c952"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-018",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "70bce35e0e20a863f2d7b295e349fdd008d7fabb640cf037c6184e62a169a5ce"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "545bf28c14e714dcb7742d40a1b63fe87d566302d77bfd2b316154a205810014"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "3b062186bdad8530c96f7ac8facdac2def594c2c443014569aab58e64b6cea91"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "7453c0e6493fd13b077c5dfa63f29c76b21a23a29efe6b37be5d06006d243959"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-019",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "40ea9e55a190399bfa47b743b20dbe8444e2683ac2a798e6f157ada59322a48e"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "315c42280a72f05ec9b28e0bb45d86e1351fcf926eb085e08bc7e8828d197fd8"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d729c3699086650433b26ccc22e8c19b9b815cf013a05bbc693d04923b59c0b3"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "4fe4d57d6565a49c736e7a8f18ae3ed4c29224b8aad6c0dc3689dcac54021ed3"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-020",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c9d3971476ea19801bcbd59b6e0d4412a1719a001ae2e6c30ec51ee77bef400a"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "5a510a0564758b6e0561ac91362c50c32da254c27b5378a5e86273108f9593f9"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "0b385db1d18fdca5996e1f97d57c6594afb0164c9075aa568ed32826ffc9ccd8"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "955fa0535accb67920f59151dab5da7a9a5442858ac062948040872e6a51efbc"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-021",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "adc66050a2533ef94a3865485337fc2d59ea23e17d1d9e9a7b7fc0f9e16e15a6"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "bd6d4218eac620d38450e09315e3106204b5566cce64ecabb6cb39d1462bbb78"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "bc2066596426ce6f8537919df474dbc1d83bcf1833779bc79ac50de685d73045"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "47af675d9a40553a32299fba03929d66502efffaf7043a639d405a89b9f54c45"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-022",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "07ba5985fcd3cbd9fe538f9b3127b1aa65737c1307c564e276f11a46cc582788"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "3b3fe8decc5784407314a845768e549d179ec18b8357b4845425ada74baa2b29"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "49b7a5bc9bb67ef697f040f2d2980621ea17fb3f1d543f9d64609644f2f0257c"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "3f398e7545c892c56f4f88c5d7852b1db9a2d195b1515b5ba84c5f923594cb43"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-023",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "pending",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "9a380ced3c84c9663e077c0fe5693e8ba8207f581297f86a7eb48efb3eb1c93c"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d2c9759ed57d66200b0039b6b0ca684b47c7a84f1064581b97af0ef49e11d190"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "dabeb5b09a93a3a3fc11a1e622f3d23e98ca9f708908dcee938502be72209a5f"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "3ef107784effc02656f401e958d758529213d6a39192f6c641f4298fe0bfde02"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "uncertain",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-024",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_fail",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "a20593dd8490ecef88cb12799f073fb98041f76d08d72965ff14fee9bb36509f"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "4c7ae095b72610af162cf60b5cf5968b583104975dc3fa0cb6457ceb4b23e786"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "8f7b0fedca872ff81c6bc8088cf46f5e1db7e1254d0b5357a2369177f54b6ba2"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "64826bab7fc5b6ef3fa13591fc306742e65aea87af18cddff3d1f02ba30f192a"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "fail",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-025",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "cda3765334a4df5d7a686b9822bd2a15426df107209d3af9c021465355cdb061"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "9f4d2549d8e546d50f0b17f4e76ec69424f812669104b253915dc35c7a1abea3"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "f26cc1889b0a2f08a9499bf86d9958aa94c9ebe927ca7bd3a732302b840e9042"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-026",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "46fa9a815de871fa959957069ca1a62a146ece8e547a8fa0aa112186f0876531"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d05215359b7a6aa48b07c4496b33a02b94adc1c622a2901dff165a873dbb9165"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "b9b82e6b76b0c22a02f40ab069200641f50d8e9385df63c74e0ab9e419369704"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-027",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "db0eb41b286ad8d21ad8f75f90e48b37cff873e02e5caaf1863cc9a7ea045497"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d75dadcf9f8846a179624c8ca2112438bc5a4ec76537f0cddb4a5003b8e5b1dc"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "43fe3e06fd2ff4cbc58be297f9329950fe49d4ae7814c70421a2b45e29c180dd"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "a79611609893c67b63a7b4387b5b2f1474f0bca3542cd8b595b6d9640965bc78"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "de2ada1406e443f20c7399959b0e5878e6920c2d375d5b1a30d7578ab6809b22"
+        },
+        "numbers-3": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d20235917e17e9e9804c29007068b3ee4b2eb8471dbe787ec0c0c686355b9cf3"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-028",
+      "repetition": 1,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d6ac341a331b4b84bb0788e3db5f8d22c3db58f3d16fa1a3ec4fe4df25369384"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "50286b7d64ab209f4e43f57af2a424f41cc4eb93397474057dbbb94a62116d92"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-001",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "cf777b53c926b666c5d039e2f70402433e19ee90979e88fb57745fa4dd237edc"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "bef46e6f1989524d181c227e09f3b09a1c0f099fad3403f40e2474cffa5e1a62"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "12e0bb099cdfb32bfb083bbabfae32c9d958a6c274e3f8a59b40df2f2db97f8b"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "9d8e3dfd6307bc665fa434e74d3d19abec15d6d78e73d28ba8abcccc8f6a99c5"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c5db104a49f06e220578c96e40856edadcb4a568f4c2a8330aba93a8aa4b1ace"
+        },
+        "numbers-3": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "863ef93d2b7e9ac6b6ae0ae05554b28f03e0d8f543a72ed4916ea19f65d49ba0"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-002",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_fail",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "2712d72b123ebc28f3f153c8eb5579c3c300edbc1464408f23e9952349a41e73"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "f0dfb8ef94be29bad4968d97921230eaa9670c5bb6f37d9d5990b5262c761264"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "083270c2eb896a56355237ec8bf728ea335d4980f68799ee80a4760734502ecb"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c7516164dc3bf9a3d3d6932a56e90a186f8388cf49b1770abaf8c95cc680a6c9"
+        },
+        "quality-grounding": {
+          "from": "fail",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-003",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "6379b71e3d2f31ce4952e4ae3290dc009dd090b45dc16b8c311690c2c0cc87a2"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "fed52bbc6335ee1aea64d0505fed45e106c97ed624efffce7bcaecd8bf232029"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "fa348d9175524d239dfba4e2a5cbb9911e8d67e20ce7e3a5eb98703478d4c4a1"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-004",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "5533fa14e9b1246e001c54f7d5c2f1d95767a08e58bacb0ce35005890e9c722f"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "68dc3eb5563b2574f504fe84452dd45e0b8e784feed8f1a813783f3b4f326dba"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "9c993c297279d1d1c524fd5b36fe948a8a40a3458ce3d7be199750b3f7c40b38"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-005",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "f2fa07698151b0c3e9124b2730abfb5cf6175e97c08f0046a0d82687e58d8d55"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "bdfb07af276e67cacafa8f73ac272cf6d401eccec2374492b831857c0ab62e4d"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "cac1eb4ebdc182adb433a93db088052f3367de11d356d493c814ffae4a5a1f12"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "b13df38b94564e2b57e1ca9c4d7c710246a846c27a0ba55096c07fd933c72328"
+        },
+        "forbidden-3": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "f45653d8efa8b279eb1e72f9b4489aa8ef10eb6419f3767ce57bb73ca2d3ffa8"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "9723feb369f64416332521da66c8e3247a4ea0e70e5e597e2a45152a08ae468a"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "ca4c0c62411eebf225b0a5890c8214b17eee527b851be8bcec1af8f4cf9acfe4"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-006",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c598834e7d7db74872462193e2d6e36b109ba6a110de77000cc023ad647e2a50"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "05ea6efd10a687b6bee1987810e2a49b8b2c50ce9440e194f7af1fd6ceed478d"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "5ff6e01bcc67c6b00460f2fc220acd72573ec5c19a023ee6e723dd786df5de1f"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-007",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "0da12bd8b6f8c20e2a0ae9fd0b0e54035448fe261fc60b7649fa4d517199abdc"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "33cc0d3560a0f186a2b9402f7500c4daf4f26d72f0bacdbcdac4127219f7c36e"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "fd1d49d7a87cb2be19fb76298d6b084cd8738ebc6f5e3eebd955e84711cd3f73"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-008",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "3725b13c28d6a02f96de662f801d226f034b111f46e83ac602ff46fab19d488e"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "ed9a0994056af016301fb3de84039c523263449340e15d7b1b01756e6fb3e3b5"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "1399e03c57daa90fdaf46ddcc810e9ef09e431ff9107435fc949d1db4e378c2d"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c5769dc222073f8d1b6e5a60d8c34239d987ed49d813f9522ce0e2e91b7bb614"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-009",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "a81c68cc683dec897db8ad175b435de20b696faa47f5c572e8959c3af57480ca"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "ad7596aa99d15d384c84f8e1d2aaa83a91ec995e16e56d55186f531d1c333224"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "8f0950df7d35da0ab5fb47c27b19e680517df77b7dab6afcaae6748e91045b55"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-010",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "53598b805338360fa384c9e916e64944be3aed0df9966204d03dcb4867ff22af"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "be6cdc5a7c3ac5d68022d477247ec93bd4aa12136a2d6a28463857445f750060"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "5189927a97ee7bcb29965979840d8af1a60cbf76b64734e766fa54f22e88d5d4"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-011",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "1688d5f8484685711ad6456121e935a759e036fdea8f85f1e0d75a25ef8829b6"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "0235467a6562865056354bab11b7df194bd14dc17fe44d4ad9f34d5d23575b7a"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "5d5b64a571e4df54a7de8e765ff6eb85605ad394494f87ed3dea4e20c88316eb"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-012",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "cf32188d6bc4a549ca1b34fd0d89081941311c74c7bffa5267bc162b33cb2ad3"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "703bc90cc20467583d8eaa40315a7a599d7933e084d927ec0b553f284ba1fbe4"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c2589694dd5c06f220a166a03af30916471612631bc15da7db439a476eb938f0"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-013",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "81a8a2a83e9e8b78a315e2789bf8d86e278d7a43f3e2b91359f01468398277af"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "71df2685fc8a335a1d3249e94ac8149ce92747924b8396bac08cf4dd8cc0e9ec"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "1307bb5e0ad48b4d66f839330b580086f70f0874b02373c8ed1b073b0e6d8dc8"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "ca97f0d67dccd9c0798e09f50d211faa3cca301300ecd1c1c676e1d72691542a"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-014",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_fail",
+      "GLM5.2": "provisional_fail",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "e6d113addae219d8dea22baa2df4df2ca96e00f73ea6b80fdd37a4f77377b36a"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "fail",
+          "criterion_sha256": "fbd091aafdf94aff2c7bdf0547b149dfb1dc1002020e9e3f48969a1b7eda789a"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "8b3c059ea24eb21933f23ae805c1fe0c1917bd7ece91dbb08d3b2836abcca76d"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "56e4512fdeea22dfd8fb353b23979e8700a60615074cdb78548888c29692fcb6"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "8f20e13a3acd75c2c580377f5e4ebb0dfc7e7055aac072dc180ecbef02cac36a"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "e9229fd98707f620d335468447022c3849fa123d00c3057079c9b18385e9f273"
+        },
+        "quality-grounding": {
+          "from": "fail",
+          "to": "fail",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-015",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "66cb8fc5024639c30ac4e2cf4857842c5790f896a66aac0acc61596f10f7b786"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "41ccd2001a8cf411607c782be90b8c9df003f61f1ab7a24991e45e2be608d3a9"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-016",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "0e110c9e2e3e0d37911215fba94863dd6b089dd7bfeb4ac13879b69f0bde82f5"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c8d8ce09ccf272450180dfc797d427e6927cd649a016aac3a3ac4eb08701a654"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "96a3e2cc203f66f37d9bd42206c768fae826ff034a2660a15eec2129b1ac9c68"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "4fe4d57d6565a49c736e7a8f18ae3ed4c29224b8aad6c0dc3689dcac54021ed3"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "ab20a7d7a53f12687d1a1b3028dd56f93d2336e5a3321ed99bba78ae4e507a26"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-017",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "007999ad7ea9558ceaa612aa4f896dca471783733426c606f365d7fbb290aa53"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "666763dd9b06e1f2e7d2077829b0b2688ebe639f1b24e40c19c5c107a3070f23"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "83c0c129a658a7aab958c53d8abe8dd5bbffef581dd7934eadb1a607f00fd858"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "07b7cd2d0a99307e4e30dcfb86ae233ea76190637e73a4ae4d80e38da5de22d2"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "fbe5390c0dadc010cfb5d80830f67aee3d8cb9b878fb7d322eb2ce7d1b25c952"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-018",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "70bce35e0e20a863f2d7b295e349fdd008d7fabb640cf037c6184e62a169a5ce"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "545bf28c14e714dcb7742d40a1b63fe87d566302d77bfd2b316154a205810014"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "3b062186bdad8530c96f7ac8facdac2def594c2c443014569aab58e64b6cea91"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "7453c0e6493fd13b077c5dfa63f29c76b21a23a29efe6b37be5d06006d243959"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-019",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "40ea9e55a190399bfa47b743b20dbe8444e2683ac2a798e6f157ada59322a48e"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "315c42280a72f05ec9b28e0bb45d86e1351fcf926eb085e08bc7e8828d197fd8"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d729c3699086650433b26ccc22e8c19b9b815cf013a05bbc693d04923b59c0b3"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "4fe4d57d6565a49c736e7a8f18ae3ed4c29224b8aad6c0dc3689dcac54021ed3"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-020",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c9d3971476ea19801bcbd59b6e0d4412a1719a001ae2e6c30ec51ee77bef400a"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "5a510a0564758b6e0561ac91362c50c32da254c27b5378a5e86273108f9593f9"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "0b385db1d18fdca5996e1f97d57c6594afb0164c9075aa568ed32826ffc9ccd8"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "955fa0535accb67920f59151dab5da7a9a5442858ac062948040872e6a51efbc"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-021",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "adc66050a2533ef94a3865485337fc2d59ea23e17d1d9e9a7b7fc0f9e16e15a6"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "bd6d4218eac620d38450e09315e3106204b5566cce64ecabb6cb39d1462bbb78"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "bc2066596426ce6f8537919df474dbc1d83bcf1833779bc79ac50de685d73045"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "47af675d9a40553a32299fba03929d66502efffaf7043a639d405a89b9f54c45"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-022",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "07ba5985fcd3cbd9fe538f9b3127b1aa65737c1307c564e276f11a46cc582788"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "3b3fe8decc5784407314a845768e549d179ec18b8357b4845425ada74baa2b29"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "49b7a5bc9bb67ef697f040f2d2980621ea17fb3f1d543f9d64609644f2f0257c"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "3f398e7545c892c56f4f88c5d7852b1db9a2d195b1515b5ba84c5f923594cb43"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-023",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "9a380ced3c84c9663e077c0fe5693e8ba8207f581297f86a7eb48efb3eb1c93c"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d2c9759ed57d66200b0039b6b0ca684b47c7a84f1064581b97af0ef49e11d190"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "dabeb5b09a93a3a3fc11a1e622f3d23e98ca9f708908dcee938502be72209a5f"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "3ef107784effc02656f401e958d758529213d6a39192f6c641f4298fe0bfde02"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-024",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "a20593dd8490ecef88cb12799f073fb98041f76d08d72965ff14fee9bb36509f"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "4c7ae095b72610af162cf60b5cf5968b583104975dc3fa0cb6457ceb4b23e786"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "8f7b0fedca872ff81c6bc8088cf46f5e1db7e1254d0b5357a2369177f54b6ba2"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "64826bab7fc5b6ef3fa13591fc306742e65aea87af18cddff3d1f02ba30f192a"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-025",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "cda3765334a4df5d7a686b9822bd2a15426df107209d3af9c021465355cdb061"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "9f4d2549d8e546d50f0b17f4e76ec69424f812669104b253915dc35c7a1abea3"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "f26cc1889b0a2f08a9499bf86d9958aa94c9ebe927ca7bd3a732302b840e9042"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-026",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "46fa9a815de871fa959957069ca1a62a146ece8e547a8fa0aa112186f0876531"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d05215359b7a6aa48b07c4496b33a02b94adc1c622a2901dff165a873dbb9165"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "b9b82e6b76b0c22a02f40ab069200641f50d8e9385df63c74e0ab9e419369704"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-027",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "db0eb41b286ad8d21ad8f75f90e48b37cff873e02e5caaf1863cc9a7ea045497"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d75dadcf9f8846a179624c8ca2112438bc5a4ec76537f0cddb4a5003b8e5b1dc"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "43fe3e06fd2ff4cbc58be297f9329950fe49d4ae7814c70421a2b45e29c180dd"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "a79611609893c67b63a7b4387b5b2f1474f0bca3542cd8b595b6d9640965bc78"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "de2ada1406e443f20c7399959b0e5878e6920c2d375d5b1a30d7578ab6809b22"
+        },
+        "numbers-3": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d20235917e17e9e9804c29007068b3ee4b2eb8471dbe787ec0c0c686355b9cf3"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-028",
+      "repetition": 2,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d6ac341a331b4b84bb0788e3db5f8d22c3db58f3d16fa1a3ec4fe4df25369384"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "50286b7d64ab209f4e43f57af2a424f41cc4eb93397474057dbbb94a62116d92"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-001",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "cf777b53c926b666c5d039e2f70402433e19ee90979e88fb57745fa4dd237edc"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "bef46e6f1989524d181c227e09f3b09a1c0f099fad3403f40e2474cffa5e1a62"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "12e0bb099cdfb32bfb083bbabfae32c9d958a6c274e3f8a59b40df2f2db97f8b"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "9d8e3dfd6307bc665fa434e74d3d19abec15d6d78e73d28ba8abcccc8f6a99c5"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c5db104a49f06e220578c96e40856edadcb4a568f4c2a8330aba93a8aa4b1ace"
+        },
+        "numbers-3": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "863ef93d2b7e9ac6b6ae0ae05554b28f03e0d8f543a72ed4916ea19f65d49ba0"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-002",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_fail",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "2712d72b123ebc28f3f153c8eb5579c3c300edbc1464408f23e9952349a41e73"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "f0dfb8ef94be29bad4968d97921230eaa9670c5bb6f37d9d5990b5262c761264"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "083270c2eb896a56355237ec8bf728ea335d4980f68799ee80a4760734502ecb"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c7516164dc3bf9a3d3d6932a56e90a186f8388cf49b1770abaf8c95cc680a6c9"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "fail",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-003",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "6379b71e3d2f31ce4952e4ae3290dc009dd090b45dc16b8c311690c2c0cc87a2"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "fed52bbc6335ee1aea64d0505fed45e106c97ed624efffce7bcaecd8bf232029"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "fa348d9175524d239dfba4e2a5cbb9911e8d67e20ce7e3a5eb98703478d4c4a1"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-004",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "5533fa14e9b1246e001c54f7d5c2f1d95767a08e58bacb0ce35005890e9c722f"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "68dc3eb5563b2574f504fe84452dd45e0b8e784feed8f1a813783f3b4f326dba"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "9c993c297279d1d1c524fd5b36fe948a8a40a3458ce3d7be199750b3f7c40b38"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-005",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "f2fa07698151b0c3e9124b2730abfb5cf6175e97c08f0046a0d82687e58d8d55"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "bdfb07af276e67cacafa8f73ac272cf6d401eccec2374492b831857c0ab62e4d"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "cac1eb4ebdc182adb433a93db088052f3367de11d356d493c814ffae4a5a1f12"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "b13df38b94564e2b57e1ca9c4d7c710246a846c27a0ba55096c07fd933c72328"
+        },
+        "forbidden-3": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "f45653d8efa8b279eb1e72f9b4489aa8ef10eb6419f3767ce57bb73ca2d3ffa8"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "9723feb369f64416332521da66c8e3247a4ea0e70e5e597e2a45152a08ae468a"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "ca4c0c62411eebf225b0a5890c8214b17eee527b851be8bcec1af8f4cf9acfe4"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-006",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c598834e7d7db74872462193e2d6e36b109ba6a110de77000cc023ad647e2a50"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "05ea6efd10a687b6bee1987810e2a49b8b2c50ce9440e194f7af1fd6ceed478d"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "5ff6e01bcc67c6b00460f2fc220acd72573ec5c19a023ee6e723dd786df5de1f"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-007",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "0da12bd8b6f8c20e2a0ae9fd0b0e54035448fe261fc60b7649fa4d517199abdc"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "33cc0d3560a0f186a2b9402f7500c4daf4f26d72f0bacdbcdac4127219f7c36e"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "fd1d49d7a87cb2be19fb76298d6b084cd8738ebc6f5e3eebd955e84711cd3f73"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-008",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "3725b13c28d6a02f96de662f801d226f034b111f46e83ac602ff46fab19d488e"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "ed9a0994056af016301fb3de84039c523263449340e15d7b1b01756e6fb3e3b5"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "1399e03c57daa90fdaf46ddcc810e9ef09e431ff9107435fc949d1db4e378c2d"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c5769dc222073f8d1b6e5a60d8c34239d987ed49d813f9522ce0e2e91b7bb614"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-009",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "a81c68cc683dec897db8ad175b435de20b696faa47f5c572e8959c3af57480ca"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "ad7596aa99d15d384c84f8e1d2aaa83a91ec995e16e56d55186f531d1c333224"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "8f0950df7d35da0ab5fb47c27b19e680517df77b7dab6afcaae6748e91045b55"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-010",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "53598b805338360fa384c9e916e64944be3aed0df9966204d03dcb4867ff22af"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "be6cdc5a7c3ac5d68022d477247ec93bd4aa12136a2d6a28463857445f750060"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "5189927a97ee7bcb29965979840d8af1a60cbf76b64734e766fa54f22e88d5d4"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-011",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "1688d5f8484685711ad6456121e935a759e036fdea8f85f1e0d75a25ef8829b6"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "0235467a6562865056354bab11b7df194bd14dc17fe44d4ad9f34d5d23575b7a"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "5d5b64a571e4df54a7de8e765ff6eb85605ad394494f87ed3dea4e20c88316eb"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-012",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_fail",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "cf32188d6bc4a549ca1b34fd0d89081941311c74c7bffa5267bc162b33cb2ad3"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "703bc90cc20467583d8eaa40315a7a599d7933e084d927ec0b553f284ba1fbe4"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c2589694dd5c06f220a166a03af30916471612631bc15da7db439a476eb938f0"
+        },
+        "quality-grounding": {
+          "from": "fail",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "fail",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-013",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "81a8a2a83e9e8b78a315e2789bf8d86e278d7a43f3e2b91359f01468398277af"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "71df2685fc8a335a1d3249e94ac8149ce92747924b8396bac08cf4dd8cc0e9ec"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "1307bb5e0ad48b4d66f839330b580086f70f0874b02373c8ed1b073b0e6d8dc8"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "ca97f0d67dccd9c0798e09f50d211faa3cca301300ecd1c1c676e1d72691542a"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-014",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "e6d113addae219d8dea22baa2df4df2ca96e00f73ea6b80fdd37a4f77377b36a"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "fbd091aafdf94aff2c7bdf0547b149dfb1dc1002020e9e3f48969a1b7eda789a"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "8b3c059ea24eb21933f23ae805c1fe0c1917bd7ece91dbb08d3b2836abcca76d"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "56e4512fdeea22dfd8fb353b23979e8700a60615074cdb78548888c29692fcb6"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "8f20e13a3acd75c2c580377f5e4ebb0dfc7e7055aac072dc180ecbef02cac36a"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "e9229fd98707f620d335468447022c3849fa123d00c3057079c9b18385e9f273"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-015",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "66cb8fc5024639c30ac4e2cf4857842c5790f896a66aac0acc61596f10f7b786"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "41ccd2001a8cf411607c782be90b8c9df003f61f1ab7a24991e45e2be608d3a9"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-016",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "0e110c9e2e3e0d37911215fba94863dd6b089dd7bfeb4ac13879b69f0bde82f5"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c8d8ce09ccf272450180dfc797d427e6927cd649a016aac3a3ac4eb08701a654"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "96a3e2cc203f66f37d9bd42206c768fae826ff034a2660a15eec2129b1ac9c68"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "4fe4d57d6565a49c736e7a8f18ae3ed4c29224b8aad6c0dc3689dcac54021ed3"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "ab20a7d7a53f12687d1a1b3028dd56f93d2336e5a3321ed99bba78ae4e507a26"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-017",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "007999ad7ea9558ceaa612aa4f896dca471783733426c606f365d7fbb290aa53"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "666763dd9b06e1f2e7d2077829b0b2688ebe639f1b24e40c19c5c107a3070f23"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "83c0c129a658a7aab958c53d8abe8dd5bbffef581dd7934eadb1a607f00fd858"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "07b7cd2d0a99307e4e30dcfb86ae233ea76190637e73a4ae4d80e38da5de22d2"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "fbe5390c0dadc010cfb5d80830f67aee3d8cb9b878fb7d322eb2ce7d1b25c952"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-018",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "70bce35e0e20a863f2d7b295e349fdd008d7fabb640cf037c6184e62a169a5ce"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "545bf28c14e714dcb7742d40a1b63fe87d566302d77bfd2b316154a205810014"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "3b062186bdad8530c96f7ac8facdac2def594c2c443014569aab58e64b6cea91"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "7453c0e6493fd13b077c5dfa63f29c76b21a23a29efe6b37be5d06006d243959"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-019",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "40ea9e55a190399bfa47b743b20dbe8444e2683ac2a798e6f157ada59322a48e"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "315c42280a72f05ec9b28e0bb45d86e1351fcf926eb085e08bc7e8828d197fd8"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d729c3699086650433b26ccc22e8c19b9b815cf013a05bbc693d04923b59c0b3"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "4fe4d57d6565a49c736e7a8f18ae3ed4c29224b8aad6c0dc3689dcac54021ed3"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-020",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c9d3971476ea19801bcbd59b6e0d4412a1719a001ae2e6c30ec51ee77bef400a"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "5a510a0564758b6e0561ac91362c50c32da254c27b5378a5e86273108f9593f9"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "0b385db1d18fdca5996e1f97d57c6594afb0164c9075aa568ed32826ffc9ccd8"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "955fa0535accb67920f59151dab5da7a9a5442858ac062948040872e6a51efbc"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-021",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "adc66050a2533ef94a3865485337fc2d59ea23e17d1d9e9a7b7fc0f9e16e15a6"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "bd6d4218eac620d38450e09315e3106204b5566cce64ecabb6cb39d1462bbb78"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "bc2066596426ce6f8537919df474dbc1d83bcf1833779bc79ac50de685d73045"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "47af675d9a40553a32299fba03929d66502efffaf7043a639d405a89b9f54c45"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-022",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "07ba5985fcd3cbd9fe538f9b3127b1aa65737c1307c564e276f11a46cc582788"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "3b3fe8decc5784407314a845768e549d179ec18b8357b4845425ada74baa2b29"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "49b7a5bc9bb67ef697f040f2d2980621ea17fb3f1d543f9d64609644f2f0257c"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "3f398e7545c892c56f4f88c5d7852b1db9a2d195b1515b5ba84c5f923594cb43"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-023",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "9a380ced3c84c9663e077c0fe5693e8ba8207f581297f86a7eb48efb3eb1c93c"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d2c9759ed57d66200b0039b6b0ca684b47c7a84f1064581b97af0ef49e11d190"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "dabeb5b09a93a3a3fc11a1e622f3d23e98ca9f708908dcee938502be72209a5f"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "3ef107784effc02656f401e958d758529213d6a39192f6c641f4298fe0bfde02"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-024",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "a20593dd8490ecef88cb12799f073fb98041f76d08d72965ff14fee9bb36509f"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "4c7ae095b72610af162cf60b5cf5968b583104975dc3fa0cb6457ceb4b23e786"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "8f7b0fedca872ff81c6bc8088cf46f5e1db7e1254d0b5357a2369177f54b6ba2"
+        },
+        "forbidden-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "64826bab7fc5b6ef3fa13591fc306742e65aea87af18cddff3d1f02ba30f192a"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-025",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "cda3765334a4df5d7a686b9822bd2a15426df107209d3af9c021465355cdb061"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "9f4d2549d8e546d50f0b17f4e76ec69424f812669104b253915dc35c7a1abea3"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "f26cc1889b0a2f08a9499bf86d9958aa94c9ebe927ca7bd3a732302b840e9042"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-026",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "46fa9a815de871fa959957069ca1a62a146ece8e547a8fa0aa112186f0876531"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d05215359b7a6aa48b07c4496b33a02b94adc1c622a2901dff165a873dbb9165"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "b9b82e6b76b0c22a02f40ab069200641f50d8e9385df63c74e0ab9e419369704"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-027",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "db0eb41b286ad8d21ad8f75f90e48b37cff873e02e5caaf1863cc9a7ea045497"
+        },
+        "required-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d75dadcf9f8846a179624c8ca2112438bc5a4ec76537f0cddb4a5003b8e5b1dc"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "43fe3e06fd2ff4cbc58be297f9329950fe49d4ae7814c70421a2b45e29c180dd"
+        },
+        "numbers-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "a79611609893c67b63a7b4387b5b2f1474f0bca3542cd8b595b6d9640965bc78"
+        },
+        "numbers-2": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "de2ada1406e443f20c7399959b0e5878e6920c2d375d5b1a30d7578ab6809b22"
+        },
+        "numbers-3": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d20235917e17e9e9804c29007068b3ee4b2eb8471dbe787ec0c0c686355b9cf3"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    },
+    {
+      "case_id": "JUP-069-028",
+      "repetition": 3,
+      "DeepSeekV4.1Flash": "provisional_pass",
+      "GLM5.2": "provisional_pass",
+      "requirements": {
+        "required-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d6ac341a331b4b84bb0788e3db5f8d22c3db58f3d16fa1a3ec4fe4df25369384"
+        },
+        "forbidden-1": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "50286b7d64ab209f4e43f57af2a424f41cc4eb93397474057dbbb94a62116d92"
+        },
+        "quality-grounding": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "d9ae9b638769980177839d386ef15c65fb379d5655a24aad6b62ccca279b9564"
+        },
+        "quality-consistency": {
+          "from": "pass",
+          "to": "pass",
+          "criterion_sha256": "c528e7e705082bb8d0dd439f3fdda4d8e399aedd37c4754aed7ae1d791514737"
+        }
+      }
+    }
+  ],
+  "proof": {
+    "DeepSeekV4.1Flash": {
+      "snapshot": "deepseek-v3-collected\\snapshots\\snapshot-1792101075355.json",
+      "snapshot_sha256": "abb6f33b1b326c5cd7a5c2153813839a1c51d5d3064d1772782e6a1b31b44779",
+      "review": "deepseek-v3-collected\\reviews\\snapshot-1792101075355-08496375.json",
+      "review_sha256": "4156a2748d8170677681cb30d95c4d4ce6b0ba5f96ad3bcb66b8a0ef0de6840b",
+      "notes_sha256": "08496375e85c03a6205101660068615ac27993e82f23a4527a57d9a0f0167e33"
+    },
+    "GLM5.2": {
+      "snapshot": "glm-matched-v1-collected\\snapshots\\snapshot-1792104887937.json",
+      "snapshot_sha256": "88a7a99490b073659578e930a77807488aa33de02a61e8de53b0484eb8d8919c",
+      "review": "glm-matched-v1-collected\\reviews\\snapshot-1792104887937-688694c5.json",
+      "review_sha256": "090e1919a4c68716f7cb347f230e4d16f5a1c9c0a37bfff50f0b382624334026",
+      "notes_sha256": "688694c567fe1108d925352dc6e92426d8821f91db40f60bd0f4ba22f1fe0258"
+    }
+  },
+  "acceptance": "NOT_ASSESSED",
+  "independent_adjudication": false,
+  "api_ui_validated": false,
+  "same_frozen_questions_and_actual_contexts": true,
+  "wire_equivalence_basis": "56 offline captures in GLM preparation plus 101-schema campaign equivalence audit; not universal equivalence proof",
+  "limitations": [
+    "N3 is descriptive and does not establish statistical superiority.",
+    "Averages do not compensate for mandatory defects.",
+    "Human reviewer criteria and independent adjudication remain pending.",
+    "DeepSeek v1/v2 and Sonnet/Sol contract failures remain preserved outside this matched pair."
+  ]
+}
