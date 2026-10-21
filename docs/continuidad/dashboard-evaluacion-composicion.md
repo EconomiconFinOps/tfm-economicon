@@ -2,7 +2,18 @@
 
 Actualización documental: 21/10/2026. [Tarjeta](https://trello.com/c/07J4M5ZN). [Diseño y tareas](../../openspec/changes/jup-129-grafana-evaluation-composition/design.md). Implementación local en `feat/JUP-129-grafana-evaluation-composition`, base `bc94a4daea98e97b574d00f019d347fc61c2f915`; sin commit ni publicación.
 
-## Estado vigente tras reconciliación con develop — 21/10/2026
+## Estado vigente: integración de ee84 — 21/10/2026 (R4)
+
+PM cierra el candidato R3 evaluado en `bd134a31`, padres a542/b7c8 y árbol c10f273a,2271blobs cotejados. Revisor R3 favorable con53 pruebas focales; Validador R3 favorable con carga9/444,28consultas y tres vistas, conservando la lectura humana NOT_VALIDATED. Sus originales y controles quedan custodiados.
+
+Tras integrarse el modelo único en develop `ee84f791`, Paris autoriza reconciliar esta base. Se integra sin commit: un único conflicto de índice de continuidad, resuelto conservando las entradas de ambas historias. No cambia la composición, loader, manifiesto, métricas o provisioning. Los objetos completos Compose Grafana/Prometheus/PostgreSQL y sus recursos compartidos son idénticos. Su clausura de arranque incluye backend/processor, cuyas rutas de recursos v4 sí cambian; la evaluación R4 cubre ese impacto sin repetir campañas o baterías intactas. No se incorporan las PR147/149 todavía abiertas.
+
+El default sigue9/444; el suplemento histórico de modelos18filas permanece opcional. A petición de Paris se cargó fuera del producto con el loader existente (10/462), se cotejaron18filas/metadatos exactos y se capturaron todas las secciones con modelos poblados. Las14capturas/11vistas, procedencia y retirada se conservaron fuera de Git y entregaron a PM; no se añadieron al manifiesto de producto. Cohorte16/10,84respuestas/modelo, valoración provisional; separada de robustez y comparativa posterior. No nuevas llamadas o juicios.
+
+Al fijar esta documentación, revisión/validación afectadas R4 requieren sus nuevas referencias PM. Se conserva la evidencia técnica previa por identidad y límites, sin extender dictámenes unilateralmente. Lectura humana, aprobación final, archivo y publicación conservan sus etapas. No hay commit/push/PR del nuevo merge por el implementador.
+
+## Reconciliación previa R3 con develop — 21/10/2026
+
 
 El candidato remoto comunicado por PM es `a542e8cb`, sobre `bc94a4da`. Paris autoriza incorporar exclusivamente `develop` `b7c8b708`; el merge local sin commit termina sin conflictos. No se incorpora la rama independiente de cambio de modelo. Los apartados siguientes conservan los cortes históricos anteriores.
 

@@ -41,7 +41,7 @@ def runtime_service(main_module, monkeypatch, *, data=None, raw=None, status=200
     clock = Clock()
     def transport(payload, *, timeout_seconds):
         return runtime._provider_request("http://synthetic-gateway.invalid", "synthetic-diagnostic-key",
-                                         payload, timeout_seconds, "deepinfra/fp4", "a" * 32)
+                                         payload, timeout_seconds, "deepinfra/fp8", "a" * 32)
     service = service_type(main_module)(policy=policy() if configured is None else configured, transport=transport, clock=clock)
     return service, connection, clock
 
@@ -56,7 +56,7 @@ def test_actual_http_parser_accepts_functional_response_independent_of_model(mai
     sent = json.loads(connection.request.call_args.kwargs["body"])
     assert sent["messages"] == [{"role": "user", "content": "Return exactly the two uppercase letters OK. Do not include punctuation, quotes, whitespace, or any other text."}]
     assert sent["model"] == "economicon-chat" and sent["max_tokens"] == 32
-    assert sent["provider"]["order"] == ["deepinfra/fp4"]
+    assert sent["provider"]["order"] == ["deepinfra/fp8"]
     assert sent["provider"]["allow_fallbacks"] is False
     assert sent["reasoning"] == {"enabled": False}
     connection.request.assert_called_once()
@@ -217,7 +217,7 @@ def test_diagnostic_credential_is_removed_before_receipt_and_retention(main_modu
     service, connection, clock = runtime_service(main_module, monkeypatch, data=body(model))
     runtime = importlib.import_module("app.services.system_health_runtime")
     receipt = runtime._provider_request("http://synthetic-gateway.invalid", "synthetic-diagnostic-key",
-                                        {"provider": {"max_price": {"prompt": "0.6", "completion": "0.9"}}}, 30, "deepinfra/fp4", "b" * 32)
+                                        {"provider": {"max_price": {"prompt": "0.6", "completion": "0.9"}}}, 30, "deepinfra/fp8", "b" * 32)
     assert receipt["result_valid"] is True
     assert receipt["model"] is None
     assert "synthetic-diagnostic-key" not in json.dumps(receipt)

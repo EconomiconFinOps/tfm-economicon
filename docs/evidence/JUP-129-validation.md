@@ -147,3 +147,13 @@ Evidencia y recursos aislados fuera del producto, sin importación manual ni sta
 R2 se conserva íntegra: revisión técnica favorable con diez pruebas y validación técnica focal favorable con nueve pruebas y15 consultas; operación CUA por el principal bajo instrucciones, inspección y dictamen del Validador. No son aprobación humana ni se extienden automáticamente al candidato reconciliado. Al fijar esta evidencia faltan nuevas referencias PM y evaluación independiente sólo de lo afectado.
 
 Lectura humana **NOT_VALIDATED**; 368 SKIP backend/144 SKIP processor e históricos conservados. La CI push previa comunicada por PM corresponde a a542 antes de esta integración, no acredita el candidato sin commit. Aprobaciones humanas, archivo y publicación conservan su etapa y permisos.
+
+## Base ee84 y despliegue conservado — 21/10/2026 (R4)
+
+PM verificó y commiteó R3 en bd134a31 con padres a542/b7c8,2271blobs y sólo normalizaciones de texto exigidas por atributos. Después se integra únicamente ee84 de develop sin commit. Conflicto único en el índice de continuidad, resuelto manteniendo ambas entradas. Los dictámenes R3 (53 pruebas propias del Revisor y28consultas/tres vistas del Validador) se conservan con sus originales; no se convierten en aprobación automática del nuevo candidato.
+
+ee84 no cambia los JSON Grafana, el loader, el manifiesto de datos ni el provisioning/Prometheus. El análisis de objetos completos Compose confirma Grafana/Prometheus/PostgreSQL y recursos compartidos idénticos; la clausura de arranque sí incluye backend/processor con nuevas rutas de recursos v4. Se delimita esa dependencia para revisión/validación afectadas. La hipótesis inicial de que todas las dependencias eran idénticas fue descartada y conservada fuera del producto; no se presenta como defecto del dashboard ni como PASS de la nueva base. No se hacen inferencias reales para esta reconciliación.
+
+La carga opcional de modelos solicitada por Paris conserva las18filas y metadatos del informe histórico16/10: default9/444+18=10/462;84respuestas por modelo. Todas las secciones se capturaron en el Grafana real del Compose general, sin modificar archivos del candidato, sin nuevas campañas/juicios/llamadas. Capturas y recibos externos en custodia PM, anteriores de ausencia conservados. Salud sin tráfico y comparación sin referencia permanecen ausencias legítimas.
+
+R4 se fija para nuevas referencias PM y evaluación sólo del delta; las comprobaciones previas no se repiten por rutina. Lectura humana NOT_VALIDATED; omisiones/históricos y permisos finales conservados. La integración del modelo no equivale a ejecutar ni aceptar una campaña nueva del asistente.

@@ -123,11 +123,11 @@ la baseline 1.82.6 SHALL NOT ejecutarse. No se admite `latest`.
 
 ### Requirement: Endpoint explicito del principal sin cambiar contrato
 
-Para la prueba aprobada, `economicon-chat` SHALL usar el mismo GLM-5.2 mediante
-OpenRouter con `provider.only: [deepinfra/fp4]` y `require_parameters: true`.
+Para la configuración vigente, `economicon-chat` SHALL usar DeepSeek V4.1 Flash mediante
+OpenRouter con `provider.only: [deepinfra/fp8]` y `require_parameters: true`.
 SHALL conservar schema estricto completo, ZDR, `data_collection: deny`,
 `allow_fallbacks: false`, `reasoning.enabled: false`, 30 s y maximo 800 tokens.
-Los alias secundario y embeddings SHALL permanecer sin cambios.
+El alias secundario SHALL retirarse y embeddings SHALL permanecer sin cambios.
 
 #### Scenario: Ruta principal compatible
 - **WHEN** se prepara la solicitud del principal para la prueba aprobada
@@ -294,4 +294,34 @@ conservar exclusivamente metricas de estado, modelo, latencia, tokens y coste.
 #### Scenario: Casos de benchmark incompletos
 - **WHEN** el dataset incluye IDs duplicados, prompts vacios o criterios vacios
 - **THEN** el benchmark se detiene antes de ejecutar solicitudes externas
+
+### Requirement: Único modelo generativo activo
+The system SHALL offer economicon-chat as the only active generative alias,
+mapping it to openrouter/deepseek/deepseek-v4.1-flash through deepinfra/fp8 normal.
+It SHALL retain strict output validation, ZDR, data_collection deny, disabled
+fallbacks/reasoning and existing permissions, budgets and retry/deadline limits.
+Historical reports SHALL retain their original model identity.
+
+#### Scenario: Active model selection
+- **WHEN** the current gateway configuration is loaded
+- **THEN** only the Flash generative mapping and unchanged embedding mapping exist
+- **AND** retired GLM/Pro aliases cannot select another generative route
+
+#### Scenario: Coordinated consumers
+- **WHEN** chat, summary or an authorized provider diagnostic builds a request
+- **THEN** it selects the stable alias and approved FP8 route without FP4/fallback
+
+### Requirement: Tokenizer versioned without destructive history changes
+New generations SHALL count with an immutable official Flash tokenizer installed
+and verified at build time. Historical summary contracts SHALL select their exact
+original reader and tokenizer. Limits and embedding tokenization SHALL not change.
+
+#### Scenario: Historical summary read
+- **WHEN** a stored summary has an authorized historical contract
+- **THEN** its original reader validates it without rewriting its bytes or hashes
+
+#### Scenario: New resource or incompatible tokenizer
+- **WHEN** active resources are loaded or an incompatible contract is supplied
+- **THEN** Flash resources use their pinned tokenizer and mismatches fail closed
+- **AND** no asset is downloaded during runtime
 

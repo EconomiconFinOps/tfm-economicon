@@ -2,6 +2,7 @@
 .secrets
 **/.secrets
 app/agents/prompt_resources/jup035/chat/v2/tokenizer.json
+app/agents/prompt_resources/jup035/chat/v4/tokenizer.json
 .env
 .env.*
 **/.env

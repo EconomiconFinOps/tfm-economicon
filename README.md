@@ -205,7 +205,7 @@ Desde la administracion en `http://127.0.0.1:44000` (o
 `LITELLM_ADMIN_PORT`), crea **dos** claves virtuales con `POST /key/generate`:
 una limitada a `models: ["economicon-embedding"]` para
 `BACKEND_LITELLM_API_KEY`, y otra limitada a los aliases necesarios
-(`economicon-chat`, `economicon-chat-deepseek`, `economicon-embedding`) para
+(`economicon-chat`, `economicon-embedding`) para
 `LITELLM_API_KEY` del processor. Usa la clave maestra solo para esa operacion
 administrativa. Configura expiracion y limites de gasto, tasa y concurrencia
 aprobados; la suma de los topes no sustituye el presupuesto agregado de
@@ -631,10 +631,10 @@ exista un prototipo o un provider mock no acredita el cierre de esas tarjetas.
 GET `/health/status` usa `HEALTH_PROBE_TIMEOUT_SECONDS=8` por defecto (número finito entre 2 y 8 segundos inclusivos), 18 segundos de agregación después de autorizar y 20 segundos de espera del cliente. El plazo de la sonda incluye arranque/importaciones del proceso desechable; conserva cuatro slots y no añade reintentos. Puede reducirse dentro del rango si el entorno lo permite; un timeout sigue siendo no verificado. POST conserva 30/35 segundos servidor/cliente y el polling GET visible 30 segundos. El health público mantiene su contrato.
 
 El transporte elimina del modelo informativo cualquier reflexión de la credencial diagnóstica completa antes del recibo y de su retención/serialización, sin invalidar una respuesta funcional sana por metadata descartada. Para reproducir disponibilidad y recuperación, usar el Compose documentado y el override no generativo del [runbook de salud](docs/runbooks/system-health.md), con recursos propios y credenciales sintéticas; no activar proveedor real para regresiones.
-# QA dialogue memory: summary bundle v3
+# QA dialogue memory: summary bundle v4
 
 The active compression bundle is
-`apps/processor/app/agents/prompt_resources/jup035/summary/v3`. It preserves the
+`apps/processor/app/agents/prompt_resources/jup035/summary/v4`. It preserves the
 SummaryResponse v2 JSON shape; the chat still uses FinOpsResponse 1.0 and reserves
 3200 output tokens by default. Compression reserves 10000 output tokens independently, accepts
 at most 8192 canonical JSON tokens and 6144 textual tokens, and requests concise
@@ -646,17 +646,16 @@ margin). For the bounded large-history QA run, set both variables to 32768 in
 both services. The authenticated descriptor includes the effective reserve.
 Request byte guards remain 1 MiB for summary and 2 MiB for chat.
 
-Package or mount the **whole summary directory**, retaining the unmodified `v2`
-beside `v3`. Backend defaults to `/opt/economicon/summary/v3`; processor defaults
-to its packaged `app/agents/prompt_resources/jup035/summary/v3`. Override
+Package or mount the **whole summary directory**, retaining unmodified `v2/v3`
+beside `v4`. Backend defaults to `/opt/economicon/summary/v4`; processor defaults
+to its packaged `app/agents/prompt_resources/jup035/summary/v4`. Override
 `SUMMARY_RESOURCE_DIRECTORY` per service when mounting an isolated QA bundle.
-Keep the existing pinned chat tokenizer and `CHAT_TOKENIZER_FILE` configuration.
-Copying only v3 is insufficient: startup verifies the legacy sibling before
-accepting existing artifacts. The processor's existing `COPY app` includes both
-versions; the backend image copies both from the repository build context.
+Use the pinned Flash `CHAT_TOKENIZER_FILE` and retain the historical reader asset
+at `CHAT_LEGACY_TOKENIZER_FILE`. Copying only v4 is insufficient: startup verifies
+the legacy siblings before accepting existing artifacts. Both images package them.
 
-V2 artifacts are validated with their original exact contract and limits. Reading
-does not relabel or rewrite them. Successor v3 artifacts retain parent identity,
+V2/V3 artifacts are validated with their original exact contracts and limits. Reading
+does not relabel or rewrite them. Successor v4 artifacts retain parent identity,
 hash, lineage and previous payload; new observations include the execution
 budget. Chat measures the complete escaped memory prefix together with essentials,
 schema, output and margin, and rejects insufficient context rather than truncating.
@@ -665,12 +664,14 @@ schema, output and margin, and rejects insufficient context rather than truncati
 
 ### Pinned tokenizer preparation (JUP-122)
 
-The 20 MB tokenizer is generated, not versioned. Backend and processor image
-builds download it from the official `zai-org/GLM-5.2` repository at revision
-`a66456a59f21345d1e5e586345c448a9106d29d7`, then verify 20217442 bytes and SHA256
-`19e773648cb4e65de8660ea6365e10acca112d42a854923df93db4a6f333a82d` before installing
-it. Chat and summary retain their existing tokenizer pins. A corrupt download
-fails the build; neither runtime downloads model assets.
+Tokenizers are generated, not versioned. Active chat/summary v4 use the official
+`deepseek-ai/DeepSeek-V4.1-Flash` tokenizer, revision
+`314113f8a7dadb388215396ba5fbee2c610a04d6`, 6367257 bytes, SHA256
+`c90dfa01249db1be4245780a052ede752e1361c612ac6d08e2bdada7d599476b`.
+The original GLM tokenizer remains pinned unchanged solely for historical
+summary readers, not as a generative alternative or native Flash counter.
+Both are verified at preparation/build time; corrupt downloads fail closed.
+Neither runtime downloads model assets; embeddings and their tokenizer are unchanged.
 
 Before running Python tests outside Docker, prepare the same local artifact:
 
@@ -680,9 +681,10 @@ corepack pnpm tokenizer:test
 ```
 
 Preparation reuses a verified local cache without network and replaces an
-artifact only after successful verification. Its default path is
-`apps/processor/app/agents/prompt_resources/jup035/chat/v2/tokenizer.json`, excluded
-from Git and Docker contexts. Image builds fetch their own verified copy.
+artifact only after successful verification. Active output defaults to
+`apps/processor/app/agents/prompt_resources/jup035/chat/v4/tokenizer.json`; the
+historical reader remains in `chat/v2/tokenizer.json`. Both are excluded from Git
+and Docker contexts. Image builds fetch their own verified copies.
 CI prepares the resource before backend/processor tests, including native SQL.
 Build requires access to the pinned source; application startup does not.
 
@@ -740,9 +742,10 @@ output tokens by default; summary reserves 10000 independently. Reduced context 
 match across both services. Do not change the shared gateway/model defaults for
 this deployment. Build and isolated runtime validation are distinct checks.
 
-The active chat bundle is `jup035/chat/v3`; the original v2 bundle is retained
-unchanged; its generated pinned tokenizer is reused by v3. Backend images package
-the v3 prompts and that tokenizer together. `CHAT_MAX_OUTPUT_TOKENS` accepts
+The active chat bundle is `jup035/chat/v4`, with the pinned native Flash tokenizer.
+Historical resources remain unchanged for compatible readers, not new generation
+selection. Backend images package v4 and the historical reader assets.
+`CHAT_MAX_OUTPUT_TOKENS` accepts
 integers 1..3200 in both services, with 3200 as the approved default and maximum.
 Paris authorized this default directly on 11/10/2026, superseding the initial
 1600-then-escalate procedure. This does not change ingestion's 800-token configuration,
