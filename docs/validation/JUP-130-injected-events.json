@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "origin": "scripts/demo_dataset.py",
+  "description": "Aumentos de coste inyectados en SEPTEMBER y EXTENSION del generador de datos de la demo, escritos a partir del generador y no de la salida del detector. Un evento es un aumento de al menos 100 EUR sobre el dia anterior. detectable_by_design es falso cuando el coste de los siete dias anteriores del servicio es cero, porque la regla del detector exige una semana de referencia positiva. La caida de Compute del 2026-10-04 no es un evento: la regla solo vigila aumentos. Una prueba comprueba esta lista contra el generador.",
+  "tolerance_days": 3,
+  "events": [
+    { "id": "EV-01", "service": "Compute", "start_date": "2026-09-09", "nature": "sustained_step_up", "detectable_by_design": true },
+    { "id": "EV-02", "service": "Analytics", "start_date": "2026-09-10", "nature": "one_day_spike", "detectable_by_design": true },
+    { "id": "EV-03", "service": "Backup", "start_date": "2026-09-10", "nature": "one_day_spike_from_zero", "detectable_by_design": false },
+    { "id": "EV-04", "service": "Networking", "start_date": "2026-09-14", "nature": "first_appearance", "detectable_by_design": false },
+    { "id": "EV-05", "service": "Database", "start_date": "2026-09-16", "nature": "five_day_step_up", "detectable_by_design": true },
+    { "id": "EV-06", "service": "Tools", "start_date": "2026-10-08", "nature": "one_day_spike", "detectable_by_design": true },
+    { "id": "EV-07", "service": "Storage", "start_date": "2026-10-20", "nature": "sustained_step_up", "detectable_by_design": true }
+  ]
+}

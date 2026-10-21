@@ -1,8 +1,8 @@
 ## 1. Eventos inyectados y prueba de coherencia
 
-- [ ] 1.1 Escribir `docs/validation/JUP-130-injected-events.json` con los siete eventos del generador (servicio, día de inicio, naturaleza, detectable por diseño) a partir de `SEPTEMBER` y `EXTENSION`, sin leer la salida del detector
-- [ ] 1.2 Prueba que comprueba cada evento contra `anomaly_levels()` y que todo salto de aumento del generador tiene su evento; una caída (Compute el 4/10) no es evento
-- [ ] 1.3 Mutación de la prueba: borrar un evento, añadir uno falso o mover un día hace fallar la prueba
+- [x] 1.1 Escribir `docs/validation/JUP-130-injected-events.json` con los siete eventos del generador (servicio, día de inicio, naturaleza, detectable por diseño) a partir de `SEPTEMBER` y `EXTENSION`, sin leer la salida del detector
+- [x] 1.2 Prueba que comprueba cada evento contra `anomaly_levels()` y que todo salto de aumento del generador tiene su evento; una caída (Compute el 4/10) no es evento
+- [x] 1.3 Mutación de la prueba: borrar un evento, añadir uno falso o mover un día hace fallar la prueba
 
 ## 2. Medición de anomalías
 
