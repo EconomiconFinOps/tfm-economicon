@@ -14,10 +14,10 @@
 
 ## 3. Medición de datos
 
-- [ ] 3.1 Subcomando `data`: frescura por inquilino a partir del último día con datos y la fecha de referencia, sin contar días sin registro como cero
-- [ ] 3.2 Reconciliación por divisa: suma decimal exacta del CSV del generador frente al total del API de resumen, diferencia en unidades menores y `reconciled`
-- [ ] 3.3 Sin API o sin datos, filas `not_measured`; nunca `reconciled` verdadero sin comparación
-- [ ] 3.4 Pruebas: totales iguales, diferencia de un céntimo, dos divisas sin compensación, API caída, inquilino sin datos y datos atrasados
+- [x] 3.1 Subcomando `data`: frescura por inquilino a partir del último día con datos y la fecha de referencia, sin contar días sin registro como cero
+- [x] 3.2 Reconciliación por divisa: suma decimal exacta del CSV del generador frente al total del API de resumen, diferencia en unidades menores y `reconciled`
+- [x] 3.3 Sin API o sin datos, filas `not_measured`; nunca `reconciled` verdadero sin comparación
+- [x] 3.4 Pruebas: totales iguales, diferencia de un céntimo, dos divisas sin compensación, API caída, inquilino sin datos y datos atrasados
 - [ ] 3.5 Ejecutar contra la pila real, versionar informe y tabla en `docs/evidence/JUP-130/`
 
 ## 4. Medición de coste de IA
