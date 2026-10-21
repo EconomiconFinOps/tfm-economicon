@@ -4,40 +4,48 @@
   "figures": [
     {
       "id": "robustness-outcomes",
-      "sections": ["h"],
+      "sections": [
+        "h"
+      ],
       "figure": "Robustez con el chat real: aciertos, fallos y bloqueadas de 29 casos",
       "previous_value": "7 aciertos, 17 fallos, 5 bloqueadas de 29 (20/10/2026, una repetición, una revisora, provisional)",
-      "new_value": "No medido",
+      "new_value": "7 aciertos, 21 fallos, 1 bloqueada de 29 (21/10/2026, una repetición, una revisora, provisional; 28 casos evaluados frente a 24)",
       "status": "cambia",
       "inventory_id": "live-robustness-jup071",
-      "evidence": "docs/evidence/JUP-071-live-r1-report.json",
-      "note": "El valor nuevo será provisional y no podrá compararse con el anterior como mejora o empeoramiento si cambian la batería o la revisora. El modelo de la medición anterior no está atestiguado."
+      "evidence": "docs/evidence/JUP-071-live-flash-r1-report.json",
+      "note": "Valor provisional medido con DeepSeek V4.1 Flash. No puede leerse como mejora ni empeoramiento: cambiaron a la vez el modelo, los recursos del chat (v3 a v4), el método de recogida y el denominador. El modelo anterior no está atestiguado."
     },
     {
       "id": "robustness-prohibitions",
-      "sections": ["h"],
+      "sections": [
+        "h"
+      ],
       "figure": "Prohibiciones incumplidas en la campaña de robustez",
       "previous_value": "0 de 55",
-      "new_value": "No medido",
+      "new_value": "0 de 64 (21/10/2026, una repetición, provisional)",
       "status": "cambia",
       "inventory_id": "live-robustness-jup071",
-      "evidence": "docs/evidence/JUP-071-validation.md",
-      "note": "Una cifra en cero se declara solo si se mide; sin medición se rotula «No medido»."
+      "evidence": "docs/evidence/JUP-071-live-flash-r1-report.json",
+      "note": "Cero medido, no supuesto. El denominador pasa de 55 a 64 porque hay menos casos bloqueados."
     },
     {
       "id": "robustness-indicators",
-      "sections": ["h"],
+      "sections": [
+        "h"
+      ],
       "figure": "Indicadores de las cuatro familias de un RAG (19 filas) de la campaña de robustez",
       "previous_value": "Valores de la ejecución del 20/10/2026 cargados en el dashboard",
-      "new_value": "No medido",
+      "new_value": "Valores de la ejecución del 21/10/2026 cargados en el dashboard (19 filas, ejecución JUP-071-864a0d6dc666)",
       "status": "cambia",
       "inventory_id": "live-robustness-jup071",
-      "evidence": "docs/evidence/JUP-071-live-r1-rows.json",
-      "note": "Salen de las mismas respuestas generadas; se recalculan con la campaña ligera."
+      "evidence": "docs/evidence/JUP-071-live-flash-r1-rows.json",
+      "note": "Salen de las mismas respuestas de la campaña ligera. Es una serie aparte de la de GLM-5.2: el dashboard no las compara."
     },
     {
       "id": "template-baseline",
-      "sections": ["h"],
+      "sections": [
+        "h"
+      ],
       "figure": "Línea base del chat sin modelo: casos aceptados",
       "previous_value": "0 de 20 casos de respuesta aceptados (plantilla con fragmentos)",
       "new_value": "No aplica: antecedente histórico",
@@ -48,40 +56,52 @@
     },
     {
       "id": "ai-cost-billed-vs-estimated",
-      "sections": ["h", "b"],
+      "sections": [
+        "h",
+        "b"
+      ],
       "figure": "Coste de IA contrastado con OpenRouter",
       "previous_value": "100 de 100 consultas contrastadas con OpenRouter; estimado frente a facturado (periodo 9-20/10/2026, todas con GLM-5.2)",
-      "new_value": "No medido",
+      "new_value": "75 de 75 consultas contrastadas con OpenRouter: 0,049456 USD estimados frente a 0,049765 USD facturados (21-22/10/2026; 73 con DeepSeek V4.1 Flash y 2 con GLM-5.2)",
       "status": "cambia",
       "inventory_id": "ai-cost-jup130",
-      "evidence": "docs/evidence/JUP-130/JUP-130-ai-cost.md",
-      "note": "Se recalcula leyendo el registro del gateway durante la campaña ligera; solo cubre ese periodo y esas consultas."
+      "evidence": "docs/evidence/JUP-133/JUP-133-ai-cost.md",
+      "note": "Ventana mixta: las 2 consultas de GLM-5.2 son anteriores a la campaña. Se informan por modelo en la evidencia."
     },
     {
       "id": "cost-per-100-queries",
-      "sections": ["b"],
+      "sections": [
+        "b"
+      ],
       "figure": "Estimación del coste por 100 consultas del caso de negocio",
       "previous_value": "Aproximadamente 0,64 USD por 100 consultas (medido con GLM-5.2 sobre 28 consultas)",
-      "new_value": "No medido",
+      "new_value": "Aproximadamente 0,06 USD por 100 consultas con DeepSeek V4.1 Flash (0,000596 USD facturados por consulta, 73 consultas, 21/10/2026)",
       "status": "cambia",
       "inventory_id": "ai-cost-jup130",
-      "evidence": "docs/evidence/JUP-130/JUP-130-ai-cost.md",
-      "note": "Depende de la tarifa por token y de los tokens por consulta del modelo servido."
+      "evidence": "docs/evidence/JUP-133/JUP-133-ai-cost.md",
+      "note": "Medido sobre las consultas de la campaña ligera, no sobre una carga de uso real. Con GLM-5.2 eran 0,002601 USD por consulta."
     },
     {
       "id": "latency-live-vs-target",
-      "sections": ["b", "h"],
+      "sections": [
+        "b",
+        "h"
+      ],
       "figure": "Latencia p95 del chat frente al objetivo de 10 s",
       "previous_value": "Objetivo de 10 s no cumplido con el modelo anterior",
-      "new_value": "No medido",
+      "new_value": "p95 de 41,3 s por conversación en el banco de 28 preguntas (22/10/2026, ordenador local de Lucía); objetivo de 10 s no cumplido",
       "status": "cambia",
       "inventory_id": "live-signals-prometheus",
-      "evidence": "docs/validation/JUP-067-metrics.md",
-      "note": "Sin tráfico tras el cambio o sin campaña que mida la latencia total, queda «No medido». La campaña de robustez no mide latencia."
+      "evidence": "docs/evidence/JUP-133/JUP-133-bank28-report.md",
+      "note": "Sensible a la infraestructura: incluye backend, cola, validador y arranque en frío, no solo la llamada al modelo (4 a 16 s). Repetir en la infraestructura definitiva antes de usarla en la memoria. No es comparable con el valor anterior."
     },
     {
       "id": "models-acceptable-27-of-28",
-      "sections": ["e", "g", "h"],
+      "sections": [
+        "e",
+        "g",
+        "h"
+      ],
       "figure": "Comparativa GLM-5.2 frente a DeepSeek V4.1 Flash: respuestas aceptables",
       "previous_value": "27 de 28 aceptables en cada modelo (19/10/2026)",
       "new_value": "No aplica: antecedente histórico",
@@ -92,7 +112,11 @@
     },
     {
       "id": "models-latency-p95",
-      "sections": ["e", "g", "h"],
+      "sections": [
+        "e",
+        "g",
+        "h"
+      ],
       "figure": "Comparativa: p95 de tiempo por modelo",
       "previous_value": "22,5 s (GLM-5.2) y 40,8 s (DeepSeek V4.1 Flash)",
       "new_value": "No aplica: antecedente histórico",
@@ -103,7 +127,11 @@
     },
     {
       "id": "models-cost",
-      "sections": ["e", "g", "h"],
+      "sections": [
+        "e",
+        "g",
+        "h"
+      ],
       "figure": "Comparativa: coste comparable por modelo",
       "previous_value": "0,1806 USD frente a 0,0392 USD (-78,3 %)",
       "new_value": "No aplica: antecedente histórico",
@@ -114,7 +142,10 @@
     },
     {
       "id": "rag-campaigns-useful-context",
-      "sections": ["e", "h"],
+      "sections": [
+        "e",
+        "h"
+      ],
       "figure": "Campañas RAG A-D: contexto útil en preguntas originales y adicionales",
       "previous_value": "Originales A 60,7 %, B 56,9 %, C 51,7 %, D 47,8 %; adicionales A 68,8 %, B 65,6 %, C 75,0 %, D 84,4 % (17/10/2026)",
       "new_value": "Sin clasificar",
@@ -125,7 +156,10 @@
     },
     {
       "id": "rag-campaigns-cost",
-      "sections": ["e", "h"],
+      "sections": [
+        "e",
+        "h"
+      ],
       "figure": "Campañas RAG A-D: coste de las preguntas por campaña",
       "previous_value": "Entre 0,18 y 0,20 USD por campaña",
       "new_value": "Sin clasificar",
@@ -136,7 +170,9 @@
     },
     {
       "id": "anomaly-detector",
-      "sections": ["h"],
+      "sections": [
+        "h"
+      ],
       "figure": "Detector de anomalías: eventos detectados",
       "previous_value": "5 de 7 eventos; 5 de 5 los detectables por diseño",
       "new_value": "No se repite",
@@ -147,7 +183,9 @@
     },
     {
       "id": "data-freshness-reconciliation",
-      "sections": ["h"],
+      "sections": [
+        "h"
+      ],
       "figure": "Reconciliación y frescura de los datos",
       "previous_value": "Valores de JUP-130 sobre datos sintéticos",
       "new_value": "No se repite",
@@ -158,7 +196,10 @@
     },
     {
       "id": "retrieval-calibration",
-      "sections": ["e", "h"],
+      "sections": [
+        "e",
+        "h"
+      ],
       "figure": "Calibración de la recuperación: umbral de distancia 0,6 y máximo de 4 resultados",
       "previous_value": "Umbral 0,6 y 4 resultados",
       "new_value": "No se repite",

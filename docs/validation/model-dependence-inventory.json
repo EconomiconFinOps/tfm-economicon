@@ -29,7 +29,7 @@
       },
       "sources": [],
       "evidence": ["docs/validation/JUP-123-N3-local-review.md", "docs/validation/JUP-035-evaluation-partition.json", "docs/validation/JUP-035-receipt-evaluation.md"],
-      "rerun": "No cabe en la campaña ligera de JUP-071: son 84 ejecuciones y no están en el presupuesto de 1,5 USD. Se decide en el plan de reejecución; si no se repite consta por escrito el motivo y la cifra de la memoria queda como obsoleta sin sustituto."
+      "rerun": "Parcial. Las 84 ejecuciones (28 casos por 3 repeticiones) no se repiten: requieren el ejecutor de la campaña B con el libro de contabilidad de JUP-123 y la revisión por requisito de unas 78 respuestas, no es cuestión de presupuesto. Sí se repitió una vez el banco de 28 preguntas con el chat real y se puntuó con la herramienta de JUP-070 (informe del banco en docs/evidence/JUP-133): da una referencia nueva con otra metodología, no sustituye la conformidad por requisito de N3/N5, que queda obsoleta."
     },
     {
       "id": "ai-cost-jup130",

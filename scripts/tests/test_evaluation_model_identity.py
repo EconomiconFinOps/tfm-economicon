@@ -316,7 +316,8 @@ class VersionedManifestTests(unittest.TestCase):
 
     def test_runs_without_a_proven_model_stay_unregistered(self) -> None:
         for run_id, run in self.runs.items():
-            if run["source"] in ("JUP-070", "JUP-078", "JUP-022", "JUP-068", "JUP-130-anomalies", "JUP-130-data"):
+            # La campaña del banco de JUP-069 con el chat real (JUP-133) es la única de JUP-070 con modelo declarado.
+            if run["source"] in ("JUP-070", "JUP-078", "JUP-022", "JUP-068", "JUP-130-anomalies", "JUP-130-data")                     and not (run["report_path"] or "").endswith("JUP-133-bank28-report.json"):
                 for key in IDENTITY:
                     self.assertIsNone(run[key], f"{run_id}.{key}")
 

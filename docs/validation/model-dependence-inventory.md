@@ -17,7 +17,7 @@ Una medida solo es `independiente` si la comprobación está hecha y es localiza
 | Medida | Clase | Por qué | Reejecución |
 | --- | --- | --- | --- |
 | Robustez con el chat real (JUP-071) | dependiente | Puntúa respuestas generadas | Campaña ligera, tope 1,5 USD |
-| Batería del chat N3/N5 (JUP-035/123) | dependiente | Revisa por requisito respuestas generadas | Sin decidir: no cabe en el tope |
+| Batería del chat N3/N5 (JUP-035/123) | dependiente | Revisa por requisito respuestas generadas | Parcial: se repitió una vez el banco de 28 preguntas; las 84 ejecuciones no |
 | Coste de IA (JUP-130) | dependiente | Tokens por tarifa del modelo servido | Se recalcula sobre la campaña ligera, sin gasto extra |
 | Señales en vivo (Prometheus) | dependiente | La latencia y los errores incluyen la generación | Se leen con tráfico tras el cambio |
 | Detector de anomalías (JUP-130) | independiente | Reglas deterministas sobre las series de coste | No |
@@ -33,4 +33,4 @@ Una medida solo es `independiente` si la comprobación está hecha y es localiza
 
 - **El modelo de la medición «antes» no está atestiguado.** La ejecución viva de JUP-071 del 2026-10-20 se publica como `live_unverified`: el instrumento no verifica qué modelo respondió, por eso guarda `generation_model` nulo y el dashboard la marca «no real: sin modelo verificado». Según la configuración de ejemplo del gateway y la tarjeta de JUP-132, el alias apuntaba a GLM-5.2, pero eso es una declaración, no una atestación. La ejecución nueva tendrá el mismo límite si no cambia el contrato de JUP-035. El informe antes/después lo debe decir, y los campos de identidad del modelo de este cambio se registran como declarados.
 - **Campos de proveedor en el informe vivo.** El informe de JUP-071 guarda el proveedor y el alias del chat (`litellm-openrouter`, `economicon-chat`) en las columnas `embedding_provider` y `embedding_alias` de la ejecución normalizada. Es una correspondencia del adaptador existente; este cambio no la modifica porque cambiar instrumentos está fuera de alcance, pero hay que tenerlo en cuenta al leer esas columnas.
-- **N3/N5 no se ha decidido.** Son 84 ejecuciones. Si no se repiten, las cifras de la memoria que dependen de ellas quedan obsoletas sin sustituto.
+- **N3/N5 se repitió solo en parte.** Las 84 ejecuciones y la revisión por requisito no se repiten (necesitan el ejecutor de la campaña B y unas 78 revisiones). Sí se midió una vez el banco de 28 preguntas con la herramienta de JUP-070; esa referencia no sustituye la conformidad por requisito, que queda obsoleta.

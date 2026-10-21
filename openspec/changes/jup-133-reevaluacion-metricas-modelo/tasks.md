@@ -31,19 +31,19 @@ Trello: https://trello.com/c/Yv1ETc2G
 
 ## 4. Reejecución y informe (bloqueado por JUP-132 y por autorización de presupuesto)
 
-- [ ] 4.1 Confirmar que JUP-132 está integrado, o que existe un gateway aislado con `economicon-chat` apuntando a DeepSeek V4.1 Flash
-- [ ] 4.2 Confirmar con Lucia el lanzamiento del gasto (tope autorizado: 1,5 USD en total, clave de OpenRouter de Lucia, proveedor el que fije JUP-132) y registrarlo en el plan; parar al alcanzar el tope
-- [ ] 4.3 Reejecutar las campañas `dependiente` dentro del presupuesto, con identidad completa del modelo en cada ejecución
-- [ ] 4.4 Añadir las ejecuciones nuevas al manifiesto versionado y cargarlas con `evaluation-dashboard:load`
-- [ ] 4.4b Verificar en una pila real de Grafana (no solo con `rows`) que las ejecuciones nuevas y las de GLM-5.2 salen como ejecuciones distintas con su modelo, que no comparten serie y que cada panel afectado (ejecuciones, matriz por métrica, indicadores de robustez de JUP-071, coste de IA de JUP-130) responde sin error; guardar capturas en `docs/evidence/JUP-133/`
-- [ ] 4.5 Rellenar el informe antes/después, la lista de cifras de la memoria, lo no reevaluado y el gasto real frente al presupuesto
-- [ ] 4.6 Dejar constancia escrita de cada campaña dependiente que no se reejecutó y su motivo
+- [x] 4.1 Confirmar que JUP-132 está integrado, o que existe un gateway aislado con `economicon-chat` apuntando a DeepSeek V4.1 Flash
+- [x] 4.2 Confirmar con Lucia el lanzamiento del gasto (tope autorizado: 1,5 USD en total, clave de OpenRouter de Lucia, proveedor el que fije JUP-132) y registrarlo en el plan; parar al alcanzar el tope
+- [x] 4.3 Reejecutar las campañas `dependiente` dentro del presupuesto, con identidad completa del modelo en cada ejecución
+- [x] 4.4 Añadir las ejecuciones nuevas al manifiesto versionado y cargarlas con `evaluation-dashboard:load`
+- [x] 4.4b Verificar en una pila real de Grafana (no solo con `rows`) que las ejecuciones nuevas y las de GLM-5.2 salen como ejecuciones distintas con su modelo, que no comparten serie y que cada panel afectado (ejecuciones, matriz por métrica, indicadores de robustez de JUP-071, coste de IA de JUP-130) responde sin error; guardar capturas en `docs/evidence/JUP-133/`
+- [x] 4.5 Rellenar el informe antes/después, la lista de cifras de la memoria, lo no reevaluado y el gasto real frente al presupuesto
+- [x] 4.6 Dejar constancia escrita de cada campaña dependiente que no se reejecutó y su motivo
 
 ## 5. Cierre y verificación
 
-- [ ] 5.1 Pasar la batería completa: `corepack pnpm evaluation-dashboard:test`, `corepack pnpm test`, `corepack pnpm lint`, `corepack pnpm openspec:validate`, `corepack pnpm jup:check -- --change jup-133-reevaluacion-metricas-modelo` y `corepack pnpm jup:cleanup:check`
-- [ ] 5.2 Revisión adversarial con el agente `adversarial-reviewer` hasta `accept` (adjetivos de la spec en cada campo, combinaciones de identidad parcial, claves antiguas intactas)
-- [ ] 5.3 Escribir `review.md` y la evidencia en `docs/evidence/JUP-133-validation.md`
-- [ ] 5.4 Actualizar `docs/continuidad/README.md` y el tema `docs/continuidad/` correspondiente
+- [x] 5.1 Pasar la batería completa: `corepack pnpm evaluation-dashboard:test`, `corepack pnpm test`, `corepack pnpm lint`, `corepack pnpm openspec:validate`, `corepack pnpm jup:check -- --change jup-133-reevaluacion-metricas-modelo` y `corepack pnpm jup:cleanup:check`
+- [x] 5.2 Revisión adversarial con el agente `adversarial-reviewer` hasta `accept` (adjetivos de la spec en cada campo, combinaciones de identidad parcial, claves antiguas intactas)
+- [x] 5.3 Escribir `review.md` y la evidencia en `docs/evidence/JUP-133-validation.md`
+- [x] 5.4 Actualizar `docs/continuidad/README.md` y el tema `docs/continuidad/` correspondiente
 - [ ] 5.5 Sección `## Human Approval` posterior a la revisión, a cargo de Lucia
 - [ ] 5.6 Archivar el change en el mismo PR y abrir el PR contra `develop`

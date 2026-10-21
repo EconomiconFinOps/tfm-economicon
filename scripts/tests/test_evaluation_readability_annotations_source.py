@@ -245,13 +245,14 @@ class EstadoDeLosCasosContraPostgresTests(unittest.TestCase):
         # `fail` (como en la conciliación existente); `blocked` y `not_run` son ceros medidos, no nulos.
         datos = R.ejecutar(self.sql)
         esperadas = {f["run_id"] for f in R.administrar("SELECT run_id FROM evaluation.runs WHERE source = 'JUP-070'")}
-        self.assertEqual(len(esperadas), 2)
-        self.assertEqual(len(datos["filas"]), 2)
+        self.assertEqual(len(esperadas), 3)
+        self.assertEqual(len(datos["filas"]), 3)
         self.assertEqual({f["run_id"] for f in datos["filas"]}, esperadas)
         for fila in datos["filas"]:
             with self.subTest(run_id=fila["run_id"]):
-                self.assertEqual((fila["pass"], fila["fail"], fila["blocked"], fila["not_run"], fila["denominator"]),
-                                 (0, 28, 0, 0, 28))
+                # La tercera campaña es el banco con el chat real de JUP-133: 10 aprobados y 18 fallidos.
+                esperado = (10, 18, 0, 0, 28) if fila["run_id"].startswith("jup-070-20261022") else (0, 28, 0, 0, 28)
+                self.assertEqual((fila["pass"], fila["fail"], fila["blocked"], fila["not_run"], fila["denominator"]), esperado)
 
     def test_una_ejecucion_de_jup_071_con_recuentos_de_casos_no_aparece(self):
         # Caso (hallazgo de Lucia): una ejecución de robustez con filas `cases/cases/all` no es una campaña de JUP-070. El
@@ -259,20 +260,20 @@ class EstadoDeLosCasosContraPostgresTests(unittest.TestCase):
         datos = R.ejecutar(self.sql, CON_ROBUSTEZ)
         runs = [f["run_id"] for f in datos["filas"]]
         self.assertNotIn("rob-071", runs)
-        self.assertEqual(len(runs), 2, runs)
+        self.assertEqual(len(runs), 3, runs)
         self.assertEqual(set(runs), {f["run_id"] for f in R.administrar(
             "SELECT run_id FROM evaluation.runs WHERE source = 'JUP-070'", CON_ROBUSTEZ)})
 
     def test_sin_el_filtro_la_ejecucion_de_jup_071_si_se_mostraria(self):
         # Valida el PROPIO escenario: si quitando el filtro (sustitución de texto en memoria) la ejecución de JUP-071 también
-        # desapareciera, la prueba anterior no discriminaría nada. Con el filtro quitado salen 4 filas (la campaña de robustez
-        # versionada también cuenta como JUP-071), y la de este escenario trae
+        # desapareciera, la prueba anterior no discriminaría nada. Con el filtro quitado salen 6 filas (las dos campañas de robustez
+        # versionadas también cuentan como JUP-071), y la de este escenario trae
         # sus recuentos (6, 2, 1, 1 sobre 10): se lee como una campaña más, que es el defecto.
         sin_filtro = sin_filtro_de_fuente(self.sql)
         self.assertNotEqual(sin_filtro, self.sql, "no se pudo quitar el filtro de fuente de la consulta: no está o es raro")
         datos = R.ejecutar(sin_filtro, CON_ROBUSTEZ)
         por_run = {f["run_id"]: f for f in datos["filas"]}
-        self.assertEqual(len(por_run), 4, sorted(por_run))
+        self.assertEqual(len(por_run), 6, sorted(por_run))
         fila = por_run["rob-071"]
         self.assertEqual((fila["pass"], fila["fail"], fila["blocked"], fila["not_run"], fila["denominator"]),
                          (6, 2, 1, 1, 10))

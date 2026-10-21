@@ -35,7 +35,7 @@ El tope no equivale a una orden de gastar. Antes de lanzar cada campaña con gas
 | `live-robustness-jup071` | Campaña ligera: 29 conversaciones, una repetición, una revisora, informe provisional | 29 de generación más los reintentos que pida el validador de salida | Referencia: 0,176 USD con GLM-5.2 (27 operaciones con uso). La del modelo nuevo se mide con una muestra antes de lanzar | Se reejecuta | Sin autorizar hasta la confirmación |
 | `ai-cost-jup130` | Comando `ai-cost` sobre el registro del gateway durante la campaña anterior | Ninguna: lee el registro y contrasta con OpenRouter | Sin gasto de modelo: lee el registro del gateway y consulta a OpenRouter los datos de facturación de cada generación | Se recalcula | No necesita |
 | `live-signals-prometheus` | Lectura de contadores con tráfico real tras el cambio | Ninguna | Sin gasto | No se reejecuta; se lee con tráfico y se rotula el instante del cambio. Sin tráfico, «No medido» | No necesita |
-| `chat-battery-n3-n5` | Batería de 28 casos con tres repeticiones (84 ejecuciones) | 84 de generación | Sin estimar; con la referencia de 0,176 USD cada 27 operaciones sería de varias veces esa cifra | **Sin decidir.** No cabe en el tope junto con la campaña ligera si su coste por ejecución es el de la referencia. Si no se reejecuta, consta aquí el motivo y la cifra de la memoria queda «obsoleta sin sustituto» | Sin autorizar |
+| `chat-battery-n3-n5` | Batería de 28 casos con tres repeticiones (84 ejecuciones) | 84 de generación | Sin estimar; con la referencia de 0,176 USD cada 27 operaciones sería de varias veces esa cifra | **Parcial.** Las 84 ejecuciones no se repiten (hace falta el ejecutor de la campaña B y la revisión por requisito; con el coste medido serían del orden de 0,1 USD). Sí se repitió una vez el banco de 28 preguntas con el chat real (~0,033 USD). La cifra de la memoria queda «obsoleta sin sustituto» | Sin autorizar |
 
 Las medidas `independiente` e `historica` no se reejecutan; su motivo está en el inventario.
 
@@ -55,6 +55,8 @@ Se rellena durante la ejecución. Cada fila lleva una campaña, la fecha, el gas
 | Campaña | Fecha (UTC) | Gasto del gateway | Gasto de OpenRouter | Acumulado | Tope |
 | --- | --- | --- | --- | --- | --- |
 | Muestra de coste: 3 conversaciones (`JUP-069-002`, `JUP-071-001`, `JUP-071-002`), 4 llamadas al modelo de chat | 21/10/2026 | 0,003833 USD (incluye 17 peticiones del gateway, 5 de embeddings de una recogida anterior sin respuesta) | Sin contrastar | 0,003833 USD | 1,5 USD |
+| Campaña ligera de JUP-071: 29 conversaciones con el chat real, una repetición, y los reintentos del producto | 21/10/2026 | Dentro de la ventana de 75 consultas (0,049456 USD estimados, de los que 0,006278 USD son de GLM-5.2 anteriores) | 0,049765 USD facturados en la ventana (cobertura 100 %); atribuible a JUP-133: 0,0435 USD | 0,0435 USD | 1,5 USD |
+| Banco de 28 preguntas de JUP-069: 28 conversaciones con el chat real, una repetición, un reintento del producto (`JUP-069-010`) | 22/10/2026 | 0,033045 USD estimados | Sin contrastar | ≈ 0,077 USD | 1,5 USD |
 
 ## Sensibilidad a la infraestructura local
 

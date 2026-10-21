@@ -96,6 +96,13 @@ test("refuses an alias that is missing, repeated or has several allowed provider
   assert.throws(() => describe(BASE.replace("[someprovider/fp8]", "[a/fp8, b/fp8]")), /un solo proveedor/);
 });
 
+test("refuses a provider restriction with empty or extra parts instead of dropping them silently", () => {
+  for (const bad of ["a/fp8/zz", "a/", "/fp8", "a//fp8"]) {
+    assert.throws(() => describe(BASE.replace("[someprovider/fp8]", `[${bad}]`)), /sin trozos vacíos ni de más/, bad);
+  }
+  assert.equal(describe(BASE.replace("[someprovider/fp8]", "[onlyprovider]")).generation_quantization, null);
+});
+
 test("refuses a file that is not a gateway configuration", () => {
   assert.throws(() => describe("general_settings: {}"), /model_list/);
   assert.throws(() => describe("- 1\n- 2"), /model_list/);

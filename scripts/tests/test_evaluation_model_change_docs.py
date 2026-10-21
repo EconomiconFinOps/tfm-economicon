@@ -88,7 +88,10 @@ class FiguresTests(unittest.TestCase):
     def test_unmeasured_new_values_are_never_a_number_or_zero(self) -> None:
         for item in self.data["figures"]:
             if item["status"] == "cambia":
-                self.assertEqual(item["new_value"], "No medido", item["id"])
+                # O no se ha reejecutado («No medido»), o lleva el valor medido con su fecha; nunca un cero ni un número suelto.
+                if item["new_value"] != "No medido":
+                    self.assertRegex(item["new_value"], r"\d{1,2}/\d{2}/2026", item["id"])
+                    self.assertNotRegex(item["new_value"], r"^\s*0(?:[,.]0+)?\s*(?:%|USD)?\s*$", item["id"])
 
     def test_independent_measures_are_kept_and_dependent_ones_change(self) -> None:
         for item in self.data["figures"]:

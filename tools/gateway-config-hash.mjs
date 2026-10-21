@@ -49,7 +49,11 @@ export function describeAlias(configText, alias) {
     if (!Array.isArray(allowed) || allowed.length !== 1 || typeof allowed[0] !== "string") {
       throw new Error(`el alias ${alias} debe fijar un solo proveedor en provider.only para declarar su identidad`);
     }
-    [provider, quantization = null] = allowed[0].split("/");
+    const parts = allowed[0].split("/");
+    if (parts.length > 2 || parts.some((part) => part === "")) {
+      throw new Error(`el alias ${alias} debe declarar provider.only como proveedor o proveedor/cuantización, sin trozos vacíos ni de más`);
+    }
+    [provider, quantization = null] = parts;
   }
   const payload = canonical({ model_name: alias, litellm_params: generation });
   return {

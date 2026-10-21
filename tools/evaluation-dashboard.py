@@ -1958,6 +1958,11 @@ CREATE TABLE IF NOT EXISTS {SCHEMA_NAME}.runs (
   report_sha256 text NOT NULL
 );
 
+ALTER TABLE {SCHEMA_NAME}.runs ADD COLUMN IF NOT EXISTS generation_model_id text;
+ALTER TABLE {SCHEMA_NAME}.runs ADD COLUMN IF NOT EXISTS generation_provider text;
+ALTER TABLE {SCHEMA_NAME}.runs ADD COLUMN IF NOT EXISTS generation_quantization text;
+ALTER TABLE {SCHEMA_NAME}.runs ADD COLUMN IF NOT EXISTS gateway_config_sha256 text;
+
 CREATE TABLE IF NOT EXISTS {SCHEMA_NAME}.results (
   run_id text NOT NULL REFERENCES {SCHEMA_NAME}.runs (run_id) ON DELETE CASCADE,
   measure_type text NOT NULL CHECK (measure_type IN ('A', 'B')),
