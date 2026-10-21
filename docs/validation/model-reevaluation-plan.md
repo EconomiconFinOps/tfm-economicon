@@ -54,7 +54,7 @@ Se rellena durante la ejecución. Cada fila lleva una campaña, la fecha, el gas
 
 | Campaña | Fecha (UTC) | Gasto del gateway | Gasto de OpenRouter | Acumulado | Tope |
 | --- | --- | --- | --- | --- | --- |
-| (sin ejecuciones) | | | | 0 USD | 1,5 USD |
+| Muestra de coste: 3 conversaciones (`JUP-069-002`, `JUP-071-001`, `JUP-071-002`), 4 llamadas al modelo de chat | 21/10/2026 | 0,003833 USD (incluye 17 peticiones del gateway, 5 de embeddings de una recogida anterior sin respuesta) | Sin contrastar | 0,003833 USD | 1,5 USD |
 
 ## Qué queda fuera
 
