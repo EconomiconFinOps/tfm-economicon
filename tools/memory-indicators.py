@@ -16,6 +16,7 @@ import re
 import subprocess
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -423,6 +424,290 @@ def build_data_table(results: list[dict], reference: date, api_measured: bool) -
     return "\n".join(lines)
 
 
+AI_COST_GROUP = "ai_cost"
+GATEWAY_KEY_ENV = "LITELLM_MASTER_KEY"
+OPENROUTER_KEY_ENV = "OPENROUTER_API_KEY"
+DEFAULT_GATEWAY_URL = "http://127.0.0.1:44000"
+DEFAULT_OPENROUTER_URL = "https://openrouter.ai/api/v1"
+DEFAULT_MAX_GENERATIONS = 200
+GENERATION_PREFIX = "gen-"
+
+
+@dataclass
+class ModelSummary:
+    queries: int = 0
+    estimated: Decimal = Decimal(0)
+    confirmed: int = 0
+    billed: Decimal | None = None
+
+
+@dataclass
+class SpendSummary:
+    requests: int = 0
+    failures: int = 0
+    gateway_rejections: int = 0
+    provider_errors: int = 0
+    queries: int = 0
+    estimated_total: Decimal = Decimal(0)
+    zero_spend_queries: int = 0
+    embeddings_estimated: Decimal = Decimal(0)
+    confirmed: int = 0
+    billed_total: Decimal | None = None
+    gap: Decimal | None = None
+    by_model: dict[str, ModelSummary] = field(default_factory=dict)
+
+
+def _row_day(item: dict) -> date:
+    return date.fromisoformat(item["startTime"][:10])
+
+
+def _error_information(item: dict) -> dict:
+    return (item.get("metadata") or {}).get("error_information") or {}
+
+
+def _confirm(queries: list[dict], fetch, cap: int) -> dict[str, Decimal] | None:
+    """Coste facturado por identificador de generación; None si no se pudo consultar a OpenRouter."""
+    if fetch is None:
+        return None
+    candidates = sorted((q for q in queries if str(q["request_id"]).startswith(GENERATION_PREFIX)),
+                        key=lambda q: (q["startTime"], q["request_id"]))[:cap]
+    confirmed: dict[str, Decimal] = {}
+    try:
+        for query in candidates:
+            value = fetch(query["request_id"])
+            if value is not None:
+                confirmed[query["request_id"]] = value
+    except ApiUnavailable:
+        return None
+    return confirmed
+
+
+def summarize_spend(rows: list[dict], start: date, end: date, fetch, cap: int) -> SpendSummary:
+    window = [item for item in rows if start <= _row_day(item) < end]
+    summary = SpendSummary(requests=len(window))
+    queries = []
+    for item in window:
+        if item["status"] == "failure":
+            summary.failures += 1
+            info = _error_information(item)
+            code, klass = str(info.get("error_code")), info.get("error_class")
+            if code == "429" and klass == "ProxyRateLimitError":
+                summary.gateway_rejections += 1
+            elif klass == "APIError" and code.startswith("5"):
+                summary.provider_errors += 1
+        elif item["call_type"] == "aembedding":
+            summary.embeddings_estimated += Decimal(str(item["spend"]))
+        elif item["call_type"] == "acompletion":
+            queries.append(item)
+    for item in queries:
+        spend = Decimal(str(item["spend"]))
+        summary.queries += 1
+        summary.estimated_total += spend
+        summary.zero_spend_queries += int(spend == 0)
+        model = summary.by_model.setdefault(item["model"], ModelSummary())
+        model.queries += 1
+        model.estimated += spend
+    confirmed = _confirm(queries, fetch, cap)
+    if confirmed:
+        by_id = {q["request_id"]: q for q in queries}
+        summary.confirmed = len(confirmed)
+        summary.billed_total = sum(confirmed.values(), Decimal(0))
+        summary.gap = sum((Decimal(str(by_id[i]["spend"])) for i in confirmed), Decimal(0)) - summary.billed_total
+        for identifier, value in confirmed.items():
+            model = summary.by_model[by_id[identifier]["model"]]
+            model.confirmed += 1
+            model.billed = (model.billed or Decimal(0)) + value
+    return summary
+
+
+def _ai_row(metric_id: str, unit: str, value=None, *, behavior: str = "all", numerator=None, denominator=None) -> dict:
+    row = {"measure_type": "B", "grp": AI_COST_GROUP, "metric_id": metric_id, "behavior": behavior}
+    if value is None:
+        row.update(status="not_measured", unit=unit)
+        if denominator is not None:
+            row["denominator"] = denominator
+        return row
+    row.update(status="measured", value=value, unit=unit)
+    if numerator is not None:
+        row["numerator"] = numerator
+    if denominator is not None:
+        row["denominator"] = denominator
+    return row
+
+
+def _usd(value: Decimal | None) -> float | None:
+    return None if value is None else float(round(value, 9))
+
+
+def _rate_ai(metric_id: str, count: int, total: int) -> dict:
+    if total == 0:
+        return _ai_row(metric_id, "tasa", denominator=0)
+    return _ai_row(metric_id, "tasa", round(count / total, ROUND_DIGITS), numerator=count, denominator=total)
+
+
+def _ai_rows(summary: SpendSummary) -> list[dict]:
+    per_query = None if not summary.confirmed else summary.billed_total / summary.confirmed
+    rows = [
+        _ai_row("queries", "recuento", summary.queries),
+        _ai_row("cost_estimated_total", "usd", _usd(summary.estimated_total)),
+        _ai_row("cost_billed_total", "usd", _usd(summary.billed_total)),
+        _ai_row("cost_per_query", "usd", _usd(per_query), numerator=_usd(summary.billed_total), denominator=summary.confirmed or None),
+        _ai_row("cost_gap", "usd", _usd(summary.gap)),
+        _rate_ai("billed_coverage", summary.confirmed, summary.queries),
+        _ai_row("cost_embeddings_estimated", "usd", _usd(summary.embeddings_estimated)),
+        _ai_row("zero_spend_queries", "recuento", summary.zero_spend_queries),
+        _ai_row("failures", "recuento", summary.failures),
+        _rate_ai("gateway_rejection_rate", summary.gateway_rejections, summary.requests),
+        _rate_ai("provider_error_rate", summary.provider_errors, summary.requests),
+    ]
+    for model, item in sorted(summary.by_model.items()):
+        per_model = None if not item.confirmed else item.billed / item.confirmed
+        rows.append(_ai_row("queries", "recuento", item.queries, behavior=model))
+        rows.append(_ai_row("cost_per_query", "usd", _usd(per_model), behavior=model, numerator=_usd(item.billed),
+                            denominator=item.confirmed or None))
+    return rows
+
+
+def _unavailable_ai_rows() -> list[dict]:
+    units = (("queries", "recuento"), ("cost_estimated_total", "usd"), ("cost_billed_total", "usd"), ("cost_per_query", "usd"),
+             ("cost_gap", "usd"), ("billed_coverage", "tasa"), ("cost_embeddings_estimated", "usd"),
+             ("zero_spend_queries", "recuento"), ("failures", "recuento"), ("gateway_rejection_rate", "tasa"),
+             ("provider_error_rate", "tasa"))
+    return [_ai_row(metric, unit) for metric, unit in units]
+
+
+def ai_cost_report(rows: list[dict] | None, start: date, end: date, fetch, cap: int, *, commit: str | None,
+                   run_at: str | None) -> tuple[dict, str]:
+    summary = None if rows is None else summarize_spend(rows, start, end, fetch, cap)
+    results = _unavailable_ai_rows() if summary is None else _ai_rows(summary)
+    run = {"run_id": f"jup130-ai-cost-{start.isoformat()}-to-{end.isoformat()}", "source": SOURCE, "run_at": run_at,
+           "commit": commit, "suite": "jup130-ai-cost", "suite_version": "1"}
+    document = {"contract_version": 1, "run": {k: v for k, v in run.items() if v is not None}, "results": results}
+    try:
+        dashboard.adapt_rows_v1(document)
+    except dashboard.AdapterError as error:
+        raise IndicatorError(f"el informe incumple el contrato rows-v1: {error}") from error
+    return document, build_ai_cost_table(summary, start, end, contrasted=fetch is not None and summary is not None and summary.billed_total is not None)
+
+
+def _money(value: Decimal | None) -> str:
+    return "no medido" if value is None else f"{value:.6f}".replace(".", ",") + " USD"
+
+
+def _share(count: int, total: int) -> str:
+    return "no medido" if total == 0 else f"{count / total * 100:.1f}".replace(".", ",") + f" % ({count}/{total})"
+
+
+def build_ai_cost_table(summary: SpendSummary | None, start: date, end: date, contrasted: bool) -> str:
+    lines = [
+        "# Coste de IA por consulta (JUP-130)",
+        "",
+        f"Medición sobre la ventana {start.isoformat()} a {end.isoformat()} (inicio incluido, fin excluido, en UTC). Comando: "
+        f"`python tools/memory-indicators.py ai-cost --from {start.isoformat()} --to {end.isoformat()}`. "
+        "Con `--run-at` y `--commit` se fijan la fecha y el commit del informe.",
+        "",
+    ]
+    if summary is None:
+        lines += ["**No se pudo leer el registro del gateway en esta ejecución: todas las cifras figuran como no medidas.**", ""]
+    else:
+        if not contrasted:
+            lines += ["**El coste facturado no se contrastó con OpenRouter en esta ejecución: el coste por consulta es solo estimado y no está contrastado.**", ""]
+        per_query = None if not summary.confirmed else summary.billed_total / summary.confirmed
+        lines += [
+            "| Medida | Valor |", "| --- | --- |",
+            f"| Consultas de chat terminadas | {summary.queries} |",
+            f"| Coste estimado por el gateway | {_money(summary.estimated_total)} |",
+            f"| Coste facturado (OpenRouter, solo confirmadas) | {_money(summary.billed_total)} |",
+            f"| Coste facturado por consulta | {_money(per_query)} |",
+            f"| Diferencia estimado menos facturado | {_money(summary.gap)} |",
+            f"| Cobertura de lo facturado | {_share(summary.confirmed, summary.queries)} |",
+            f"| Consultas con gasto estimado cero | {summary.zero_spend_queries} |",
+            f"| Embeddings (solo estimado, aparte) | {_money(summary.embeddings_estimated)} |",
+            f"| Rechazos 429 del gateway | {_share(summary.gateway_rejections, summary.requests)} |",
+            f"| Errores del proveedor (5xx) | {_share(summary.provider_errors, summary.requests)} |",
+            "", "## Por modelo", "", "| Modelo | Consultas | Facturado por consulta |", "| --- | --- | --- |",
+        ]
+        for model, item in sorted(summary.by_model.items()):
+            lines.append(f"| {model} | {item.queries} | {_money(None if not item.confirmed else item.billed / item.confirmed)} |")
+    lines += [
+        "",
+        "## Qué no demuestra",
+        "",
+        "- El gasto es local a la máquina que ejecutó las consultas: no demuestra el coste de un uso real ni de otros equipos.",
+        "- El coste estimado es contabilidad derivada de una tarifa por token, no una factura; solo lo confirmado por OpenRouter es facturado.",
+        "- Una consulta que OpenRouter no devuelve no se cuenta como coste cero: reduce la cobertura.",
+        "- Los embeddings no llevan identificador de generación de OpenRouter y por eso se informan aparte como estimados.",
+        "- Los rechazos 429 son del límite por clave del propio gateway y no del proveedor; el coste de pruebas no es el de producción.",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def _http_get(url: str, headers: dict) -> object:
+    request = urllib.request.Request(url, headers=headers)
+    try:
+        with urllib.request.urlopen(request, timeout=API_TIMEOUT_SECONDS) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as error:
+        raise ApiUnavailable(f"http_{error.code}") from None
+    except (urllib.error.URLError, OSError):
+        raise ApiUnavailable("conexion") from None
+    except ValueError:
+        raise ApiUnavailable("respuesta_invalida") from None
+
+
+def read_spend_logs(gateway_url: str, key: str) -> list[dict]:
+    body = _http_get(gateway_url.rstrip("/") + "/spend/logs", {"Authorization": "Bearer " + key})
+    if not isinstance(body, list):
+        raise ApiUnavailable("respuesta_invalida")
+    return body
+
+
+def openrouter_cost(base_url: str, key: str):
+    """Devuelve la función que consulta el coste facturado de una generación; None si OpenRouter responde 404."""
+    def fetch(identifier: str) -> Decimal | None:
+        try:
+            body = _http_get(base_url.rstrip("/") + "/generation?id=" + urllib.parse.quote(identifier, safe=""),
+                             {"Authorization": "Bearer " + key})
+        except ApiUnavailable as error:
+            if str(error) == "http_404":
+                return None
+            raise
+        value = body.get("data", {}).get("total_cost") if isinstance(body, dict) and isinstance(body.get("data"), dict) else None
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or value < 0:
+            return None
+        return Decimal(str(value))
+    return fetch
+
+
+def _read_secret(env_name: str, file_path: Path | None) -> str | None:
+    if file_path is not None:
+        try:
+            return file_path.read_text(encoding="utf-8").strip() or None
+        except OSError:
+            return None
+    return os.environ.get(env_name) or None
+
+
+def _ai_cost_command(args, commit: str | None) -> tuple[dict, str]:
+    gateway_key = _read_secret(GATEWAY_KEY_ENV, args.gateway_key_file)
+    provider_key = _read_secret(OPENROUTER_KEY_ENV, args.openrouter_key_file)
+    rows, fetch = None, None
+    if not gateway_key:
+        print(f"aviso: falta {GATEWAY_KEY_ENV}; las cifras de coste de IA quedan como no medidas", file=sys.stderr)
+    else:
+        try:
+            rows = read_spend_logs(args.gateway_url, gateway_key)
+        except ApiUnavailable as error:
+            print(f"aviso: el gateway no está disponible ({error}); las cifras de coste de IA quedan como no medidas", file=sys.stderr)
+    if rows is not None:
+        if not provider_key:
+            print(f"aviso: falta {OPENROUTER_KEY_ENV}; el coste facturado queda como no medido", file=sys.stderr)
+        else:
+            fetch = openrouter_cost(args.openrouter_url, provider_key)
+    return ai_cost_report(rows, args.start, args.end, fetch, args.max_generations, commit=commit, run_at=args.run_at)
+
+
 def _git_head() -> str | None:
     try:
         out = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=True).stdout.strip()
@@ -442,6 +727,21 @@ def _pattern(regex: re.Pattern, what: str):
             raise argparse.ArgumentTypeError(f"{what} no válido")
         return value
     return check
+
+
+def _iso_date(value: str) -> date:
+    if not DATE_RE.fullmatch(value):
+        raise argparse.ArgumentTypeError("la fecha debe ser AAAA-MM-DD")
+    try:
+        return date.fromisoformat(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError("la fecha no existe") from None
+
+
+def _positive_int(value: str) -> int:
+    if not re.fullmatch(r"[1-9][0-9]*", value):
+        raise argparse.ArgumentTypeError("debe ser un entero positivo")
+    return int(value)
 
 
 def _run_at(value: str) -> str:
@@ -466,6 +766,19 @@ def build_parser() -> argparse.ArgumentParser:
     data.add_argument("--base-url", type=_pattern(re.compile(r"https?://\S+", re.ASCII), "la dirección http(s)"))
     data.add_argument("--email", default=DEFAULT_EMAIL)
     data.add_argument("--password-env", default=DEFAULT_PASSWORD_ENV, help="variable de entorno con la contraseña")
+    cost = commands.add_parser("ai-cost", help="coste de IA facturado frente a estimado y rechazos del gateway")
+    cost.add_argument("--from", dest="start", required=True, type=_iso_date)
+    cost.add_argument("--to", dest="end", required=True, type=_iso_date)
+    cost.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    cost.add_argument("--run-at", type=_run_at)
+    cost.add_argument("--commit", type=_pattern(COMMIT_RE, "el commit"))
+    url = re.compile(r"https?://\S+", re.ASCII)
+    cost.add_argument("--gateway-url", default=DEFAULT_GATEWAY_URL, type=_pattern(url, "la dirección http(s)"))
+    cost.add_argument("--openrouter-url", default=DEFAULT_OPENROUTER_URL, type=_pattern(url, "la dirección http(s)"))
+    cost.add_argument("--gateway-key-file", type=Path, help=f"fichero con la clave; si no, la variable {GATEWAY_KEY_ENV}")
+    cost.add_argument("--openrouter-key-file", type=Path, help=f"fichero con la clave; si no, la variable {OPENROUTER_KEY_ENV}")
+    cost.add_argument("--max-generations", type=_positive_int, default=DEFAULT_MAX_GENERATIONS,
+                      help="tope de generaciones que se consultan a OpenRouter")
     return parser
 
 
@@ -491,20 +804,26 @@ def main(argv: list[str] | None = None) -> int:
         stream.reconfigure(encoding="utf-8")
     parser = build_parser()
     args = parser.parse_args(argv)
-    try:
-        reference = date.fromisoformat(args.reference)
-    except ValueError:
-        parser.error("la fecha de referencia no es una fecha real")
+    if args.command == "ai-cost":
+        if not args.start < args.end:
+            parser.error("--from debe ser anterior a --to")
+    else:
+        try:
+            reference = date.fromisoformat(args.reference)
+        except ValueError:
+            parser.error("la fecha de referencia no es una fecha real")
     commit = args.commit or _git_head()
     try:
         if args.command == "anomalies":
             report, table = anomaly_report(reference, commit=commit, run_at=args.run_at)
-        else:
+        elif args.command == "data":
             report, table = _data_command(args, reference, commit)
+        else:
+            report, table = _ai_cost_command(args, commit)
     except IndicatorError as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
-    stem = "JUP-130-anomalies" if args.command == "anomalies" else "JUP-130-data"
+    stem = {"anomalies": "JUP-130-anomalies", "data": "JUP-130-data", "ai-cost": "JUP-130-ai-cost"}[args.command]
     _write(args.out, stem + ".rows.json", json.dumps(report, indent=2, ensure_ascii=False) + "\n")
     _write(args.out, stem + ".md", table)
     print(f"{args.command}: informe y tabla escritos en {args.out}")
