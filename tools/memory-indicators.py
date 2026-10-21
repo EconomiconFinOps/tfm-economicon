@@ -551,7 +551,7 @@ def _ai_rows(summary: SpendSummary) -> list[dict]:
         _ai_row("queries", "recuento", summary.queries),
         _ai_row("cost_estimated_total", "usd", _usd(summary.estimated_total)),
         _ai_row("cost_billed_total", "usd", _usd(summary.billed_total)),
-        _ai_row("cost_per_query", "usd", _usd(per_query), numerator=_usd(summary.billed_total), denominator=summary.confirmed or None),
+        _ai_row("cost_per_query", "usd", _usd(per_query), denominator=summary.confirmed or None),
         _ai_row("cost_gap", "usd", _usd(summary.gap)),
         _rate_ai("billed_coverage", summary.confirmed, summary.queries),
         _ai_row("cost_embeddings_estimated", "usd", _usd(summary.embeddings_estimated)),
@@ -563,8 +563,7 @@ def _ai_rows(summary: SpendSummary) -> list[dict]:
     for model, item in sorted(summary.by_model.items()):
         per_model = None if not item.confirmed else item.billed / item.confirmed
         rows.append(_ai_row("queries", "recuento", item.queries, behavior=model))
-        rows.append(_ai_row("cost_per_query", "usd", _usd(per_model), behavior=model, numerator=_usd(item.billed),
-                            denominator=item.confirmed or None))
+        rows.append(_ai_row("cost_per_query", "usd", _usd(per_model), behavior=model, denominator=item.confirmed or None))
     return rows
 
 

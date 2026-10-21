@@ -3,8 +3,8 @@
   "run": {
     "run_id": "jup130-ai-cost-2026-10-09-to-2026-10-21",
     "source": "JUP-130",
-    "run_at": "2026-10-21T07:36:31Z",
-    "commit": "49917f34220ad93196f41167861dea6e9d46deb9",
+    "run_at": "2026-10-21T07:54:03Z",
+    "commit": "f378bdf876a559cba529acc93c618e5e6f6688d5",
     "suite": "jup130-ai-cost",
     "suite_version": "1"
   },
@@ -44,7 +44,6 @@
       "status": "measured",
       "value": 0.002600959,
       "unit": "usd",
-      "numerator": 0.260095865,
       "denominator": 100
     },
     {
@@ -133,7 +132,6 @@
       "status": "measured",
       "value": 0.002600959,
       "unit": "usd",
-      "numerator": 0.260095865,
       "denominator": 100
     }
   ]
