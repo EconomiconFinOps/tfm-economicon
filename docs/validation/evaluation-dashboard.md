@@ -1,5 +1,40 @@
 # Dashboard de resultados de evaluación del asistente (JUP-121)
 
+## Entrada narrativa de evaluación — 21/10/2026 (JUP-129)
+
+Abrir **Asistente y evidencia**, ruta `/d/economicon-assistant-evidence/`. Su definición versionada es [assistant-evidence.json](../../apps/monitoring/grafana/dashboards/assistant-evidence.json). Es la entrada principal para explicar resultados; `economicon-assistant-evaluation` y `economicon-technical-metrics` conservan sus UID, consultas y contratos como superficies de auditoría y operación. Los apartados posteriores describen ese contrato previo y no se presentan como un nuevo ensayo.
+
+La composición aprobada se adapta a los datos realmente cargados. En la base `bc94a4da`, el manifiesto contiene **8 ejecuciones y 308 filas**, sin la campaña experimental de JUP-071 ni el suplemento histórico de modelos. El selector no inventa ejecuciones ausentes. Los contadores no se fijan a los números del prototipo: una ejecución de plantilla se identifica como tal; una ausencia sigue siendo «No medido» o sin series («Sin datos»). El cero sólo se muestra si el informe trae un cero medido.
+
+### Hilo de lectura y cuatro familias
+
+| Familia | Señales seleccionadas | Límite útil |
+| --- | --- | --- |
+| Calidad del core | Estado completo de los casos, comprobaciones objetivas y puntos requeridos | Rúbrica/proxies existentes; no se acredita relevancia, fidelidad o aceptación independiente por el porcentaje de citas |
+| Recuperación | Documento/sección del instrumento histórico y matriz de calibración | Fechas, corpus y baterías distintos; cuatro candidatos a distancia 0,6, sin ganador único ni causalidad entre ensayos |
+| Rendimiento del sistema | Coste de fases y p95 de generación en una misma cohorte; salud Prometheus aparte | Coste no implica calidad; una campaña no es tráfico real; el coste facturado de pruebas tiene otra ventana y denominador |
+| Conversación y usuario | Perturbaciones y proxy de petición de rúbrica mixta | Las perturbaciones son un subconjunto; el proxy no es un detector puro y no hay evaluación de usuarios reales |
+
+La portada muestra una campaña, con sus casos favorables, fallidos y sin medir; el anillo usa exactamente ese denominador. El diagnóstico explica límites antes de la recuperación histórica. Modelos conserva barras provisionales y un XY de sólo dos puntos de la **misma** comparación del 16/10 (84 respuestas por modelo, contexto congelado, sin aceptación ni adjudicación independiente). Si no se cargó ese informe, sus gráficos quedan sin datos: el título del XY indica «Sin datos» y no representa puntos. Con ambos pares de coordenadas medidos indica «Dos observaciones»; si sólo hay un par completo, «Datos parciales». Es disponibilidad del mismo informe, no una métrica de calidad. No se sustituye por el benchmark de otra cohorte.
+
+Coste de pruebas, detector sintético, conciliación por inquilino/divisa, salud y detalle quedan plegados. Coste confirmado: ventana 09–21/10 UTC, 100 consultas; errores 429 del gateway **3/924** separados de errores 5xx del proveedor **6/924**. Detector: recall total **5/7** y detectables **5/5**, no sólo el segundo; retraso cero por construcción. Datos: referencia sintética 30/10, no puntualidad de una ingesta real; EUR y USD no se suman. Cada agregado histórico está fijado a una identidad de informe; no toma máximos entre distintas ejecuciones de la misma fuente. La tabla de detalle conserva las filas de todas las fuentes y sus valores nulos, con alias funcionales y metadatos internos ocultos.
+
+La campaña experimental, cuando está cargada por separado, conserva **7/29**, **17/29**, cinco sin medir y 24 puntuables con cobertura reducida; una repetición/persona evaluadora y modelo sin verificar. Ni las citas válidas ni las literales convierten esos resultados en éxito. No se incorporan informes, instrumentos, fixtures o adaptadores de una PR pendiente para proporcionar esos datos por defecto.
+
+### Comparar dos ejecuciones
+
+Elegir **Campaña** y **Referencia**. La referencia debe ser distinta y anterior, con fecha registrada, misma fuente y misma `comparability_key` del contrato existente: batería, corpus, modelo, prompt, recuperación y motivos de no realidad. Los valores internos se conservan y las etiquetas son funcionales. La interpolación usa [`sqlstring` de Grafana](https://grafana.com/docs/grafana/latest/visualizations/dashboards/variables/variable-syntax/), escapando comillas; no se usa interpolación raw.
+
+El bloque de comparación indica «Sin datos», «Sin referencia», «Misma ejecución», «Sin orden temporal», «No comparable» o «Comparación disponible». Una pareja incompatible no se presenta como mejora. En una pareja compatible, el detalle muestra los valores existentes y ambos denominadores de las mismas medidas, variantes, estados y unidades; igualdad exacta (tolerancia cero), aumento o disminución **observados**. Aumentar no equivale siempre a mejorar: la unidad y orientación se interpretan por métrica. No hay score global, significación estadística, tendencia o causalidad implícita. La comparación descriptiva de dos modelos del informe histórico sigue separada de esta comparación entre ejecuciones.
+
+### Provisioning, pruebas y evidencia
+
+El proveedor de archivos ya existente carga el nuevo JSON junto a los dos originales, con UID distinto y estable. [Grafana documenta la actualización por UID](https://grafana.com/docs/grafana/latest/administration/provisioning/). No cambian servicios, puertos, datasource, rol lector, contraseñas o comandos de carga de producto. PostgreSQL usa `evaluation-postgres`; salud usa sólo `prometheus` y las expresiones previas, sin inventar tráfico en ausencia de series.
+
+Pruebas focales: `python -m unittest discover -s scripts/tests -p test_evaluation_composition.py -v`. Por defecto reutilizan el PostgreSQL Docker desechable existente. Alternativa local explícita: definir `EVALUATION_COMPOSITION_PSQL` (ejecutable psql), `EVALUATION_COMPOSITION_PGHOST`, `EVALUATION_COMPOSITION_PGPORT`, `EVALUATION_COMPOSITION_PGDATABASE`, `EVALUATION_COMPOSITION_PGUSER` y `PGPASSWORD` para una base **desechable ya cargada**. En ese modo no se regenera el dataset; los escenarios se ejecutan con `SET LOCAL ROLE grafana_evaluation_reader` y terminan en `ROLLBACK`. No apuntar a una base compartida o producción. La suite comprueba nulos, ceros medidos, aislamiento, escape del selector y comparación compatible/incompatible.
+
+La [matriz y capturas de JUP-129](../evidence/JUP-129-validation.md) distinguen base real y proyección experimental, comprobación técnica y prueba humana. La [continuidad de la composición](../continuidad/dashboard-evaluacion-composicion.md) recoge implementación, decisiones y límites. La prueba de lectura exige una persona que no conocía los dashboards y respuestas registradas; ni los agentes ni una CI verde la sustituyen.
+
 Contrato de datos y guía de uso del dashboard de Grafana que reúne los resultados de evaluación del asistente. Tarjeta: [JUP-121](https://trello.com/c/aIdxwsXR). Decisión: [ADR-0022](../adr/ADR-0022-assistant-evaluation-results-in-grafana.md). Requisitos: [spec](../../openspec/changes/archive/2026-10-15-jup-121-assistant-evaluation-dashboard/specs/assistant-evaluation-dashboard/spec.md).
 
 > **Estado:** implementado. Este documento fija el contrato de datos y describe el dashboard (`apps/monitoring/grafana/dashboards/assistant-evaluation.json`, uid `economicon-assistant-evaluation`). La herramienta `tools/evaluation-dashboard.py` y los comandos de abajo funcionan; la sección de robustez espera el informe de JUP-071.
