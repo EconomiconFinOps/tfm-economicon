@@ -35,6 +35,16 @@ def source_document():
 
 @pytest.fixture
 def summary_session(summary_bundle,monkeypatch,tmp_path):
+    from pathlib import Path
+    packaged=Path(__file__).parents[1]/'app/agents/prompt_resources/jup035'
+    private=summary_bundle[0]
+    root=packaged/'summary/v4'
+    manifest=json.loads((root/'manifest.json').read_bytes())
+    summary_bundle=(private,root,manifest,packaged/'chat/v4/tokenizer.json')
+    monkeypatch.setenv('CHAT_RESOURCE_DIRECTORY',str(packaged/'chat/v4'))
+    monkeypatch.setenv('CHAT_TOKENIZER_FILE',str(packaged/'chat/v4/tokenizer.json'))
+    monkeypatch.setenv('CHAT_LEGACY_TOKENIZER_FILE',str(packaged/'chat/v2/tokenizer.json'))
+    monkeypatch.setenv('SUMMARY_RESOURCE_DIRECTORY',str(root))
     private,root,manifest,_=summary_bundle;application=private[0];doc=source_document();calls=[];release=threading.Event()
     class Handler(BaseHTTPRequestHandler):
         def log_message(self,*args):pass
@@ -97,7 +107,7 @@ def envelope(session,**changes):
         pairs.append({'question_ref':'q-'+digest({'scope':SCOPE,'role':'user','id':q['id']}),'question':q['content'],
             'answer_ref':'a-'+digest({'scope':SCOPE,'role':'assistant','id':a['id']}),'answer':a['content']})
     manifest=session[0][2];payload={'previous_summary':None,'pairs':pairs}
-    return {'v':2,'job_id':str(uuid4()),'scope':dict(SCOPE),'boot_id':'synthetic-boot','summary_version':'jup-035.summary.v2:'+digest(manifest),
+    return {'v':2,'job_id':str(uuid4()),'scope':dict(SCOPE),'boot_id':'synthetic-boot','summary_version':manifest['kind']+':'+digest(manifest),
         'schema_sha256':manifest['response_schema_sha256'],'tokenizer_sha256':manifest['tokenizer']['sha256'],
         'parent_hash':None,'lineage_epoch':str(uuid4()),'source_refs':refs,'selected_pairs':2,'deadline':time.time()+30,
         'input_hash':digest(payload),'payload':payload,**changes}

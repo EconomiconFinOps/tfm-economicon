@@ -1,10 +1,10 @@
 """Closed processor-authoritative summary resources, shared pinned tokenizer."""
 from dataclasses import dataclass,field
 from app.core.context_budget import budget
-import json
+import json,os
 from pathlib import Path
 from app.agents.summary_schemas import SummaryResponse
-from app.core.chat_resources import TOKENIZER,canonical,sha,unique
+from app.core.chat_resources import TOKENIZER,FLASH_TOKENIZER,canonical,sha,unique
 
 INPUT_CONTRACT={'v':2,'fields':['previous_summary','pairs'],
     'pair_fields':['question_ref','question','answer_ref','answer'],
@@ -16,6 +16,7 @@ POLICY={'v':2,'max_topics':8,'max_facts':8,'max_limitations':4,
 BUDGETS={'input_total_tokens':4096,'output_tokens':800,'payload_tokens':768,'content_tokens':512}
 V3_BUDGETS={'input_total_tokens':1048576,'output_tokens':10000,'payload_tokens':8192,'content_tokens':6144}
 V3_MANIFEST_SHA='b77cb54456152e08db25c57fef510b5864b0f2679db76e743cfe7a5b8a9c8634'
+V4_MANIFEST_SHA='ba51412f3ab4cf752cf67aff4a12844acaf66c4a193d7befdf2082a439997052'
 LEGACY_MANIFEST_SHA='f724d3fc8379d7926c667c9f5f3c43ed9074d34080a11fb5a1c76b2cd43b8b94'
 
 @dataclass(frozen=True)
@@ -31,6 +32,10 @@ class SummaryResources:
     response_model:type=SummaryResponse
     context_budget:dict=field(default_factory=lambda: budget('summary'))
     legacy_resources:tuple=field(default=(),repr=False)
+
+    def check_generation(self):
+        if json.loads(self.manifest_bytes)['v']!=4 or self.tokenizer_sha256!=FLASH_TOKENIZER['sha256']:
+            raise ValueError('Historical summary resources are read-only.')
 
     @property
     def contract(self):
@@ -91,9 +96,9 @@ class SummaryResources:
         if total+self.context_budget['output_tokens']>self.context_budget['context_tokens']:raise ValueError('Summary input token limit.')
         return messages,total
 
-def load_resources(directory=None,tokenizer_file=None):
+def load_resources(directory=None,tokenizer_file=None,legacy_tokenizer_file=None):
     import tokenizers
-    root=Path(directory) if directory else Path(__file__).parents[1]/'agents/prompt_resources/jup035/summary/v3'
+    root=Path(directory) if directory else Path(__file__).parents[1]/'agents/prompt_resources/jup035/summary/v4'
     names={'system.md','input.md','schema.json','manifest.json'}
     if root.is_symlink() or not root.is_dir() or {p.name for p in root.iterdir()}!=names:
         raise ValueError('Invalid summary bundle.')
@@ -109,8 +114,10 @@ def load_resources(directory=None,tokenizer_file=None):
         data[name]=raw
     manifest=json.loads(data['manifest.json'],object_pairs_hook=unique)
     version=manifest.get('v')
-    if type(version) is not int or version not in (2,3):raise ValueError('Unsupported summary bundle.')
+    if type(version) is not int or version not in (2,3,4):raise ValueError('Unsupported summary bundle.')
     if version==3 and sha(data['manifest.json'])!=V3_MANIFEST_SHA:raise ValueError('Summary bundle pin mismatch.')
+    if version==4 and sha(data['manifest.json'])!=V4_MANIFEST_SHA:raise ValueError('Summary bundle pin mismatch.')
+    tokenizer=FLASH_TOKENIZER if version==4 else TOKENIZER
     schema=SummaryResponse.model_json_schema()
     if data['schema.json']!=canonical(schema):
         raise ValueError('Summary schema differs from authority.')
@@ -119,16 +126,16 @@ def load_resources(directory=None,tokenizer_file=None):
         'input_contract':INPUT_CONTRACT,'input_contract_sha256':sha(canonical(INPUT_CONTRACT)),
         'assembler_contract':ASSEMBLER_CONTRACT,'assembler_sha256':sha(canonical(ASSEMBLER_CONTRACT)),
         'policy':POLICY,'policy_sha256':sha(canonical(POLICY)),
-        'tokenizer':TOKENIZER,'budgets':V3_BUDGETS if version==3 else BUDGETS}
+        'tokenizer':tokenizer,'budgets':V3_BUDGETS if version>=3 else BUDGETS}
     if canonical(manifest)!=canonical(expected) or tokenizers.__version__!='0.22.1':
         raise ValueError('Summary resource contract mismatch.')
-    asset=Path(tokenizer_file) if tokenizer_file else Path(__file__).parents[1]/'agents/prompt_resources/jup035/chat/v2/tokenizer.json'
-    if asset.is_symlink() or not asset.is_file() or asset.stat().st_size!=TOKENIZER['bytes']:
+    asset=Path(tokenizer_file) if tokenizer_file else root.parents[1]/('chat/v4/tokenizer.json' if version==4 else 'chat/v2/tokenizer.json')
+    if asset.is_symlink() or not asset.is_file() or asset.stat().st_size!=tokenizer['bytes']:
         raise ValueError('Summary tokenizer limit.')
-    if sha(asset.read_bytes())!=TOKENIZER['sha256']:
+    if sha(asset.read_bytes())!=tokenizer['sha256']:
         raise ValueError('Summary tokenizer mismatch.')
     counter=tokenizers.Tokenizer.from_file(str(asset))
-    if sha(asset.read_bytes())!=TOKENIZER['sha256'] or any((root/n).is_symlink() or (root/n).read_bytes()!=raw for n,raw in data.items()):
+    if sha(asset.read_bytes())!=tokenizer['sha256'] or any((root/n).is_symlink() or (root/n).read_bytes()!=raw for n,raw in data.items()):
         raise ValueError('Summary resources changed during load.')
     counter.no_truncation();counter.no_padding()
     counter.encode('Control offline: español, € y 漢字.',add_special_tokens=False)
@@ -138,8 +145,13 @@ def load_resources(directory=None,tokenizer_file=None):
         previous=load_resources(root.parent/'v2',asset)
         if sha(previous.manifest_bytes)!=LEGACY_MANIFEST_SHA:raise ValueError('Legacy summary pin mismatch.')
         legacy=(previous,)
+    elif version==4:
+        historical=legacy_tokenizer_file or os.getenv('CHAT_LEGACY_TOKENIZER_FILE') or root.parents[1]/'chat/v2/tokenizer.json'
+        previous=load_resources(root.parent/'v3',historical)
+        if sha(previous.manifest_bytes)!=V3_MANIFEST_SHA:raise ValueError('Legacy summary pin mismatch.')
+        legacy=(previous,)+previous.legacy_resources
     return SummaryResources(f'jup-035.summary.v{version}:'+sha(frozen),data['system.md'].decode('utf-8'),
-        data['input.md'].decode('utf-8'),frozen,data['schema.json'],TOKENIZER['sha256'],expected['response_schema_sha256'],counter,legacy_resources=legacy)
+        data['input.md'].decode('utf-8'),frozen,data['schema.json'],tokenizer['sha256'],expected['response_schema_sha256'],counter,legacy_resources=legacy)
 
 """Local factual guards over QA; these checks do not prove semantic entailment."""
 import re

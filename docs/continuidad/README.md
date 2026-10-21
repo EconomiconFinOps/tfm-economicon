@@ -18,6 +18,7 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
+| [Modelo único del chat](modelo-unico-chat.md) | JUP-132: Flash/DeepInfra FP8 normal como único alias generativo; recursos v4 y lectores históricos conservados. Revisión y validación independientes favorables offline; OpenSpec archivado. Publicación y reviews humanas pendientes, sin inferencias ni despliegue. | 2026-10-21 |
 | [Indicadores medibles para la memoria](indicadores-memoria.md) | JUP-130: precisión, recall y retraso del detector de anomalías (5/7 eventos, 5/5 los detectables por diseño), coste de IA facturado frente a estimado (OpenRouter confirma 100/100 consultas) y reconciliación y frescura de los datos, con tres paneles en el dashboard de evaluación. Medido con datos sintéticos y el gateway local; sin publicar, revisión adversarial y aprobaciones pendientes. | 2026-10-21 |
 | [Acciones y citas del panel](../demo/JUP-065/correccion-panel.md) | JUP-065: corrección separada de acciones ocultas, narrativa incompleta y visor de fuentes; pruebas y límites documentados, reviews y aceptación integrada pendientes. | 2026-10-19 |
 | [Demo funcional](demo-funcional.md) | PR63 incorpora develop6d9e6710/PR139; paquete fijo intacto. CI y dictamenes del SHA final pendientes; ensayo NOT_RUN. | 2026-10-18 |

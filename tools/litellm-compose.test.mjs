@@ -15,6 +15,36 @@ const gatewayImage = "ghcr.io/berriai/litellm@sha256:f63fb81b831b170ec16851e23c3
 const testEnabled = process.env.JUP108_DOCKER_FAKE === "1";
 const mockEnabled = process.env.JUP108_DOCKER_MOCK === "1";
 
+function testNetwork(offset, internal = false) {
+  const prefix = process.env.JUP108_DOCKER_SUBNET_PREFIX;
+  return {
+    ...(internal ? { internal: true } : {}),
+    ...(prefix ? { ipam: { config: [{ subnet: `${prefix}.${offset}/28` }] } } : {}),
+  };
+}
+
+function syntheticRuntimeFiles(directory, secret) {
+  const hmac = path.join(directory, "synthetic-hmac");
+  const summary = path.join(directory, "synthetic-summary-key");
+  fs.writeFileSync(hmac, randomBytes(32).toString("hex"));
+  fs.writeFileSync(summary, "sk-" + randomBytes(24).toString("hex"));
+  const prefix = process.env.JUP108_DOCKER_SUBNET_PREFIX;
+  return [
+    `CHAT_HMAC_FILE=${hmac.replaceAll("\\", "/")}`,
+    `SUMMARY_API_KEY_FILE=${summary.replaceAll("\\", "/")}`,
+    "CHAT_ENABLED=false", "SUMMARY_ENABLED=false",
+    "MINIO_ROOT_USER=synthetic-root", `MINIO_ROOT_PASSWORD=${secret}`,
+    "DOCUMENT_S3_ACCESS_KEY=synthetic-app", `DOCUMENT_S3_SECRET_KEY=${secret}`,
+    "DOCUMENT_CORS_ORIGINS=http://127.0.0.1",
+    `GRAFANA_EVALUATION_DB_PASSWORD=${secret}`,
+    ...(prefix ? [
+      `CHAT_PRIVATE_SUBNET=${prefix}.64/28`,
+      `BACKEND_CHAT_PRIVATE_IP=${prefix}.66`,
+      `PROCESSOR_CHAT_PRIVATE_IP=${prefix}.67`,
+    ] : []),
+  ];
+}
+
 test("JUP-108 AI consumers cannot start before a healthy gateway", {
   skip: process.env.JUP108_DOCKER_HEALTH !== "1",
 }, () => {
@@ -40,7 +70,7 @@ test("JUP-108 AI consumers cannot start before a healthy gateway", {
           interval: "1s", timeout: "2s", retries: 1 } },
         ...Object.fromEntries(["backend", "processor"].map((name) => [name,
           { ...service, depends_on: { litellm: ai.services[name].depends_on.litellm } }])),
-      }, networks: { isolated: { internal: true } } }));
+      }, networks: { isolated: testNetwork(0, true) } }));
       const up = run([...command, "up", "-d", "--pull", "never", "--wait", "--wait-timeout", "20"]);
       const running = run([...command, "ps", "--services", "--status", "running"]);
       assert.equal(running.status, 0);
@@ -73,11 +103,12 @@ test("JUP-108 root Compose keeps scoped gateway keys and state across recreation
   const sensitive = [upstream, master, password];
   const safe = (value) => sensitive.reduce((text, secret) => text.replaceAll(secret, "[REDACTED]"), String(value));
   const environment = Object.fromEntries(Object.entries(process.env).filter(([name]) =>
-    !/^(LITELLM_|OPENROUTER_|COMPOSE_|DATABASE_URL$|ECONOMICON_ENV_FILE$|OPENAI_API_KEY$)/i.test(name)));
+    !/^(BACKEND_LITELLM_|LITELLM_|OPENROUTER_|OPENAI_|LLM_|EMBEDDING_|SUMMARY_|CHAT_|MINIO_|DOCUMENT_|GRAFANA_EVALUATION_|COMPOSE_|DATABASE_URL$|ECONOMICON_ENV_FILE$)/i.test(name)));
   environment.COMPOSE_DISABLE_ENV_FILE = "1";
 
   const envPath = path.join(directory, "synthetic.env");
   fs.writeFileSync(envPath, [
+    ...syntheticRuntimeFiles(directory, password),
     `OPENROUTER_API_KEY=${upstream}`,
     `LITELLM_MASTER_KEY=${master}`,
     `LITELLM_DATABASE_PASSWORD=${password}`,
@@ -120,7 +151,7 @@ test("JUP-108 root Compose keeps scoped gateway keys and state across recreation
         ],
       },
     },
-    networks: { gateway: { internal: true }, default: { internal: true } },
+    networks: { gateway: testNetwork(32, true), default: testNetwork(16, true) },
   };
   const overridePath = path.join(directory, "override.yaml");
   fs.writeFileSync(overridePath, stringify(override));
@@ -193,7 +224,7 @@ with urllib.request.urlopen(r,timeout=15) as response:
       models: ["economicon-embedding"], duration: "10m", max_budget: 1,
     });
     const processor = api("/key/generate", master, {
-      models: ["economicon-chat", "economicon-chat-deepseek", "economicon-embedding"],
+      models: ["economicon-chat", "economicon-embedding"],
       duration: "10m", max_budget: 1,
     });
     assert.equal(backend.status, 200, "backend key generation failed");
@@ -239,6 +270,8 @@ with urllib.request.urlopen(r,timeout=15) as response:
     fs.unlinkSync(missingEnvPath);
     fs.unlinkSync(overridePath);
     fs.unlinkSync(probeOverridePath);
+    fs.unlinkSync(path.join(directory, "synthetic-hmac"));
+    fs.unlinkSync(path.join(directory, "synthetic-summary-key"));
     console.log(`JUP108_RECEIPT=${directory}`);
     assert.ok(receipt.cleanup, "Disposable Compose project was not fully removed");
   }
@@ -250,8 +283,9 @@ test("JUP-108 root Compose starts in mock mode without the AI profile", { skip: 
     processor: process.env.JUP108_MOCK_PROCESSOR_IMAGE,
     frontend: process.env.JUP108_MOCK_FRONTEND_IMAGE,
     "azure-cost-api": process.env.JUP108_MOCK_AZURE_IMAGE,
+    minio: process.env.JUP108_MOCK_MINIO_IMAGE,
   };
-  assert.ok(Object.values(images).every(Boolean), "Set four JUP108_MOCK_*_IMAGE values for the isolated smoke");
+  assert.ok(Object.values(images).every(Boolean), "Set the five JUP108_MOCK_*_IMAGE values for the isolated smoke");
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "jup108-mock-"));
   const project = `jup108-mock-${randomBytes(5).toString("hex")}`;
   const secret = randomBytes(24).toString("hex");
@@ -260,10 +294,10 @@ test("JUP-108 root Compose starts in mock mode without the AI profile", { skip: 
   const safe = (value) => [secret, cookie, authSecret]
     .reduce((text, valueToHide) => text.replaceAll(valueToHide, "[REDACTED]"), String(value));
   const environment = Object.fromEntries(Object.entries(process.env).filter(([name]) =>
-    !/^(LITELLM_|OPENROUTER_|COMPOSE_|AUTH_SECRET_KEY$|DATABASE_URL$|RABBITMQ_|VECTOR_DATABASE_URL$|POSTGRES_PASSWORD$|GRAFANA_ADMIN_PASSWORD$)/i.test(name)));
+    !/^(BACKEND_LITELLM_|LITELLM_|OPENROUTER_|OPENAI_|LLM_|EMBEDDING_|SUMMARY_|CHAT_|MINIO_|DOCUMENT_|GRAFANA_EVALUATION_|COMPOSE_|AUTH_SECRET_KEY$|DATABASE_URL$|RABBITMQ_|VECTOR_DATABASE_URL$|POSTGRES_PASSWORD$|GRAFANA_ADMIN_PASSWORD$)/i.test(name)));
   environment.COMPOSE_DISABLE_ENV_FILE = "1";
 
-  const listeners = await Promise.all(Array.from({ length: 11 }, () => new Promise((resolve, reject) => {
+  const listeners = await Promise.all(Array.from({ length: 12 }, () => new Promise((resolve, reject) => {
     const server = net.createServer();
     server.once("error", reject);
     server.listen(0, "127.0.0.1", () => resolve(server));
@@ -271,9 +305,10 @@ test("JUP-108 root Compose starts in mock mode without the AI profile", { skip: 
   const ports = listeners.map((server) => server.address().port);
   await Promise.all(listeners.map((server) => new Promise((resolve) => server.close(resolve))));
   const [api, processor, frontend, azure, cockroachSql, cockroachHttp, rabbit,
-    rabbitAdmin, vector, prometheus, grafana] = ports;
+    rabbitAdmin, vector, prometheus, grafana, minio] = ports;
   const envPath = path.join(directory, "synthetic.env");
   fs.writeFileSync(envPath, [
+    ...syntheticRuntimeFiles(directory, secret),
     "RUNTIME_ENVIRONMENT=development",
     "ALLOW_INSECURE_LOCAL_DATABASE=true",
     "DATABASE_URL=cockroachdb+psycopg://root@cockroachdb:26257/defaultdb?sslmode=disable",
@@ -296,6 +331,7 @@ test("JUP-108 root Compose starts in mock mode without the AI profile", { skip: 
     `PGVECTOR_PORT=${vector}`,
     `PROMETHEUS_PORT=${prometheus}`,
     `GRAFANA_PORT=${grafana}`,
+    `MINIO_HOST_PORT=${minio}`,
   ].join("\n") + "\n");
   const overridePath = path.join(directory, "override.yaml");
   fs.writeFileSync(overridePath, `services:
@@ -303,6 +339,9 @@ test("JUP-108 root Compose starts in mock mode without the AI profile", { skip: 
     image: ${images.backend}
     build: !reset null
     ports: !override ["127.0.0.1:${api}:8000"]
+  backend-migrate:
+    image: ${images.backend}
+    build: !reset null
   processor:
     image: ${images.processor}
     build: !reset null
@@ -315,7 +354,14 @@ test("JUP-108 root Compose starts in mock mode without the AI profile", { skip: 
     image: ${images["azure-cost-api"]}
     build: !reset null
     ports: !override ["127.0.0.1:${azure}:8002"]
+  minio:
+    image: ${images.minio}
+    build: !reset null
+  minio-init:
+    image: ${images.minio}
+    build: !reset null
 `);
+  fs.appendFileSync(overridePath, stringify({ networks: { default: testNetwork(48) } }));
   const compose = ["compose", "--env-file", envPath, "-p", project, "-f",
     path.join(root, "docker-compose.yml"), "-f", overridePath];
   const receipt = { project, mode: "mock-no-openrouter", images, checks: {}, cleanup: false };
@@ -330,13 +376,23 @@ test("JUP-108 root Compose starts in mock mode without the AI profile", { skip: 
   }
   try {
     const configured = run([...compose, "config", "--services"]).stdout.trim().split(/\r?\n/);
-    receipt.checks.nine_services_without_ai = configured.length === 9
+    const expected = ["minio", "minio-init", "cockroachdb", "rabbitmq", "postgres-pgvector",
+      "azure-cost-api", "backend-migrate", "backend", "processor", "frontend", "prometheus", "grafana"];
+    receipt.configured_services = configured;
+    receipt.checks.current_services_without_ai = configured.length === expected.length
+      && expected.every((name) => configured.includes(name))
       && !configured.includes("litellm") && !configured.includes("litellm-db");
-    assert.ok(receipt.checks.nine_services_without_ai);
+    assert.ok(receipt.checks.current_services_without_ai);
     run([...compose, "up", "-d", "--no-build", "--pull", "never", "--wait", "--wait-timeout", "420"],
       { timeout: 450000 });
     const running = run([...compose, "ps", "--services", "--status", "running"]).stdout.trim().split(/\r?\n/);
-    receipt.checks.all_services_running = running.length === 9;
+    const daemons = expected.filter((name) => !["minio-init", "backend-migrate"].includes(name));
+    receipt.checks.all_services_running = running.length === daemons.length
+      && daemons.every((name) => running.includes(name));
+    receipt.checks.initializers_completed = ["minio-init", "backend-migrate"].every((name) => {
+      const id = run([...compose, "ps", "--all", "--quiet", name]).stdout.trim();
+      return id && run(["inspect", "--format", "{{.State.ExitCode}}", id]).stdout.trim() === "0";
+    });
     receipt.checks.no_gateway_container = run(["container", "ls", "-q", "--filter",
       `label=com.docker.compose.project=${project}`, "--filter", "label=com.docker.compose.service=litellm"])
       .stdout.trim() === "";
@@ -359,6 +415,8 @@ test("JUP-108 root Compose starts in mock mode without the AI profile", { skip: 
     fs.writeFileSync(path.join(directory, "receipt.json"), JSON.stringify(receipt, null, 2));
     fs.unlinkSync(envPath);
     fs.unlinkSync(overridePath);
+    fs.unlinkSync(path.join(directory, "synthetic-hmac"));
+    fs.unlinkSync(path.join(directory, "synthetic-summary-key"));
     console.log(`JUP108_MOCK_RECEIPT=${directory}`);
     assert.ok(receipt.cleanup, "Disposable mock project was not fully removed");
   }
