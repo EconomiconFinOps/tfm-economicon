@@ -2,6 +2,15 @@ output "frontend_url" {
   value       = "https://${var.frontend_domain}"
   description = "Planned URL; an output is not evidence of a working or deployed application."
 }
+output "bootstrap_network" {
+  description = "Private network for controlled one-off bootstrap tasks."
+  value = {
+    subnets         = [for subnet in aws_subnet.app : subnet.id]
+    security_groups = { for name in ["backend", "processor", "azure-cost-api"] : name => aws_security_group.component[name].id }
+    execution_roles = { for name, role in aws_iam_role.execution : name => role.arn }
+    task_roles      = { for name, role in aws_iam_role.task : name => role.arn }
+  }
+}
 output "api_base_url" {
   value = "https://${var.frontend_domain}/api"
 }

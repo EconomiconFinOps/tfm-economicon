@@ -1,0 +1,14 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      python: '3.12'
+      nodejs: '22'
+    commands:
+      - python tools/aws_demo/install_terraform.py
+      - export PATH="$CODEBUILD_SRC_DIR/.work/bin:$PATH"
+  build:
+    commands:
+      - python tools/aws_demo/runner.py
+# Plan/state/passwords never go to CodePipeline output artifacts or console.
+# Restricted cycle artifacts are uploaded explicitly by the runner.

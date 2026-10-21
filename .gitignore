@@ -17,6 +17,7 @@ __pycache__/
 *.pyd
 .DS_Store
 .env
+.work/
 .env.*
 **/.env
 **/.env.*

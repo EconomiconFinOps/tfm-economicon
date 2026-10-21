@@ -43,8 +43,8 @@ resource "aws_db_instance" "main" {
   backup_window                   = "02:00-03:00"
   maintenance_window              = "sun:04:00-sun:05:00"
   enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
-  deletion_protection             = true
-  skip_final_snapshot             = false
+  deletion_protection             = !var.rehearsal_teardown
+  skip_final_snapshot             = var.rehearsal_teardown
   final_snapshot_identifier       = "${local.name}-${each.key}-${var.final_snapshot_suffix}"
   copy_tags_to_snapshot           = true
   auto_minor_version_upgrade      = true

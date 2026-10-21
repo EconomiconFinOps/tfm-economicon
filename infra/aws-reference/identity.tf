@@ -1,6 +1,6 @@
 resource "aws_cognito_user_pool" "main" {
   name                     = local.name
-  deletion_protection      = "ACTIVE"
+  deletion_protection      = var.rehearsal_teardown ? "INACTIVE" : "ACTIVE"
   username_attributes      = ["email"]
   auto_verified_attributes = ["email"]
   mfa_configuration        = "OPTIONAL"

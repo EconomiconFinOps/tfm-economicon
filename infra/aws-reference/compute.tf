@@ -44,9 +44,10 @@ resource "aws_cloudwatch_log_group" "application" {
   retention_in_days = 30
 }
 resource "aws_iam_role" "execution" {
-  for_each           = local.applications
-  name               = "${local.name}-${each.key}-exec"
-  assume_role_policy = local.task_trust
+  for_each             = local.applications
+  name                 = "${local.name}-${each.key}-exec"
+  permissions_boundary = var.permissions_boundary_arn
+  assume_role_policy   = local.task_trust
 }
 resource "aws_iam_role_policy" "execution" {
   for_each = local.applications
@@ -72,9 +73,10 @@ resource "aws_iam_role_policy" "execution" {
   })
 }
 resource "aws_iam_role" "task" {
-  for_each           = local.applications
-  name               = "${local.name}-${each.key}-task"
-  assume_role_policy = local.task_trust
+  for_each             = local.applications
+  name                 = "${local.name}-${each.key}-task"
+  permissions_boundary = var.permissions_boundary_arn
+  assume_role_policy   = local.task_trust
 }
 resource "aws_iam_role_policy" "bedrock" {
   for_each = length(var.bedrock_model_arns) > 0 ? toset(["backend", "processor"]) : toset([])

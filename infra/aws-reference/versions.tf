@@ -6,7 +6,7 @@ terraform {
       version = "6.13.0"
     }
   }
-  # Local state for this unexecuted reference. See backend.s3.hcl.example.
+  backend "s3" {}
 }
 
 provider "aws" {

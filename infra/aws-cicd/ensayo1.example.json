@@ -1,0 +1,19 @@
+{
+  "cycle_id": "ensayo1",
+  "account_id": "REPLACE_ACCOUNT_ID",
+  "source_sha": "REPLACE_REVIEWED_SHA_40_HEX",
+  "region": "eu-south-2",
+  "control_region": "eu-west-3",
+  "frontend_domain": "economicon.danteinferno.es",
+  "origin_domain": "origin.economicon.danteinferno.es",
+  "route53_zone_id": "REPLACE_EXISTING_PUBLIC_ZONE_ID",
+  "availability_zones": ["eu-south-2a", "eu-south-2b", "eu-south-2c"],
+  "postgres_version": "REPLACE_VERIFIED_ENGINE_VERSION",
+  "rabbitmq_version": "REPLACE_VERIFIED_ENGINE_VERSION",
+  "expires_at": "2026-10-23T18:00:00Z",
+  "budget_eur": 60,
+  "available_credit_eur": 0,
+  "estimated_cycle_eur": 0,
+  "ci_run_id": "REPLACE_SUCCESSFUL_CI_RUN",
+  "release_recipe": "infra/aws-cicd/release.json"
+}

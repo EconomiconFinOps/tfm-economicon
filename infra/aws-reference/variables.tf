@@ -6,6 +6,16 @@ variable "project" {
     error_message = "Use 3-15 lowercase letters, numbers or hyphens."
   }
 }
+variable "rehearsal_teardown" {
+  description = "JUP-131: explicit disposable-data teardown only. Never enable for persistent environments."
+  type        = bool
+  default     = false
+}
+variable "permissions_boundary_arn" {
+  description = "Reviewed boundary required by the CI/CD deployment role for all ECS roles."
+  type        = string
+  default     = null
+}
 variable "environment" {
   type    = string
   default = "reference"
