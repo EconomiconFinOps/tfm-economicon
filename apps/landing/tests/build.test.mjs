@@ -21,6 +21,25 @@ test('HTTPS origin produces consistent canonical, OG and sitemap; invalid forms 
  const html=await fs.readFile(path.join(options.outDir,'index.html'),'utf8');assert.match(html,/rel="canonical" href="https:\/\/landing\.example\.test\/"/);assert.match(html,/property="og:url" content="https:\/\/landing\.example\.test\/"/);assert.match(html,/property="og:image" content="https:\/\/landing\.example\.test\/assets\/economicon-primary\.png"/);assert.match(await fs.readFile(path.join(options.outDir,'sitemap.xml'),'utf8'),/<loc>https:\/\/landing\.example\.test\/<\/loc>/);
  for(const origin of ['http://site.test','https://user:pass@site.test','https://site.test/path','https://site.test/?q=x','https://site.test/#x','https://localhost','https://127.0.0.1','https://site.test:8443','not a URL'])assert.throws(()=>parseOrigin(origin));
 });
+test('HSTS is emitted only for an explicitly configured HTTPS origin',async t=>{
+ const options=await fixture(t);
+ await buildLanding({...options,origin:''});
+ assert.doesNotMatch(await fs.readFile(path.join(options.outDir,'_headers'),'utf8'),/Strict-Transport-Security/i);
+ await buildLanding({...options,origin:'https://landing.example.test'});
+ assert.match(await fs.readFile(path.join(options.outDir,'_headers'),'utf8'),/^  Strict-Transport-Security: max-age=31536000$/m);
+});
+test('public resources link to the real project while the local demo remains illustrative',async t=>{
+ const options=await fixture(t);await buildLanding({...options,origin:''});
+ const html=await fs.readFile(path.join(options.outDir,'index.html'),'utf8');
+ assert.match(html,/<a[^>]+href="https:\/\/github\.com\/EconomiconFinOps\/tfm-economicon\/tree\/develop\/docs"/);
+ assert.match(html,/<a[^>]+href="https:\/\/github\.com\/EconomiconFinOps\/tfm-economicon"/);
+ assert.doesNotMatch(html,/Prototipo JUP-089/);
+ assert.match(html,/RECORRIDO SIMULADO/);
+ const js=await fs.readFile(path.join(options.outDir,'app.js'),'utf8');
+ assert.match(js,/Integrado en el MVP/);
+ assert.match(js,/Simulado en esta página/);
+ assert.match(js,/Pendiente de aprobación/);
+});
 test('invalid source/origin never replaces the last valid artifact',async t=>{
  const options=await fixture(t);const before=await buildLanding({...options,origin:''});await assert.rejects(buildLanding({...options,origin:'http://site.test'}));await fs.unlink(path.join(options.sourceDir,'assets/favicon.png'));await assert.rejects(buildLanding({...options,origin:''}));const after=JSON.parse(await fs.readFile(path.join(options.outDir,'build-manifest.json'),'utf8'));assert.deepEqual(before,after);
 });

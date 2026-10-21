@@ -106,3 +106,88 @@ no se presenta CI histórica como ejecución del SHA futuro ni se suman batería
 anteriores como pruebas nuevas. El archivo de OpenSpec se mantiene, sin bootstrap
 ni aceptación nueva de dominio/hosting/demo. La validación pública global y las
 aportaciones humanas siguen pendientes, por lo que PR142 conserva su borrador.
+
+## Reconciliación y observaciones de las reviews — 21/10/2026
+
+Candidato local: HEAD c22713a2dd070b583c869025dbc63e44d7679647,
+merge sin commit con develop bc94a4daea98e97b574d00f019d347fc61c2f915.
+El índice de continuidad conserva ambas aportaciones. No se modifican los
+archivos entrantes de memoria, indicadores o Grafana ni el frontend privado.
+No hay SHA nuevo ni CI del delta local.
+
+Se leen las tres reviews suministradas por el liderazgo: revisión complementaria,
+validación por criterios y aprobación limitada al alcance local. Cambios:
+enlaces reales a documentación y repositorio; pie sin identificador interno;
+diálogo que separa integrado, simulado y pendiente; pruebas HSTS con/sin origen.
+El diseño, marca, fuentes y recorrido simulado se conservan. Una prueba nueva
+reprodujo la ausencia de enlaces antes del arreglo (8PASS/1FAIL). Después pasan
+9/9 casos de landing, lint y build desde la raíz. Los errores iniciales de
+permisos de sockets y ruta temporal son preparación del entorno, no defectos.
+
+El control Node conjunto de Turbo, política PR, CI, gobernanza y scripts da
+140/140 PASS sin omitidas. OpenSpec88/88, las10 trazas activas e higiene son
+favorables. No se repiten campañas de modelos, SQL o suites de producto ajenas.
+Los artefactos finales contienen14 entradas de manifiesto: local231052bytes,
+origen HTTPS sintético231324bytes. SHA256 de build-manifest.json local:
+8a475d9747d6161c3fbe1e2b673f075ef26e916e86ece7404dfaf1932442a502;
+con origen:31f3c24c928b8411de9f72cc2695b2452cf86df3f6b0070a2ab53913e4e24451.
+
+### Mediciones y navegación afectadas
+
+Lighthouse13.5.0, Node24.17.0 y Edge headless, una ejecución por perfil sobre
+loopback con origen sintético; no son medidas del dominio público ni estadísticas
+de campo. [Resultados compactos](JUP-089/measurements-20261021.json).
+
+Reproducción: instalar lighthouse@13.5.0 en un directorio temporal ajeno al
+repositorio y ejecutar su CLI sobre la preview del artefacto con origen:
+`lighthouse http://127.0.0.1:49143/ --preset=desktop --only-categories=performance,accessibility,seo --output=json --output=html`.
+Usar Edge/Chrome headless, sin extensiones, y registrar versión/entorno.
+Para móvil, omitir preset y establecer screenEmulation390x844, DPR1.
+La ejecución original bloqueó navegación a github.com y desactivó informes de
+errores; los enlaces sólo se inspeccionaron, no se visitó el repositorio.
+Los informes originales completos se conservan con la entrega del liderazgo;
+no se sustituyen por este resumen ni se espera identidad de tiempos al repetir.
+
+| Perfil | Rendimiento | Accesibilidad | SEO | FCP | LCP | CLS |
+| --- | --- | --- | --- | --- | --- | --- |
+| Escritorio | 100 | 100 | 92 | 404ms | 484ms | 0,00355 |
+| Móvil390 | 97 | 100 | 92 | 1654ms | 2404ms | 0,00309 |
+
+La primera medida local detectó dos textos de tabs con contraste4,2:1. Se retiró
+sólo su opacidad secundaria, conservando el color; ambas auditorías finales pasan
+contraste. El SEO restante es la consulta de robots.txt bloqueada por la CSP del
+auditor. HTTP directo devuelve200 y el contenido esperado; no se relaja
+connect-src none para conseguir otra puntuación. Sin origen, noindex es deliberado.
+
+El perfil móvil se lanzó con force-prefers-reduced-motion y se inspeccionó la
+regla CSS que elimina movimiento. No se leyó la preferencia efectiva de ese
+proceso ni se acredita una prueba interactiva completa con emulación.
+El navegador normal conserva su preferencia habitual.
+
+Comprobaciones de navegador1440/390/320: sin desbordamiento horizontal; tabs
+verticales con arriba/abajo y Home/End; horizontales con derecha; menú y diálogo
+con Escape/retorno de foco; diálogo de alcance legible en320. Se comprobaron los
+href reales sin navegar a servicios del proyecto. [Escritorio](JUP-089/desktop-20261021.png),
+[móvil320](JUP-089/mobile-320-20261021.png) y
+[alcance móvil](JUP-089/scope-320-20261021.png).
+
+HTTP propio: home200, HEAD200 sin cuerpo, desconocida404, .env/manifest/_headers404
+y POST405; cabeceras restrictivas intactas. /404.html directa conserva200, según
+decisión documentada. La reversión local restituye el SHA256 de portada
+65bd5a69ef4896099891c0f06e1ee3d24a194b6ecaec71746f6ad55cc432edbf.
+El [manual](../operations/public-landing.md) permite repetir activación y reversión
+de configuraciones; no acredita un rollback público.
+
+### Pendientes reales de este corte
+
+Evaluaciones independientes del candidato fijo y CI del futuro commit, aún no
+realizados en este corte. Los dictámenes anteriores no aprueban automáticamente
+estos cambios. Roles efectivos: Paris liderazgo, Víctor pairing, Alejandro
+revisión, Lucía validación. Las revisiones locales no sustituyen su participación;
+un push posterior requiere revalidación humana afectada.
+
+No hay vídeo aprobado en las fuentes suministradas: no se inventa enlace.
+Dominio/titular/renovación, alojamiento, HTTPS/despliegue público y destino real
+de demo siguen pendientes de decisión. Propuesta: aprobar un proyecto estático
+del equipo y su origen antes de publicar; conservar mientras la demo ilustrativa.
+No se declara aceptación pública completa ni autorización de publicación.

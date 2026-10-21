@@ -1,0 +1,2 @@
+# Preserve the byte-identical historical report (including original CRLF).
+comparison.json -text whitespace=cr-at-eol

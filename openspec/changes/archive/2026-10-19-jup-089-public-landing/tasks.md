@@ -28,3 +28,11 @@ Nota del 19/10/2026: las tareas locales marcadas conservan el alcance y límites
 Cierre local19/10: originales R1/R2 conservados, ambos retornos de integridad conformes y cada evaluador confirma aplicabilidad de la evidencia no afectada. Paris autoriza el archivo, commit y push tras la entrega evaluada; archivado en la misma rama el19/10. NEEDS_CONTEXT global permanece para los criterios públicos; 4.4 continúa pendiente.
 
 Corrección posterior del19/10 sobre481b4cf: falloCI de expectativa literal reproducido2FAIL/2PASS, lista exacta actualizada y16+19pruebas focales conformes. La casilla4.2 se reabre sólo para la evaluación independiente afectada del fix, conservando resultados R1/R2. Archivo/commit/push previos autorizados y ejecutados; nueva publicación del arreglo corresponde al PM.
+
+Delta21/10: reconciliación local c227+bc94 y observaciones de reviews preparadas.
+Enlaces docs/repositorio, alcance integrado/simulado/pendiente, HSTS probado y
+contraste corregido conservando diseño. Mediciones locales y reversión:
+[evidencia actual](../../../../docs/evidence/JUP-089-validation.md#reconciliación-y-observaciones-de-las-reviews--21102026).
+La evaluación independiente de este delta está pendiente en este corte; no se
+reabre ni se archiva otro change. 4.4 sigue pendiente y los límites públicos
+anteriores no se convierten en PASS por los resultados locales.

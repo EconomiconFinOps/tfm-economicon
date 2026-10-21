@@ -30,3 +30,37 @@ Conservar artefacto anterior y manifiesto antes de cada publicación. Ante un fa
 ## Retirada local
 
 Ctrl+C en la terminal propia; verificar que dejó de escuchar sólo su puerto. No detener procesos por número sin comprobar su identidad ni limpiar cachés/recursos compartidos. dist se reconstruye desde src y no contiene datos persistentes.
+
+## Ensayo local de activación y reversión
+
+Desde la raíz, en PowerShell, construir dos directorios propios distintos. Los
+destinos deben terminar en dist y no contener otros datos:
+
+```powershell
+$env:SITE_ORIGIN = ''
+$env:LANDING_OUT_DIR = Join-Path $env:TEMP 'landing-local/dist'
+corepack pnpm build --filter=@finops/landing
+$env:SITE_ORIGIN = 'https://economicon.example.test'
+$env:LANDING_OUT_DIR = Join-Path $env:TEMP 'landing-origin/dist'
+corepack pnpm build --filter=@finops/landing
+$env:PORT = '49142' # Comprobar antes que esté libre.
+node apps/landing/scripts/serve.mjs
+```
+
+El dominio de ejemplo no es una selección de dominio público. Comprobar la
+portada, canonical, robots.txt, una ruta inexistente404 y las cabeceras. Cerrar
+esa terminal con Ctrl+C; volver a seleccionar landing-local/dist y arrancar el
+mismo servidor. La respuesta de portada debe recuperar su SHA256 original y
+noindex. Conservar y comparar el manifiesto antes de cada arranque: el servidor
+comprueba bytes y huellas y rechaza alteraciones. No editar un dist servido:
+la preview carga los archivos al arrancar y requiere reinicio para cambiar.
+
+El ensayo del21/10 recuperó exactamente la portada anterior después de activar
+el artefacto con origen sintético. Ambos usan el mismo código con distinta
+configuración: acredita reversión local de artefacto, no despliegue ni rollback
+de una versión pública.
+
+Decisiones conservadoras: no-cache se mantiene para todos los recursos mientras
+sus nombres no incorporen hash. La URL directa /404.html sirve el documento con
+200; una ruta desconocida devuelve ese contenido con404. No se confunden ambas
+comprobaciones ni se añade un fallback SPA.

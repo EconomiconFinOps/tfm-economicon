@@ -34,6 +34,7 @@ EXPECTED_FORMATS = (
     "jup-022-calibration-v1",
     "jup-068-input-v1",
     "rows-v1",
+    "jup-063-paired-v1",
 )
 ENTRY_KEYS = {"path", "format", "milestone", "run_id", "manifest"}
 
@@ -84,8 +85,8 @@ class ManifestTestCase(unittest.TestCase):
 
 
 class ContractSurfaceTests(unittest.TestCase):
-    def test_formats_son_los_cinco_del_contrato_en_orden(self) -> None:
-        # El contrato fija exactamente estos cinco formatos; añadir o quitar uno cambia el contrato.
+    def test_formats_preservan_los_cinco_y_anaden_comparacion_en_orden(self) -> None:
+        # El formato pareado es aditivo; los cinco formatos históricos conservan su orden.
         self.assertEqual(tuple(tool.FORMATS), EXPECTED_FORMATS)
 
     def test_manifest_error_es_value_error(self) -> None:
@@ -112,9 +113,9 @@ class ContractSurfaceTests(unittest.TestCase):
 
 class RealManifestTests(unittest.TestCase):
     def test_manifiesto_versionado_se_lee_completo(self) -> None:
-        # El manifiesto real de hitos: cinco informes existentes, todos de hito, sin run_id declarado.
+        # El manifiesto real de hitos: ocho informes existentes, todos de hito, sin run_id declarado.
         entries = tool.read_manifest(REAL_MANIFEST)
-        self.assertEqual(len(entries), 5)
+        self.assertEqual(len(entries), 8)
         self.assertEqual(
             [entry["format"] for entry in entries],
             [
@@ -123,6 +124,9 @@ class RealManifestTests(unittest.TestCase):
                 "jup-078-benchmark-v1",
                 "jup-022-calibration-v1",
                 "jup-068-input-v1",
+                "rows-v1",
+                "rows-v1",
+                "rows-v1",
             ],
         )
         for entry in entries:
@@ -198,7 +202,7 @@ class ReadManifestValidTests(ManifestTestCase):
         path = self.manifest({"manifest_version": 1, "runs": runs})
         entries = tool.read_manifest(path, root=self.dir)
         self.assertEqual([entry["format"] for entry in entries], list(EXPECTED_FORMATS))
-        self.assertEqual([entry["milestone"] for entry in entries], [True, False, True, False, True])
+        self.assertEqual([entry["milestone"] for entry in entries], [True, False, True, False, True, False])
 
     def test_run_id_en_el_limite_de_80_caracteres(self) -> None:
         # Límite exacto de la regex: 80 caracteres se aceptan.
@@ -465,8 +469,8 @@ class MergeManifestsTests(ManifestTestCase):
             name="local.json.manifest.json",
         )
         merged = tool.merge_manifests([REAL_MANIFEST, local], root=ROOT)
-        self.assertEqual(len(merged), 6)
-        self.assertEqual([entry["milestone"] for entry in merged], [True] * 5 + [False])
+        self.assertEqual(len(merged), 9)
+        self.assertEqual([entry["milestone"] for entry in merged], [True] * 8 + [False])
         self.assertEqual(merged[-1]["path"], local_report)
 
 

@@ -54,3 +54,26 @@ alojamiento, HTTPS, despliegue/reversión y destino auténtico de demo. Tampoco 
 acreditan pairing de Víctor o reviews humanas de Alejandro/Lucía por asignación
 o por informes de agentes. Sin publicación web, DNS, gasto, nuevos accesos,
 cambios de roles, Trello o merge. Las previews previas41789/41790 se conservan.
+
+## Reconciliación y reviews — 21/10/2026
+
+Se prepara merge local sin commit de c22713a2 con develop bc94a4da; conflicto
+del índice resuelto conservando ambas filas. Los cambios entrantes ajenos quedan
+intactos. Se añaden enlaces auténticos a repositorio/docs, pie sin identificador
+interno, distinción integrado/simulado/pendiente y dos pruebas de build/HSTS.
+La marca y composición aprobadas se conservan. Dos textos secundarios recuperan
+contraste al retirar opacidad, sin cambiar la paleta.
+
+9/9 pruebas landing y140controles Node favorables; build raíz/lint correctos,
+OpenSpec88/88,10trazas activas e higiene conformes. Lighthouse local:
+escritorio100/100/92, móvil97/100/92 (rendimiento/a11y/SEO). Consulta de robots
+del auditor bloqueada por CSP; HTTP directo correcto, sin debilitar políticas.
+Responsive/teclado/diálogo comprobados y reversión local de artefacto por SHA256.
+[Evidencia actual y límites](../evidence/JUP-089-validation.md#reconciliación-y-observaciones-de-las-reviews--21102026).
+
+Este corte prepara el candidato para referencias de integridad y evaluación
+independiente nuevas; no atribuye CI ni dictámenes anteriores al delta.
+Dominio/renovación, hosting/HTTPS público, vídeo aprobado y destino real de demo
+son decisiones externas pendientes. Las tres reviews suministradas se conservan:
+la aprobación de Lucía era local sobre c227 y no sustituye revisión de Alejandro,
+pairing de Víctor ni revalidación afectada posterior. Sin commit/push/despliegue.

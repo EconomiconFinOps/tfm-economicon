@@ -1,0 +1,181 @@
+{
+  "contract_version": 1,
+  "run": {
+    "run_id": "jup130-anomalies-2026-10-30",
+    "source": "JUP-130-anomalies",
+    "run_at": "2026-10-21T08:51:01Z",
+    "commit": "630f4f45b0740ce67ca2aeddc9c89b6b8ae81cb1",
+    "suite": "jup130-anomalies",
+    "suite_version": "1",
+    "suite_sha256": "af1d8b88390a41562e08f22d0377ef85e837bfb15f997f654eccc3ed6a9f258c",
+    "synthetic": true
+  },
+  "results": [
+    {
+      "measure_type": "A",
+      "grp": "anomaly_detection",
+      "metric_id": "precision",
+      "behavior": "all",
+      "status": "measured",
+      "unit": "tasa",
+      "value": 1.0,
+      "numerator": 5,
+      "denominator": 5,
+      "judgment": "automatic"
+    },
+    {
+      "measure_type": "A",
+      "grp": "anomaly_detection",
+      "metric_id": "recall_all",
+      "behavior": "all",
+      "status": "measured",
+      "unit": "tasa",
+      "value": 0.714286,
+      "numerator": 5,
+      "denominator": 7,
+      "judgment": "automatic"
+    },
+    {
+      "measure_type": "A",
+      "grp": "anomaly_detection",
+      "metric_id": "recall_designed",
+      "behavior": "all",
+      "status": "measured",
+      "unit": "tasa",
+      "value": 1.0,
+      "numerator": 5,
+      "denominator": 5,
+      "judgment": "automatic"
+    },
+    {
+      "measure_type": "A",
+      "grp": "anomaly_detection",
+      "metric_id": "detection_delay_days",
+      "behavior": "all",
+      "status": "measured",
+      "unit": "dias",
+      "value": 0.0,
+      "judgment": "automatic"
+    },
+    {
+      "measure_type": "A",
+      "grp": "anomaly_detection",
+      "metric_id": "events",
+      "behavior": "all",
+      "status": "measured",
+      "unit": "recuento",
+      "value": 7,
+      "judgment": "automatic"
+    },
+    {
+      "measure_type": "A",
+      "grp": "anomaly_detection",
+      "metric_id": "episodes",
+      "behavior": "all",
+      "status": "measured",
+      "unit": "recuento",
+      "value": 5,
+      "judgment": "automatic"
+    },
+    {
+      "measure_type": "A",
+      "grp": "anomaly_detection",
+      "metric_id": "tp",
+      "behavior": "all",
+      "status": "measured",
+      "unit": "recuento",
+      "value": 5,
+      "judgment": "automatic"
+    },
+    {
+      "measure_type": "A",
+      "grp": "anomaly_detection",
+      "metric_id": "fp",
+      "behavior": "all",
+      "status": "measured",
+      "unit": "recuento",
+      "value": 0,
+      "judgment": "automatic"
+    },
+    {
+      "measure_type": "A",
+      "grp": "anomaly_detection",
+      "metric_id": "fn",
+      "behavior": "all",
+      "status": "measured",
+      "unit": "recuento",
+      "value": 2,
+      "judgment": "automatic"
+    },
+    {
+      "measure_type": "A",
+      "grp": "anomaly_detection",
+      "metric_id": "event_detected",
+      "behavior": "EV-01",
+      "status": "measured",
+      "unit": "recuento",
+      "value": 1,
+      "judgment": "automatic"
+    },
+    {
+      "measure_type": "A",
+      "grp": "anomaly_detection",
+      "metric_id": "event_detected",
+      "behavior": "EV-02",
+      "status": "measured",
+      "unit": "recuento",
+      "value": 1,
+      "judgment": "automatic"
+    },
+    {
+      "measure_type": "A",
+      "grp": "anomaly_detection",
+      "metric_id": "event_detected",
+      "behavior": "EV-03",
+      "status": "measured",
+      "unit": "recuento",
+      "value": 0,
+      "judgment": "automatic"
+    },
+    {
+      "measure_type": "A",
+      "grp": "anomaly_detection",
+      "metric_id": "event_detected",
+      "behavior": "EV-04",
+      "status": "measured",
+      "unit": "recuento",
+      "value": 0,
+      "judgment": "automatic"
+    },
+    {
+      "measure_type": "A",
+      "grp": "anomaly_detection",
+      "metric_id": "event_detected",
+      "behavior": "EV-05",
+      "status": "measured",
+      "unit": "recuento",
+      "value": 1,
+      "judgment": "automatic"
+    },
+    {
+      "measure_type": "A",
+      "grp": "anomaly_detection",
+      "metric_id": "event_detected",
+      "behavior": "EV-06",
+      "status": "measured",
+      "unit": "recuento",
+      "value": 1,
+      "judgment": "automatic"
+    },
+    {
+      "measure_type": "A",
+      "grp": "anomaly_detection",
+      "metric_id": "event_detected",
+      "behavior": "EV-07",
+      "status": "measured",
+      "unit": "recuento",
+      "value": 1,
+      "judgment": "automatic"
+    }
+  ]
+}

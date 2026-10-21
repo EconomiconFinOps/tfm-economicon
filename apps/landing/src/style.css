@@ -16,3 +16,8 @@
 @media(max-width:359px){h1{font-size:43px;letter-spacing:-2.7px}}
 
 .hero :focus-visible,.closing-section :focus-visible,.journey-section :focus-visible{outline-color:var(--highlight)}.noscript-note{padding:12px 24px;background:var(--lilac);color:var(--brand);font-size:13px}.not-found{min-height:75vh;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:25px;max-width:900px;margin:auto;padding:45px 25px}.not-found h1{font-size:clamp(43px,8vw,80px);letter-spacing:-3px}.not-found p{max-width:500px;color:var(--muted)}
+/* Public project resources share the approved resource-button treatment. */
+.resource-links{flex-wrap:wrap;row-gap:8px}
+.resource-links a{color:var(--brand);font-size:12px;padding:10px 0;border-bottom:1px solid var(--border);display:flex;gap:26px;align-items:center;justify-content:space-between}
+.resource-links a span{font-size:21px}
+.step-tabs small{opacity:1}
