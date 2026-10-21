@@ -40,9 +40,9 @@
 
 ## 6. Documentación
 
-- [ ] 6.1 Actualizar `docs/validation/evaluation-dashboard.md` con las tres fuentes, los grupos y la nota que amplía ADR-0022 sobre la lectura de `/spend/logs`
-- [ ] 6.2 Actualizar `docs/continuidad/README.md` y escribir la nota del tema con estado, límites y pendientes
-- [ ] 6.3 Entregar a quien redacta JUP-109 las tablas de la memoria con su comando y sus límites, sin copiar la memoria al repositorio
+- [x] 6.1 Actualizar `docs/validation/evaluation-dashboard.md` con las tres fuentes, los grupos y la nota que amplía ADR-0022 sobre la lectura de `/spend/logs`
+- [x] 6.2 Actualizar `docs/continuidad/README.md` y escribir la nota del tema con estado, límites y pendientes
+- [x] 6.3 Entregar a quien redacta JUP-109 las tablas de la memoria con su comando y sus límites, sin copiar la memoria al repositorio
 
 ## 7. Cierre y verificación
 
