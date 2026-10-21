@@ -89,3 +89,14 @@ Ataques que resistieron: la cobertura no medida distinta de 0 en los cuatro caso
 ## ADR
 
 No se crea un ADR nuevo; ver «Decisiones».
+
+## Human Approval
+
+- Change: jup-130-indicadores-memoria
+- Approval type: post-review
+- Decision: approved
+- Approver: Lucia
+- Date: 2026-10-21
+- Adversarial review: accept-with-findings (pass 2, sin BLOCKING ni HIGH) | accepted findings: ADV-3 (declarado), ADV-4, ADV-5, ADV-6, ADV-8, ADV-9, ADV-10, ADV-11, ADV-12, ADV-13, ADV-R2-1, ADV-R2-2 y ADV-R2-3, con ADV-7 resuelto ajustando la spec
+- Archive decision: archive
+- Notes: Lucia aprobó el 2026-10-21 con «sí, acepto» tras ver la lista de lo corregido, lo declarado y lo aceptado sin corregir (RF-130-001 y RF-130-002 en `openspec/findings/backlog.md`). Quedan fuera de esta aprobación y pendientes en Trello: las reviews `Revision JUP-130` (Paris) y `Validacion JUP-130` (Alejandro), la ejecución de la CI en GitHub y las suites de backend y procesador, que no se pudieron ejecutar en local por falta del paquete `tokenizers`. El PR no está abierto.

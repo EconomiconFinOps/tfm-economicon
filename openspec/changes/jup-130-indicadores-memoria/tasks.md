@@ -50,5 +50,5 @@
 - [x] 7.2 Revisión adversarial con el agente `adversarial-reviewer` sobre la spec y el diff hasta obtener `accept`
 - [x] 7.3 Escribir `review.md` con la evidencia por tarea y el resultado de la revisión adversarial
 - [x] 7.4 Reunir la evidencia del código de producto tocado en `docs/evidence/JUP-130-validation.md`
-- [ ] 7.5 Dejar la sección `## Human Approval` posterior a la revisión para Lucia
+- [x] 7.5 Dejar la sección `## Human Approval` posterior a la revisión para Lucia
 - [ ] 7.6 Archivar el change en el mismo PR y abrir el PR contra `develop`
