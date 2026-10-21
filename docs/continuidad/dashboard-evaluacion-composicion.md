@@ -1,8 +1,20 @@
 # Composición narrativa de evaluación — JUP-129
 
-Actualización documental: 21/10/2026. [Tarjeta](https://trello.com/c/07J4M5ZN). [Diseño y tareas](../../openspec/changes/jup-129-grafana-evaluation-composition/design.md). Implementación local en `feat/JUP-129-grafana-evaluation-composition`, base `bc94a4daea98e97b574d00f019d347fc61c2f915`; sin commit ni publicación.
+Actualización documental: 22/10/2026. [Tarjeta](https://trello.com/c/07J4M5ZN). [Diseño y tareas](../../openspec/changes/archive/2026-10-22-jup-129-grafana-evaluation-composition/design.md). Rama `feat/JUP-129-grafana-evaluation-composition`. Los apartados históricos conservan sus candidatos y resultados.
 
-## Estado vigente: integración de ee84 — 21/10/2026 (R4)
+## Estado vigente: cierre y archivo autorizado — 22/10/2026
+
+PM confirmó íntegros los originales R4 y cerró su merge en `07ef55580c100885ffc8075e82fb7b2eb0011ce3`, con 2.290 fuentes cotejadas y sólo 14 normalizaciones LF autorizadas. Revisor R4 **REVIEW_PASS** (tres pruebas focales propias PASS); Validador R4 **VALIDATION_PASS técnico focal**, por contraste propio de Compose y entradas. Ratifican R3/R2 con sus límites. Sus informes originales no equivalen a reviews humanas ni se extienden automáticamente al siguiente candidato.
+
+Paris autoriza completar la integración y archivar el cambio. PM incorpora `develop` `c00063dbaa83a1237431edef9de6d71d1bfd1ffd` sin commit y sin conflictos: siete rutas, seis documentales y un archivo con cinco pruebas nuevas de indicadores. Se conservan las aclaraciones de rúbrica mixta/normalización de citas y la vigencia histórica de los ADR; no cambian dashboards, loader, datasets, métricas, Compose o provisioning. Las cinco pruebas nuevas pasan en 0,77 s; no se repiten suites completas, consultas o campañas.
+
+El manifiesto normal sigue **9/444**; modelos es suplemento histórico opcional **18 filas → 10/462**. Las 14 capturas/11 vistas entregadas a PM conservan su fecha y procedencia. Ninguna medida histórica se atribuye al modelo nuevo. El arranque completo backend/processor v4 queda fuera de lo demostrado por la ratificación de composición.
+
+La lectura externa humana sigue **NOT_VALIDATED**. La especificación permite declararla pendiente; la tarea de registrar esa declaración se completa, sin afirmar que se hizo la lectura. Se conserva el guion en la matriz. Omisiones reales: 368 backend y 144 processor; marcador histórico backend ausente no recuperado, cobertura actual compuesta 2.577 PASS/368 SKIP. No se declara todo el workspace verde.
+
+El CLI existente archivó el cambio el 22/10/2026 y promovió sus cuatro requisitos a `openspec/specs/assistant-evaluation-composition/spec.md`, sin saltarse validación o promoción. Se fija el candidato tras comprobaciones documentales para nuevas referencias PM. Revisor/Validador ratificarán sólo delta y archivo. Commit/push, CI y texto PR previo a abrirla corresponden a PM; el archivo no acredita aceptación humana ni autoriza merge. Los cortes siguientes son históricos y no sustituyen este estado.
+
+## Integración anterior de ee84 — 21/10/2026 (R4)
 
 PM cierra el candidato R3 evaluado en `bd134a31`, padres a542/b7c8 y árbol c10f273a,2271blobs cotejados. Revisor R3 favorable con53 pruebas focales; Validador R3 favorable con carga9/444,28consultas y tres vistas, conservando la lectura humana NOT_VALIDATED. Sus originales y controles quedan custodiados.
 

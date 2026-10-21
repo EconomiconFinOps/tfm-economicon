@@ -1,6 +1,28 @@
 # JUP-129 — Evidencia de la composición de evaluación
 
-21/10/2026. [Trello](https://trello.com/c/07J4M5ZN). [OpenSpec](../../openspec/changes/jup-129-grafana-evaluation-composition/). Base `bc94a4daea98e97b574d00f019d347fc61c2f915`. Implementación local autorizada, sin publicar ni archivar. Proceso `CONTRIBUTING.md` 2026-10-18; Paris liderazgo, Lucía pairing, Alejandro revisión y Víctor validación. Estos roles no acreditan participación realizada.
+22/10/2026. [Trello](https://trello.com/c/07J4M5ZN). [OpenSpec](../../openspec/changes/archive/2026-10-22-jup-129-grafana-evaluation-composition/). Cierre sobre HEAD `07ef55580c100885ffc8075e82fb7b2eb0011ce3` con develop `c00063dbaa83a1237431edef9de6d71d1bfd1ffd` integrado sin commit por PM. Proceso `CONTRIBUTING.md` 2026-10-18; Paris liderazgo, Lucía pairing, Alejandro revisión y Víctor validación. Roles no acreditan participación. Las secciones iniciales que siguen al cierre conservan el corte histórico original.
+
+## Cierre vigente y DoD local previo al archivo — 22/10/2026
+
+Paris autorizó el 22/10/2026 completar integración, archivar OpenSpec, commit/push y comprobar CI, mostrando la propuesta antes de abrir la PR. Esta autorización permite el archivo y los pasos indicados; no acredita lectura humana, participación o reviews de GitHub, ni dispensa sus requisitos o autoriza merge.
+
+R4 original: Revisor **REVIEW_PASS**, manifiesto de informe `5d3bb7c81907959c7a485aa003b0c9a55678d065cd3216d809b0603c18868c46`; Validador **VALIDATION_PASS técnico focal**, manifiesto `f2affe556c347f12f05036eaf840fe2a529f6b4adf66031ebf2393f4148671be`. Candidato R4 `53e36bcd762d88938543d64025809a0f782806806f177923719b3e0f1f3280c6`. Ambos originales y borradores conservados íntegros; PM confirmó sus mismas guardas de retorno PASS antes del commit legítimo 07ef5558. No se comparan referencias anteriores contra un nuevo HEAD para simular una infracción.
+
+Delta c000: seis documentos/specs y un archivo con cinco pruebas añadidas; no hay cambios en los JSON, loader, datos, métricas o despliegue. Las cinco pruebas nuevas de coste con cobertura parcial, referencia fallida, cita fuera de contexto, causas no medidas y dos puntos de petición dan **5 PASS / 0 SKIP** en 0,77 s con Python3.12 privado, sin inferencias. Se heredan las aclaraciones documentales sobre normalización literal y el proxy de rúbrica mixta; no alteran fórmulas o resultados existentes. La evidencia R3/R2 sigue candidata a ratificación independiente por identidad e impacto, sin atribuirle una nueva ejecución.
+
+| Criterio vigente | Resultado técnico a este cierre | Pendiente real |
+| --- | --- | --- |
+| Composición y cuatro familias | Implementado; R4 ratifica revisión R3/R2 por identidad | Ratificación del delta/archivo sobre nuevo candidato fijo |
+| Hilo narrativo, ayudas, límites y comparación | Consultas y render R3/R2 conservados, 28 consultas R3 y 14 capturas/11 vistas suplementarias del principal atribuidas | No hay nuevas campañas/modelos ni rendimiento v4 demostrado |
+| Guía, continuidad, capturas y trazabilidad | Documentación reconciliada y originales conservados; archivo ejecutado por CLI; cuatro requisitos promovidos | Verificación nativa tras promoción y enlaces |
+| Lectura por persona ajena | **NOT_VALIDATED**; declaración pendiente y guion conservados según escenario explícito de la spec | PM coordina persona real y respuestas; agentes no cuentan |
+| Participación, reviews y CI | Roles reales conservados; agentes y pruebas locales no son participación humana o CI remota | PM: commit/push/CI, texto previo, proceso humano y permisos de publicación |
+
+La cobertura backend actual compuesta es **2.577 PASS + 368 SKIP = 2.945**, sin resultado actual desconocido, con 54 PASS focales; no recupera el marcador histórico. Processor conserva 144 SKIP y los fallos originales y cuatro reensayos PASS separados. Los cuatro promtool pasan tras la corrección autorizada de permisos. No se repiten ni se declaran verdes suites generales. El arranque completo backend/processor v4, calidad del proveedor y nuevos costes/latencias no están demostrados por esta composición.
+
+El DoD técnico previo al archivo comprende alcance y evidencias conservados, R4 independiente favorable, aprobación de archivo posterior comunicada por PM, tareas coherentes, chequeos nativos y cierre explícito de omisiones. No significa aceptación total de la historia. Resultados exactos de comprobaciones previas/tras archivo y control de enlaces se registrarán abajo; el candidato se fijará antes de nuevas referencias independientes. Git y publicación son de PM.
+
+## Corte inicial conservado
 
 ## Criterios y evidencia
 
@@ -157,3 +179,11 @@ ee84 no cambia los JSON Grafana, el loader, el manifiesto de datos ni el provisi
 La carga opcional de modelos solicitada por Paris conserva las18filas y metadatos del informe histórico16/10: default9/444+18=10/462;84respuestas por modelo. Todas las secciones se capturaron en el Grafana real del Compose general, sin modificar archivos del candidato, sin nuevas campañas/juicios/llamadas. Capturas y recibos externos en custodia PM, anteriores de ausencia conservados. Salud sin tráfico y comparación sin referencia permanecen ausencias legítimas.
 
 R4 se fija para nuevas referencias PM y evaluación sólo del delta; las comprobaciones previas no se repiten por rutina. Lectura humana NOT_VALIDATED; omisiones/históricos y permisos finales conservados. La integración del modelo no equivale a ejecutar ni aceptar una campaña nueva del asistente.
+
+
+## Resultado del archivo — 22/10/2026
+
+CLI existente `corepack pnpm openspec archive jup-129-grafana-evaluation-composition --yes --json`: exit0; archivado como `2026-10-22-jup-129-grafana-evaluation-composition`, specsUpdated=true, cuatro requisitos añadidos, cero modificados/eliminados/renombrados. Se conserva el directorio activo previo completo fuera del producto. No se omitió validación ni promoción; no hubo comandos Git. Se completó únicamente el Purpose descriptivo generado por el CLI, sin modificar requisitos/escenarios; se repararon enlaces de continuidad/evidencia al archivo. Checks posteriores y candidato fijo se entregan a PM antes de nuevas referencias y evaluadores. La lectura humana sigue NOT_VALIDATED y el archivo no demuestra aceptación completa o merge.
+
+
+Comprobaciones posteriores ejecutadas: `jup:check:all`, `openspec:validate` (88 elementos PASS, cero FAIL), `jup:cleanup:check` y `git diff --check`, todos exit0. Los mismos checks previos también exit0. Se comprueba identidad exacta de los cuatro requisitos/escenarios promovidos con su delta archivado, y se revisan los enlaces locales del cierre. No se reejecutan suites o campañas; el control posarchivo no se atribuye al directorio activo ya retirado.

@@ -1,5 +1,7 @@
 # ADR-0002: LiteLLM como gateway y OpenRouter como upstream
 
+Nota de vigencia 21/10/2026: [JUP-132 / ADR-0026](ADR-0026-default-chat-model.md) resuelve `economicon-chat` a DeepSeek V4.1 Flash (`deepinfra/fp8`) y retira `economicon-chat-deepseek` (V4 Pro) como alias activo. El mapeo a GLM-5.2 y el segundo modelo descritos abajo conservan su corte histórico.
+
 - Estado: Accepted (2026-10-04; ver Aceptacion)
 - Fecha: 2026-08-25
 - Tarjeta: [JUP-078](https://trello.com/c/M4zqDGlW)
