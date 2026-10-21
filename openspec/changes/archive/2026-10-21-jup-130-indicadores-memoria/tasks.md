@@ -51,4 +51,4 @@
 - [x] 7.3 Escribir `review.md` con la evidencia por tarea y el resultado de la revisión adversarial
 - [x] 7.4 Reunir la evidencia del código de producto tocado en `docs/evidence/JUP-130-validation.md`
 - [x] 7.5 Dejar la sección `## Human Approval` posterior a la revisión para Lucia
-- [ ] 7.6 Archivar el change en el mismo PR y abrir el PR contra `develop`
+- [x] 7.6 Archivar el change en el mismo PR y abrir el PR contra `develop` (archivado el 2026-10-21 tras el `Human Approval`; el PR contra `develop` no está abierto: queda pendiente de que Lucia decida cómo se revisa, porque la tarjeta asigna revisión a Paris y validación a Alejandro)

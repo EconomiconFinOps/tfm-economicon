@@ -39,3 +39,9 @@ Entorno: Windows 10, Docker Desktop. Pila mock en un proyecto Compose aislado (`
 - **Hallazgos aceptados sin corregir:** RF-130-001 (robustez de la herramienta ante entradas atípicas) y RF-130-002 (el retraso vale 0 por construcción), en `openspec/findings/backlog.md`.
 - **El gasto es local a la máquina que ejecutó las consultas** (el gateway aislado de esta máquina, del 9 al 20 de octubre); no es el coste de un uso real ni de otros equipos.
 - Lo medido es una vez y sobre datos sintéticos y pocos eventos: ilustrativo, no estadístico.
+
+## Nota de release
+
+| Fecha | JUP | Nota de release | Review | ADRs |
+| --- | --- | --- | --- | --- |
+| 2026-10-21 | JUP-130 | El dashboard de evaluación muestra tres indicadores nuevos medidos para la memoria: calidad de la detección de anomalías, coste de IA facturado frente a estimado (contrastado con OpenRouter) y frescura y reconciliación de los datos. Cada uno es su propia fuente y se mide con `tools/memory-indicators.py`; el panel de negocio de JUP-068 filtra ahora por su fuente. | [review.md](../../openspec/changes/archive/2026-10-21-jup-130-indicadores-memoria/review.md) | [ADR-0022](../adr/ADR-0022-assistant-evaluation-results-in-grafana.md) (ampliada sin cambiar su sentido) |
