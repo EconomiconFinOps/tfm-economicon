@@ -46,6 +46,8 @@ Lo no medido se escribe «No medido». Un 0 % solo aparece si se midió un cero.
 
 Se rellena con los límites de cada medida: tamaño de la muestra, repeticiones, número de revisoras, carácter provisional del informe, periodo cubierto por el coste y alcance de la latencia (campaña frente a tráfico real).
 
+Se marca además qué medidas son sensibles a la infraestructura local y habría que repetir en la definitiva (latencia, fallos técnicos, disponibilidad y muestras bloqueadas por cortes), según la sección «Sensibilidad a la infraestructura local» del [plan](model-reevaluation-plan.md).
+
 ## 5. Gasto
 
 | Concepto | Valor |

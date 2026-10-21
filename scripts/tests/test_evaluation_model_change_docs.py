@@ -140,6 +140,14 @@ class PlanTests(unittest.TestCase):
             if entry["class"] == "dependiente":
                 self.assertIn(entry["id"], self.text, entry["id"])
 
+    def test_infrastructure_sensitive_metrics_exist_in_the_catalogue(self) -> None:
+        self.assertIn("Sensibilidad a la infraestructura local", self.text)
+        catalogue = {m["id"] for m in load(ROOT / "docs" / "validation" / "JUP-067-metrics-catalogue.json")["metrics"]}
+        section = self.text.split("## Sensibilidad a la infraestructura local")[1].split("## Qué queda fuera")[0]
+        mentioned = set(re.findall(r"(?:LAT|AVL|STR)-\d", section))
+        self.assertTrue({"LAT-1", "LAT-2", "LAT-4", "AVL-1", "STR-2"} <= mentioned)
+        self.assertLessEqual(mentioned, catalogue)
+
     def test_no_secret_or_key_value_appears(self) -> None:
         self.assertNotRegex(self.text, r"sk-[A-Za-z0-9_-]{8,}")
 

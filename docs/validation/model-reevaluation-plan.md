@@ -56,6 +56,28 @@ Se rellena durante la ejecución. Cada fila lleva una campaña, la fecha, el gas
 | --- | --- | --- | --- | --- | --- |
 | Muestra de coste: 3 conversaciones (`JUP-069-002`, `JUP-071-001`, `JUP-071-002`), 4 llamadas al modelo de chat | 21/10/2026 | 0,003833 USD (incluye 17 peticiones del gateway, 5 de embeddings de una recogida anterior sin respuesta) | Sin contrastar | 0,003833 USD | 1,5 USD |
 
+## Sensibilidad a la infraestructura local
+
+Las mediciones de esta reejecución se hacen en el ordenador local de Lucia con Docker Desktop (7,7 GB de memoria para los contenedores), no en la infraestructura definitiva. Algunas métricas dependen más de esa máquina que del modelo y conviene repetirlas donde vaya a funcionar el producto. La lista se completa con lo que aparezca durante la campaña.
+
+| Métrica (catálogo de JUP-067) | Por qué es sensible | Qué hacer |
+| --- | --- | --- |
+| LAT-1, LAT-2, LAT-3: latencia mediana, p95 y máxima de la campaña | Es de extremo a extremo e incluye backend, processor, cola, base de datos, validador y arranque en frío, además de la llamada al modelo | Repetir en la infraestructura definitiva. No atribuir al modelo la latencia de esta máquina |
+| LAT-4 y AVL-1: llamadas fallidas o agotadas y disponibilidad del chat | Los timeouts y los 503 de la recogida dependen de la capacidad del equipo | Repetir allí; separar lo técnico de lo semántico |
+| STR-2: fallos por categoría | Las categorías `timeout` y `service` salen de la capacidad local | Repetir allí |
+| Muestras `blocked` de la campaña de robustez por fallo técnico | Se bloquean por cortes de infraestructura, no por el comportamiento del asistente | Repetir las bloqueadas allí |
+| Señales en vivo de Prometheus (latencia p95 y tasa de error del chat) | Se leen sobre el despliegue en el que corre el tráfico | Leerlas en la infraestructura definitiva |
+
+No dependen de la máquina (salvo errores de ejecución): el contenido de las respuestas, los puntos de rúbrica, el coste por token y por consulta, el detector de anomalías y la reconciliación de datos.
+
+Hechos observados en esta máquina (21/10/2026), para tenerlos presentes al leer las cifras:
+
+- La recuperación del backend dio tres timeouts de 20 s en la llamada de embeddings (`retrieval_failed`, categoría `timeout`), mientras que la misma llamada directa al gateway respondía en 0,6–1,1 s.
+- La primera conversación tardó 73,6 s en total; la llamada remota al modelo, 15,8 s. Las dos siguientes, 25,5 s y 15,6 s.
+- Tras parar el stack con un cierre forzado, PostgreSQL tardó unos 2 minutos en recuperarse.
+- El build del backend falló una vez por descargar el tokenizer histórico (20 MB) con otros builds en paralelo y se resolvió reconstruyéndolo solo.
+- La lectura del registro de gasto del gateway tardó unos 16 s con 927 filas: las herramientas de medición se ralentizan con el volumen.
+
 ## Qué queda fuera
 
 Repetir la comparativa de modelos, elegir otro modelo, cambiar baterías o instrumentos, y el despliegue en DockerServer.
