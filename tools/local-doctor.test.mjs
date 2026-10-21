@@ -353,7 +353,9 @@ test("ports already published by this Compose project are not busy", async () =>
   const port = server.address().port;
   try {
     const result = await doctor(dotenv({ ...VALID, PGVECTOR_PORT: String(port) }), {
-      isPortFree: undefined,
+      // This scenario concerns only the project's own occupied port. Other
+      // listeners on the developer machine must not affect that assertion.
+      isPortFree: async (candidate) => candidate !== port,
       docker: { containerPorts: async () => [port], volumes: async () => [] },
     });
     assert.equal(result.code, 0, result.text);
@@ -561,7 +563,7 @@ const BACKEND_REJECTS = [
   ["AUTH_SECRET_KEY short in code points", "AUTH_SECRET_KEY", { AUTH_SECRET_KEY: "\u{1F600}".repeat(16) }],
   ["placeholder AUTH_SECRET_KEY", "AUTH_SECRET_KEY", { AUTH_SECRET_KEY: "Replace-Me-Auth-Secret" }],
   ["multi-line AUTH_SECRET_KEY", "AUTH_SECRET_KEY", { AUTH_SECRET_KEY: '"' + "a".repeat(20) + "\\n" + "b".repeat(20) + '"' }],
-  ["DATABASE_URL with a PostgreSQL scheme", "DATABASE_URL", { DATABASE_URL: "postgresql://root@cockroachdb:26257/defaultdb?sslmode=disable" }],
+  ["DATABASE_URL with an unsupported scheme", "DATABASE_URL", { DATABASE_URL: "mysql://root@cockroachdb:26257/defaultdb?sslmode=disable" }],
   ["insecure DATABASE_URL on a remote host", "DATABASE_URL", { DATABASE_URL: "cockroachdb+psycopg://root@db.example.com:26257/defaultdb?sslmode=disable" }],
   ["DATABASE_URL without database", "DATABASE_URL", { DATABASE_URL: "cockroachdb+psycopg://root@cockroachdb:26257?sslmode=disable" }],
   ["DATABASE_URL with a driver override", "DATABASE_URL", { DATABASE_URL: "cockroachdb+psycopg://root@cockroachdb:26257/defaultdb?sslmode=disable&host=evil" }],
@@ -652,6 +654,15 @@ test("keeps the backend rule lists and the diagnostic in step", async () => {
     assert.deepEqual(literalSet("localhost"), [...BACKEND_RULES.insecureDatabaseHosts].sort(), `${service} insecure hosts`);
     assert.ok(source.includes('username == password == "guest"'), `${service}: guest/guest rule`);
     assert.ok(source.includes('password == "postgres"'), `${service}: default pgvector password rule`);
+  }
+});
+
+test('accepts the PostgreSQL operational schemes supported by both services', async () => {
+  for (const scheme of ['postgresql', 'postgresql+psycopg', 'postgresql+psycopg2']) {
+    const result = await doctor(dotenv({ ...VALID,
+      DATABASE_URL: `${scheme}://root@cockroachdb:26257/defaultdb?sslmode=disable` }));
+    assert.equal(result.code, 0, result.text);
+    assertNoSecrets(result.text);
   }
 });
 
