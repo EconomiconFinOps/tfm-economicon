@@ -62,6 +62,7 @@ CALIBRACION = "Calibración de la recuperación (JUP-022)"
 BENCHMARK = "Benchmark de modelos (JUP-078)"
 COMPARACION_PAREADA = "GLM/DeepSeek — comparación provisional"
 ROBUSTEZ = "Robustez (JUP-071)"
+ANOMALIAS = "Calidad de la detección de anomalías"
 DETALLE_CALIDAD = "Exactitud, relevancia y fundamento (detalle)"
 DETALLE_CAMPANA = "Latencia, formato y disponibilidad de la campaña (detalle)"
 
@@ -78,6 +79,7 @@ TRAMOS = (
     {BENCHMARK},
     {COMPARACION_PAREADA},
     {ROBUSTEZ},
+    {ANOMALIAS},
     {DETALLE_CALIDAD},
     {DETALLE_CAMPANA},
 )

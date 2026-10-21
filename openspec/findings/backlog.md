@@ -491,3 +491,27 @@ En `docs/evidence/JUP-070-run-1-report.json` y `run-2-report.json`, `LAT-1` regi
 `retrieval` con n = 28 (comprobado). La ejecucion 2 usa embeddings reales (`litellm`), por lo que 0 ms no parece una
 medicion real. El dashboard lo copia fielmente y lo muestra como «0.0 ms», un cero medido segun su propia regla («no medido
 nunca es 0»). Revisar si el medidor de JUP-070 mide esas etapas o las deja a 0 por defecto.
+
+## RF-130-001 La herramienta de medición de JUP-130 no tolera entradas atípicas
+
+Fecha: 2026-10-21. Origen: JUP-130, revisión adversarial (vuelta 1), hallazgos ADV-4, ADV-5, ADV-6, ADV-8, ADV-9, ADV-11, ADV-12 y ADV-13 (vuelta 1) y ADV-R2-1 (vuelta 2).
+Tipo: robustez de una herramienta de medición. Severidad: Medium/Low. Estado: Open, aceptado por Lucia el 2026-10-21 («solo arreglamos si lo vemos prioritario»). Owner: Equipo Economicon. Scope: `tools/memory-indicators.py`.
+
+Las entradas de la herramienta son propias (el CSV de la demo, el registro del gateway local y la API de OpenRouter), por eso no se corrigió ahora. Casos reproducidos por el revisor:
+
+- Una reconciliación con una diferencia mayor que el mayor entero seguro (por ejemplo, la API no devuelve el USD de `tenant-growth`) aborta el informe con un error en lugar de escribir `reconciled = 0`; una divisa en minúscula (`eur`) cuenta como otra divisa distinta (ADV-4).
+- `_source_rows` compara `SubscriptionId` sin normalizar mayúsculas (los vecinos usan `casefold`) y un conjunto de inquilinos vacío sale como informe vacío con código 0, igual que una referencia anterior a la ventana (ADV-5).
+- Filas del gateway con `spend`, `startTime` o `model` ausentes o nulos, `error_information` como texto, o un `total_cost` infinito de OpenRouter producen un error sin controlar (ADV-6).
+- Un alias de modelo con espacios, acentos o más de 80 caracteres impide generar todo el informe, y un alias llamado `all` duplica la fila global (ADV-8).
+- `--reference 0001-01-01` lanza `OverflowError` sin capturar (ADV-9).
+- `http.client.IncompleteRead` no se captura, y un único fallo transitorio de OpenRouter (403, 429, 5xx) descarta todas las confirmaciones (ADV-11).
+- La ventana del gateway toma `startTime[:10]` e ignora el desfase horario; el gateway real emite `Z`, así que es hipotético (ADV-12).
+- Dos filas con el mismo `request_id` cuentan como dos consultas y una confirmada (ADV-13).
+- `data_report` descarta la causa cuando el API de frescura cae o devuelve 401: las filas quedan `not_measured` sin motivo en el informe (ADV-R2-1, vuelta 2); solo el informe de coste de IA registra la causa. Un test sugerido: `data` con un `fetch` que lanza `ApiUnavailable("http_401")`.
+
+## RF-130-002 El retraso hasta la detección de anomalías vale 0 por construcción
+
+Fecha: 2026-10-21. Origen: JUP-130, revisión adversarial (vuelta 1), hallazgo ADV-3.
+Tipo: calidad de la medición. Severidad: Medium. Estado: Open, límite declarado en la tabla, el panel y la guía. Owner: Equipo Economicon. Scope: JUP-130 y `apps/backend/app/services/anomaly_episodes.py`.
+
+`match_events` mide `episode.start_date - event.start_date`, y en `plan_detection` el `start_date` del episodio es el propio día evaluado en que se dispara la regla, así que el retraso es 0 para cualquier episodio detectado. Solo se evalúan días completos, de modo que el retraso real mínimo en producción sería de un día. El indicador no puede variar y no mide la latencia de la detección; para medirla haría falta contrastar con el día en que el detector se ejecutó. La tolerancia de tres días tampoco puede ejercerse. Queda declarado, no corregido.
