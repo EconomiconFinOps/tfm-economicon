@@ -1,0 +1,185 @@
+{
+  "inventory_version": 1,
+  "entries": [
+    {
+      "id": "live-robustness-jup071",
+      "name": "Robustez ante datos incompletos con el chat real (29 casos) e indicadores de las cuatro familias de un RAG",
+      "cards": ["JUP-071", "JUP-069", "JUP-123"],
+      "class": "dependiente",
+      "justification": "Puntúa respuestas que genera el modelo del alias economicon-chat: lo que el asistente pide, se abstiene o inventa cambia con el modelo. Los 19 indicadores salen de esas mismas respuestas.",
+      "check": {
+        "kind": "report",
+        "ref": "docs/evidence/JUP-071-live-r1-report.json",
+        "finding": "El informe es live_unverified con model_execution_verified falso: el modelo que generó las respuestas no está atestiguado, solo declarado como alias."
+      },
+      "sources": ["JUP-071"],
+      "evidence": ["docs/evidence/JUP-071-live-r1-report.json", "docs/evidence/JUP-071-live-r1-rows.json", "docs/evidence/JUP-071-validation.md"],
+      "rerun": "Campaña ligera de JUP-071: una repetición, una revisora, informe provisional. Tope autorizado de 1,5 USD en total con la clave de OpenRouter de Lucia; el proveedor es el que fije JUP-132."
+    },
+    {
+      "id": "chat-battery-n3-n5",
+      "name": "Batería del chat con 28 casos y tres repeticiones (N3/N5): conformidad por requisito",
+      "cards": ["JUP-035", "JUP-120", "JUP-123"],
+      "class": "dependiente",
+      "justification": "Revisa por requisito las respuestas que el modelo genera para cada caso (84 ejecuciones previstas, 28 casos por 3): la conformidad, los fallos de contenido y los técnicos dependen del modelo y del proveedor.",
+      "check": {
+        "kind": "report",
+        "ref": "docs/validation/JUP-123-N3-local-review.md",
+        "finding": "La revisión local cuenta conformes, inciertas y fallos sobre las 78 respuestas recogidas de 84 ejecuciones; la recogida se hizo contra una ruta del gateway, no contra una plantilla."
+      },
+      "sources": [],
+      "evidence": ["docs/validation/JUP-123-N3-local-review.md", "docs/validation/JUP-035-evaluation-partition.json", "docs/validation/JUP-035-receipt-evaluation.md"],
+      "rerun": "No cabe en la campaña ligera de JUP-071: son 84 ejecuciones y no están en el presupuesto de 1,5 USD. Se decide en el plan de reejecución; si no se repite consta por escrito el motivo y la cifra de la memoria queda como obsoleta sin sustituto."
+    },
+    {
+      "id": "ai-cost-jup130",
+      "name": "Coste de IA facturado frente a estimado, tokens por consulta y rechazos del gateway",
+      "cards": ["JUP-130", "JUP-078"],
+      "class": "dependiente",
+      "justification": "El coste por consulta es tokens por la tarifa del modelo servido, y los fallos del proveedor y los rechazos dependen de la ruta. Cambiar de modelo cambia precio, tokens de salida y tasa de error.",
+      "check": {
+        "kind": "report",
+        "ref": "docs/evidence/JUP-130/JUP-130-ai-cost.md",
+        "finding": "El indicador lee el registro de gasto del gateway y contrasta cada generación con OpenRouter; no tiene una parte independiente del modelo."
+      },
+      "sources": ["JUP-130-ai-cost"],
+      "evidence": ["docs/evidence/JUP-130/JUP-130-ai-cost.md", "docs/evidence/JUP-130/JUP-130-ai-cost.rows.json"],
+      "rerun": "Se vuelve a calcular con el comando ai-cost sobre el registro del gateway durante la campaña ligera de JUP-071. Leer el registro no añade gasto. Solo cubre el periodo y las consultas de esa campaña."
+    },
+    {
+      "id": "live-signals-prometheus",
+      "name": "Señales en vivo del chat: consultas por minuto, latencia p95, tasa de error y búsquedas sin contexto",
+      "cards": ["JUP-043", "JUP-067", "JUP-121"],
+      "class": "dependiente",
+      "justification": "La latencia p95 y la tasa de error del chat incluyen la generación, que depende del modelo y del proveedor. Las búsquedas sin contexto y los fallos de recuperación no dependen de la generación.",
+      "check": {
+        "kind": "report",
+        "ref": "docs/validation/JUP-067-metrics.md",
+        "finding": "El catálogo mide la latencia por etapa (embedding, recuperación, generación y total) y la generación forma parte del total."
+      },
+      "sources": [],
+      "evidence": ["docs/validation/JUP-067-metrics.md", "docs/validation/evaluation-dashboard.md"],
+      "rerun": "No se reejecuta: son contadores de tráfico real. Se leen tras el cambio y se rotula el instante en que cambió el modelo. Sin tráfico, no medido."
+    },
+    {
+      "id": "anomalies-jup130",
+      "name": "Detector de anomalías de coste: precisión, recall y retraso",
+      "cards": ["JUP-130", "JUP-114"],
+      "class": "independiente",
+      "justification": "El detector y la explicación de episodios son reglas deterministas sobre las series de coste. Ninguna entrada ni salida pasa por el modelo de generación.",
+      "check": {
+        "kind": "code",
+        "ref": "apps/backend/app/services/anomalies.py",
+        "finding": "Los módulos anomalies.py, anomaly_episodes.py y anomaly_explanations.py solo importan biblioteca estándar y esquemas de facturación; ninguno cita un cliente de gateway ni de modelo. Comprobado el 2026-10-21 con una búsqueda de imports y de las palabras litellm, openrouter y gateway."
+      },
+      "sources": ["JUP-130-anomalies"],
+      "evidence": ["docs/evidence/JUP-130/JUP-130-anomalies.md", "docs/evidence/JUP-130/JUP-130-anomalies.rows.json", "docs/validation/JUP-130-injected-events.json"],
+      "rerun": "No se repite. Se mantiene la medición existente."
+    },
+    {
+      "id": "data-jup130",
+      "name": "Reconciliación y frescura de los datos de coste",
+      "cards": ["JUP-130", "JUP-119"],
+      "class": "independiente",
+      "justification": "Compara el total de la fuente con el resumen de facturación del API y calcula días desde la fecha de referencia. No genera ni lee texto del modelo.",
+      "check": {
+        "kind": "code",
+        "ref": "apps/backend/app/api/routes/billing.py",
+        "finding": "La ruta de facturación de la que el indicador lee /billing/summary y /billing/reference-date no cita ningún cliente de modelo. El subcomando data de tools/memory-indicators.py solo llama a esos dos puntos del API."
+      },
+      "sources": ["JUP-130-data"],
+      "evidence": ["docs/evidence/JUP-130/JUP-130-data.md", "docs/evidence/JUP-130/JUP-130-data.rows.json"],
+      "rerun": "No se repite. Se mantiene la medición existente."
+    },
+    {
+      "id": "business-metrics-jup068",
+      "name": "Tiempo, asignación de gasto y ahorro (métricas de negocio)",
+      "cards": ["JUP-068"],
+      "class": "independiente",
+      "justification": "Se calculan con registros de tiempo y de gasto, no con respuestas del asistente. El informe versionado es un ejemplo sintético sin piloto real.",
+      "check": {
+        "kind": "code",
+        "ref": "tools/business-metrics.mjs",
+        "finding": "La herramienta no menciona modelo, alias ni gateway; su entrada es JSON de registros. El ejemplo versionado declara procedencia sintética."
+      },
+      "sources": ["JUP-068"],
+      "evidence": ["docs/validation/JUP-068-example.json", "docs/validation/JUP-068-business-metrics.md"],
+      "rerun": "No se repite."
+    },
+    {
+      "id": "retrieval-calibration-jup022",
+      "name": "Calibración de la recuperación (acierto de documento y de sección, top_k y distancia máxima)",
+      "cards": ["JUP-022"],
+      "class": "independiente",
+      "justification": "Mide qué fragmentos devuelve la búsqueda semántica con el modelo de embeddings. JUP-132 cambia el modelo de chat y no el de embeddings, así que esta medida no se ve afectada por este cambio.",
+      "check": {
+        "kind": "report",
+        "ref": "docs/spikes/JUP-022-retrieval-calibration.json",
+        "finding": "El informe registra solo un proveedor de embeddings (litellm, alias economicon-embedding, dimensión 1536) y ningún bloque de generación."
+      },
+      "sources": ["JUP-022"],
+      "evidence": ["docs/spikes/JUP-022-retrieval-calibration.json", "docs/validation/JUP-022-retrieval-labels.json"],
+      "rerun": "No se repite. Dependería del modelo si JUP-132 tocara el alias de embeddings; hay que confirmarlo al integrarla."
+    },
+    {
+      "id": "metrics-catalogue-jup067",
+      "name": "Catálogo de métricas técnicas del asistente (definiciones y fórmulas)",
+      "cards": ["JUP-067"],
+      "class": "independiente",
+      "justification": "Define qué se mide y cómo; no contiene valores medidos. Los valores salen de las campañas, que sí se clasifican por separado.",
+      "check": {
+        "kind": "code",
+        "ref": "docs/validation/JUP-067-metrics-catalogue.json",
+        "finding": "El catálogo lista identificadores, fórmulas y unidades de las métricas, sin resultados de ninguna ejecución."
+      },
+      "sources": [],
+      "evidence": ["docs/validation/JUP-067-metrics-catalogue.json", "docs/validation/JUP-067-metrics.md"],
+      "rerun": "No se repite."
+    },
+    {
+      "id": "template-baseline-jup070",
+      "name": "Línea base de plantilla de JUP-070 (28 casos, 0 aciertos)",
+      "cards": ["JUP-070"],
+      "class": "historica",
+      "justification": "Las dos ejecuciones son de plantilla sin modelo de generación (plantilla-sin-modelo): sirvieron para probar el instrumento y fijar una línea base. No describen el producto con ningún modelo, y repetirlas no mediría el cambio.",
+      "check": {
+        "kind": "report",
+        "ref": "docs/evidence/JUP-070-run-2-report.json",
+        "finding": "generation.model_alias es plantilla-sin-modelo en las dos ejecuciones y los 28 casos figuran como fallo (0 aciertos)."
+      },
+      "sources": ["JUP-070"],
+      "evidence": ["docs/evidence/JUP-070-run-1-report.json", "docs/evidence/JUP-070-run-2-report.json", "docs/evidence/JUP-070-validation.md"],
+      "rerun": "No se repite. La medición con el chat real de esa batería la cubren JUP-071 y N3/N5."
+    },
+    {
+      "id": "model-benchmark-jup078",
+      "name": "Benchmark de proveedor y modelos (latencia p95, coste y puntuación por palabras clave)",
+      "cards": ["JUP-078"],
+      "class": "historica",
+      "justification": "Compara dos alias candidatos (economicon-chat y economicon-chat-deepseek) antes de decidir el defecto. No describe DeepSeek V4.1 Flash, que es el nuevo defecto, y es la base de la decisión histórica.",
+      "check": {
+        "kind": "report",
+        "ref": "docs/evidence/JUP-078-benchmark-results.json",
+        "finding": "El informe lista los modelos economicon-chat y economicon-chat-deepseek; ninguno es DeepSeek V4.1 Flash servido por la ruta que fijará JUP-132."
+      },
+      "sources": ["JUP-078"],
+      "evidence": ["docs/evidence/JUP-078-benchmark-results.json"],
+      "rerun": "No se repite. El coste por consulta del defecto nuevo lo da la medición de coste de IA."
+    },
+    {
+      "id": "glm-deepseek-comparison-jup063",
+      "name": "Comparativa pareada GLM-5.2 frente a DeepSeek V4.1 Flash (336 fases trazadas)",
+      "cards": ["JUP-063"],
+      "class": "historica",
+      "justification": "Es la comparativa que sustenta la elección de DeepSeek. Se hizo en un gateway aislado y con condiciones que cambiaron entre ejecuciones; se conserva como antecedente y no se repite.",
+      "check": {
+        "kind": "report",
+        "ref": "docs/evidence/JUP-063/glm-deepseek-20261016/README.md",
+        "finding": "El paquete versionado declara su proveedor, su configuración y los límites de la comparación; sus agregados son provisionales y separados de aceptación."
+      },
+      "sources": [],
+      "evidence": ["docs/evidence/JUP-063/glm-deepseek-20261016/README.md", "docs/validation/evaluation-glm-deepseek.md"],
+      "rerun": "No se repite: repetir la comparativa de modelos está fuera del alcance de JUP-133."
+    }
+  ]
+}

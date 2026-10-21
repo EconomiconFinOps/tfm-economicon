@@ -3,11 +3,11 @@ Trello: https://trello.com/c/Yv1ETc2G
 
 ## 1. Inventario y clasificación (sin modelo nuevo)
 
-- [ ] 1.1 Listar las fuentes de medida reales leyendo el manifiesto, `docs/validation/` y los temas de continuidad de JUP-035/123, 070/071, 022/067, 078, 130, 068 y 063
-- [ ] 1.2 Crear `docs/validation/model-dependence-inventory.json` con clase (`dependiente`, `independiente`, `historica`), justificación y comprobación por entrada
-- [ ] 1.3 Comprobar en el código que el detector de anomalías y la frescura de los datos no usan el modelo de generación y registrar la comprobación
-- [ ] 1.4 Validador del inventario y pruebas: una clase por entrada, justificación no vacía, fuente del manifiesto sin clasificar falla, `independiente` sin comprobación falla
-- [ ] 1.5 Documento `docs/validation/model-dependence-inventory.md` con la lectura humana del inventario
+- [x] 1.1 Listar las fuentes de medida reales leyendo el manifiesto, `docs/validation/` y los temas de continuidad de JUP-035/123, 070/071, 022/067, 078, 130, 068 y 063
+- [x] 1.2 Crear `docs/validation/model-dependence-inventory.json` con clase (`dependiente`, `independiente`, `historica`), justificación y comprobación por entrada
+- [x] 1.3 Comprobar en el código que el detector de anomalías y la frescura de los datos no usan el modelo de generación y registrar la comprobación
+- [x] 1.4 Validador del inventario y pruebas: una clase por entrada, justificación no vacía, fuente del manifiesto sin clasificar falla, `independiente` sin comprobación falla
+- [x] 1.5 Documento `docs/validation/model-dependence-inventory.md` con la lectura humana del inventario
 
 ## 2. Identidad del modelo en las ejecuciones (sin modelo nuevo)
 
