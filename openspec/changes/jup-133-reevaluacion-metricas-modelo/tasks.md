@@ -11,14 +11,14 @@ Trello: https://trello.com/c/Yv1ETc2G
 
 ## 2. Identidad del modelo en las ejecuciones (sin modelo nuevo)
 
-- [ ] 2.1 Escribir primero las pruebas en rojo: mismo alias y distinto `generation_model_id` no comparten clave; registrada frente a no registrada tampoco; sin identidad conserva la clave actual
-- [ ] 2.2 Añadir los cuatro campos a `RUN_KEYS`, a la validación (`generation_quantization` ≤ 80 caracteres, `gateway_config_sha256` sha256 de 64 minúsculas) y a `rows-v1`
-- [ ] 2.3 Extender `comparability_key` para añadir la identidad solo cuando alguno de los campos no es nulo
-- [ ] 2.4 Añadir las columnas al DDL de `evaluation.runs`, a la carga y a la proyección de marcas de cambio (nombrar identificador de modelo, proveedor, cuantización y configuración)
-- [ ] 2.5 Soportar `model_identity` en las entradas del manifiesto: rellena solo lo que falta, rechaza claves desconocidas y conflictos con el informe, sin tocar `report_sha256`
-- [ ] 2.6 Anotar en `docs/validation/evaluation-runs.json` las ejecuciones GLM-5.2 con lo que acredita la evidencia, y `null` en lo no acreditable
+- [x] 2.1 Escribir primero las pruebas en rojo: mismo alias y distinto `generation_model_id` no comparten clave; registrada frente a no registrada tampoco; sin identidad conserva la clave actual
+- [x] 2.2 Añadir los cuatro campos a `RUN_KEYS`, a la validación (`generation_quantization` ≤ 80 caracteres, `gateway_config_sha256` sha256 de 64 minúsculas) y a `rows-v1`
+- [x] 2.3 Extender `comparability_key` para añadir la identidad solo cuando alguno de los campos no es nulo
+- [x] 2.4 Añadir las columnas al DDL de `evaluation.runs`, a la carga y a la proyección de marcas de cambio (nombrar identificador de modelo, proveedor, cuantización y configuración)
+- [x] 2.5 Soportar `model_identity` en las entradas del manifiesto: rellena solo lo que falta, rechaza claves desconocidas y conflictos con el informe, sin tocar `report_sha256`
+- [x] 2.6 Anotar en `docs/validation/evaluation-runs.json` las ejecuciones GLM-5.2 con lo que acredita la evidencia, y `null` en lo no acreditable
 - [ ] 2.7 Mostrar modelo, proveedor y cuantización junto al alias en las tablas por ejecución del dashboard (`assistant-evaluation.json`) y actualizar sus pruebas de consultas y etiquetas
-- [ ] 2.8 Prueba de que una ejecución posterior al cambio de JUP-132 sin identidad no entra en el manifiesto versionado
+- [x] 2.8 Prueba de que una ejecución posterior al cambio de JUP-132 sin identidad no entra en el manifiesto versionado
 - [ ] 2.9 Actualizar `docs/validation/evaluation-dashboard.md` (contrato `run`, manifiesto, lectura de series) y añadir una nota de enmienda a ADR-0022
 - [ ] 2.10 Comando de solo lectura que calcula `gateway_config_sha256` de la entrada del chat, con pruebas
 

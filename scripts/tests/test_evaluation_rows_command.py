@@ -81,6 +81,7 @@ JUP_130_REPORTS = tuple(JUP_130_DIR / f"JUP-130-{name}.rows.json" for name in ("
 RUN_KEYS = (
     "run_id", "source", "run_at", "commit", "suite", "suite_version", "suite_sha256", "corpus_sha256",
     "embedding_provider", "embedding_alias", "retrieval", "generation_model", "prompt_sha256", "synthetic",
+    "generation_model_id", "generation_provider", "generation_quantization", "gateway_config_sha256",
 )
 RESULT_KEYS = (
     "measure_type", "grp", "metric_id", "behavior", "status", "count", "value", "unit",
@@ -225,6 +226,10 @@ def expected_key(run: dict, reasons: list) -> str:
         "source", "suite_version", "suite_sha256", "corpus_sha256", "embedding_provider", "embedding_alias",
         "retrieval", "generation_model", "prompt_sha256",
     )] + [list(reasons)]
+    identity = [run[field] for field in (
+        "generation_model_id", "generation_provider", "generation_quantization", "gateway_config_sha256")]
+    if any(value is not None for value in identity):
+        payload.append(identity)
     text = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
@@ -280,7 +285,7 @@ class ConstantsTest(unittest.TestCase):
         # Tupla (el orden es contrato), no lista ni conjunto.
         self.assertIsInstance(tool.RUN_OUTPUT_KEYS, tuple)
         self.assertEqual(tool.RUN_OUTPUT_KEYS, RUN_OUTPUT_KEYS)
-        self.assertEqual(len(tool.RUN_OUTPUT_KEYS), 21)
+        self.assertEqual(len(tool.RUN_OUTPUT_KEYS), 25)
 
     def test_la_raiz_por_defecto_es_root_en_las_dos_funciones(self) -> None:
         # Una raíz por defecto distinta (por ejemplo el directorio de trabajo) haría que el resultado dependiese
@@ -465,12 +470,14 @@ class NormalizeRealReportsTest(unittest.TestCase):
             tool.adapt_jup068(REPORT_068, "x"),
             *(tool.adapt_rows_v1(load_json(report), "x") for report in (*JUP_130_REPORTS, JUP_071_ROWS)),
         )
-        for case, output, (raw_run, raw_results) in zip(REAL_CASES, self.normalized, raws):
+        for case, output, entry, (raw_run, raw_results) in zip(REAL_CASES, self.normalized, self.entries, raws):
             with self.subTest(source=case["run_id"]):
                 self.assertEqual(output["results"], raw_results)
+                # La anotación `model_identity` del manifiesto es lo único que el run normalizado añade al del informe.
+                expected = {**raw_run, **(entry["model_identity"] or {})}
                 for key in RUN_KEYS:
                     if key != "run_id":
-                        self.assertEqual(output["run"][key], raw_run[key], key)
+                        self.assertEqual(output["run"][key], expected[key], key)
 
     def test_valores_de_fecha_y_modelo_de_los_informes_reales(self) -> None:
         runs = [output["run"] for output in self.normalized]

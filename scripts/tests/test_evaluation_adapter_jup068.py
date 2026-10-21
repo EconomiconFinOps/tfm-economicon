@@ -61,6 +61,7 @@ RUN_ID = "JUP-068-synthetic-example-v1"
 RUN_KEYS = (
     "run_id", "source", "run_at", "commit", "suite", "suite_version", "suite_sha256", "corpus_sha256",
     "embedding_provider", "embedding_alias", "retrieval", "generation_model", "prompt_sha256", "synthetic",
+    "generation_model_id", "generation_provider", "generation_quantization", "gateway_config_sha256",
 )
 RESULT_KEYS = (
     "measure_type", "grp", "metric_id", "behavior", "status", "count", "value", "unit",
@@ -119,7 +120,7 @@ def expected_run(**fields) -> dict:
         "run_id": RUN_ID, "source": "JUP-068", "run_at": None, "commit": REAL_COMMIT, "suite": "JUP-068",
         "suite_version": REAL_DATASET_VERSION, "suite_sha256": REAL_INPUT_SHA256, "corpus_sha256": None,
         "embedding_provider": None, "embedding_alias": None, "retrieval": None, "generation_model": None,
-        "prompt_sha256": None, "synthetic": True,
+        "prompt_sha256": None, "synthetic": True, "generation_model_id": None, "generation_provider": None, "generation_quantization": None, "gateway_config_sha256": None,
     }
     run.update(fields)
     return run
@@ -294,6 +295,10 @@ class RunBlockTest(unittest.TestCase):
             "generation_model": None,
             "prompt_sha256": None,
             "synthetic": True,
+            "generation_model_id": None,
+            "generation_provider": None,
+            "generation_quantization": None,
+            "gateway_config_sha256": None,
         })
 
     def test_run_id_es_el_argumento_y_no_el_del_informe(self) -> None:

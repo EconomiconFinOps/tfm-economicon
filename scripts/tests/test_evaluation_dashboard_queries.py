@@ -143,7 +143,7 @@ def _construir_real() -> dict:
 BASE_RUN = {
     "commit": "abc1234", "suite": "JUP-069", "suite_version": "1.0.0", "suite_sha256": "aa" * 32,
     "corpus_sha256": "bb" * 32, "embedding_provider": "proveedor-1", "embedding_alias": "alias-1",
-    "retrieval": {"top_k": 4}, "generation_model": "modelo-1", "prompt_sha256": "cc" * 32, "synthetic": False,
+    "retrieval": {"top_k": 4}, "generation_model": "modelo-1", "prompt_sha256": "cc" * 32, "synthetic": False, "generation_model_id": None, "generation_provider": None, "generation_quantization": None, "gateway_config_sha256": None,
 }
 
 

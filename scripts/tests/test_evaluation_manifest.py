@@ -36,7 +36,7 @@ EXPECTED_FORMATS = (
     "rows-v1",
     "jup-063-paired-v1",
 )
-ENTRY_KEYS = {"path", "format", "milestone", "run_id", "manifest"}
+ENTRY_KEYS = {"path", "format", "milestone", "run_id", "model_identity", "manifest"}
 
 
 class ManifestTestCase(unittest.TestCase):

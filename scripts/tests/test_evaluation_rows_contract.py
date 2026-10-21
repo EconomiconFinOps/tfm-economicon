@@ -77,6 +77,7 @@ JUP_068_CLI = ROOT / "tools" / "business-metrics.mjs"
 RUN_KEYS = (
     "run_id", "source", "run_at", "commit", "suite", "suite_version", "suite_sha256", "corpus_sha256",
     "embedding_provider", "embedding_alias", "retrieval", "generation_model", "prompt_sha256", "synthetic",
+    "generation_model_id", "generation_provider", "generation_quantization", "gateway_config_sha256",
 )
 RESULT_KEYS = (
     "measure_type", "grp", "metric_id", "behavior", "status", "count", "value", "unit",
@@ -633,6 +634,8 @@ BAD_RUN_VALUE = {
     "run_id": "a b", "source": "a b", "run_at": "ayer", "commit": "a b", "suite": "a b", "suite_version": "a b",
     "suite_sha256": "a b", "corpus_sha256": "a b", "embedding_provider": "a b", "embedding_alias": "a b",
     "retrieval": [], "generation_model": "a b", "prompt_sha256": "a b", "synthetic": 1,
+    "generation_model_id": "a b", "generation_provider": "a b", "generation_quantization": "a b",
+    "gateway_config_sha256": "AB",
 }
 # Cada valor incumple SU propia regla de tipo con independencia de los demás campos de una fila de tipo A medida.
 BAD_ROW_VALUE = {

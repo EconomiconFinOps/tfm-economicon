@@ -61,6 +61,7 @@ RUN_ID = "calibracion-recuperacion-1"
 RUN_KEYS = (
     "run_id", "source", "run_at", "commit", "suite", "suite_version", "suite_sha256", "corpus_sha256",
     "embedding_provider", "embedding_alias", "retrieval", "generation_model", "prompt_sha256", "synthetic",
+    "generation_model_id", "generation_provider", "generation_quantization", "gateway_config_sha256",
 )
 RESULT_KEYS = (
     "measure_type", "grp", "metric_id", "behavior", "status", "count", "value", "unit",
@@ -129,7 +130,7 @@ def expected_run(**fields) -> dict:
         "corpus_sha256": REAL_CORPUS_SHA256, "embedding_provider": "litellm",
         "embedding_alias": "economicon-embedding",
         "retrieval": {"chunk_size": 500, "chunk_overlap": 50},
-        "generation_model": None, "prompt_sha256": None, "synthetic": False,
+        "generation_model": None, "prompt_sha256": None, "synthetic": False, "generation_model_id": None, "generation_provider": None, "generation_quantization": None, "gateway_config_sha256": None,
     }
     run.update(fields)
     return run
@@ -279,6 +280,10 @@ class RunBlockTest(unittest.TestCase):
             "generation_model": None,
             "prompt_sha256": None,
             "synthetic": False,
+            "generation_model_id": None,
+            "generation_provider": None,
+            "generation_quantization": None,
+            "gateway_config_sha256": None,
         })
 
     def test_run_id_es_el_argumento(self) -> None:
