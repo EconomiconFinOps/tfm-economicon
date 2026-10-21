@@ -478,6 +478,7 @@ ser unknown). Calidad offline del asistente se documenta por separado en
 sus resultados se ven en un dashboard de Grafana aparte, alimentado desde el esquema
 `evaluation` de PostgreSQL ([guía](validation/evaluation-dashboard.md),
 [ADR-0022](adr/ADR-0022-assistant-evaluation-results-in-grafana.md)).
+Ese dashboard muestra también tres indicadores medidos para la memoria (calidad de la detección de anomalías, coste de IA facturado frente a estimado, y frescura y reconciliación de los datos de coste): los mide `tools/memory-indicators.py`, que consulta al detector, al gateway de IA y a OpenRouter y escribe informes versionados que `evaluation-dashboard:load` carga como cualquier otro; Grafana no accede a la base del gateway ([nota](continuidad/indicadores-memoria.md)).
 
 [CI](../.github/workflows/ci.yml) ejecuta gobernanza/OpenSpec, pruebas y sintaxis
 de tres servicios Python, lint/test/build/typecheck frontend.

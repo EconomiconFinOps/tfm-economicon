@@ -59,7 +59,7 @@ TOOL_PATH = Path(os.environ.get("EVALUATION_DASHBOARD_TOOL") or ROOT / "tools" /
 READER = "grafana_evaluation_reader"
 PASSWORD_ENV = "GRAFANA_EVALUATION_DB_PASSWORD"
 DATABASE = "embeddings"
-VERSIONADO = {"runs": 6, "results": 405}
+VERSIONADO = {"runs": 9, "results": 444}
 RELACIONES_DE_EVALUATION = ["comparable_runs", "config_changes", "results", "results_pkey", "runs", "runs_pkey"]
 
 class _Estado(dict):
@@ -393,10 +393,10 @@ class IdempotenciaTests(unittest.TestCase):
         cls.tras_la_tercera, cls.identidad_tercera = tercera["huella"], tercera["identidad"]
 
     def test_la_primera_carga_dejo_el_conjunto_versionado_completo(self):
-        # Precondición de lo demás: «idéntico» tiene que ser sobre algo (6 ejecuciones y 405 resultados, no una base vacía).
+        # Precondición de lo demás: «idéntico» tiene que ser sobre algo (9 ejecuciones y 444 resultados, no una base vacía).
         for salida in self.salidas:
-            self.assertEqual(salida.stdout, "6 ejecuciones y 405 resultados cargados\n")
-        self.assertEqual((self.tras_la_primera["n_runs"], self.tras_la_primera["n_results"]), (6, 405))
+            self.assertEqual(salida.stdout, "9 ejecuciones y 444 resultados cargados\n")
+        self.assertEqual((self.tras_la_primera["n_runs"], self.tras_la_primera["n_results"]), (9, 444))
         self.assertEqual(self.tras_la_primera["n_config_changes"], 0)  # el versionado no tiene cambios de configuración
         vacia = json_de(f"SELECT jsonb_build_object('h', md5(''))")["h"]
         self.assertNotEqual(self.tras_la_primera["runs"], vacia)
@@ -758,7 +758,7 @@ class ConcurrenciaTests(unittest.TestCase):
         entra con la contraseña de una carga que terminó bien, y no con la de la que falló (su transacción del rol no se
         confirma). Al final, (4) una carga sin concurrencia termina bien y deja el contenido esperado.
         """
-        resumen = "6 ejecuciones y 405 resultados cargados\n"
+        resumen = "9 ejecuciones y 444 resultados cargados\n"
         for ronda in range(RONDAS_DE_CONCURRENCIA):
             contrasenas = [contrasena(), contrasena()]
             procesos = [lanzar(clave) for clave in contrasenas]

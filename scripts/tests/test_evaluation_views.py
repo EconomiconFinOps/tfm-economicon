@@ -652,7 +652,7 @@ class ConfigChangesChainsTest(ViewsTestCase):
 
 class ConfigChangesRealDataTest(ViewsTestCase):
     def test_con_los_cinco_informes_versionados_la_vista_coincide_con_la_comparacion_calculada_en_python(self) -> None:
-        # Se carga el manifiesto REAL (cinco ejecuciones, entre ellas JUP-068 vía Node) y se calcula el resultado esperado
+        # Se carga el manifiesto REAL (ocho ejecuciones, entre ellas JUP-068 vía Node) y se calcula el resultado esperado
         # leyendo `evaluation.runs` con una consulta y comparando campo a campo en Python, con un algoritmo escrito aquí
         # (agrupar por fuente, ordenar por fecha e identificador, comparar con la anterior). Solo las dos ejecuciones de
         # JUP-070 tienen fecha y comparten fuente; el resto no forma par.
@@ -668,7 +668,7 @@ class ConfigChangesRealDataTest(ViewsTestCase):
         for run_id, source, moment, provider, *values in rows:
             fields = dict(zip(columns, (None if value == absent else value for value in values)))
             runs.append({"run_id": run_id, "source": source, "run_at": moment or None, "provider": provider, **fields})
-        self.assertEqual(len(runs), 6)
+        self.assertEqual(len(runs), 9)
 
         expected = []
         for source in sorted({run["source"] for run in runs}):
@@ -782,9 +782,9 @@ class ComparableRunsTest(ViewsTestCase):
         # otras cuatro ejecuciones reales son claves únicas o no tienen fecha.
         dataset = tool.build_dataset([tool.DEFAULT_MANIFEST])
         keys = [item["run"]["comparability_key"] for item in dataset["runs"]]
-        self.assertEqual(len(set(keys)), 6)
+        self.assertEqual(len(set(keys)), 9)
         server().load_dataset(dataset, tool)
-        self.assertEqual(server().scalar("SELECT count(*) FROM evaluation.runs"), "6")
+        self.assertEqual(server().scalar("SELECT count(*) FROM evaluation.runs"), "9")
         self.assertEqual(comparable_rows(), [])
 
     def test_is_real_y_milestone_se_propagan_desde_la_ejecucion(self) -> None:

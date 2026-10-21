@@ -230,7 +230,8 @@ class VariantesDeLaSeccionBContraPostgresTests(unittest.TestCase):
         self.assertIn("behavior", R.nombres(self.datos))
         en_la_base = Counter(
             (f["metric_id"], f["behavior"], f["status"]) for f in R.administrar(
-                "SELECT metric_id, behavior, status FROM evaluation.results WHERE measure_type = 'B'"))
+                "SELECT metric_id, behavior, status FROM evaluation.results WHERE measure_type = 'B' "
+                "AND run_id IN (SELECT run_id FROM evaluation.runs WHERE source = 'JUP-068')"))
         devueltas = Counter((f["metric_id"], f["behavior"], f["status"]) for f in self.datos["filas"])
         self.assertEqual(devueltas, en_la_base)
 

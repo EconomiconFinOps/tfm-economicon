@@ -63,6 +63,7 @@ BENCHMARK = "Benchmark de modelos (JUP-078)"
 COMPARACION_PAREADA = "GLM/DeepSeek — comparación provisional"
 INDICADORES = "Indicadores de robustez (JUP-071)"
 ROBUSTEZ = "Robustez (JUP-071)"
+ANOMALIAS = "Calidad de la detección de anomalías"
 DETALLE_CALIDAD = "Exactitud, relevancia y fundamento (detalle)"
 DETALLE_CAMPANA = "Latencia, formato y disponibilidad de la campaña (detalle)"
 
@@ -80,6 +81,7 @@ TRAMOS = (
     {COMPARACION_PAREADA},
     {INDICADORES},
     {ROBUSTEZ},
+    {ANOMALIAS},
     {DETALLE_CALIDAD},
     {DETALLE_CAMPANA},
 )

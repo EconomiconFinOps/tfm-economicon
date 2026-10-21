@@ -262,6 +262,35 @@ Quien emita filas `rows-v1` para una fuente nueva (por ejemplo, JUP-071) debe cl
 - No se reutilizan los grupos de las campañas de JUP-070 (`accuracy`, `relevance`, `grounding`, `latency`, `robustness`, `availability`): varios paneles toman esos grupos sin filtrar por fuente y mezclarían las series de la nueva fuente con las de las campañas. Una fuente nueva usa grupos propios y distintos de esos.
 - «Estado de los casos por ejecución» solo muestra ejecuciones de JUP-070: una ejecución de otra fuente con el grupo y la métrica `cases` no aparece en ese panel.
 
+## Indicadores de la memoria (JUP-130)
+
+Tarjeta: [JUP-130](https://trello.com/c/mkwnaPz2). Tres informes `rows-v1` que genera `tools/memory-indicators.py` (un subcomando por indicador) y que se versionan en `docs/evidence/JUP-130/` junto a una tabla Markdown para la memoria. Están en el manifiesto, así que los carga el comando de siempre (`evaluation-dashboard:load`) sin pasos nuevos: la carga solo lee ficheros versionados y no consulta ni al gateway ni a la pila.
+
+| Indicador | Subcomando | Fuente | Grupo | Tipo | Panel |
+| --- | --- | --- | --- | --- | --- |
+| Calidad de la detección de anomalías | `anomalies` | `JUP-130-anomalies` | `anomaly_detection` | A (automático) | «Calidad de la detección de anomalías», sección A |
+| Coste de IA facturado frente a estimado | `ai-cost` | `JUP-130-ai-cost` | `ai_cost` | B | «Coste de IA: facturado frente a estimado», sección B |
+| Frescura y reconciliación de los datos | `data` | `JUP-130-data` | `data_quality` | B | «Frescura y reconciliación de los datos», sección B |
+
+```
+python tools/memory-indicators.py anomalies --reference 2026-10-30
+python tools/memory-indicators.py data --reference 2026-10-30 --base-url http://localhost:8000
+python tools/memory-indicators.py ai-cost --from 2026-10-09 --to 2026-10-21
+```
+
+`data` lee la contraseña de la cuenta demo de la variable `DEMO_PASSWORD`; `ai-cost` lee la clave de administración del gateway de `LITELLM_MASTER_KEY` y la del proveedor de `OPENROUTER_API_KEY` (o de ficheros con `--gateway-key-file` y `--openrouter-key-file`). Ninguna clave se imprime ni se escribe en un informe. Con `--run-at` y `--commit` se fijan la fecha y el commit del informe, y con los mismos argumentos el informe y la tabla salen idénticos byte a byte.
+
+- **Una fuente por indicador.** La vista `config_changes` anota las diferencias entre ejecuciones consecutivas de una misma fuente y `comparable_runs` agrupa como serie las de igual configuración. Con una fuente común, las tres medidas se anotaban entre sí («Cambia: batería») y se agrupaban. La batería de cada una la identifican `suite_version` y, en anomalías, la huella `suite_sha256` de la lista de eventos inyectados (`docs/validation/JUP-130-injected-events.json`): si esa lista cambia, el dashboard lo anota.
+- **El panel de negocio de JUP-068 filtra por su fuente.** Antes solo filtraba por `measure_type = 'B'` y habría mostrado las filas de coste de IA y de datos, que también son de tipo B.
+- **Coste de IA: el gateway dice qué consultas hubo y OpenRouter lo que se facturó.** El gateway aporta consultas, modelo y errores (`/spend/logs`); OpenRouter aporta el coste facturado de cada generación de chat (`GET /api/v1/generation`). El coste por consulta es el facturado. Se informan además la cobertura de lo confirmado y la diferencia entre estimado y facturado. Los embeddings no llevan identificador de generación de OpenRouter y se informan aparte como estimados. Leer `/spend/logs` desde la herramienta de medición, y no desde Grafana, amplía [ADR-0022](../adr/ADR-0022-assistant-evaluation-results-in-grafana.md) sin cambiar su sentido: Grafana no accede a la base del gateway.
+- **Los 429 son del gateway, no del proveedor.** Son el límite por clave del propio gateway (`ProxyRateLimitError`); los fallos del proveedor son errores 5xx (`APIError`). Se informan como dos tasas separadas.
+- **Reconciliación con un único redondeo.** La fuente (el CSV de la demo) se suma por inquilino y divisa con aritmética decimal exacta y se redondea una sola vez con `ROUND_HALF_UP` a dos decimales, igual que el contrato de costes; las divisas nunca se compensan entre sí. La diferencia se informa en unidades menores.
+- **Lo no medido.** Sin gateway, sin clave de OpenRouter o sin pila, las filas correspondientes son `not_measured` (el panel muestra «No medido» o «Sin datos»), nunca 0. El informe de coste de IA añade una fila `measurement_cause` por cada causa (`gateway:clave_ausente`, `gateway:conexion`, `gateway:http_401`, `openrouter:clave_ausente`, `openrouter:conexion`…) para distinguir «sin clave» de «servicio caído». La cobertura de lo facturado solo es una cifra medida si se llegó a consultar a OpenRouter. Una generación que OpenRouter no devuelve cuenta como no confirmada y baja la cobertura.
+
+El retraso hasta la detección vale 0 por construcción: el episodio se abre el mismo día evaluado en que se dispara la regla, así que no mide la latencia real (en producción el mínimo es de un día, porque solo se evalúan días completos).
+
+Primera medición (2026-10-21): con la referencia 2026-10-30 el detector abre 5 episodios de 7 eventos inyectados (precisión 5/5, recall 5/7, y 5/5 sobre los detectables por diseño; los dos que faltan, un pico desde cero y la aparición de un servicio, no se detectan por diseño). El coste de IA sobre 100 consultas de chat, todas confirmadas por OpenRouter, es de 0,002601 USD por consulta; el gateway estimó 0,250394 USD y OpenRouter facturó 0,260096 USD, y esa diferencia la explican cuatro consultas del 2026-10-20 que el gateway registró con gasto 0. Los datos reconcilian a cero en los tres pares inquilino-divisa y la frescura es de 0 días. Cada tabla de `docs/evidence/JUP-130/` declara qué no demuestra: datos sintéticos, pocos eventos, etiquetas escritas por quien diseñó los datos y un gasto local a la máquina que ejecutó las consultas.
+
 ## Calculado y no mostrado
 
 Cifras que el informe de origen calcula, o que existen en el sistema, y que el dashboard no enseña (salvo el intervalo de confianza, que ahora sí se muestra). Cada una lleva su motivo para que echarla en falta no parezca un olvido; ninguna se ha descartado por incómoda y todas se pueden reconsiderar en otro change.

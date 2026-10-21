@@ -193,9 +193,8 @@ class PairedComparisonTests(unittest.TestCase):
     def test_addition_preserves_historical_default_dataset(self):
         historical = tool.build_dataset([tool.DEFAULT_MANIFEST], root=ROOT)
         with_comparison = tool.build_dataset([tool.DEFAULT_MANIFEST, MANIFEST], root=ROOT)
-        self.assertEqual(len(historical["runs"]), 6)
-        self.assertEqual(len(with_comparison["runs"]), 7)
-        self.assertEqual(historical["runs"], with_comparison["runs"][:6])
+        self.assertEqual(len(with_comparison["runs"]), len(historical["runs"]) + 1)
+        self.assertEqual(historical["runs"], with_comparison["runs"][:len(historical["runs"])])
 
     def test_panel_actual_query_conciles_all_source_metrics(self):
         dashboard = json.loads(DASHBOARD.read_text(encoding="utf-8"))

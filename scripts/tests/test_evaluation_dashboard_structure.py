@@ -197,6 +197,8 @@ def clasificar(panel):
         return "a_resumen"
     if tipo == "table" and re.search(r"left\(\s*x\.grp\s*,\s*4\s*\)\s*=\s*'rob_'", sql):
         return "a_indicadores_robustez"
+    if tipo == "table" and re.search(r"grp\s*=\s*'anomaly_detection'", sql):
+        return "a_anomalias"
     if (
         tipo == "timeseries"
         and re.search(r"evaluation\.comparable_runs\b", sql)
@@ -233,7 +235,7 @@ def clasificar(panel):
 CLAVES_A = ("a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "a9")
 # Piezas añadidas por `jup-121-lectura-dashboard`: no se mezclan con las nueve originales para que las pruebas que
 # recorren `CLAVES_A` sigan midiendo exactamente lo mismo.
-CLAVES_LECTURA = ("a_matriz", "a_resumen", "a_evolucion_latencia", "a_indicadores_robustez")
+CLAVES_LECTURA = ("a_matriz", "a_resumen", "a_evolucion_latencia", "a_indicadores_robustez", "a_anomalias")
 
 
 def buscar(clave) -> list:
@@ -250,6 +252,12 @@ def buscar(clave) -> list:
             for p in de_seccion("B")
             if p.get("type") == "table"
             and re.search(r"measure_type\s*=\s*'B'|source\s*=\s*'JUP-068'", _plano(sql_de(p)))
+        ]
+    if clave == "b_indicadores":
+        return [
+            p
+            for p in de_seccion("B")
+            if p.get("type") == "table" and re.search(r"source\s*=\s*'JUP-130-", _plano(sql_de(p)))
         ]
     raise KeyError(clave)
 
@@ -581,7 +589,7 @@ class SeccionATests(unittest.TestCase):
         # evoluciones `a5`/`a6`, con las que comparten palabras. Si una regla se pierde, el panel se cuela en otra
         # pieza (`a4` pasa a tener dos) o queda sin clasificar: aquí se exige exactamente uno de cada y su tipo.
         esperados = {"a_matriz": "table", "a_resumen": "table", "a_evolucion_latencia": "timeseries",
-                     "a_indicadores_robustez": "table"}
+                     "a_indicadores_robustez": "table", "a_anomalias": "table"}
         self.assertEqual(set(esperados), set(CLAVES_LECTURA))
         for clave, tipo in esperados.items():
             with self.subTest(pieza=clave):
@@ -695,7 +703,7 @@ class SeccionBTests(unittest.TestCase):
             if panel["type"] == "text":
                 continue
             with self.subTest(panel=panel["title"]):
-                self.assertIn(panel, buscar("b_tabla"))
+                self.assertIn(panel, buscar("b_tabla") + buscar("b_indicadores"))
 
     def test_la_tabla_nombra_tiempo_asignacion_y_ahorro_y_el_estado_real_o_sintetico(self):
         # Entre todas las tablas de B se ven las filas de tiempo, de asignación y de ahorro. Los nombres no tienen

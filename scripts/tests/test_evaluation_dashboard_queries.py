@@ -568,7 +568,7 @@ class ConjuntoVersionadoTests(unittest.TestCase):
                 self.assertTrue(re.search(r"(?i)sint[eé]tic", " ".join(celdas(fila))), celdas(fila))
         esperado = {(f["run_id"], f["metric_id"], f["behavior"], f["status"]): f for f in base_de_datos(
             "SELECT run_id, metric_id, behavior, status, value, numerator, denominator FROM evaluation.results "
-            "WHERE measure_type = 'B'")}
+            "WHERE measure_type = 'B' AND run_id IN (SELECT run_id FROM evaluation.runs WHERE source = 'JUP-068')")}
         self.assertEqual(len(esperado), 23)
         for fila in filas:
             origen = esperado[(fila["run_id"], fila["metric_id"], fila["behavior"], fila["status"])]
