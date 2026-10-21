@@ -1,6 +1,7 @@
 # Evidencia de implementación CI/CD AWS — JUP-131
 
 Verificado21/10/2026. [Trello](https://trello.com/c/NtiH8R4Z).
+[PR146 borrador](https://github.com/EconomiconFinOps/tfm-economicon/pull/146), sin merge.
 Base `bc94a4daea98e97b574d00f019d347fc61c2f915`, rama
 `feat/JUP-131-aws-cicd-defensa`. [Runbook](../deployment/aws-defensa.md).
 
@@ -38,6 +39,15 @@ locales mediante junction ignorada. Se usó el binarioTerraform existente fuera
 del repositorio y provider de caché con lockfile, sin credenciales ni APIs AWS.
 El job Linux/Python3.12 está incorporado en CI; su ejecución remota se registra
 aparte y no se deduce de estas pruebas Windows.
+
+La primera CI remota en `5c928f2a` detectó que el lockfile heredado solo tenía el
+checksum de paquete instalado Windows: init Linux comprobaba el ZIP firmado, pero
+validate no aceptaba el paquete Linux desempaquetado con `-lockfile=readonly`.
+Corregido con `terraform providers lock -platform=windows_amd64 -platform=linux_amd64`:
+ambas descargas firmadas por HashiCorp y h1Linux añadido a ambas raíces, manteniendo
+AWS6.13.0. La CI posterior registra su resultado en PR146; no se oculta el fallo.
+El hash de aplicación normalizado coincide Windows/Linux:
+`8ac0ac1319ff23cbf734b8fd6fb73107536e074b2044ee898d41ca270ea32903`.
 
 ## Revisión técnica asistida
 

@@ -10,6 +10,10 @@ pairing/revisión/validación oficiales pendientes, sin atribuirlas a otras pers
 
 Base `bc94a4daea98e97b574d00f019d347fc61c2f915`, rama
 `feat/JUP-131-aws-cicd-defensa`, worktree `../tfm-economicon-aws-cicd`.
+[PR146](https://github.com/EconomiconFinOps/tfm-economicon/pull/146) publicada como
+borrador. Primer head5c928f2a; CI Linux detectó h1Linux ausente del lockfile,
+corregido mediante providers lock multiplataforma firmado sin cambiarAWS6.13.0.
+El resultado remoto posterior queda en PR146; no hay merge ni despliegue.
 Checkout antiguo y documentos previos conservados. [Plan](../planning/aws-cicd-defensa.md),
 [runbook](../deployment/aws-defensa.md), [evidencia](../evidence/JUP-131-aws-cicd.md).
 
