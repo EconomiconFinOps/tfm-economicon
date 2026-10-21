@@ -2,10 +2,10 @@
   "contract_version": 1,
   "run": {
     "run_id": "jup130-data-2026-10-30",
-    "source": "JUP-130",
-    "run_at": "2026-10-21T08:06:26Z",
-    "commit": "4ccd803883ff5d0ea3e61eee3ec9b08733702136",
-    "suite": "jup130-indicators",
+    "source": "JUP-130-data",
+    "run_at": "2026-10-21T08:14:35Z",
+    "commit": "f176d057b67bed72451566d346f6c3ae3c004a21",
+    "suite": "jup130-data",
     "suite_version": "1",
     "synthetic": true
   },

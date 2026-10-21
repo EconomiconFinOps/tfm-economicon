@@ -164,8 +164,8 @@ def _preparar() -> None:
     if montaje.returncode != 0:
         raise RuntimeError(f"no se pudieron crear las tablas de prueba: {montaje.stderr.strip()}")
     resultado = cargar(secrets.token_urlsafe(24))
-    # Precondición de todo lo demás: la carga fue completa (versionado 5 + local 4 ejecuciones) y ninguna tabla quedó vacía.
-    assert resultado.stdout.startswith("9 ejecuciones y "), resultado.stdout
+    # Precondición de todo lo demás: la carga fue completa (versionado 8 + local 4 ejecuciones) y ninguna tabla quedó vacía.
+    assert resultado.stdout.startswith("12 ejecuciones y "), resultado.stdout
 
 
 def tearDownModule() -> None:
