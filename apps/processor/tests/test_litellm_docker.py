@@ -249,11 +249,11 @@ def test_real_gateway_with_simulated_upstream(docker_gateway):
     gateway["receipt"]["successful_upstream_requests"] = observed
     privacy = {"zdr": True, "data_collection": "deny", "allow_fallbacks": False}
     checks["privacy_on_wire"] = len(observed) == 2 and observed[0]["provider"] == {
-        **privacy, "only": ["deepinfra/fp4"], "require_parameters": True,
+        **privacy, "only": ["deepinfra/fp8"], "require_parameters": True,
     } and observed[1]["provider"] == {**privacy, "max_price": {"prompt": 0.02}}
     checks["strict_schema_on_wire"] = observed[0]["response_format"] == finops_response_format()
     checks["model_controls_on_wire"] = (
-        observed[0]["model"] == "z-ai/glm-5.2"
+        observed[0]["model"] == "deepseek/deepseek-v4.1-flash"
         and observed[0]["reasoning"] == {"enabled": False}
         and observed[0]["max_tokens"] == 800
         and observed[1]["model"] == "openai/text-embedding-3-small"

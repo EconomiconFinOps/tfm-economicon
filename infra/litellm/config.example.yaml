@@ -1,7 +1,7 @@
 model_list:
   - model_name: economicon-chat
     litellm_params:
-      model: openrouter/z-ai/glm-5.2
+      model: openrouter/deepseek/deepseek-v4.1-flash
       api_key: os.environ/OPENROUTER_API_KEY
       max_tokens: 800
       extra_body:
@@ -9,21 +9,8 @@ model_list:
           zdr: true
           data_collection: deny
           allow_fallbacks: false
-          only: [deepinfra/fp4]
+          only: [deepinfra/fp8]
           require_parameters: true
-        reasoning:
-          enabled: false
-
-  - model_name: economicon-chat-deepseek
-    litellm_params:
-      model: openrouter/deepseek/deepseek-v4-pro
-      api_key: os.environ/OPENROUTER_API_KEY
-      max_tokens: 800
-      extra_body:
-        provider:
-          zdr: true
-          data_collection: deny
-          allow_fallbacks: false
         reasoning:
           enabled: false
 

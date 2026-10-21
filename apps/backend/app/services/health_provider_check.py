@@ -201,7 +201,7 @@ class HealthProviderCheck:
         payload = {
             "model": "economicon-chat", "messages": [{"role": "user", "content": "Return exactly the two uppercase letters OK. Do not include punctuation, quotes, whitespace, or any other text."}],
             "max_tokens": 32, "stream": False, "reasoning": {"enabled": False},
-            "provider": {"order": ["deepinfra/fp4"], "allow_fallbacks": False,
+            "provider": {"order": ["deepinfra/fp8"], "allow_fallbacks": False,
                          "require_parameters": True, "zdr": True, "data_collection": "deny",
                          "max_price": {"prompt": str(self.policy["input_price_per_million_usd"]),
                                        "completion": str(self.policy["output_price_per_million_usd"])}},
@@ -218,7 +218,7 @@ class HealthProviderCheck:
             cost, cost_status = reported_cost(receipt.get("cost_usd"))
             information = {"reported_model": reported_model(receipt.get("model")),
                            "reported_cost_usd": cost, "cost_status": cost_status}
-            route_valid = (receipt.get("provider") == "deepinfra/fp4"
+            route_valid = (receipt.get("provider") == "deepinfra/fp8"
                            and receipt.get("route_verified") is True
                            and receipt.get("result_valid") is True)
             if not route_valid:

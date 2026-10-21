@@ -20,12 +20,11 @@ test("maps exactly one approved OpenRouter upstream to each logical alias", () =
       litellm_params.model,
     ]),
     [
-      ["economicon-chat", "openrouter/z-ai/glm-5.2"],
-      ["economicon-chat-deepseek", "openrouter/deepseek/deepseek-v4-pro"],
+      ["economicon-chat", "openrouter/deepseek/deepseek-v4.1-flash"],
       ["economicon-embedding", "openrouter/openai/text-embedding-3-small"],
     ],
   );
-  assert.equal(new Set(config.model_list.map(({ model_name }) => model_name)).size, 3);
+  assert.equal(new Set(config.model_list.map(({ model_name }) => model_name)).size, 2);
 });
 
 test("keeps upstream credentials isolated from the gateway master key", () => {
@@ -44,7 +43,7 @@ test("restricts only primary chat to DeepInfra through OpenRouter without relaxi
       data_collection: "deny",
       allow_fallbacks: false,
       ...(model_name === "economicon-chat"
-        ? { only: ["deepinfra/fp4"], require_parameters: true }
+        ? { only: ["deepinfra/fp8"], require_parameters: true }
         : {}),
       ...(model_name === "economicon-embedding"
         ? { max_price: { prompt: 0.02 } }
@@ -62,7 +61,7 @@ test("disables optional high-effort reasoning only for baseline chat aliases", (
     ({ model_name }) => model_name === "economicon-embedding",
   );
 
-  assert.equal(chatModels.length, 2);
+  assert.equal(chatModels.length, 1);
   for (const { litellm_params } of chatModels) {
     assert.deepEqual(litellm_params.extra_body.reasoning, { enabled: false });
   }
@@ -81,11 +80,12 @@ test("preserves the approved embedding dimensions and operational limits", () =>
   });
   assert.equal(config.litellm_settings.request_timeout, 30);
   assert.equal(config.litellm_settings.set_verbose, false);
-  for (const item of config.model_list.slice(0, 2)) {
+  for (const item of config.model_list.filter(({model_name}) => model_name === "economicon-chat")) {
     assert.equal(item.litellm_params.max_tokens, 800);
     assert.equal(item.model_info, undefined);
   }
 });
+
 
 test("JUP-023 disables both gateway and router retries to bound processor attempts", () => {
   assert.equal(config.litellm_settings.num_retries, 0);

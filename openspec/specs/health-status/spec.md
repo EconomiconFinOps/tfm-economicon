@@ -130,7 +130,7 @@ Operational diagnostics SHALL describe backend API, database, queue, processor A
 
 #### Scenario: Real provider check distinct from gateway
 - **WHEN** an authorized panel opening, visible periodic deadline or manual update admits a provider check
-- **THEN** one real synthetic inference is sent through the pinned economicon-chat alias to z-ai/glm-5.2, with disabled reasoning/retries/fallbacks and no user data
+- **THEN** one real synthetic inference is sent through the pinned economicon-chat alias to deepseek/deepseek-v4.1-flash, with disabled reasoning/retries/fallbacks and no user data
 - **AND** a valid functional response through the configured route marks OpenRouter ok with its own verified_at independently of returned model spelling or cost information; mock/liveliness cannot satisfy the real-provider requirement
 - **AND** configured models/routing, access controls, fixed payload and usage limits remain enforced; returned model name does not certify executed model identity
 
@@ -186,8 +186,6 @@ For an admitted provider check, availability SHALL depend on the valid functiona
 - **AND** the earlier uncertain trial reservation and ledger remain unchanged and this design itself sends no real request
 - **AND** accepting new financial evidence or changing reconciliation policy requires a separate PM decision
 
-
-
 #### Scenario: Diagnostic credential in otherwise valid informational model
 - **WHEN** an otherwise valid provider response reports a model containing the complete diagnostic credential, exactly or embedded in other text
 - **THEN** the boundary that knows the credential discards reported_model before IPC, receipt, retention or serialization
@@ -233,7 +231,6 @@ Operational aggregation SHALL use real transport/query deadlines and bounded con
 - **WHEN** GET diagnostics or automatic30second polling is repeated
 - **THEN** product data, queue messages, vector contents and generative costs are unchanged
 - **AND** no LLM/OpenRouter inference is caused by the GET or polling
-
 
 #### Scenario: Approved configurable probe and coordinated client deadlines
 - **WHEN** a configured non-generative probe starts or a valid value from two to eight seconds inclusive is selected
