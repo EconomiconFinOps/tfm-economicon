@@ -61,7 +61,7 @@ La regla del detector exige una semana de referencia con coste positivo (`refere
 | Coste de IA | B | `ai_cost` | `cost_per_query`, `cost_total`, `rate_limited` (tasa de 429) |
 | Datos | B | `data_quality` | `freshness_days`, `reconciliation_delta_minor`, `reconciled` |
 
-La fuente de las ejecuciones es `JUP-130`. El tipo de los indicadores de datos y coste es una decisión abierta (ver abajo).
+La fuente de las ejecuciones es `JUP-130`. Los indicadores de coste y de datos van como tipo B (decidido por Lucia el 2026-10-21); JUP-129 podrá reagruparlos en sus familias al rediseñar.
 
 ### D6. Lo no medido
 
@@ -89,5 +89,4 @@ La decisión D2 amplía ADR-0022 (resultados de evaluación en Grafana) sin camb
 
 ## Open Questions
 
-- ¿Los indicadores de coste y de datos van como tipo B (negocio) o piden una familia propia? Se decide en la revisión con Paris, antes de que JUP-129 reagrupe en las cuatro familias de un RAG.
 - ¿De qué ejecución sale la primera medición real de coste de IA que se versiona (la del gasto de las pruebas de JUP-123/JUP-071 en la máquina de Lucia o una medición dedicada)? Hasta que haya una, el panel muestra «Sin datos».
