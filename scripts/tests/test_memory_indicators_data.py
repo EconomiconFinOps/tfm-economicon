@@ -125,6 +125,21 @@ class SourceSums(unittest.TestCase):
         self.assertNotEqual(usd, usd.quantize(Decimal("0.01")))
 
 
+class MissingDays(unittest.TestCase):
+    def test_the_demo_has_122_consecutive_days_per_tenant_and_no_gap(self):
+        self.assertEqual(tool.source_missing_days(date(2026, 10, 30)), {"tenant-core": 0, "tenant-growth": 0})
+
+    def test_a_two_day_gap_inside_the_range_is_counted(self):
+        days = {date(2026, 10, 1), date(2026, 10, 2), date(2026, 10, 5), date(2026, 10, 6)}
+        self.assertEqual(tool.count_missing_days({"t": days}), {"t": 2})
+
+    def test_a_single_day_has_no_gap(self):
+        self.assertEqual(tool.count_missing_days({"t": {date(2026, 10, 1)}}), {"t": 0})
+
+    def test_days_before_the_first_record_are_not_gaps(self):
+        self.assertEqual(tool.count_missing_days({"t": {date(2026, 10, 10), date(2026, 10, 11)}}), {"t": 0})
+
+
 class MoneyRounding(unittest.TestCase):
     def test_it_rounds_half_up_once_to_two_places(self):
         for exact, wanted in (("50.005", "50.01"), ("50.004", "50.00"), ("0.015", "0.02"), ("-0.005", "-0.01"),
@@ -217,6 +232,28 @@ class DataReport(unittest.TestCase):
         self.assertEqual(one(report, "reconciled", "tenant-core/EUR")["value"], 0)
         self.assertEqual(one(report, "reconciliation_delta_minor", "tenant-core/EUR")["value"], 1)
         self.assertEqual(one(report, "reconciled", "tenant-growth/EUR")["value"], 1)
+
+    def test_an_api_on_another_reference_date_is_rejected_instead_of_compared(self):
+        source = tool.source_totals(date(2026, 10, 30))
+        with self.assertRaises(tool.IndicatorError):
+            self.report(fetch=self.full_api(source), reference_date_from_api=date(2026, 10, 29))
+
+    def test_an_api_that_does_not_report_its_reference_date_is_rejected(self):
+        source = tool.source_totals(date(2026, 10, 30))
+        with self.assertRaises(tool.IndicatorError):
+            self.report(fetch=self.full_api(source), reference_date_from_api=None)
+
+    def test_an_api_that_fails_midway_leaves_everything_from_the_api_not_measured(self):
+        calls = {"n": 0}
+
+        def failing(tenant, start, end):
+            calls["n"] += 1
+            if calls["n"] > 3:
+                raise tool.ApiUnavailable("conexion")
+            return [{"currency": "EUR", "cost": "1.00", "record_count": 1}]
+        report, _ = self.report(fetch=failing, reference_date_from_api=date(2026, 10, 30))
+        for metric in ("freshness_days", "reconciliation_delta_minor", "reconciled"):
+            self.assertTrue(all(r["status"] == "not_measured" for r in rows(report, metric)), metric)
 
     def test_without_api_the_reconciliation_is_not_measured_and_never_true(self):
         report, table = self.report(fetch=None, reference_date_from_api=None)

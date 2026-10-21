@@ -248,6 +248,10 @@ def source_missing_days(reference: date) -> dict[str, int]:
     seen: dict[str, set[date]] = defaultdict(set)
     for tenant, day, _, _ in _source_rows(reference):
         seen[tenant].add(day)
+    return count_missing_days(seen)
+
+
+def count_missing_days(seen: dict[str, set[date]]) -> dict[str, int]:
     return {tenant: ((max(days) - min(days)).days + 1) - len(days) for tenant, days in sorted(seen.items())}
 
 
