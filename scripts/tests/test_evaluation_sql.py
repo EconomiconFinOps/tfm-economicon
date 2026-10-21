@@ -101,8 +101,9 @@ JUP_022_RUN_ID = "jup-022-{}-{}".format(
 REAL_RUN_IDS = [
     "jup-070-20261008T201354Z-37175957", "jup-070-20261008T210144Z-b64cca76", "jup-078-undated-7ea00edf",
     JUP_022_RUN_ID, "JUP-068-synthetic-example-v1",
+    "jup130-anomalies-2026-10-30", "jup130-data-2026-10-30", "jup130-ai-cost-2026-10-09-to-2026-10-21",
 ]
-REAL_ROW_COUNTS = [48, 48, 10, 140, 23]
+REAL_ROW_COUNTS = [48, 48, 10, 140, 23, 16, 10, 13]
 
 # Documento `rows-v1` mínimo y válido para las pruebas de la línea de comandos.
 ROWS_DOCUMENT = {
@@ -119,7 +120,7 @@ ROWS_DOCUMENT = {
     ],
 }
 
-# Dataset real (cinco informes versionados; el de JUP-068 ejecuta Node) fijado por `setUpModule`.
+# Dataset real (ocho informes versionados; el de JUP-068 ejecuta Node) fijado por `setUpModule`.
 DATASET: dict = {}
 _REAL_SCRIPT: dict = {}
 
@@ -757,12 +758,12 @@ class BuildSqlStructureTest(unittest.TestCase):
 
     def test_numero_de_tuplas_y_un_unico_bloque_de_resultados(self) -> None:
         script = Script(real_script())
-        self.assertEqual(len(script.rows("runs")), 5)
-        self.assertEqual(len(script.rows("results")), 269)
-        self.assertEqual(sum(REAL_ROW_COUNTS), 269)
+        self.assertEqual(len(script.rows("runs")), 8)
+        self.assertEqual(len(script.rows("results")), 308)
+        self.assertEqual(sum(REAL_ROW_COUNTS), 308)
         self.assertEqual(len(script.inserts("runs")), 1)
-        # Con 269 filas (< 500) hay un único bloque, aunque haya cinco ejecuciones: el corte es sobre la lista global.
-        self.assertEqual(chunk_sizes(script), [269])
+        # Con 308 filas (< 500) hay un único bloque, aunque haya ocho ejecuciones: el corte es sobre la lista global.
+        self.assertEqual(chunk_sizes(script), [308])
         self.assertTrue(all(size <= 500 for size in chunk_sizes(script)))
 
     def test_cada_insert_lleva_una_tupla_por_linea_separadas_por_coma_y_acaba_en_punto_y_coma(self) -> None:
@@ -771,7 +772,7 @@ class BuildSqlStructureTest(unittest.TestCase):
             r"^INSERT INTO evaluation\.(runs|results)\s*\([^)]*\)\s*VALUES\n((?:  \(.*\),\n)*  \(.*\);\n)", re.MULTILINE)
         matches = list(pattern.finditer(text))
         self.assertEqual([match.group(1) for match in matches], ["runs", "results"])
-        self.assertEqual([match.group(2).count("\n") for match in matches], [5, 269])
+        self.assertEqual([match.group(2).count("\n") for match in matches], [8, 308])
         # Todas las sentencias INSERT del script están cubiertas por el patrón (ninguna con otra forma).
         self.assertEqual(len(re.findall(r"^INSERT INTO", text, re.MULTILINE)), 2)
 
@@ -851,28 +852,28 @@ class BuildSqlValuesTest(unittest.TestCase):
         # Actualizado tras integrar develop: la fecha de la calibración es la `generated_at` del informe regenerado
         # (antes el literal 2026-10-03T07:15:32.826486+00:00), escrita tal cual con su cast.
         self.assertIn(f"'{JUP_022_RUN_AT}'::timestamptz", text)
-        self.assertEqual(text.count("::timestamptz"), 3)
+        self.assertEqual(text.count("::timestamptz"), 6)
         rows = Script(real_script()).rows("runs")
-        self.assertEqual([cells[2] is None for cells in rows], [False, False, True, False, True])
+        self.assertEqual([cells[2] is None for cells in rows], [False, False, True, False, True, False, False, False])
 
     def test_non_real_reasons_como_array_de_texto(self) -> None:
         text = real_script()
         self.assertIn("ARRAY['plantilla','doble']::text[]", text)
         self.assertEqual(text.count("ARRAY['plantilla']::text[]"), 1)
-        self.assertEqual(text.count("ARRAY['sintetica']::text[]"), 1)
-        # JUP-078 y JUP-022 son reales: array vacío con su cast (no NULL, la columna es NOT NULL).
-        self.assertEqual(text.count("ARRAY[]::text[]"), 2)
+        self.assertEqual(text.count("ARRAY['sintetica']::text[]"), 3)
+        # JUP-078, JUP-022 y el coste de IA de JUP-130 son reales: array vacío con su cast (no NULL, la columna es NOT NULL).
+        self.assertEqual(text.count("ARRAY[]::text[]"), 3)
         rows = Script(real_script()).rows("runs")
         self.assertEqual([cells[15] for cells in rows], [
             ("array", ["plantilla", "doble"]), ("array", ["plantilla"]), ("array", []), ("array", []),
-            ("array", ["sintetica"])])
+            ("array", ["sintetica"]), ("array", ["sintetica"]), ("array", ["sintetica"]), ("array", [])])
 
     def test_booleanos_en_mayusculas(self) -> None:
         rows = Script(real_script()).rows("runs")
         # synthetic (13), is_real (14) y milestone (18).
-        self.assertEqual([cells[13] for cells in rows], [False, False, False, False, True])
-        self.assertEqual([cells[14] for cells in rows], [False, False, True, True, False])
-        self.assertEqual([cells[18] for cells in rows], [True] * 5)
+        self.assertEqual([cells[13] for cells in rows], [False, False, False, False, True, True, True, False])
+        self.assertEqual([cells[14] for cells in rows], [False, False, True, True, False, False, False, True])
+        self.assertEqual([cells[18] for cells in rows], [True] * 8)
         selected = [cells[14] for cells in Script(real_script()).rows("results")]
         self.assertIn(True, selected)
         self.assertIn(False, selected)

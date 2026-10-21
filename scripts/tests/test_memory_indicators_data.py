@@ -272,7 +272,7 @@ class DataReport(unittest.TestCase):
     def test_the_report_passes_the_common_contract_with_type_b_and_the_data_group(self):
         report, _ = self.report(fetch=None, reference_date_from_api=None)
         run, results = dashboard.adapt_rows_v1(report)
-        self.assertEqual(run["source"], "JUP-130")
+        self.assertEqual(run["source"], "JUP-130-data")
         self.assertTrue(all(r["measure_type"] == "B" and r["grp"] == "data_quality" and r["judgment"] is None for r in results))
 
     def test_the_table_declares_the_source_and_what_it_does_not_prove(self):

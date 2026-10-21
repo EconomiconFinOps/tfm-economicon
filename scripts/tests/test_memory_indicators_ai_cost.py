@@ -282,7 +282,7 @@ class Report(unittest.TestCase):
     def test_the_report_passes_the_common_contract_with_type_b_and_the_group(self):
         report, _ = self.report([chat("gen-1", 0.5), failure("429", "ProxyRateLimitError")], billed({"gen-1": "0.5"}))
         run, results = dashboard.adapt_rows_v1(report)
-        self.assertEqual(run["source"], "JUP-130")
+        self.assertEqual(run["source"], "JUP-130-ai-cost")
         self.assertTrue(all(r["measure_type"] == "B" and r["grp"] == "ai_cost" for r in results))
 
     def test_neither_the_report_nor_the_table_carries_generation_ids_or_error_text(self):

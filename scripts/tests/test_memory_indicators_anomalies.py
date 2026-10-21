@@ -185,7 +185,7 @@ class RealDetector(unittest.TestCase):
     def test_the_report_passes_the_common_rows_contract(self):
         report, _ = self.measure("2026-10-30")
         run, results = dashboard.adapt_rows_v1(report)
-        self.assertEqual(run["source"], "JUP-130")
+        self.assertEqual(run["source"], "JUP-130-anomalies")
         self.assertTrue(all(r["measure_type"] == "A" and r["judgment"] == "automatic" for r in results))
         self.assertTrue(all(r["grp"] == "anomaly_detection" for r in results))
         self.assertIs(run["synthetic"], True)
