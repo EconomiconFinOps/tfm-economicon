@@ -7,16 +7,20 @@ carga el comando existente `evaluation-dashboard:load`; esta herramienta no toca
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import importlib.util
 import json
+import os
 import re
 import subprocess
 import sys
+import urllib.error
+import urllib.request
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import date, datetime
-from decimal import Decimal
+from datetime import date, datetime, timedelta
+from decimal import ROUND_HALF_UP, Decimal, localcontext
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,11 +30,19 @@ DEFAULT_OUT = ROOT / "docs" / "evidence" / "JUP-130"
 DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}", re.ASCII)
 COMMIT_RE = re.compile(r"[0-9a-f]{7,40}", re.ASCII)
 ANOMALY_GROUP = "anomaly_detection"
+DATA_GROUP = "data_quality"
 ROUND_DIGITS = 6
+API_TIMEOUT_SECONDS = 15
+DEFAULT_EMAIL = "operator@example.com"
+DEFAULT_PASSWORD_ENV = "DEMO_PASSWORD"
 
 
 class IndicatorError(ValueError):
     pass
+
+
+class ApiUnavailable(Exception):
+    """El API no respondió o rechazó la sesión; el mensaje solo lleva el tipo de fallo, nunca valores."""
 
 
 def _load(name: str, path: Path):
@@ -212,6 +224,201 @@ def anomaly_report(reference: date, *, commit: str | None, run_at: str | None) -
     return report, build_table(report, events, episodes, match, reference, last_day)
 
 
+def _source_rows(reference: date):
+    """Filas del CSV de la demo con fecha hasta la de referencia, con su inquilino según el manifiesto."""
+    manifest = json.loads(dataset.DEMO_MANIFEST_PATH.read_text("utf-8"))
+    tenant_of = {pair["subscription"]: pair["tenant"] for pair in manifest["pairs"]}
+    with dataset.DEMO_PATH.open(encoding="utf-8", newline="") as source:
+        for row in csv.DictReader(source):
+            day = datetime.strptime(row["Date"], dataset.DATE_FORMAT).date()
+            if day <= reference and row["SubscriptionId"] in tenant_of:
+                yield tenant_of[row["SubscriptionId"]], day, row["BillingCurrencyCode"], Decimal(row["CostInBillingCurrency"])
+
+
+def source_totals(reference: date) -> dict[str, dict[str, Decimal]]:
+    """Suma decimal exacta del CSV por inquilino y divisa, sin pasar por la normalización del producto."""
+    totals: dict[str, dict[str, Decimal]] = defaultdict(lambda: defaultdict(Decimal))
+    for tenant, _, currency, cost in _source_rows(reference):
+        totals[tenant][currency] += cost
+    return {tenant: dict(by_currency) for tenant, by_currency in sorted(totals.items())}
+
+
+def source_missing_days(reference: date) -> dict[str, int]:
+    """Días sin ningún registro entre el primero y el último con datos de cada inquilino; no son días de coste cero."""
+    seen: dict[str, set[date]] = defaultdict(set)
+    for tenant, day, _, _ in _source_rows(reference):
+        seen[tenant].add(day)
+    return {tenant: ((max(days) - min(days)).days + 1) - len(days) for tenant, days in sorted(seen.items())}
+
+
+def freshness_days(fetch, tenant: str, reference: date, window_start: date) -> int | None:
+    """Días entre la fecha de referencia y el último día con datos visibles, por bisección sobre el resumen."""
+    def has_data(day: date) -> bool:
+        return any(item["record_count"] > 0 for item in fetch(tenant, day, reference + timedelta(days=1)))
+    if not has_data(window_start):
+        return None
+    low, high = window_start, reference
+    while low < high:
+        middle = low + timedelta(days=((high - low).days + 1) // 2)
+        if has_data(middle):
+            low = middle
+        else:
+            high = middle - timedelta(days=1)
+    return (reference - low).days
+
+
+def round_money(value: Decimal) -> Decimal:
+    """Un único redondeo ROUND_HALF_UP a dos decimales sobre la suma exacta, como exige el contrato de costes."""
+    with localcontext() as context:
+        context.prec = max(80, len(value.as_tuple().digits) + 20)
+        rounded = value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    return Decimal("0.00") if rounded == 0 else rounded
+
+
+def reconcile(source: dict[str, Decimal], fetch, tenant: str, window_start: date, reference: date) -> dict[str, int]:
+    """Diferencia fuente menos API por divisa, en unidades menores enteras; cada divisa por separado."""
+    api: dict[str, Decimal] = defaultdict(Decimal)
+    for item in fetch(tenant, window_start, reference + timedelta(days=1)):
+        api[item["currency"]] += Decimal(item["cost"])
+    deltas = {}
+    for currency in sorted(set(source) | set(api)):
+        minor = (round_money(source.get(currency, Decimal(0))) - round_money(api.get(currency, Decimal(0)))) * 100
+        if abs(minor) > dashboard.ROW_MAX_INTEGER:
+            raise IndicatorError(f"la diferencia de {currency} supera el mayor entero seguro del contrato")
+        deltas[currency] = int(minor)
+    return deltas
+
+
+class ApiSession:
+    """Sesión de solo lectura contra el backend; la contraseña se usa para entrar y no se guarda."""
+
+    def __init__(self, base_url: str, email: str, password: str):
+        self.base = base_url.rstrip("/")
+        body = self._request("/auth/login", {"email": email, "password": password})
+        try:
+            self.token = body["access_token"]
+        except (KeyError, TypeError):
+            raise ApiUnavailable("respuesta_invalida") from None
+
+    def _request(self, path: str, payload: dict | None = None, headers: dict | None = None):
+        data = json.dumps(payload).encode("utf-8") if payload is not None else None
+        request = urllib.request.Request(self.base + path, data=data, headers={"Content-Type": "application/json", **(headers or {})})
+        try:
+            with urllib.request.urlopen(request, timeout=API_TIMEOUT_SECONDS) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as error:
+            raise ApiUnavailable(f"http_{error.code}") from None
+        except (urllib.error.URLError, OSError):
+            raise ApiUnavailable("conexion") from None
+        except ValueError:
+            raise ApiUnavailable("respuesta_invalida") from None
+
+    def _get(self, path: str, tenant: str | None = None):
+        headers = {"Authorization": "Bearer " + self.token}
+        if tenant:
+            headers["X-Tenant-Id"] = tenant
+        return self._request(path, None, headers)
+
+    def reference_date(self) -> date:
+        try:
+            return date.fromisoformat(self._get("/billing/reference-date")["reference_date"])
+        except (KeyError, TypeError, ValueError):
+            raise ApiUnavailable("respuesta_invalida") from None
+
+    def summary(self, tenant: str, start: date, end: date) -> list[dict]:
+        body = self._get(f"/billing/summary?start_date={start.isoformat()}&end_date={end.isoformat()}", tenant)
+        try:
+            return [{"currency": t["currency"], "cost": t["cost"], "record_count": t["record_count"]} for t in body["totals"]]
+        except (KeyError, TypeError):
+            raise ApiUnavailable("respuesta_invalida") from None
+
+
+def _data_row(metric_id: str, behavior: str, unit: str, value: int | None) -> dict:
+    row = {"measure_type": "B", "grp": DATA_GROUP, "metric_id": metric_id, "behavior": behavior}
+    if value is None:
+        return {**row, "status": "not_measured", "unit": unit}
+    return {**row, "status": "measured", "value": value, "unit": unit}
+
+
+def _api_measurements(fetch, tenants, source, reference: date) -> dict:
+    start = dataset.WINDOW_START
+    return {
+        "freshness": {tenant: freshness_days(fetch, tenant, reference, start) for tenant in tenants},
+        "deltas": {tenant: reconcile(source[tenant], fetch, tenant, start, reference) for tenant in tenants},
+    }
+
+
+def data_report(*, fetch, reference_date_from_api: date | None, reference: date, commit: str | None,
+                run_at: str | None) -> tuple[dict, str]:
+    source = source_totals(reference)
+    missing = source_missing_days(reference)
+    tenants = list(source)
+    measured = None
+    if fetch is not None:
+        if reference_date_from_api != reference:
+            raise IndicatorError("la fecha de referencia del API no coincide con la solicitada")
+        try:
+            measured = _api_measurements(fetch, tenants, source, reference)
+        except ApiUnavailable:
+            measured = None
+    results = []
+    for tenant in tenants:
+        results.append(_data_row("freshness_days", tenant, "dias", measured["freshness"][tenant] if measured else None))
+        results.append(_data_row("source_missing_days", tenant, "dias", missing[tenant]))
+        for currency in source[tenant]:
+            behavior = f"{tenant}/{currency}"
+            delta = measured["deltas"][tenant].get(currency) if measured else None
+            results.append(_data_row("reconciliation_delta_minor", behavior, "centimos", delta))
+            results.append(_data_row("reconciled", behavior, "recuento", None if delta is None else int(delta == 0)))
+    run = {"run_id": f"jup130-data-{reference.isoformat()}", "source": SOURCE, "run_at": run_at, "commit": commit,
+           "suite": "jup130-data", "suite_version": "1", "synthetic": True}
+    document = {"contract_version": 1, "run": {k: v for k, v in run.items() if v is not None}, "results": results}
+    try:
+        dashboard.adapt_rows_v1(document)
+    except dashboard.AdapterError as error:
+        raise IndicatorError(f"el informe incumple el contrato rows-v1: {error}") from error
+    return document, build_data_table(results, reference, measured is not None)
+
+
+def _cell(row: dict) -> str:
+    return "no medido" if row["status"] != "measured" else str(row["value"])
+
+
+def build_data_table(results: list[dict], reference: date, api_measured: bool) -> str:
+    lines = [
+        "# Frescura y reconciliación de los datos de coste (JUP-130)",
+        "",
+        f"Fecha de referencia: {reference.isoformat()}. Comando: `python tools/memory-indicators.py data --reference {reference.isoformat()}`. "
+        "Con `--base-url` se mide contra el API de una pila levantada; sin ella la frescura y la reconciliación quedan como no medidas. "
+        "Con `--run-at` y `--commit` se fijan la fecha y el commit del informe.",
+        "",
+    ]
+    if not api_measured:
+        lines += ["**No se midió contra el API en esta ejecución: frescura y reconciliación figuran como no medidas.**", ""]
+    lines += ["## Por inquilino", "", "| Inquilino | Frescura (días) | Días sin registro en la fuente |", "| --- | --- | --- |"]
+    by_key = {(r["metric_id"], r["behavior"]): r for r in results}
+    tenants = sorted({r["behavior"] for r in results if r["metric_id"] == "freshness_days"})
+    for tenant in tenants:
+        lines.append(f"| {tenant} | {_cell(by_key[('freshness_days', tenant)])} | {_cell(by_key[('source_missing_days', tenant)])} |")
+    lines += ["", "## Reconciliación por inquilino y divisa", "",
+              "| Inquilino y divisa | Diferencia (unidades menores) | Reconciliado |", "| --- | --- | --- |"]
+    for row in (r for r in results if r["metric_id"] == "reconciliation_delta_minor"):
+        flag = by_key[("reconciled", row["behavior"])]
+        text = "no medido" if flag["status"] != "measured" else ("sí" if flag["value"] else "no")
+        lines.append(f"| {row['behavior']} | {_cell(row)} | {text} |")
+    lines += [
+        "",
+        "## Qué no demuestra",
+        "",
+        "- La fuente es un conjunto sintético generado por el propio proyecto: reconciliar contra él no demuestra la integridad de datos reales de Azure.",
+        "- La frescura se mide contra la fecha de referencia configurada; con una fecha simulada no demuestra puntualidad de una ingesta real.",
+        "- Un día sin registro es un hueco de datos, no un día de coste cero; los huecos se cuentan en la fuente.",
+        "- Una diferencia de cero demuestra que la suma almacenada coincide con la de la fuente, no que la fuente sea correcta.",
+        "",
+    ]
+    return "\n".join(lines)
+
+
 def _git_head() -> str | None:
     try:
         out = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=True).stdout.strip()
@@ -247,7 +454,31 @@ def build_parser() -> argparse.ArgumentParser:
     anomalies.add_argument("--out", type=Path, default=DEFAULT_OUT)
     anomalies.add_argument("--run-at", type=_run_at)
     anomalies.add_argument("--commit", type=_pattern(COMMIT_RE, "el commit"))
+    data = commands.add_parser("data", help="frescura y reconciliación de los datos de coste")
+    data.add_argument("--reference", required=True, type=_pattern(DATE_RE, "la fecha AAAA-MM-DD"))
+    data.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    data.add_argument("--run-at", type=_run_at)
+    data.add_argument("--commit", type=_pattern(COMMIT_RE, "el commit"))
+    data.add_argument("--base-url", type=_pattern(re.compile(r"https?://\S+", re.ASCII), "la dirección http(s)"))
+    data.add_argument("--email", default=DEFAULT_EMAIL)
+    data.add_argument("--password-env", default=DEFAULT_PASSWORD_ENV, help="variable de entorno con la contraseña")
     return parser
+
+
+def _data_command(args, reference: date, commit: str | None) -> tuple[dict, str]:
+    fetch, api_reference = None, None
+    if args.base_url:
+        password = os.environ.get(args.password_env)
+        if not password:
+            print(f"aviso: la variable {args.password_env} no está definida; la medición contra el API queda como no medida", file=sys.stderr)
+        else:
+            try:
+                session = ApiSession(args.base_url, args.email, password)
+                api_reference = session.reference_date()
+                fetch = session.summary
+            except ApiUnavailable as error:
+                print(f"aviso: el API no está disponible ({error}); la medición contra el API queda como no medida", file=sys.stderr)
+    return data_report(fetch=fetch, reference_date_from_api=api_reference, reference=reference, commit=commit, run_at=args.run_at)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -260,14 +491,19 @@ def main(argv: list[str] | None = None) -> int:
         reference = date.fromisoformat(args.reference)
     except ValueError:
         parser.error("la fecha de referencia no es una fecha real")
+    commit = args.commit or _git_head()
     try:
-        report, table = anomaly_report(reference, commit=args.commit or _git_head(), run_at=args.run_at)
+        if args.command == "anomalies":
+            report, table = anomaly_report(reference, commit=commit, run_at=args.run_at)
+        else:
+            report, table = _data_command(args, reference, commit)
     except IndicatorError as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
-    _write(args.out, "JUP-130-anomalies.rows.json", json.dumps(report, indent=2, ensure_ascii=False) + "\n")
-    _write(args.out, "JUP-130-anomalies.md", table)
-    print(f"anomalías: informe y tabla escritos en {args.out}")
+    stem = "JUP-130-anomalies" if args.command == "anomalies" else "JUP-130-data"
+    _write(args.out, stem + ".rows.json", json.dumps(report, indent=2, ensure_ascii=False) + "\n")
+    _write(args.out, stem + ".md", table)
+    print(f"{args.command}: informe y tabla escritos en {args.out}")
     return 0
 
 
