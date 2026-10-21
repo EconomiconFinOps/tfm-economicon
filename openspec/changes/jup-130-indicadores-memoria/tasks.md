@@ -8,7 +8,7 @@
 
 - [x] 2.1 Crear `tools/memory-indicators.py` con el subcomando `anomalies`: carga el generador y `plan_detection` por ruta, ejecuta desde estado vacío con la fecha de referencia dada y empareja episodios y eventos (mismo servicio, 0 a 3 días, un episodio por evento)
 - [x] 2.2 Calcular precisión, recall de todos los eventos, recall de los detectables por diseño, retraso y recuentos; precisión `not_measured` con denominador 0 si no hay episodios
-- [x] 2.3 Emitir el informe `rows-v1` (fuente `JUP-130`, grupo `anomaly_detection`, tipo A, juicio automático) y la tabla Markdown con el comando y los límites
+- [x] 2.3 Emitir el informe `rows-v1` (fuente `JUP-130-anomalies`, grupo `anomaly_detection`, tipo A, juicio automático) y la tabla Markdown con el comando y los límites
 - [x] 2.4 Pruebas: caso real a 2026-09-21 y 2026-10-30 con recuentos esperados escritos a mano, episodio sin evento, dos eventos y un episodio, sin episodios, y salida idéntica en dos ejecuciones
 - [x] 2.5 Ejecutar la medición, versionar el informe y la tabla en `docs/evidence/JUP-130/` y registrar como hallazgo cualquier evento detectable no detectado
 
@@ -33,7 +33,7 @@
 ## 5. Carga y paneles
 
 - [ ] 5.1 Añadir los informes al manifiesto `docs/validation/evaluation-runs.json` y comprobar con `evaluation-dashboard:rows` que pasan el contrato `rows-v1`
-- [ ] 5.2 Panel de anomalías (sección A) con «Mide:» y «No demuestra:», un solo datasource y filtro por fuente `JUP-130`
+- [ ] 5.2 Panel de anomalías (sección A) con «Mide:» y «No demuestra:», un solo datasource y filtro por su fuente `JUP-130-anomalies`
 - [ ] 5.3 Paneles de coste de IA y de calidad de datos (sección B) con las mismas reglas y «Sin datos» / «No medido» cuando falten
 - [ ] 5.4 Actualizar las pruebas estructurales del dashboard y la conciliación con los informes; carga repetida deja los mismos datos
 - [ ] 5.5 Comprobar en el navegador con la pila real y `evaluation-dashboard:load`, sin pasos manuales nuevos, que los tres paneles muestran datos, y guardar capturas en `docs/evidence/JUP-130/`

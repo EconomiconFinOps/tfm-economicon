@@ -69,7 +69,7 @@ La regla del detector exige una semana de referencia con coste positivo (`refere
 | Coste de IA | B | `ai_cost` | `cost_per_query` (facturado), `cost_billed_total`, `cost_estimated_total`, `cost_gap`, `billed_coverage`, `cost_embeddings_estimated`, `zero_spend_queries`, `gateway_rejection_rate` (429 del gateway), `provider_error_rate` (5xx del proveedor) |
 | Datos | B | `data_quality` | `freshness_days`, `reconciliation_delta_minor`, `reconciled` |
 
-La fuente de las ejecuciones es `JUP-130`. Los indicadores de coste y de datos van como tipo B (decidido por Lucia el 2026-10-21); JUP-129 podrá reagruparlos en sus familias al rediseñar.
+Cada indicador es su propia fuente de ejecuciones (`JUP-130-anomalies`, `JUP-130-data` y `JUP-130-ai-cost`) y no una fuente común `JUP-130`: la vista de cambios de configuración anota las diferencias entre ejecuciones consecutivas de una misma fuente y `comparable_runs` agrupa como serie las de igual configuración, y tres medidas distintas no son una serie (con una fuente común salía una anotación «Cambia: batería» falsa y se agrupaban entre sí). La batería de cada una la identifica `suite_version` y, en anomalías, la huella `suite_sha256` del fichero de eventos, de modo que un cambio de los eventos sí se anota. Los indicadores de coste y de datos van como tipo B (decidido por Lucia el 2026-10-21); JUP-129 podrá reagruparlos en sus familias al rediseñar.
 
 ### D6. Lo no medido
 

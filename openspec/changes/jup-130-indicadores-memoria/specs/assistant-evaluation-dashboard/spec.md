@@ -13,7 +13,15 @@ El sistema DEBE (SHALL) incluir en el dashboard de evaluación un panel por cada
 
 #### Scenario: Fuente ajena
 - **WHEN** existen filas de otra fuente con la misma métrica
-- **THEN** los paneles de JUP-130 solo muestran las de la fuente `JUP-130`
+- **THEN** cada panel de JUP-130 solo muestra las filas de su propia fuente (`JUP-130-anomalies`, `JUP-130-ai-cost` o `JUP-130-data`)
+
+#### Scenario: Panel de negocio de JUP-068
+- **WHEN** se cargan las ejecuciones de coste de IA y de datos, que son de tipo B
+- **THEN** el panel «Tiempo, asignación y ahorro» sigue mostrando solo las ejecuciones de JUP-068
+
+#### Scenario: Tres indicadores, tres fuentes
+- **WHEN** se cargan los tres informes de JUP-130
+- **THEN** el dashboard no anota cambios de configuración entre ellos ni los agrupa como una serie comparable
 
 ### Requirement: Carga de los indicadores con el comando existente
 El sistema DEBE (SHALL) cargar los informes de JUP-130 con el comando `evaluation-dashboard:load` sin pasos manuales nuevos: los informes se listan en el manifiesto versionado y se validan con el contrato `rows-v1`. Tras levantar la pila y ejecutar ese comando, los paneles DEBEN (SHALL) mostrar los datos de la última medición versionada.

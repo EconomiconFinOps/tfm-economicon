@@ -35,7 +35,7 @@ El sistema DEBE (SHALL) sumar el coste de la fuente (el CSV del generador de dat
 - **THEN** la reconciliación es `not_measured` y nunca se declara correcta
 
 ### Requirement: Salida de la medición de datos
-El sistema DEBE (SHALL) emitir un informe `rows-v1` con fuente `JUP-130`, grupo `data_quality` y tipo B, con la fecha de referencia y el commit, y una tabla Markdown reproducible. DEBE (SHALL) declarar que la fuente es un conjunto sintético y que reconciliar contra el propio generador no demuestra la integridad de datos reales de Azure.
+El sistema DEBE (SHALL) emitir un informe `rows-v1` con fuente `JUP-130-data`, grupo `data_quality` y tipo B, con la fecha de referencia y el commit, y una tabla Markdown reproducible. DEBE (SHALL) declarar que la fuente es un conjunto sintético y que reconciliar contra el propio generador no demuestra la integridad de datos reales de Azure.
 
 #### Scenario: Declaración de límites
 - **WHEN** se lee la tabla de la memoria

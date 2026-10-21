@@ -88,7 +88,7 @@ El sistema DEBE (SHALL) leer la clave de administración del gateway y la clave 
 - **THEN** ni el informe ni la tabla ni la salida estándar contienen el valor de ninguna de las dos claves ni identificadores de generación
 
 ### Requirement: Salida de la medición de coste de IA
-El sistema DEBE (SHALL) emitir un informe `rows-v1` con fuente `JUP-130`, grupo `ai_cost` y tipo B, con la ventana y el commit, y una tabla Markdown reproducible. DEBE (SHALL) declarar que el gasto es local a la máquina que ejecutó las consultas y que no demuestra el coste de un uso real.
+El sistema DEBE (SHALL) emitir un informe `rows-v1` con fuente `JUP-130-ai-cost`, grupo `ai_cost` y tipo B, con la ventana y el commit, y una tabla Markdown reproducible. DEBE (SHALL) declarar que el gasto es local a la máquina que ejecutó las consultas y que no demuestra el coste de un uso real.
 
 #### Scenario: Declaración de límites
 - **WHEN** se lee la tabla de la memoria

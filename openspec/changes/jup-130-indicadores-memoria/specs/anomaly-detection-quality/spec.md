@@ -47,7 +47,7 @@ El sistema DEBE (SHALL) informar el recall sobre todos los eventos y, por separa
 - **THEN** penaliza ambos recalls y se lista como hallazgo del detector
 
 ### Requirement: Salida de la medición de anomalías
-El sistema DEBE (SHALL) emitir un informe `rows-v1` con fuente `JUP-130`, grupo `anomaly_detection`, tipo A y juicio automático, que lleva la fecha de referencia y el commit, y una tabla Markdown reproducible con el comando que la genera. El informe y la tabla DEBEN (SHALL) declarar que los datos son sintéticos, que hay pocos eventos y que las etiquetas las escribió quien diseñó los datos.
+El sistema DEBE (SHALL) emitir un informe `rows-v1` con fuente `JUP-130-anomalies`, grupo `anomaly_detection`, tipo A y juicio automático, que lleva la fecha de referencia y el commit, y una tabla Markdown reproducible con el comando que la genera. El informe y la tabla DEBEN (SHALL) declarar que los datos son sintéticos, que hay pocos eventos y que las etiquetas las escribió quien diseñó los datos.
 
 #### Scenario: Reproducción
 - **WHEN** se repite el comando con el mismo commit y la misma fecha de referencia
