@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Frescura de los datos de coste
-El sistema DEBE (SHALL) calcular la frescura como los días enteros entre la fecha de referencia configurada y el último día con datos de coste, por inquilino y en total, y marcar los días sin registro dentro de la ventana. Un día sin registro NO DEBE (SHALL NOT) contarse como un día de coste cero.
+El sistema DEBE (SHALL) calcular la frescura como los días enteros entre la fecha de referencia configurada y el último día con datos de coste, por inquilino, y contar los días sin registro entre el primero y el último día con datos de cada inquilino. Un día sin registro NO DEBE (SHALL NOT) contarse como un día de coste cero.
 
 #### Scenario: Datos al día
 - **WHEN** el último día con datos es el día anterior a la fecha de referencia

@@ -36,5 +36,6 @@ Fecha de referencia: 2026-10-30 (último día evaluado: 2026-10-29). Comando: `p
 
 - Son 7 eventos de un conjunto de datos sintéticos: las cifras son ilustrativas y no tienen validez estadística.
 - Las etiquetas las escribió quien diseñó los datos y los datos se diseñaron para esta regla, así que una precisión de 1,00 y un retraso de 0 días son en parte esperables.
+- El retraso va del inicio del evento al día en que la regla diaria abre el episodio: como el episodio se abre el mismo día evaluado, vale 0 por construcción y no mide la latencia real de la detección (en producción el mínimo es de un día, porque solo se evalúan días completos).
 - Un pico desde cero o la primera aparición de un servicio no se detectan por diseño: la regla exige una semana de referencia con coste positivo.
 - No demuestra el comportamiento con facturas reales de Azure ni con otras reglas o umbrales.
