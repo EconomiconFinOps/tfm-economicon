@@ -255,6 +255,53 @@ class ViewTests(unittest.TestCase):
         self.assertEqual(order, sorted(order))
 
 
+DASHBOARD = ROOT / "apps" / "monitoring" / "grafana" / "dashboards" / "assistant-evaluation.json"
+IDENTITY_TITLE = "Modelo servido (modelo / proveedor / cuantización)"
+
+
+def dashboard_panels(panels):
+    for panel in panels:
+        yield panel
+        yield from dashboard_panels(panel.get("panels", []))
+
+
+class DashboardColumnTests(unittest.TestCase):
+    def setUp(self) -> None:
+        document = json.loads(DASHBOARD.read_text(encoding="utf-8"))
+        self.tables = [(panel, target["rawSql"]) for panel in dashboard_panels(document["panels"])
+                       for target in panel.get("targets", []) if "AS generation_model," in target.get("rawSql", "")]
+
+    def test_there_are_tables_that_show_the_model_alias(self) -> None:
+        self.assertGreaterEqual(len(self.tables), 11)
+
+    def test_every_table_with_the_alias_also_shows_the_served_model(self) -> None:
+        for panel, sql in self.tables:
+            with self.subTest(panel=panel["title"]):
+                self.assertIn("AS generation_identity", sql)
+                for column in ("r.generation_model_id", "r.generation_provider", "r.generation_quantization"):
+                    self.assertIn(column, sql)
+
+    def test_unregistered_identity_reads_no_registrado_and_never_hides_a_null(self) -> None:
+        for panel, sql in self.tables:
+            with self.subTest(panel=panel["title"]):
+                self.assertIn("THEN 'no registrado'", sql)
+                self.assertNotIn("NULLIF", sql.upper())
+
+    def test_the_column_has_its_title_next_to_the_alias_override(self) -> None:
+        for panel, _ in self.tables:
+            with self.subTest(panel=panel["title"]):
+                overrides = panel["fieldConfig"]["overrides"]
+                names = [o["matcher"]["options"] for o in overrides]
+                self.assertEqual(names.index("generation_identity"), names.index("generation_model") + 1)
+                override = overrides[names.index("generation_identity")]
+                properties = {p["id"]: p["value"] for p in override["properties"]}
+                alias = {p["id"]: p["value"] for p in overrides[names.index("generation_model")]["properties"]}
+                if "custom.hidden" in alias:
+                    self.assertTrue(properties["custom.hidden"])
+                else:
+                    self.assertEqual(properties["displayName"], IDENTITY_TITLE)
+
+
 class VersionedManifestTests(unittest.TestCase):
     def setUp(self) -> None:
         self.dataset = tool.build_dataset([tool.DEFAULT_MANIFEST])
