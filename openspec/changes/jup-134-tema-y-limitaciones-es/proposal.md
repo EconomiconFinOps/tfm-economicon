@@ -56,3 +56,19 @@ Ninguna.
   JUP-112).
 - Documentación de continuidad: `docs/continuidad/frontend-espanol.md`,
   `docs/continuidad/identidad-marca-frontend.md` y `docs/continuidad/README.md`.
+
+## Human Approval
+
+- Change: jup-134-tema-y-limitaciones-es
+- Approval type: pre-code
+- Decision: approved
+- Approver: Victor
+- Date: 2026-10-21
+- Carril: standard
+- Scope reviewed: proposal, design, specs, tasks
+- Decisions approved: el selector muestra el tema activo sin `aria-pressed` y con `title` de la acción
+  (D1); limitaciones traducidas en origen con una sola lista (opción A, D2); se acepta el cambio de
+  identificador de evidencia para una anomalía explicada antes y después del despliegue, sin impacto
+  visible para el usuario (design.md, Risks).
+- Pendiente fuera de este gate: implementación TDD, review, gate post-review, archivo, PR y las reviews
+  `Revision JUP-134` y `Validacion JUP-134`.

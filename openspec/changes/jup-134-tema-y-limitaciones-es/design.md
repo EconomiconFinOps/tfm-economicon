@@ -93,9 +93,17 @@ JUP-112). No hay una decisión de arquitectura duradera.
 ## Risks / Trade-offs
 
 - [Una anomalía sin cambios obtiene otro identificador de evidencia si se explica antes y después del
-  despliegue, porque la fotografía del episodio incluye sus limitaciones] → Se acepta y se documenta. Las
-  explicaciones guardadas no se reescriben y el identificador no se comprueba al leer. Tras el
-  despliegue, el escenario «Mismo estado, mismo identificador» se sigue cumpliendo.
+  despliegue, porque la fotografía del episodio incluye sus limitaciones] → Se acepta y se documenta. No
+  tiene impacto visible para el usuario. El identificador solo se muestra como texto («Evidencia: …» en
+  la respuesta e «Identificador: …» en la tarjeta de evidencia); no se usa para buscar, deduplicar,
+  enlazar ni volver a comprobar nada, y el contexto del chat no lo lee. Las explicaciones guardadas no se
+  reescriben y conservan su identificador. Solo pierde sentido comparar las huellas de una explicación
+  anterior al despliegue con las de una posterior, o una huella citada en una evidencia de validación
+  antigua (que sigue siendo cierta para su fecha). Tras el despliegue, el escenario «Mismo estado, mismo
+  identificador» se sigue cumpliendo. Alternativas descartadas: sacar las limitaciones del hash cambia
+  las huellas de todos los episodios y el contrato de JUP-038; mantener la fotografía en inglés
+  reintroduce dos listas; subir `adapter_version` obliga a cambiar el frontend, que solo acepta
+  `anomaly-explanation-1.0`, y no evita el cambio de huella.
 - [Las explicaciones guardadas antes del cambio conservan dentro de `episode.limitations` las frases en
   inglés] → El frontend muestra `evidence.limitations`, que ya estaba en español, y no
   `evidence.episode.limitations`. Es historia guardada y no se migra.
