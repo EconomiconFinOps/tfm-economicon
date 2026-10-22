@@ -75,12 +75,17 @@ JUP_022_REPORT = ROOT / "docs" / "spikes" / "JUP-022-retrieval-calibration.json"
 JUP_068_EXAMPLE = ROOT / "docs" / "validation" / "JUP-068-example.json"
 JUP_130_DIR = EVIDENCE / "JUP-130"
 JUP_071_ROWS = EVIDENCE / "JUP-071-live-r1-rows.json"
+JUP_071_FLASH_ROWS = EVIDENCE / "JUP-071-live-flash-r1-rows.json"
+JUP_133_DIR = EVIDENCE / "JUP-133"
+JUP_133_AI_COST = JUP_133_DIR / "JUP-133-ai-cost.rows.json"
+JUP_133_BANK = JUP_133_DIR / "JUP-133-bank28-report.json"
 JUP_130_REPORTS = tuple(JUP_130_DIR / f"JUP-130-{name}.rows.json" for name in ("anomalies", "data", "ai-cost"))
 
 # Valores literales del contrato (no se leen de la herramienta para poder comparar contra ella).
 RUN_KEYS = (
     "run_id", "source", "run_at", "commit", "suite", "suite_version", "suite_sha256", "corpus_sha256",
     "embedding_provider", "embedding_alias", "retrieval", "generation_model", "prompt_sha256", "synthetic",
+    "generation_model_id", "generation_provider", "generation_quantization", "gateway_config_sha256",
 )
 RESULT_KEYS = (
     "measure_type", "grp", "metric_id", "behavior", "status", "count", "value", "unit",
@@ -116,7 +121,7 @@ def _jup130_case(report_path, source, run_id, rows, reasons):
     }
 
 
-# Nueve ejecuciones del manifiesto versionado, con lo esperado escrito a mano. Los `run_id` derivados y las huellas
+# Doce ejecuciones del manifiesto versionado, con lo esperado escrito a mano. Los `run_id` derivados y las huellas
 # se fijaron a partir del JSON canónico de cada informe; no cambian mientras el informe (evidencia) no cambie.
 # (La de JUP-022 es la excepción descrita arriba y se deriva del informe vigente.)
 REAL_CASES = (
@@ -164,6 +169,24 @@ REAL_CASES = (
         # Evidencia regenerable de la campaña de JUP-071: la huella se calcula del propio fichero.
         "run_id": "JUP-071-a543144c9a55", "sha": _canonical_sha(JUP_071_ROWS), "rows": 136,
         "reasons": ["sin_modelo_verificado"],
+    },
+    {
+        "path": JUP_071_FLASH_ROWS, "format": "rows-v1", "source": "JUP-071",
+        "report_path": "docs/evidence/JUP-071-live-flash-r1-rows.json",
+        "run_id": "JUP-071-864a0d6dc666", "sha": _canonical_sha(JUP_071_FLASH_ROWS), "rows": 136,
+        "reasons": ["sin_modelo_verificado"],
+    },
+    {
+        "path": JUP_133_AI_COST, "format": "rows-v1", "source": "JUP-130-ai-cost",
+        "report_path": "docs/evidence/JUP-133/JUP-133-ai-cost.rows.json",
+        "run_id": "jup130-ai-cost-2026-10-21-to-2026-10-22", "sha": _canonical_sha(JUP_133_AI_COST), "rows": 15,
+        "reasons": [],
+    },
+    {
+        "path": JUP_133_BANK, "format": "jup-070-report-v1", "source": "JUP-070",
+        "report_path": "docs/evidence/JUP-133/JUP-133-bank28-report.json",
+        "run_id": "jup-070-20261022T000000Z-2c5c6500", "sha": _canonical_sha(JUP_133_BANK), "rows": 52,
+        "reasons": [],
     },
 )
 REAL_RUN_IDS = [case["run_id"] for case in REAL_CASES]
@@ -225,6 +248,10 @@ def expected_key(run: dict, reasons: list) -> str:
         "source", "suite_version", "suite_sha256", "corpus_sha256", "embedding_provider", "embedding_alias",
         "retrieval", "generation_model", "prompt_sha256",
     )] + [list(reasons)]
+    identity = [run[field] for field in (
+        "generation_model_id", "generation_provider", "generation_quantization", "gateway_config_sha256")]
+    if any(value is not None for value in identity):
+        payload.append(identity)
     text = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
@@ -280,7 +307,7 @@ class ConstantsTest(unittest.TestCase):
         # Tupla (el orden es contrato), no lista ni conjunto.
         self.assertIsInstance(tool.RUN_OUTPUT_KEYS, tuple)
         self.assertEqual(tool.RUN_OUTPUT_KEYS, RUN_OUTPUT_KEYS)
-        self.assertEqual(len(tool.RUN_OUTPUT_KEYS), 21)
+        self.assertEqual(len(tool.RUN_OUTPUT_KEYS), 25)
 
     def test_la_raiz_por_defecto_es_root_en_las_dos_funciones(self) -> None:
         # Una raíz por defecto distinta (por ejemplo el directorio de trabajo) haría que el resultado dependiese
@@ -463,24 +490,28 @@ class NormalizeRealReportsTest(unittest.TestCase):
             tool.adapt_jup078(load_json(JUP_078_REPORT), "x"),
             tool.adapt_jup022(load_json(JUP_022_REPORT), "x"),
             tool.adapt_jup068(REPORT_068, "x"),
-            *(tool.adapt_rows_v1(load_json(report), "x") for report in (*JUP_130_REPORTS, JUP_071_ROWS)),
+            *(tool.adapt_rows_v1(load_json(report), "x") for report in (*JUP_130_REPORTS, JUP_071_ROWS, JUP_071_FLASH_ROWS, JUP_133_AI_COST)),
+            tool.adapt_jup070(load_json(JUP_133_BANK), "x"),
         )
-        for case, output, (raw_run, raw_results) in zip(REAL_CASES, self.normalized, raws):
+        for case, output, entry, (raw_run, raw_results) in zip(REAL_CASES, self.normalized, self.entries, raws):
             with self.subTest(source=case["run_id"]):
                 self.assertEqual(output["results"], raw_results)
+                # La anotación `model_identity` del manifiesto es lo único que el run normalizado añade al del informe.
+                expected = {**raw_run, **(entry["model_identity"] or {})}
                 for key in RUN_KEYS:
                     if key != "run_id":
-                        self.assertEqual(output["run"][key], raw_run[key], key)
+                        self.assertEqual(output["run"][key], expected[key], key)
 
     def test_valores_de_fecha_y_modelo_de_los_informes_reales(self) -> None:
         runs = [output["run"] for output in self.normalized]
         self.assertEqual([run["run_at"] for run in runs], [
             "2026-10-08T20:13:54Z", "2026-10-08T21:01:44Z", None, JUP_022_RUN_AT, None,
-            *(load_json(report)["run"]["run_at"] for report in (*JUP_130_REPORTS, JUP_071_ROWS))])
+            *(load_json(report)["run"]["run_at"] for report in (*JUP_130_REPORTS, JUP_071_ROWS, JUP_071_FLASH_ROWS, JUP_133_AI_COST)),
+            load_json(JUP_133_BANK)["run"]["date"]])
         # Actualizado tras integrar develop: la fecha de la calibración (antes el literal
         # 2026-10-03T07:15:32.826486+00:00) es la `generated_at` del informe regenerado, copiada sin normalizar.
         self.assertEqual([run["generation_model"] for run in runs],
-                         ["plantilla-sin-modelo", "plantilla-sin-modelo", None, None, None, None, None, None, None])
+                         ["plantilla-sin-modelo", "plantilla-sin-modelo", None, None, None, None, None, None, None, None, None, "economicon-chat"])
 
     def test_cada_salida_pasa_la_validacion_comun_y_serializa_a_json(self) -> None:
         for case, output in zip(REAL_CASES, self.normalized):

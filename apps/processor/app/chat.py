@@ -239,7 +239,7 @@ def create_chat_app():
             from app.clients.chat_gateway import diagnostic_scope
             if hasattr(gateway,'resources'):
                 gateway.resources=resources
-            with diagnostic_scope(claim.get('operation_id'),claim.get('attempt_id')):
+            with diagnostic_scope(claim.get('operation_id'),claim.get('attempt_id'),claim.get('number')):
                 options={'tool_result':tool_result} if getattr(gateway,'requires_tool_result',False) and claim['context'].get('tool_protocol')=='server-documentation-v4' else {}
                 iterator=gateway(claim['context'],claim['deadline'],**options).__aiter__()
                 pending=None

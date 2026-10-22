@@ -1,5 +1,28 @@
 # Cloud AWS — arquitectura documental
 
+## Excepcion humana de integracion y reconciliacion — 22/10/2026
+
+Origen: HAL9000, chat `01a1270c-e332-7462-9c90-706d49ade92c`.
+Orden directa: «Mergea tambien la 146, tienes excepcion humana para saltarte validaciones».
+Esta autorizacion puntual sustituye el requisito de completar las validaciones
+antes de integrar PR146; no atribuye una aprobacion a Lucia o Paris ni modifica
+reviews, roles, gates o protecciones. La solicitud de cambios de Lucia sobre
+41cace0d se conserva; las correcciones posteriores se describen debajo.
+
+Se reconcilia el candidato8e879dae con developf224226d en una copia aislada.
+El unico conflicto manual era el indice compartido de continuidad: se conservan
+las entradas AWS, JUP133 y JUP135 y se actualizan sus integraciones verificadas.
+CI/package.json y chat_gateway se combinan automaticamente conservando las
+adaptaciones AWS y los cambios de develop. No se incluyen los cambios locales
+no publicados de costes/accesos del otro checkout.
+
+La CI tecnica del candidato8e879dae era conforme al corte previo. No se ejecuta
+una nueva validacion funcional del resultado reconciliado por esta excepcion;
+no se declara CI nueva superada ni aceptacion operativa. Este encargo no ejecuta
+AWS, Terraform apply, despliegue, modelos, recursos o gasto.
+La autorizacion se limita a PR146; no habilita otros merges ni despliegues.
+
+
 ## Correcciones PR146 implementadas — 22/10/2026
 
 Usuario autoriza corregir revisión y dejar CI verde, sin desplegar. Leídas todas

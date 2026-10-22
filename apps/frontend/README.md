@@ -128,7 +128,8 @@ como de demostración (`RF-104-004`) y ajustar las pruebas de menú de `Layout.t
 La aplicacion tiene la marca de Economicon en **dos paletas con los mismos tokens**, definidas en
 `src/styles/theme.css`: la clara en `:root` (por defecto) y la oscura en `[data-theme="dark"]`. Un script
 de `index.html` fija ese atributo antes del primer pintado (eleccion guardada o preferencia del sistema)
-y el boton "Tema oscuro" de la cabecera alterna. Decision y motivos en
+y el boton de tema de la cabecera alterna y muestra el tema activo ("Tema claro" o "Tema oscuro", JUP-134).
+Decision y motivos en
 [ADR-0012](../../docs/adr/ADR-0012-frontend-color-tokens.md) (enmienda JUP-112); tipografia y logotipos
 en [`ATTRIBUTIONS.md`](ATTRIBUTIONS.md).
 

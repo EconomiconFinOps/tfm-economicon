@@ -141,7 +141,7 @@ def _preparar() -> None:
         raise RuntimeError(f"no se pudieron crear los objetos de prueba: {montaje.stderr.strip()}")
     resultado = cargar(secrets.token_urlsafe(24))
     # Precondición de todo lo demás: la carga fue completa (versionado 9 + local 2 ejecuciones).
-    assert resultado.stdout.startswith("11 ejecuciones y "), resultado.stdout
+    assert resultado.stdout.startswith("14 ejecuciones y "), resultado.stdout
 
 
 def tearDownModule() -> None:

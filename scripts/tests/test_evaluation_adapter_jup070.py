@@ -46,6 +46,7 @@ RUN_ID = "mi-ejecucion-7"
 RUN_KEYS = (
     "run_id", "source", "run_at", "commit", "suite", "suite_version", "suite_sha256", "corpus_sha256",
     "embedding_provider", "embedding_alias", "retrieval", "generation_model", "prompt_sha256", "synthetic",
+    "generation_model_id", "generation_provider", "generation_quantization", "gateway_config_sha256",
 )
 RESULT_KEYS = (
     "measure_type", "grp", "metric_id", "behavior", "status", "count", "value", "unit",
@@ -148,6 +149,10 @@ class RunBlockTest(unittest.TestCase):
             "generation_model": "plantilla-sin-modelo",
             "prompt_sha256": None,
             "synthetic": False,
+            "generation_model_id": None,
+            "generation_provider": None,
+            "generation_quantization": None,
+            "gateway_config_sha256": None,
         })
 
     def test_run_2_litellm(self) -> None:
@@ -168,6 +173,10 @@ class RunBlockTest(unittest.TestCase):
             "generation_model": "plantilla-sin-modelo",
             "prompt_sha256": None,
             "synthetic": False,
+            "generation_model_id": None,
+            "generation_provider": None,
+            "generation_quantization": None,
+            "gateway_config_sha256": None,
         })
 
     def test_run_id_es_el_argumento(self) -> None:
