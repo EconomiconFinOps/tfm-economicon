@@ -11,8 +11,8 @@
 - [x] 3.2 Comparar las suites completas con develop sin fallos nuevos
 - [x] 3.3 Prueba en navegador con Playwright, con la interfaz de develop y la de la rama
 - [x] 3.4 Medicion antes y despues: pantalla financiera, banco de JUP-069 y robustez de JUP-071
-- [x] 3.5 Informes cargados en el dashboard de evaluacion sin errores
+- [x] 3.5 Informes cargados en el dashboard de evaluacion local sin errores (sin entrada en el manifiesto versionado hasta JUP-133)
 ## 4. Entrega
 - [ ] 4.1 Abrir la PR contra develop con las decisiones registradas
 - [ ] 4.2 Revision y validacion de otras personas
-- [ ] 4.3 Anadir `model_identity` a las dos entradas nuevas del manifiesto cuando se integre la identidad del modelo de JUP-133
+- [ ] 4.3 Tras integrar JUP-133, anadir al manifiesto del dashboard los informes `JUP-071-fix-r1-rows.json` y `JUP-069-fix-bank28-report.json` con su `model_identity` y actualizar los numeros fijados en las pruebas del dashboard

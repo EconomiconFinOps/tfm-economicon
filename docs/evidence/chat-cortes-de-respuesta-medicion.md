@@ -57,7 +57,7 @@ Con Playwright sobre Edge y simulando solo la respuesta de la primera pregunta c
 - Una repetición por batería: las diferencias pequeñas (JUP-071, 4 a 1) no son concluyentes; la de pantalla financiera (21 a 1) sí es grande.
 - La calidad con rúbrica de JUP-069 y JUP-071 la juzgó una persona sobre las respuestas nuevas, sin segunda revisora. No es comparable punto a punto con los juicios de JUP-133: el número de puntos y los criterios automáticos difieren.
 - Los casos `JUP-069-003`, `JUP-069-010`, `JUP-069-026` y `JUP-071-014` quedan bloqueados en el informe de JUP-071: la recuperación reconstruida no coincide con el hash del servidor en los tres primeros y el último terminó `failed`.
-- La batería de pantalla financiera no está en el dashboard: no tiene adaptador. Sus datos están solo en esta nota.
+- La batería de pantalla financiera no está en el dashboard: no tiene adaptador. Sus datos están solo en esta nota. Las otras dos baterías están cargadas en el dashboard local, pero no en el manifiesto versionado (ver «Evidencia versionada»).
 - Siguen apareciendo y se reintentan, sin evitarse: el corte por longitud (`incomplete`), el cierre de conexión (`eof`) y las reglas de prosa de clasificación y de unidades de las expresiones.
 - Sin resolver: las frases con huecos donde debería ir una cifra y que el asistente no pida aclaración cuando faltan datos.
 
@@ -68,4 +68,4 @@ Decisión de Lucia (22/10/2026), a revisar más adelante si se quiere revertir: 
 ## Evidencia versionada
 
 - `docs/evidence/JUP-071-fix-r1-report.json` y `.md`: informe de puntuación de robustez.
-- `docs/evidence/JUP-071-fix-r1-rows.json` y `docs/evidence/JUP-069-fix-bank28-report.json`: datos para el dashboard, añadidos a `docs/validation/evaluation-runs.json`. Cuando se integre la identidad del modelo en el manifiesto (PR #150), estas dos entradas deben llevar la misma `model_identity` que las de JUP-133.
+- `docs/evidence/JUP-071-fix-r1-rows.json` y `docs/evidence/JUP-069-fix-bank28-report.json`: datos para el dashboard. **No están en el manifiesto** `docs/validation/evaluation-runs.json`: las pruebas del dashboard fijan su contenido (9 ejecuciones y 444 resultados) y la identidad del modelo (`model_identity`) llega con la PR #150. Tras integrarla hay que añadir las dos entradas con la misma `model_identity` que las de JUP-133 y actualizar esos números en las pruebas. Se cargaron en el dashboard local y se comprobó que Grafana las muestra sin errores.

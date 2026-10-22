@@ -34,7 +34,7 @@ Una repetición por batería y juicios de una sola persona. Las métricas de rec
 - Sin resolver: las frases con huecos donde debería ir una cifra y que el asistente no pida aclaración cuando faltan datos.
 - Siguen apareciendo, y se reintentan, el corte por longitud, el cierre de conexión y dos reglas de validación de prosa y de unidades.
 - Abrir la PR contra `develop` y pedir revisión y validación de otras personas.
-- Cuando la identidad del modelo del manifiesto (PR #150) esté integrada, añadir la misma `model_identity` a las dos entradas nuevas de `docs/validation/evaluation-runs.json`.
+- Cuando la identidad del modelo del manifiesto (PR #150) esté integrada, añadir al manifiesto `docs/validation/evaluation-runs.json` las entradas de `JUP-071-fix-r1-rows.json` y `JUP-069-fix-bank28-report.json` con la misma `model_identity` que las de JUP-133, y actualizar los números fijados en las pruebas del dashboard (9 ejecuciones y 444 resultados).
 
 ## Borrador de spec
 
