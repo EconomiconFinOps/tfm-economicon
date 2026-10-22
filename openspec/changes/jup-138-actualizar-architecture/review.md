@@ -161,3 +161,15 @@ No verificado:
 
 No aplica: consolidación documental de decisiones ya registradas (ADR-0022 a ADR-0027, sin cambiar sus
 estados). Se enlazan por archivo porque los números 0013, 0022 y 0023 están repetidos.
+
+## Human Approval
+
+- Change: jup-138-actualizar-architecture
+- Approval type: post-review
+- Decision: approved
+- Approver: Victor
+- Date: 2026-10-22
+- Adversarial review: no ejecutada; cambio solo documental, sin código de producto, y sin ciclo tester, coder, mutación ni QA. La comprobación independiente fue contrastar cada afirmación con su fuente en la SHA `03e97ce6` (tabla de desfases, secciones 1 a 3)
+- Accepted findings: README del backend y del processor sin MinIO, subidas ni `CHAT_ENABLED` (otra tarjeta); sin comprobación automática de `architecture.md` frente a Compose (propuesta futura); maquetación de los diagramas no comparada con la vista previa de GitHub
+- Archive decision: archive
+- Notes: aprobación registrada por Victor el 2026-10-22 a petición propia. No se levantó el stack ni se ejecutó el chat generativo: los recuentos salen de `docker compose config` y las tablas de las migraciones. Quedan fuera de esta aprobación y pendientes en Trello: las reviews `Revision JUP-138` y `Validacion JUP-138` y la CI en GitHub. El PR no está abierto.
