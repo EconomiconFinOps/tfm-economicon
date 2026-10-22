@@ -12,6 +12,7 @@ Con preguntas sobre las cifras de pantalla, el servidor rechazaba la respuesta e
 - Un segmento de interpretación vacío o en blanco se omite; si no queda texto, la respuesta se sigue rechazando.
 - Una métrica financiera que no coincide con el registro autorizado se omite y se añade una limitación visible; el resto de la respuesta se conserva.
 - La interfaz carga la memoria de la conversación al terminar una operación en `failed` o `cancelled`.
+- La interfaz muestra las limitaciones de la respuesta (el aviso de cifra omitida) en el panel y en el historial; antes solo se guardaban en los metadatos.
 
 ## Resultados
 

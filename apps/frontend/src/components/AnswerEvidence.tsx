@@ -36,11 +36,16 @@ export function AnswerEvidence({ content, metadata }: {
   const raw = metadata.source_citations;
   const references = metadata.citations;
   const response = metadata.response;
-  const rawActions = response && typeof response === "object" && !Array.isArray(response)
-    ? (response as Record<string, unknown>).next_actions : undefined;
+  const body = response && typeof response === "object" && !Array.isArray(response) ? response as Record<string, unknown> : undefined;
+  const rawActions = body?.next_actions;
+  const rawLimitations = body?.limitations;
   const actions = Array.isArray(rawActions) && rawActions.length <= 10
     && rawActions.every(item => typeof item === "string" && item.trim().length > 0 && item.length <= 500)
     ? rawActions as string[] : [];
+  // Server-added notices (for example an omitted, unverified figure) live only in metadata: show them with the answer.
+  const limitations = Array.isArray(rawLimitations) && rawLimitations.length <= 10
+    && rawLimitations.every(item => typeof item === "string" && item.trim().length > 0 && item.length <= 500)
+    ? rawLimitations as string[] : [];
   // Metadata is untrusted; never render partial or ambiguous citation sets.
   const citations = Array.isArray(raw) && raw.every(isCitation)
     && new Set(raw.map((item) => item.evidence_id)).size === raw.length
@@ -68,6 +73,10 @@ export function AnswerEvidence({ content, metadata }: {
         </> : line}</p>;
       })}
     </div>
+    {limitations.length > 0 && <section className="mt-3 text-sm text-muted-foreground" aria-label="Limitaciones">
+      <h4 className="font-medium">Limitaciones</h4>
+      <ul className="list-disc space-y-1 pl-5">{limitations.map((limitation, index) => <li key={index}>{limitation}</li>)}</ul>
+    </section>}
     {actions.length > 0 && <section className="mt-3 text-sm" aria-label="Siguientes pasos">
       <h4 className="font-medium">Siguientes pasos</h4>
       <ul className="list-disc space-y-1 pl-5">{actions.map((action, index) => <li key={index}>{action}</li>)}</ul>

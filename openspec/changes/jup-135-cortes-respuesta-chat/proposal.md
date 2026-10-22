@@ -10,7 +10,7 @@ Con preguntas sobre las cifras de pantalla, el servidor rechaza la respuesta ent
 - Los reintentos dejan de repetir la misma generacion: temperatura 0 en el primer intento y creciente en los reintentos; el rechazo `invalid_response` del procesador se reintenta dentro de los cuatro intentos.
 - Un segmento de interpretacion vacio se omite en procesador y backend (modulo compartido identico).
 - Una metrica financiera no verificada se omite con una limitacion visible en lugar de rechazar la respuesta.
-- La interfaz carga la memoria al terminar una operacion en `failed` o `cancelled`.
+- La interfaz carga la memoria al terminar una operacion en `failed` o `cancelled` y muestra las limitaciones de la respuesta, incluido el aviso de cifra omitida.
 
 ## Impact
 Cambia dos requisitos y anade dos de `conversational-web-interface`. Sin cambio de `FinOpsResponse`, esquema publico, modelo, routing, despliegue ni migraciones. Coste: hasta tres llamadas mas al modelo en los intentos fallidos.

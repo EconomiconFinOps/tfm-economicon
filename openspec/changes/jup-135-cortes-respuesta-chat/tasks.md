@@ -6,6 +6,7 @@
 - [x] 2.2 Omitir segmentos de interpretacion vacios (procesador y copia del backend)
 - [x] 2.3 Omitir la metrica financiera no verificada con limitacion visible
 - [x] 2.4 Cargar la memoria al terminar en `failed` o `cancelled`
+- [x] 2.5 Mostrar las limitaciones de la respuesta (aviso de cifra omitida) en el panel y en el historial
 ## 3. Comprobacion
 - [x] 3.1 Pruebas focales de procesador, backend y frontend; el test del frontend falla sin el arreglo
 - [x] 3.2 Comparar las suites completas con develop sin fallos nuevos

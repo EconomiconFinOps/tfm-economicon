@@ -44,6 +44,28 @@ describe("AnswerEvidence", () => {
     expect(screen.getByText("La evidencia de esta respuesta no está disponible.")).toBeInTheDocument();
   });
 
+  it("shows the server notice for an omitted figure next to the answer and never the discarded figure", () => {
+    const notice = "Se omitió una cifra financiera que no pudo verificarse con la consulta de costes.";
+    render(<AnswerEvidence content="Interpretación: el total del periodo es 60815.14 EUR." metadata={{ response: { limitations: [notice], metrics: [], next_actions: [] } }} />);
+    const section = screen.getByRole("region", { name: "Limitaciones" });
+    expect(section).toHaveTextContent(notice);
+    expect(screen.getByText(/60815.14 EUR/)).toBeInTheDocument();
+    expect(screen.queryByText(/45[.,]6/)).toBeNull();
+  });
+
+  it.each([
+    { response: { limitations: [] } },
+    { response: { limitations: [" "] } },
+    { response: { limitations: [1] } },
+    { response: { limitations: Array.from({ length: 11 }, () => "x") } },
+    { response: { limitations: ["x".repeat(501)] } },
+    { response: "no es un objeto" },
+    {}
+  ])("renders no limitations section for empty or invalid metadata", (metadata) => {
+    render(<AnswerEvidence content="Respuesta" metadata={metadata as Record<string, unknown>} />);
+    expect(screen.queryByRole("region", { name: "Limitaciones" })).toBeNull();
+  });
+
   it("does not invent page or section for documents without them", () => {
     render(<AnswerEvidence content="- [1] Respuesta" metadata={{ citations: ["chunk-1"], source_citations: [{ ...citation, page: null, section: null }] }} />);
     expect(screen.queryByText(/Página:/)).not.toBeInTheDocument();

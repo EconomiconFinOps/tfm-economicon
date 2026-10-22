@@ -49,6 +49,15 @@ Un segmento `inference` vacio o formado solo por espacios SHALL omitirse sin apo
 - **WHEN** la respuesta contiene un segmento `inference` en blanco entre segmentos con contenido
 - **THEN** el segmento se omite y el resto de la respuesta se conserva
 
+### Requirement: Limitaciones visibles de la respuesta
+
+La interfaz SHALL mostrar junto a la respuesta aceptada, tanto al recibirla como al reabrir el historial, las entradas de `limitations` de sus metadatos que sean cadenas no vacias (hasta 10, de hasta 500 caracteres), sin mostrar nunca una cifra descartada. Metadatos ausentes o invalidos no producen ninguna seccion.
+
+#### Scenario: Aviso de cifra omitida
+
+- **WHEN** la respuesta persistida lleva el aviso de cifra omitida en `limitations`
+- **THEN** el panel y el historial lo muestran bajo la respuesta y el texto no contiene la cifra descartada
+
 ### Requirement: Envio tras un fallo sin respuesta
 
 Cuando una operacion termina `failed` o `cancelled`, la interfaz SHALL cargar el estado de memoria de la conversacion para que el envio se desbloquee si la memoria no esta comprimiendo ni bloqueada, tambien cuando esa operacion fue la primera pregunta de una conversacion nueva.

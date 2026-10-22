@@ -16,6 +16,7 @@ Causas vistas en los diagnósticos del procesador y del backend: `financial_metr
 - Segmento de interpretación vacío omitido, en el procesador y en su copia idéntica del backend.
 - Métrica financiera no verificada omitida con una limitación visible.
 - La interfaz carga la memoria al terminar en `failed` o `cancelled`.
+- La interfaz muestra las limitaciones de la respuesta, incluido el aviso de cifra omitida, en el panel y en el historial.
 
 Decisión de Lucia del 22/10/2026, sin consenso previo del equipo y a revisar más adelante si se quiere revertirla: reclasificar `invalid_response` como reintentable, repararla omitiendo la cifra y reintentar con temperatura mayor que 0. Los cambios de spec están en el cambio de OpenSpec; el borrador original se conserva al final de este documento.
 
