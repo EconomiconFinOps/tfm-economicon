@@ -1,10 +1,10 @@
 ## 1. Selector de tema con el tema activo (frontend-brand-identity, D1)
 
-- [ ] 1.1 Reescribir en `useTheme.test.tsx` los casos que dependen del texto fijo: con el tema claro el botón se llama «Tema claro» y con el oscuro «Tema oscuro»; las comprobaciones de `aria-pressed` pasan a comprobar el texto visible y la ausencia del atributo (Red)
-- [ ] 1.2 Añadir casos en `useTheme.test.tsx`: el texto cambia al alternar sin recargar, una elección guardada fija el texto al volver a montar, el nombre accesible es exactamente el texto visible sin `aria-label`, el `title` describe la acción («Cambiar a tema oscuro» / «Cambiar a tema claro») y el icono sigue oculto a tecnologías de apoyo (Red)
-- [ ] 1.3 Ajustar `brand-spec.guard.test.tsx` para buscar el conmutador por el nombre del tema activo en la prueba (Red)
-- [ ] 1.4 Cambiar `ThemeToggle.tsx`: texto según `isDark`, sin `aria-pressed`, con `title` de la acción; sin tocar `useTheme` (Green)
-- [ ] 1.5 Pruebas de mutación del componente y regresión del frontend (`corepack pnpm --filter frontend test`, lint y type-check) en verde
+- [x] 1.1 Reescribir en `useTheme.test.tsx` los casos que dependen del texto fijo: con el tema claro el botón se llama «Tema claro» y con el oscuro «Tema oscuro»; las comprobaciones de `aria-pressed` pasan a comprobar el texto visible y la ausencia del atributo (Red)
+- [x] 1.2 Añadir casos en `useTheme.test.tsx`: el texto cambia al alternar sin recargar, una elección guardada fija el texto al volver a montar, el nombre accesible es exactamente el texto visible sin `aria-label`, el `title` describe la acción («Cambiar a tema oscuro» / «Cambiar a tema claro») y el icono sigue oculto a tecnologías de apoyo (Red)
+- [x] 1.3 Ajustar `brand-spec.guard.test.tsx` para buscar el conmutador por el nombre del tema activo en la prueba (Red)
+- [x] 1.4 Cambiar `ThemeToggle.tsx`: texto según `isDark`, sin `aria-pressed`, con `title` de la acción; sin tocar `useTheme` (Green)
+- [x] 1.5 Pruebas de mutación del componente y regresión del frontend (`corepack pnpm --filter frontend test`, lint y type-check) en verde
 
 ## 2. Limitaciones de los episodios en español (cost-anomaly-episodes, D2)
 
