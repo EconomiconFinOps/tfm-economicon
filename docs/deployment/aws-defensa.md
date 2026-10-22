@@ -1,5 +1,18 @@
 # CI/CD AWS y primer ensayo — JUP-131
 
+## Región vigente — 22/10/2026
+
+Usuario autoriza Irlanda eu-west-1 para aplicación, París eu-west-3 para control
+y Virginia para edge. Solicitudes Fargate6vCPU Irlanda/CodeBuild Medium1 París
+enviadas; aprobación pendiente. Consultar los valores efectivos antes de lanzar:
+una solicitud PENDING no habilita despliegue. Preflight del runner exige6/1.
+Los60EUR son límite total del proyecto, no crédito AWS. CuentaCLI verificada,
+DNS Cloudflare administrable por usuario; faltan zona/delegación, roles/boundary,
+CodeConnections/secretos, coste/ventana y reviews. No ejecutar apply por esta guía.
+
+La CI histórica41cace y las evidencias españolas previas no aceptan esta
+adaptación. CI del nuevo candidato debe comprobarse por SHA exacto.
+
 Implementación preparada el21/10/2026. [Trello](https://trello.com/c/NtiH8R4Z),
 [plan](../planning/aws-cicd-defensa.md), [decisión](../adr/ADR-0027-aws-defense-lifecycle.md).
 **No se ha desplegado nada en AWS.** El ensayo1 está preparado localmente, pero
@@ -39,11 +52,11 @@ externas y `aws_preflight_executed=false`; no se llama a AWS.
 | --- | --- | --- |
 | Código preparado | Bedrock, tareas privadas, fixtures y checks conectados a outputs y receta real | Hash del árbol y evidencias verificados offline; aceptación real pendiente del ensayo |
 | Integración y aceptación | Publicar el candidato reconciliado y obtener revisión/validación según CONTRIBUTING | CI SUCCESS del SHA final; no reutilizar el run de3e543b6f para código posterior |
-| Acceso a cuenta | ID12dígitos y acceso mediante identidad/rol autorizado; España habilitada y boundary aprobada | Preflight futuro verifica identidad, cuotas, AZ, versiones RDS/MQ y permisos efectivos |
+| Acceso a cuenta | ID12dígitos y acceso mediante identidad/rol autorizado; Irlanda habilitada y boundary aprobada | Preflight futuro verifica identidad, cuotas, AZ, versiones RDS/MQ y permisos efectivos |
 | DNS | Zona pública Route53 o delegación de la subzona de `danteinferno.es`, con zone ID | Control de `economicon.danteinferno.es` y `origin.economicon.danteinferno.es` para certificados y registros |
 | Conexión de fuente | ARN CodeConnections AVAILABLE en París para este repositorio | Instalación de GitHub completada; origen manual fijado al SHA revisado |
 | Secretos y modelos | ARN de los secretos GitHub/MQ en París, boundary IAM; disponibilidad y permiso de los modelos elegidos | Solo referencias públicas en configuración; valores en Secrets Manager. Metadatos/permisos de modelo verificados en la cuenta, no inferidos del catálogo |
-| Coste y ventana | Crédito utilizable real, estimación del ciclo completo, margen residual, caducidad UTC y horario de defensa29/10 | Coste compatible con60€ y ventana de ensayo acordada. El ejemplo23/10 18:00UTC debe confirmarse antes de usarlo |
+| Coste y ventana | Presupuesto restante verificado, estimación del ciclo completo, margen residual, caducidad UTC y horario de defensa29/10 | Coste compatible con60€ y ventana de ensayo acordada. El ejemplo23/10 18:00UTC debe confirmarse antes de usarlo |
 | Lanzamiento | Preparación del bootstrap de control y paquete revisado; autorización futura de despliegue | No ejecutar apply ni iniciar pipelines hasta recibir esa autorización |
 
 Los tres primeros bloques de código/integración se preparan en el proyecto;
@@ -56,7 +69,7 @@ resultados no pueden acreditarse antes del despliegue autorizado.
 
 - `infra/aws-bootstrap/`: control en París, state S3 privado/versionado, artefactos
   separados, lease DynamoDB del dominio, roles y dos pipelines manuales.
-- `infra/aws-reference/`: arquitectura existente en España, edge en us-east-1;
+- `infra/aws-reference/`: arquitectura existente en Irlanda, edge en us-east-1;
   backend S3 parcial y opción `rehearsal_teardown=false` protegida por defecto.
 - `infra/aws-cicd/buildspec.yml`: único runner serializado para ambos pipelines.
 - `tools/aws_demo/`: controlador, validadores, instalador Terraform1.13.3 con
@@ -79,8 +92,8 @@ Los ejemplos no contienen IDs reales ni secretos y fallan por diseño al validar
 
 ## Entradas que faltan para habilitar el ensayo
 
-1. Cuenta12dígitos y permisos de la identidad administradora. España debe estar
-   habilitada (opt-in), con tres AZ utilizables y cuotas/motores/tamaños comprobados.
+1. Cuenta12dígitos y permisos de la identidad administradora. Irlanda debe tener
+   tres AZ utilizables y cuotas/motores/tamaños comprobados.
 2. Zona Route53 pública existente que controle `economicon.danteinferno.es` y
    `origin.economicon.danteinferno.es`. Si DNS está fuera de AWS, se puede delegar
    solo la subzona; no migrar la zona padre. No se ha cambiado ningún registro.
@@ -195,8 +208,8 @@ no editar solo un JSON y reutilizar el plan anterior.
 
 State vacío no demuestra coste cero. El informe registra KMS pendiente30d,
 secretos en recuperación30d, posibles backups/logs y bootstrap en París. Comprobar
-inventario/costes en España, us-east-1 y París y registrar cada remanente. El runner
-consulta recursos etiquetados del ciclo en España/us-east-1 y conserva el lease
+inventario/costes en Irlanda, us-east-1 y París y registrar cada remanente. El runner
+consulta recursos etiquetados del ciclo en Irlanda/us-east-1 y conserva el lease
 si quedan activos; registra KMS/Secrets con borrado diferido. La
 verificación independiente de facturación y recursos no gestionados es manual;
 no se presenta como automatizada. Tras los tres ciclos, retirar bootstrap según

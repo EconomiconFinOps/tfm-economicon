@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     embedding_provider: str = "mock"
     embedding_dimension: int = 8
     embedding_model: str = "economicon-embedding"
-    bedrock_region: Literal["eu-south-2"] | None = None
+    bedrock_region: Literal["eu-west-1"] | None = None
     bedrock_timeout_seconds: float = Field(default=20, gt=0, le=30, allow_inf_nan=False)
     embedding_mapping_sha256: str | None = Field(default=None, pattern=r'^[0-9a-f]{64}$')
     embedding_deployment_id: str | None = Field(default=None, strict=True, pattern=r'^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$')
@@ -239,11 +239,11 @@ class Settings(BaseSettings):
             raise ValueError('Native embedding model identity requires the Bedrock provider')
         if self.llm_provider == 'bedrock' and (self.bedrock_region is None
                 or self.bedrock_chat_model_id is None or self.llm_model != 'economicon-chat'):
-            raise ValueError('Bedrock chat requires an explicit EU profile from Spain and the approved chat contract')
+            raise ValueError('Bedrock chat requires an explicit EU profile from Ireland and the approved chat contract')
         if self.embedding_provider == 'bedrock':
             if (self.bedrock_region is None or self.embedding_model != 'amazon.titan-embed-text-v2:0'
                     or self.embedding_dimension not in {256,512,1024}):
-                raise ValueError('Bedrock embeddings require explicit Spain region, Titan V2 and a native dimension')
+                raise ValueError('Bedrock embeddings require explicit Ireland region, Titan V2 and a native dimension')
         validate_connections(self)
         return self
 

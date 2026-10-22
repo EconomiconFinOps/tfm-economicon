@@ -9,8 +9,8 @@ mock_provider "aws" {
 }
 
 variables {
-  region                    = "eu-south-2"
-  availability_zones        = ["eu-south-2a", "eu-south-2b", "eu-south-2c"]
+  region                    = "eu-west-1"
+  availability_zones        = ["eu-west-1a", "eu-west-1b", "eu-west-1c"]
   route53_zone_id           = "Z0000000000000TEST"
   frontend_domain           = "app.example.com"
   origin_domain             = "origin.example.com"
@@ -30,18 +30,18 @@ run "eu_chat_profile_is_explicit_and_scoped" {
     error_message = "Only the processor chat profile policy may be added when embeddings are not enabled."
   }
   assert {
-    condition     = jsondecode(aws_iam_role_policy.bedrock_chat[0].policy).Statement[0].Resource == ["arn:aws:bedrock:eu-south-2:123456789012:inference-profile/eu.amazon.nova-micro-v1:0"]
+    condition     = jsondecode(aws_iam_role_policy.bedrock_chat[0].policy).Statement[0].Resource == ["arn:aws:bedrock:eu-west-1:123456789012:inference-profile/eu.amazon.nova-micro-v1:0"]
     error_message = "The profile must be pinned to the deployment account and source region."
   }
   assert {
     condition = toset(jsondecode(aws_iam_role_policy.bedrock_chat[0].policy).Statement[1].Resource) == toset([
-      for region in ["eu-central-1", "eu-north-1", "eu-south-2", "eu-west-1", "eu-west-3"] :
+      for region in ["eu-central-1", "eu-north-1", "eu-west-1", "eu-west-3"] :
       "arn:aws:bedrock:${region}::foundation-model/amazon.nova-micro-v1:0"
     ])
     error_message = "Only the documented EU destinations of the exact foundation model may be allowed."
   }
   assert {
-    condition     = jsondecode(aws_iam_role_policy.bedrock_chat[0].policy).Statement[1].Condition.StringEquals["bedrock:InferenceProfileArn"] == "arn:aws:bedrock:eu-south-2:123456789012:inference-profile/eu.amazon.nova-micro-v1:0"
+    condition     = jsondecode(aws_iam_role_policy.bedrock_chat[0].policy).Statement[1].Condition.StringEquals["bedrock:InferenceProfileArn"] == "arn:aws:bedrock:eu-west-1:123456789012:inference-profile/eu.amazon.nova-micro-v1:0"
     error_message = "Destination foundation models must be callable only through the reviewed profile."
   }
 }

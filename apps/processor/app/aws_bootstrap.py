@@ -12,7 +12,7 @@ def execute(context, phase):
         from app.embeddings.providers import BedrockEmbeddingProvider
         from app.core.bedrock import TITAN_MODEL
         from app.vector_store.pgvector_store import PgVectorStore
-        require(context.inputs['embedding']['dimension'] == 1024 and context.inputs['region'] == 'eu-south-2')
+        require(context.inputs['embedding']['dimension'] == 1024 and context.inputs['region'] == 'eu-west-1')
         fixture = load_fixture()
         engine = context.admin_engine('operational')
         try:
@@ -24,7 +24,7 @@ def execute(context, phase):
             store = PgVectorStore(engine.url.render_as_string(hide_password=False), 1024, engine=engine)
             store.initialize()
             provider = BedrockEmbeddingProvider(SimpleNamespace(embedding_model=TITAN_MODEL, embedding_dimension=1024,
-                bedrock_region='eu-south-2', bedrock_timeout_seconds=30))
+                bedrock_region='eu-west-1', bedrock_timeout_seconds=30))
             seed_corpus(store, context.inputs, fixture, provider)
         finally:
             engine.dispose()

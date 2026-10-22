@@ -25,8 +25,8 @@ def runtime(request):
 def environment():
     return {'ECONOMICON_AWS_RUNTIME': 'ecs', 'AWS_EXECUTION_ENV': 'AWS_ECS_FARGATE',
             'CHAT_ENABLED': 'true', 'CHAT_HMAC_KEY': KEY,
-            'DATABASE_URL': 'postgresql+psycopg://synthetic:fixture@db.eu-south-2.rds.amazonaws.com/fixture?sslmode=verify-full',
-            'VECTOR_DATABASE_URL': 'postgresql+psycopg://synthetic:fixture@vectors.eu-south-2.rds.amazonaws.com/fixture?sslmode=verify-full',
+            'DATABASE_URL': 'postgresql+psycopg://synthetic:fixture@db.eu-west-1.rds.amazonaws.com/fixture?sslmode=verify-full',
+            'VECTOR_DATABASE_URL': 'postgresql+psycopg://synthetic:fixture@vectors.eu-west-1.rds.amazonaws.com/fixture?sslmode=verify-full',
             'ECS_CONTAINER_METADATA_URI_V4': 'http://169.254.170.2/v4/synthetic-container'}
 
 
@@ -104,9 +104,19 @@ def test_pinned_ca_is_used_even_when_chat_is_disabled(runtime, tmp_path):
     env = environment()
     env.update(CHAT_ENABLED='false', PGSSLROOTCERT='/untrusted/ca.pem')
     runtime.prepare_runtime('backend', environment=env, runtime_parent=tmp_path)
-    assert Path(env['PGSSLROOTCERT']).name == 'rds-eu-south-2.pem'
+    assert Path(env['PGSSLROOTCERT']).name == 'rds-eu-west-1.pem'
     assert Path(env['PGSSLROOTCERT']).is_file()
     assert not list(tmp_path.iterdir())
+
+
+def test_packaged_ca_contains_only_ireland_rds_roots(runtime):
+    from cryptography import x509
+    certificates = x509.load_pem_x509_certificates(Path(runtime.rds_root_certificate()).read_bytes())
+    assert len(certificates) == 3
+    for certificate in certificates:
+        assert certificate.subject == certificate.issuer
+        assert certificate.subject.get_attributes_for_oid(x509.NameOID.COMMON_NAME)[0].value.startswith('Amazon RDS eu-west-1 Root CA ')
+        assert certificate.extensions.get_extension_for_class(x509.BasicConstraints).value.ca
 
 
 def test_missing_or_modified_ca_fails_before_startup(runtime, tmp_path, monkeypatch):

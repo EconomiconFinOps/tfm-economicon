@@ -19,7 +19,7 @@ def ensure_identity(context):
         require(re.fullmatch(r'(?:ensayo[0-9][a-z0-9]{0,3}|defensa[0-9]{0,2})', cycle)
                 and re.fullmatch(r'[a-f0-9]{40}', source))
         pool = inputs['cognito']['user_pool_id']
-        require(re.fullmatch(r'eu-south-2_[A-Za-z0-9]+', pool))
+        require(re.fullmatch(r'eu-west-1_[A-Za-z0-9]+', pool))
         bundle = context.secret(inputs['rehearsal_secret_arn'])
         require(bundle['_cycle_id'] == cycle and bundle['_source_sha'] == source)
         email = 'aws-defensa+' + cycle + '@example.com'
@@ -27,7 +27,7 @@ def ensure_identity(context):
         require(bundle['smoke_user']['email'] == email and isinstance(password, str)
                 and re.fullmatch(r'Ec1![a-f0-9]{48}', password))
         marker = 'JUP-131:' + cycle + ':' + source
-        client = context.client('cognito-idp', 'eu-south-2')
+        client = context.client('cognito-idp', 'eu-west-1')
         try:
             existing = client.admin_get_user(UserPoolId=pool, Username=email)
         except Exception as error:

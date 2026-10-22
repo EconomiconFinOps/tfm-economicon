@@ -18,7 +18,7 @@ class MemoryBroker:
 def context():
     value = Mock()
     value.inputs = dict(cycle_id='ensayo1', source_sha='a' * 40,
-                        rabbitmq_console_url='https://b-01234567.mq.eu-south-2.amazonaws.com',
+                        rabbitmq_console_url='https://b-01234567.mq.eu-west-1.amazonaws.com',
                         rehearsal_secret_arn='bundle', mq_admin_secret_arn='admin')
     bundle = {'_cycle_id': 'ensayo1', '_source_sha': 'a' * 40,
               'mq_passwords': {'backend': 'a' * 64, 'processor': 'b' * 64}}
@@ -51,9 +51,9 @@ def test_foreign_vhost_or_privileged_user_is_not_overwritten(monkeypatch):
         assert path not in [path for path, body in api.writes]
 
 
-@pytest.mark.parametrize('url', ['http://b-01234567.mq.eu-south-2.amazonaws.com',
+@pytest.mark.parametrize('url', ['http://b-01234567.mq.eu-west-1.amazonaws.com',
                                'https://credential-sink.invalid',
-                               'https://b-01234567.mq.eu-south-2.amazonaws.com?x=1'])
+                               'https://b-01234567.mq.eu-west-1.amazonaws.com?x=1'])
 def test_broker_admin_endpoint_is_exact_tls_and_never_redirected(url):
     from app.aws_bootstrap_broker import BrokerAPI
     with pytest.raises(RuntimeError):
@@ -67,7 +67,7 @@ def test_http_response_is_bounded_and_errors_are_sanitized(monkeypatch):
     response.status = 302
     response.read.return_value = b'synthetic-sensitive-upstream-body'
     monkeypatch.setattr(module.http.client, 'HTTPSConnection', Mock(return_value=connection))
-    api = module.BrokerAPI('https://b-01234567.mq.eu-south-2.amazonaws.com', 'economicon_admin', 'synthetic-password')
+    api = module.BrokerAPI('https://b-01234567.mq.eu-west-1.amazonaws.com', 'economicon_admin', 'synthetic-password')
     with pytest.raises(RuntimeError) as error:
         api.request('GET', '/api/vhosts/owned')
     assert 'sensitive' not in str(error.value)

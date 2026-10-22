@@ -25,7 +25,7 @@ def test_native_generation_keeps_legacy_vectors_and_space_isolation(setup, backe
     old_id = generations.build('a', old_space, MockEmbeddingProvider(1536))
     generations.activate('a',old_id,expected_head=None,expected_version=0)
     settings = Settings(embedding_provider='bedrock',embedding_model=TITAN_MODEL,
-        embedding_dimension=1024,bedrock_region='eu-south-2',_env_file=None)
+        embedding_dimension=1024,bedrock_region='eu-west-1',_env_file=None)
     provider = get_embedding_provider('bedrock',1024,settings)
     sdk = Mock()
     sdk.invoke_model.side_effect = lambda **kwargs: {'body': BytesIO(json.dumps({

@@ -8,7 +8,7 @@ ver [runbook y límites](../deployment/aws-defensa.md). No ejecutado en AWS.
 Reutilizar la arquitectura y Terraform de JUP-060 para dos ciclos de ensayo
 crear → comprobar → destruir y una ejecución de defensa de unos diez minutos
 de uso. La aclaración del usuario sustituye la interpretación de disponibilidad
-permanente. Cuenta con 60 € comunicados: verificar saldo efectivo y cobertura.
+permanente. Límite total de gasto60EUR confirmado22/10, no crédito promocional: estimar ciclo completo y margen.
 No seleccionar otra arquitectura ni reducir AZ/servicios por inferencia.
 
 El usuario confirma **cuenta AWS normal** el 20/10. Mantener la propuesta de
@@ -20,18 +20,16 @@ Datos aportados por el usuario: región más cercana a España, dominio
 
 ### Configuración regional y DNS propuesta
 
-- Aplicación/infraestructura: **Europe (Spain), `eu-south-2`**. Comprobar que la
-  cuenta tiene habilitada esta región opt-in. Seleccionar tres AZ mediante la
-  cuenta y validar versiones/tamaños de RDS/MQ y modelos Bedrock requeridos.
+- Aplicación/infraestructura: **Europe (Ireland), `eu-west-1`**, autorizada el
+  22/10/2026 tras eliminar el requisito de España. Tres AZ available, RDS/MQ
+  y metadatos Titan/Nova contrastados en la cuenta. Esto no acredita inferencia,
+  capacidad reservada ni cuotas aprobadas. Fargate6vCPU solicitado.
 - Pipeline/CodeConnections/CodeBuild y buckets de bootstrap: **Europe (Paris),
-  `eu-west-3`**, propuesta motivada por disponibilidad regional. La documentación
-  de la conexión GitHub de CodePipeline excluye España; CodePipeline y CodeBuild
-  sí tienen endpoints allí, lo que no demuestra disponibilidad de esa acción.
-- CodeBuild ejecutado en París llama a APIs y ECR de España. Configurar región de
-  infraestructura explícita, separada de región de bootstrap y provider edge
-  `us-east-1`. No confiar en `AWS_REGION` del runner para los recursos demo.
-  No hace falta una acción CodePipeline entre regiones si Terraform se ejecuta
-  en el CodeBuild de París; sus permisos sí abarcan los recursos españoles.
+  `eu-west-3`**, se conserva la separación del control ya implementada.
+  CodeBuild Medium1 solicitado; las dos cuotas estaban0.
+- CodeBuild de París llama a APIs/ECR de Irlanda. Configurar región de aplicación
+  explícita, separada del control y del provider edge us-east-1. El runner no
+  puede confiar en AWS_REGION heredado para elegir el destino de los recursos.
 - Frontend: `https://economicon.danteinferno.es`; API:
   `https://economicon.danteinferno.es/api`; callback Cognito:
   `https://economicon.danteinferno.es/auth/callback`.
@@ -42,12 +40,12 @@ Datos aportados por el usuario: región más cercana a España, dominio
   `economicon.danteinferno.es` delegada a Route53 mediante NS en el proveedor
   actual. No migrar la zona padre ni cambiar DNS en esta entrega.
 - CloudFront/ACM de edge y WAF mantienen `us-east-1` según la plantilla; ACM de
-  origen va en España. Destrucción e inventario abarcan España, París y edge;
+  origen va en Irlanda. Destrucción e inventario abarcan Irlanda, París y edge;
   la zona DNS y delegación se administran fuera del stack demo.
 
-Verificado por documentación: Amazon MQ y CloudFront VPC origins admiten España;
-no se ha verificado en la cuenta el catálogo completo ni la compatibilidad del
-modelo IA, versiones, cuotas o tamaños de la plantilla.
+La propuesta española original queda superada por la autorización de Irlanda.
+Evidencia de consultas de cuenta22/10 y límites en docs/continuidad/cloud-aws.md;
+los resultados cloud siguen sujetos a cuotas/permisos, no a presencia en catálogo.
 
 Fuentes: `origin/develop` en `88a6ce4c8a6c523c061e82a0a1f63f495f5db8ec`,
 `docs/architecture-aws.md`, `infra/aws-reference/` y `.github/workflows/{ci,cd}.yml`.

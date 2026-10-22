@@ -14,10 +14,10 @@ if SPEC.loader and Path(SPEC.origin).exists():
 def config():
     return {
         "cycle_id": "ensayo1", "account_id": "123456789012", "source_sha": "a" * 40,
-        "region": "eu-south-2", "control_region": "eu-west-3",
+        "region": "eu-west-1", "control_region": "eu-west-3",
         "frontend_domain": "economicon.danteinferno.es",
         "origin_domain": "origin.economicon.danteinferno.es", "route53_zone_id": "Z123456789",
-        "availability_zones": ["eu-south-2a", "eu-south-2b", "eu-south-2c"],
+        "availability_zones": ["eu-west-1a", "eu-west-1b", "eu-west-1c"],
         "postgres_version": "16.9", "rabbitmq_version": "3.13",
         "expires_at": "2026-10-23T18:00:00Z", "budget_eur": 60,
         "estimated_cycle_eur": 9, "available_credit_eur": 60,
@@ -47,7 +47,7 @@ class ConfigTests(unittest.TestCase):
 
     def test_rejects_wrong_sha_account_region_zone_budget_and_expiry(self):
         for key, value in [("source_sha", "main"), ("account_id", "REPLACE"),
-                           ("region", "eu-west-1"), ("availability_zones", ["eu-west-1a"]),
+                           ("region", "eu-south-2"), ("availability_zones", ["eu-west-1a"]),
                            ("estimated_cycle_eur", 61), ("expires_at", "tomorrow"),
                            ("cycle_id", "../../other"), ("release_recipe", "../secrets.json")]:
             with self.subTest(key=key), self.assertRaises(ValueError):
@@ -145,7 +145,7 @@ class ReleaseTests(unittest.TestCase):
                       bootstrap=[["python", "tools/aws_demo/bootstrap.py"]],
                       checks=[["python", "tools/aws_demo/checks.py"]])
         for field, value in [
-            ("bedrock_model_arns", ["arn:aws:bedrock:eu-south-2::foundation-model/*"]),
+            ("bedrock_model_arns", ["arn:aws:bedrock:eu-west-1::foundation-model/*"]),
             ("bedrock_model_arns", ["arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0"]),
             ("bedrock_chat_profile_id", "global.amazon.nova-micro-v1:0"),
             ("application_environment", {"backend": {"CHAT_HMAC_KEY": "synthetic-secret"}}),

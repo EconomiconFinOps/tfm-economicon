@@ -22,7 +22,7 @@ class BedrockError(RuntimeError):
 
 
 def embedding_fingerprint(region, dimension):
-    if region != 'eu-south-2' or type(dimension) is not int or dimension not in TITAN_DIMENSIONS:
+    if region != 'eu-west-1' or type(dimension) is not int or dimension not in TITAN_DIMENSIONS:
         raise ValueError('Unsupported regional embedding contract')
     return hashlib.sha256(json.dumps({'provider': 'bedrock', 'region': region,
         'model_id': TITAN_MODEL, 'dimension': dimension, 'normalize': True,
@@ -207,8 +207,8 @@ def conversation_usage(response, model_id):
 
 class BedrockRuntime:
     def __init__(self, region, *, timeout=30, client=None):
-        if region != 'eu-south-2' or type(timeout) not in {int, float} or not math.isfinite(timeout) or not 0 < timeout <= 30:
-            raise ValueError('Explicit Spain region and bounded inference timeout are required')
+        if region != 'eu-west-1' or type(timeout) not in {int, float} or not math.isfinite(timeout) or not 0 < timeout <= 30:
+            raise ValueError('Explicit Ireland region and bounded inference timeout are required')
         self.region, self.timeout, self._client = region, timeout, client
 
     def client(self):

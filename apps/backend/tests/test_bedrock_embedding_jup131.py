@@ -11,7 +11,7 @@ import pytest
 
 def test_verified_native_embedding_settings_and_backend_provider():
     settings = Settings(embedding_provider='bedrock',embedding_model='amazon.titan-embed-text-v2:0',
-        embedding_dimension=1024,bedrock_region='eu-south-2',rag_verified_enabled=True,_env_file=None)
+        embedding_dimension=1024,bedrock_region='eu-west-1',rag_verified_enabled=True,_env_file=None)
     provider = BedrockEmbeddingProvider(settings)
     sdk = Mock()
     sdk.invoke_model.return_value = {'body': BytesIO(json.dumps({'embedding': [1.0]+[0.0]*1023,

@@ -42,7 +42,7 @@ def prepare(config, output, actual_sha):
               "aws_preflight_executed": False, "aws_resources_created": False,
               "config_key": key, "state_key": state_key(config), "blockers": sorted(set(blockers)),
               "application_sha256": application_digest(ROOT),
-              "required_cloud_checks": ["account/IAM", "credit and regional estimate", "Spain opt-in and AZs",
+              "required_cloud_checks": ["account/IAM", "remaining project budget and regional estimate", "Ireland AZs and quotas",
                 "RDS/MQ versions/classes", "DNS ownership and delegation", "model access", "exact-SHA CI"]}
     (output / "readiness.json").write_text(json.dumps(report, indent=2) + "\n")
     return report

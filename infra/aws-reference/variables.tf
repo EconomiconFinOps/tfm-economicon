@@ -146,14 +146,14 @@ variable "bedrock_model_arns" {
   }
 }
 variable "bedrock_chat_profile_id" {
-  description = "Explicit reviewed EU Nova profile invoked from Spain; null grants no chat inference. No global routing."
+  description = "Explicit reviewed EU Nova profile invoked from Ireland; null grants no chat inference. No global routing."
   type        = string
   default     = null
   validation {
-    condition = var.bedrock_chat_profile_id == null || (var.region == "eu-south-2" && contains([
+    condition = var.bedrock_chat_profile_id == null || (var.region == "eu-west-1" && contains([
       "eu.amazon.nova-micro-v1:0", "eu.amazon.nova-lite-v1:0"
     ], var.bedrock_chat_profile_id))
-    error_message = "Use only the reviewed EU Nova Micro/Lite profile from eu-south-2."
+    error_message = "Use only the reviewed EU Nova Micro/Lite profile from eu-west-1."
   }
 }
 variable "desired_count" {

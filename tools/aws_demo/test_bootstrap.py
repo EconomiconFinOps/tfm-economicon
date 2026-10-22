@@ -32,12 +32,12 @@ class Secrets:
 
 
 def inputs():
-    prefix = 'arn:aws:secretsmanager:eu-south-2:123456789012:secret:economicon-ensayo1/'
+    prefix = 'arn:aws:secretsmanager:eu-west-1:123456789012:secret:economicon-ensayo1/'
     outputs = {'runtime_secret_arns': {key: prefix + key + '/runtime-ABC123' for key in ['backend', 'processor', 'azure-cost-api']},
                'rehearsal_secret_arn': prefix + 'rehearsal/credentials-ABC123',
-               'database_endpoints': {key: {'host': f'economicon-ensayo1-{key}.synthetic.eu-south-2.rds.amazonaws.com', 'port': 5432, 'database': database}
+               'database_endpoints': {key: {'host': f'economicon-ensayo1-{key}.synthetic.eu-west-1.rds.amazonaws.com', 'port': 5432, 'database': database}
                     for key, database in [('operational', 'economicon'), ('vectors', 'embeddings')]},
-               'rabbitmq_endpoints': ['amqps://b-01234567.mq.eu-south-2.amazonaws.com:5671']}
+               'rabbitmq_endpoints': ['amqps://b-01234567.mq.eu-west-1.amazonaws.com:5671']}
     return {'account_id': '123456789012', 'cycle_id': 'ensayo1', 'source_sha': 'a' * 40}, outputs
 
 
@@ -53,10 +53,10 @@ class BootstrapTests(unittest.TestCase):
                 item, ecs, _ = fixture()
                 _, outputs = inputs()
                 outputs.update(item.outputs)
-                outputs.update(database_admin_secret_arns={key: 'arn:aws:secretsmanager:eu-south-2:123456789012:secret:rds!db-synthetic-' + key for key in ['operational', 'vectors']},
+                outputs.update(database_admin_secret_arns={key: 'arn:aws:secretsmanager:eu-west-1:123456789012:secret:rds!db-synthetic-' + key for key in ['operational', 'vectors']},
                     mq_admin_secret_arn='arn:aws:secretsmanager:eu-west-3:123456789012:secret:synthetic-mq-ABC123',
-                    rabbitmq_console_url='https://b-01234567.mq.eu-south-2.amazonaws.com',
-                    cognito={'user_pool_id': 'eu-south-2_Synthetic131'})
+                    rabbitmq_console_url='https://b-01234567.mq.eu-west-1.amazonaws.com',
+                    cognito={'user_pool_id': 'eu-west-1_Synthetic131'})
                 outputs['ecr_repositories']['processor'] = outputs['ecr_repositories']['backend'].replace('/backend', '/processor')
                 network = outputs['bootstrap_network']
                 network['execution_roles']['processor'] = network['execution_roles']['backend'].replace('-backend-', '-processor-')

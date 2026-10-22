@@ -6,12 +6,12 @@ from tools.aws_demo.private_tasks import PrivateTasks, PrivateTaskError
 
 
 ACCOUNT = '123456789012'
-PREFIX = 'arn:aws:ecs:eu-south-2:' + ACCOUNT + ':'
+PREFIX = 'arn:aws:ecs:eu-west-1:' + ACCOUNT + ':'
 
 
 def fixture():
-    config = {'account_id': ACCOUNT, 'cycle_id': 'ensayo1', 'source_sha': 'a' * 40, 'region': 'eu-south-2'}
-    image = ACCOUNT + '.dkr.ecr.eu-south-2.amazonaws.com/economicon-ensayo1/backend@sha256:' + 'b' * 64
+    config = {'account_id': ACCOUNT, 'cycle_id': 'ensayo1', 'source_sha': 'a' * 40, 'region': 'eu-west-1'}
+    image = ACCOUNT + '.dkr.ecr.eu-west-1.amazonaws.com/economicon-ensayo1/backend@sha256:' + 'b' * 64
     outputs = {'ecs_cluster_name': 'economicon-ensayo1', 'ecr_repositories': {'backend': image.split('@')[0]},
                'bootstrap_network': {'subnets': ['subnet-11111111', 'subnet-22222222', 'subnet-33333333'],
                     'security_group_id': 'sg-11111111',
@@ -34,7 +34,7 @@ class PrivateTaskTests(unittest.TestCase):
     def test_rds_service_managed_secret_reference_is_public_metadata(self):
         item, ecs, events = fixture()
         item.run('backend', 'database', {'database_admin_secret_arns': {
-            'operational': 'arn:aws:secretsmanager:eu-south-2:123456789012:secret:rds!db-synthetic-ABC123'}})
+            'operational': 'arn:aws:secretsmanager:eu-west-1:123456789012:secret:rds!db-synthetic-ABC123'}})
         ecs.run_task.assert_called_once()
 
     def test_private_immutable_task_waits_for_zero_and_retires_definition(self):

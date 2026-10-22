@@ -25,15 +25,15 @@ def load_inputs(environment=None):
         raw = env['DEMO_BOOTSTRAP_INPUTS']
         require(len(raw.encode('utf-8')) <= 16384)
         value = json.loads(raw)
-        require(value['region'] == 'eu-south-2' and re.fullmatch(r'[0-9]{12}', value['account_id']))
+        require(value['region'] == 'eu-west-1' and re.fullmatch(r'[0-9]{12}', value['account_id']))
         require(re.fullmatch(r'(?:ensayo[0-9][a-z0-9]{0,3}|defensa[0-9]{0,2})', value['cycle_id']))
         require(re.fullmatch(r'[0-9a-f]{40}', value['source_sha']))
         cluster = 'economicon-' + value['cycle_id']
         for key, name in [('operational', 'economicon'), ('vectors', 'embeddings')]:
             endpoint = value['database_endpoints'][key]
             require(endpoint['database'] == name and endpoint['port'] == 5432)
-            require(re.fullmatch(re.escape(cluster + '-' + key) + r'\.[a-z0-9]+\.eu-south-2\.rds\.amazonaws\.com', endpoint['host']))
-        prefix = f"arn:aws:secretsmanager:eu-south-2:{value['account_id']}:secret:"
+            require(re.fullmatch(re.escape(cluster + '-' + key) + r'\.[a-z0-9]+\.eu-west-1\.rds\.amazonaws\.com', endpoint['host']))
+        prefix = f"arn:aws:secretsmanager:eu-west-1:{value['account_id']}:secret:"
         for key in ['operational', 'vectors']:
             require(re.fullmatch(re.escape(prefix) + r'rds!db-[A-Za-z0-9-]+', value['database_admin_secret_arns'][key]))
         for key in ['backend', 'processor', 'azure-cost-api']:
@@ -54,7 +54,7 @@ class BootstrapContext:
         self.inputs, self.client = inputs, client_factory
 
     def verify_identity(self):
-        value = self.client('sts', 'eu-south-2').get_caller_identity()
+        value = self.client('sts', 'eu-west-1').get_caller_identity()
         account, cycle = self.inputs['account_id'], self.inputs['cycle_id']
         require(value['Account'] == account and re.fullmatch(
             f'arn:aws:sts::{account}:assumed-role/economicon-{cycle}-bootstrap/[A-Za-z0-9+=,.@_-]+', value['Arn']))
@@ -68,7 +68,7 @@ class BootstrapContext:
         require(arn in allowed)
         try:
             region = arn.split(':')[3]
-            require(region in {'eu-south-2', 'eu-west-3'} and arn.split(':')[4] == self.inputs['account_id'])
+            require(region in {'eu-west-1', 'eu-west-3'} and arn.split(':')[4] == self.inputs['account_id'])
             raw = self.client('secretsmanager', region).get_secret_value(SecretId=arn)['SecretString']
             require(len(raw.encode('utf-8')) <= 16384)
             value = json.loads(raw)

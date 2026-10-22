@@ -7,7 +7,7 @@ data "aws_caller_identity" "bedrock" {
 locals {
   # Destination changes must be reviewed and matched in the live preflight.
   # https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-amazon-nova-micro.html
-  bedrock_chat_regions = ["eu-central-1", "eu-north-1", "eu-south-2", "eu-west-1", "eu-west-3"]
+  bedrock_chat_regions = ["eu-central-1", "eu-north-1", "eu-west-1", "eu-west-3"]
   bedrock_chat_profile_arn = var.bedrock_chat_profile_id == null ? null : (
     "arn:aws:bedrock:${var.region}:${data.aws_caller_identity.bedrock[0].account_id}:inference-profile/${var.bedrock_chat_profile_id}"
   )

@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     embedding_provider: str = "mock"
     embedding_dimension: int = 8
     embedding_model: str = "economicon-embedding"
-    bedrock_region: Literal["eu-south-2"] | None = None
+    bedrock_region: Literal["eu-west-1"] | None = None
     bedrock_timeout_seconds: float = Field(default=20, gt=0, le=30, allow_inf_nan=False)
     embedding_mapping_sha256: str | None = Field(default=None, pattern=r'^[0-9a-f]{64}$')
     embedding_deployment_id: str | None = Field(default=None, strict=True, pattern=r'^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$')
@@ -231,7 +231,7 @@ class Settings(BaseSettings):
             raise ValueError('Verified retrieval requires dimension 1536 or native Bedrock dimensions and an accredited embedding mapping/deployment binding')
         if self.embedding_provider == 'bedrock' and (self.bedrock_region is None
                 or self.embedding_model != 'amazon.titan-embed-text-v2:0' or self.embedding_dimension not in {256,512,1024}):
-            raise ValueError('Bedrock embeddings require explicit Spain region, Titan V2 and a native dimension')
+            raise ValueError('Bedrock embeddings require explicit Ireland region, Titan V2 and a native dimension')
         if (self.rag_contextual_enabled or self.rag_hybrid_enabled) and not self.rag_verified_enabled:
             raise ValueError('Contextual/hybrid flags require verified retrieval')
         if (self.embedding_max_retries + 1) * self.embedding_timeout_seconds > MAX_QUESTION_ATTEMPT_SECONDS:

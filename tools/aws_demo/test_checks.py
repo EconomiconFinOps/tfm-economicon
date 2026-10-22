@@ -24,7 +24,7 @@ class ChecksTests(unittest.TestCase):
                 def definition(**kwargs):
                     env = {'EMBEDDING_PROVIDER': 'mock' if failure == 'mock-runtime' else 'bedrock',
                            'EMBEDDING_DIMENSION': '1024', 'EMBEDDING_MODEL': 'amazon.titan-embed-text-v2:0',
-                           'BEDROCK_REGION': 'eu-south-2', 'LLM_PROVIDER': 'bedrock', 'BEDROCK_CHAT_MODEL_ID': 'eu.amazon.nova-micro-v1:0'}
+                           'BEDROCK_REGION': 'eu-west-1', 'LLM_PROVIDER': 'bedrock', 'BEDROCK_CHAT_MODEL_ID': 'eu.amazon.nova-micro-v1:0'}
                     return {'taskDefinition': {'containerDefinitions': [{'environment': [{'name': k, 'value': v} for k, v in env.items()]}]}}
                 ecs.describe_task_definition.side_effect = definition
                 lb.describe_target_health.return_value = {'TargetHealthDescriptions': [{'TargetHealth': {
@@ -37,10 +37,10 @@ class ChecksTests(unittest.TestCase):
                     cognito.admin_initiate_auth.return_value['ChallengeName'] = 'SMS_MFA'
                 clients = {'ecs': ecs, 'elbv2': lb, 'cloudfront': cf, 'cognito-idp': cognito, 'secretsmanager': Mock()}
                 outputs = {'ecs_cluster_name': 'economicon-ensayo1', 'readiness': {'api_target_group_arn':
-                    'arn:aws:elasticloadbalancing:eu-south-2:123456789012:targetgroup/economicon-ensayo1-api/' + 'a' * 16},
+                    'arn:aws:elasticloadbalancing:eu-west-1:123456789012:targetgroup/economicon-ensayo1-api/' + 'a' * 16},
                     'cloudfront_distribution_id': 'ESYNTHETIC131', 'bedrock_chat': {'profile_id': 'eu.amazon.nova-micro-v1:0'},
-                    'rehearsal_secret_arn': 'arn:aws:secretsmanager:eu-south-2:123456789012:secret:economicon-ensayo1/rehearsal/credentials-ABC123',
-                    'cognito': {'user_pool_id': 'eu-south-2_Synthetic131', 'client_id': 'syntheticclient131'}}
+                    'rehearsal_secret_arn': 'arn:aws:secretsmanager:eu-west-1:123456789012:secret:economicon-ensayo1/rehearsal/credentials-ABC123',
+                    'cognito': {'user_pool_id': 'eu-west-1_Synthetic131', 'client_id': 'syntheticclient131'}}
                 bundle = {'_cycle_id': 'ensayo1', '_source_sha': 'a' * 40,
                           'smoke_user': {'email': 'aws-defensa+ensayo1@example.com', 'password': 'synthetic-private-password'}}
                 events = []
@@ -87,9 +87,9 @@ class ChecksTests(unittest.TestCase):
 
     def test_unsafe_signed_upload_urls_are_rejected(self):
         from tools.aws_demo.checks import validate_upload_url, CheckError
-        valid = 'https://s3.eu-south-2.amazonaws.com/owned-bucket/staging/file?X-Amz-Signature=synthetic'
+        valid = 'https://s3.eu-west-1.amazonaws.com/owned-bucket/staging/file?X-Amz-Signature=synthetic'
         self.assertEqual(validate_upload_url(valid, 'owned-bucket'), valid)
-        for url in [valid.replace('s3.eu-south-2.amazonaws.com', 'credential-sink.invalid'),
+        for url in [valid.replace('s3.eu-west-1.amazonaws.com', 'credential-sink.invalid'),
                     valid.replace('/owned-bucket/', '/foreign/'), valid.replace('/staging/', '/confirmed/'),
                     valid.replace('https:', 'http:'), valid.replace('https://', 'https://user@')]:
             with self.assertRaises(CheckError):
@@ -142,7 +142,7 @@ class FakeAPI:
             status = 403 if tenant == 'tenant-growth' and self.failure != 'isolation' else 200
             body = {'totals': [{'currency': 'EUR', 'cost': '33.00' if self.failure == 'billing' else '12.50', 'record_count': 1}]}
         elif path == '/api/jobs/uploads':
-            status, body = 201, {'upload_id': ID, 'upload_url': 'https://s3.eu-south-2.amazonaws.com/owned-bucket/staging/file?X-Amz-Signature=synthetic',
+            status, body = 201, {'upload_id': ID, 'upload_url': 'https://s3.eu-west-1.amazonaws.com/owned-bucket/staging/file?X-Amz-Signature=synthetic',
                                  'headers': {'Content-Type': 'application/octet-stream'}}
         elif path.endswith('/confirm'):
             status, body = 202, {'job_id': ID}

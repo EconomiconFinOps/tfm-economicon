@@ -8,7 +8,7 @@ import re
 
 
 PROFILES = frozenset(("eu.amazon.nova-micro-v1:0", "eu.amazon.nova-lite-v1:0"))
-DESTINATIONS = ("eu-central-1", "eu-north-1", "eu-south-2", "eu-west-1", "eu-west-3")
+DESTINATIONS = ("eu-central-1", "eu-north-1", "eu-west-1", "eu-west-3")
 
 
 def expected_profile(account_id: str, profile_id: str) -> dict:
@@ -17,7 +17,7 @@ def expected_profile(account_id: str, profile_id: str) -> dict:
     if profile_id not in PROFILES:
         raise ValueError("Unreviewed Bedrock inference profile")
     return {
-        "arn": f"arn:aws:bedrock:eu-south-2:{account_id}:inference-profile/{profile_id}",
+        "arn": f"arn:aws:bedrock:eu-west-1:{account_id}:inference-profile/{profile_id}",
         "models": [
             f"arn:aws:bedrock:{region}::foundation-model/{profile_id.removeprefix('eu.')}"
             for region in DESTINATIONS

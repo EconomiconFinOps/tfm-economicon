@@ -36,8 +36,8 @@ class StorageConfig:
         if self.auth_mode not in {'static', 'iam'}:
             raise ValueError('Invalid document storage authentication mode')
         if self.auth_mode == 'iam':
-            endpoint = 'https://s3.eu-south-2.amazonaws.com'
-            if (self.region != 'eu-south-2' or self.endpoint != endpoint
+            endpoint = 'https://s3.eu-west-1.amazonaws.com'
+            if (self.region != 'eu-west-1' or self.endpoint != endpoint
                     or self.public_endpoint != endpoint or self.access_key or self.secret_key
                     or not re.fullmatch(r'[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]', self.bucket)):
                 raise ValueError('IAM document storage requires the reviewed regional endpoint and task credentials')

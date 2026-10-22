@@ -27,3 +27,10 @@ PostgreSQL usa tipos TEXT comunes, catálogo nativo validado y DSN explícito;
 se conserva Cockroach. Cognito vincula el sub firmado al id del usuario local
 creado por bootstrap, nunca por coincidencia de correo ni por claims de tenant.
 Las membresías y permisos siguen siendo autoridad de la base operativa.
+
+El22/10 el usuario autoriza Irlanda como región de aplicación y las solicitudes
+de Fargate6vCPU Irlanda/CodeBuild Medium1 París, sin despliegue. La política
+y receta fijan Irlanda; TLS RDS y perfiles regionales se sustituyen con nuevos
+hashes/evidencia. Nova UE desde Irlanda solo admite cuatro destinos revisados.
+El preflight exige cuotas efectivas antes de lease/planes/alta demo; solicitudes
+pendientes no equivalen a recursos habilitados. Plan aws-ireland-transition.md.

@@ -15,16 +15,31 @@ from test_control import config
 
 
 class RunnerTests(unittest.TestCase):
+    def test_ireland_and_paris_quotas_must_be_effective_before_provisioning(self):
+        item = object.__new__(runner.Runner)
+        calls = []
+        def response(*args, **kwargs):
+            calls.append((args, kwargs))
+            return {'Quota': {'Value': 6 if args[3] == 'fargate' else 1}}
+        item.aws = response
+        item.validate_quotas()
+        self.assertEqual([call[0][-1] for call in calls], ['eu-west-1', 'eu-west-3'])
+        self.assertTrue(all(call[1] == {'deploy': True} for call in calls))
+        for value in (0, 5, False, float('nan'), '6', None):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                item.aws = lambda *args, **kwargs: {'Quota': {'Value': value}}
+                item.validate_quotas()
+
     def test_orphan_bootstrap_definitions_are_scoped_before_retirement(self):
         item = object.__new__(runner.Runner)
         item.config = config()
-        prefix = 'arn:aws:ecs:eu-south-2:123456789012:task-definition/economicon-ensayo1-bootstrap-'
+        prefix = 'arn:aws:ecs:eu-west-1:123456789012:task-definition/economicon-ensayo1-bootstrap-'
         owned, foreign = prefix + 'backend-database:1', prefix + 'processor-database:2'
         calls = []
         def aws(*args, **kwargs):
             calls.append(args)
             if args[1] == 'list-task-definitions':
-                return {'taskDefinitionArns': [owned, foreign, 'arn:aws:ecs:eu-south-2:999999999999:task-definition/foreign:1']}
+                return {'taskDefinitionArns': [owned, foreign, 'arn:aws:ecs:eu-west-1:999999999999:task-definition/foreign:1']}
             if args[1] == 'describe-task-definition':
                 arn = args[3]
                 tags = dict(Project='economicon', Environment='ensayo1', Purpose='bootstrap', SourceSha='a' * 40 if arn == owned else 'b' * 40)
@@ -39,10 +54,10 @@ class RunnerTests(unittest.TestCase):
     def test_inactive_definition_is_retired_metadata_not_active_inventory(self):
         item = object.__new__(runner.Runner)
         item.config = config()
-        arn = 'arn:aws:ecs:eu-south-2:123456789012:task-definition/economicon-ensayo1-bootstrap-backend-database:1'
+        arn = 'arn:aws:ecs:eu-west-1:123456789012:task-definition/economicon-ensayo1-bootstrap-backend-database:1'
         def aws(*args, **kwargs):
             if args[0] == 'resourcegroupstaggingapi':
-                return {'ResourceTagMappingList': [{'ResourceARN': arn}]} if args[3] == 'eu-south-2' else {}
+                return {'ResourceTagMappingList': [{'ResourceARN': arn}]} if args[3] == 'eu-west-1' else {}
             return {'taskDefinition': {'status': 'INACTIVE'}}
         item.aws = aws
         result = item.inspect_residuals()
@@ -52,8 +67,8 @@ class RunnerTests(unittest.TestCase):
     def test_base_plan_has_embedding_and_chat_permissions_before_bootstrap(self):
         item = object.__new__(runner.Runner)
         item.config = config()
-        recipe = {"application_environment": {"processor": {"BEDROCK_REGION": "eu-south-2"}},
-                  "bedrock_model_arns": ["arn:aws:bedrock:eu-south-2::foundation-model/amazon.titan-embed-text-v2:0"],
+        recipe = {"application_environment": {"processor": {"BEDROCK_REGION": "eu-west-1"}},
+                  "bedrock_model_arns": ["arn:aws:bedrock:eu-west-1::foundation-model/amazon.titan-embed-text-v2:0"],
                   "bedrock_chat_profile_id": "eu.amazon.nova-micro-v1:0"}
         item.recipe = lambda: recipe
         with patch.dict(os.environ, BOUNDARY_ARN="arn:aws:iam::123456789012:policy/synthetic"):
@@ -75,7 +90,7 @@ class RunnerTests(unittest.TestCase):
         item.aws = lambda *a, **kw: calls.append((a, kw)) or value
         item.validate_bedrock_profile({"bedrock_chat_profile_id": profile})
         self.assertEqual(calls[0], (("bedrock", "get-inference-profile", "--inference-profile-identifier", profile,
-                                    "--region", "eu-south-2"), {"deploy": True}))
+                                    "--region", "eu-west-1"), {"deploy": True}))
         value["models"] = value["models"][:-1]
         with self.assertRaises(ValueError):
             item.validate_bedrock_profile({"bedrock_chat_profile_id": profile})
@@ -85,8 +100,8 @@ class RunnerTests(unittest.TestCase):
         item.config = config()
         def response(*args, **kwargs):
             if args[0] == "resourcegroupstaggingapi":
-                return {"ResourceTagMappingList": [{"ResourceARN": "arn:aws:kms:eu-south-2:123456789012:key/pending"},
-                    {"ResourceARN": "arn:aws:ecs:eu-south-2:123456789012:cluster/active"}]} if "eu-south-2" in args else {}
+                return {"ResourceTagMappingList": [{"ResourceARN": "arn:aws:kms:eu-west-1:123456789012:key/pending"},
+                    {"ResourceARN": "arn:aws:ecs:eu-west-1:123456789012:cluster/active"}]} if "eu-west-1" in args else {}
             return {"KeyMetadata": {"KeyState": "PendingDeletion"}}
         item.aws = response
         result = item.inspect_residuals()

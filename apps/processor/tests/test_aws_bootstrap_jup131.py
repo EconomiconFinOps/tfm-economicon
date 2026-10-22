@@ -46,7 +46,7 @@ def test_fixture_phase_keeps_costs_before_native_corpus_and_closes_engines(monke
     from app.embeddings import providers
     from app.vector_store import pgvector_store
     context = Mock()
-    context.inputs = {'embedding': {'dimension': 1024}, 'region': 'eu-south-2'}
+    context.inputs = {'embedding': {'dimension': 1024}, 'region': 'eu-west-1'}
     engines = {'operational': Mock(), 'vectors': Mock()}
     context.admin_engine.side_effect = lambda database: engines[database]
     events = []

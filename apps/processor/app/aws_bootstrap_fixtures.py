@@ -66,9 +66,9 @@ def seed_costs(engine, config, fixture):
 def seed_corpus(store, config, fixture, provider):
     identity = _identity(config, fixture)
     dimension = config['embedding']['dimension']
-    require(config['region'] == 'eu-south-2' and dimension == 1024
+    require(config['region'] == 'eu-west-1' and dimension == 1024
             and provider.name == 'bedrock' and provider.model == TITAN_MODEL and provider.dimension == dimension
-            and provider.mapping_sha256 == embedding_fingerprint('eu-south-2', dimension)
+            and provider.mapping_sha256 == embedding_fingerprint('eu-west-1', dimension)
             and store.embedding_dimension == dimension)
     counter = EmbeddingTokenCounter()
     space = EmbeddingSpace('bedrock', TITAN_MODEL, provider.mapping_sha256, counter.identity, dimension=dimension)

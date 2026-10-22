@@ -9,7 +9,7 @@ import pytest
 
 from app.core.cognito import CognitoVerifier
 
-ISSUER = "https://cognito-idp.eu-south-2.amazonaws.com/eu-south-2_TestPool123"
+ISSUER = "https://cognito-idp.eu-west-1.amazonaws.com/eu-west-1_TestPool123"
 CLIENT = "synthetic-app-client"
 
 
@@ -83,7 +83,7 @@ def test_real_jwks_selects_rotated_key_and_ignores_untrusted_discovery_url(key):
 
 
 @pytest.mark.parametrize("issuer", ["http://localhost/pool", "https://attacker.example.invalid/pool",
-    ISSUER+"/", ISSUER+"?key=evil", "https://cognito-idp.eu-south-2.amazonaws.com/eu-west-3_Other"])
+    ISSUER+"/", ISSUER+"?key=evil", "https://cognito-idp.eu-west-1.amazonaws.com/eu-west-3_Other"])
 def test_issuer_cannot_redirect_key_discovery(issuer):
     with pytest.raises(ValueError):
         CognitoVerifier(issuer, CLIENT)

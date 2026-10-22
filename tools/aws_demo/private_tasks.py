@@ -43,12 +43,12 @@ class PrivateTasks:
     def definition(self, component, phase, inputs):
         config = self.config
         _require(component in {'backend', 'processor'} and phase in {'database', 'fixtures', 'reindex', 'broker'})
-        _require(config['region'] == 'eu-south-2' and re.fullmatch(r'[0-9]{12}', config['account_id']))
+        _require(config['region'] == 'eu-west-1' and re.fullmatch(r'[0-9]{12}', config['account_id']))
         _require(re.fullmatch(r'(?:ensayo[0-9][a-z0-9]{0,3}|defensa[0-9]{0,2})', config['cycle_id']))
         _require(re.fullmatch(r'[a-f0-9]{40}', config['source_sha']))
         cluster = 'economicon-' + config['cycle_id']
         _require(self.outputs['ecs_cluster_name'] == cluster)
-        repository = f"{config['account_id']}.dkr.ecr.eu-south-2.amazonaws.com/{cluster}/{component}"
+        repository = f"{config['account_id']}.dkr.ecr.eu-west-1.amazonaws.com/{cluster}/{component}"
         image = self.images[component]
         _require(self.outputs['ecr_repositories'][component] == repository
                  and re.fullmatch(re.escape(repository) + r'@sha256:[a-f0-9]{64}', image))
@@ -81,7 +81,7 @@ class PrivateTasks:
                 'environment': [{'name': 'ECONOMICON_BOOTSTRAP', 'value': 'ecs'},
                                 {'name': 'DEMO_BOOTSTRAP_INPUTS', 'value': payload}],
                 'logConfiguration': {'logDriver': 'awslogs', 'options': {
-                    'awslogs-group': network['log_groups'][component], 'awslogs-region': 'eu-south-2',
+                    'awslogs-group': network['log_groups'][component], 'awslogs-region': 'eu-west-1',
                     'awslogs-stream-prefix': 'bootstrap'}}, 'stopTimeout': 60,
             }],
         }
@@ -102,7 +102,7 @@ class PrivateTasks:
         try:
             response = self.ecs.register_task_definition(**definition)
             candidate = response['taskDefinition']['taskDefinitionArn']
-            prefix = f"arn:aws:ecs:eu-south-2:{self.config['account_id']}:task-definition/{definition['family']}:"
+            prefix = f"arn:aws:ecs:eu-west-1:{self.config['account_id']}:task-definition/{definition['family']}:"
             _require(re.fullmatch(re.escape(prefix) + r'[1-9][0-9]*', candidate))
             arn = candidate
             state.update(definition_arn=arn, status='REGISTERED')
@@ -116,7 +116,7 @@ class PrivateTasks:
                     'assignPublicIp': 'DISABLED'}})
             _require(not response.get('failures') and len(response.get('tasks', [])) == 1)
             candidate = response['tasks'][0]['taskArn']
-            _require(re.fullmatch(f"arn:aws:ecs:eu-south-2:{self.config['account_id']}:task/{cluster}/[a-f0-9]{{32}}", candidate))
+            _require(re.fullmatch(f"arn:aws:ecs:eu-west-1:{self.config['account_id']}:task/{cluster}/[a-f0-9]{{32}}", candidate))
             task = candidate
             state.update(task_arn=task, status='RUNNING')
             self.record(dict(state))

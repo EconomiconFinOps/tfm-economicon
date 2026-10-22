@@ -24,7 +24,7 @@ def request(stream=True):
 
 
 def transport():
-    value = BedrockTransport(SimpleNamespace(bedrock_region='eu-south-2',bedrock_timeout_seconds=20,
+    value = BedrockTransport(SimpleNamespace(bedrock_region='eu-west-1',bedrock_timeout_seconds=20,
         bedrock_chat_model_id='eu.amazon.nova-micro-v1:0'))
     value.runtime._client = Mock()
     return value

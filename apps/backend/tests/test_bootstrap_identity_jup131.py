@@ -24,7 +24,7 @@ def setup_context():
     client.admin_create_user.return_value = {'User': {'Username': SUB, 'Attributes': attributes}}
     context = SimpleNamespace(
         inputs={'cycle_id': 'ensayo1', 'source_sha': 'a' * 40, 'rehearsal_secret_arn': 'bundle',
-                'cognito': {'user_pool_id': 'eu-south-2_Synthetic131'}},
+                'cognito': {'user_pool_id': 'eu-west-1_Synthetic131'}},
         client=Mock(return_value=client),
         secret=Mock(return_value={'_cycle_id': 'ensayo1', '_source_sha': 'a' * 40,
                                   'smoke_user': {'email': EMAIL, 'password': 'Ec1!' + 'b' * 48}}))
@@ -40,7 +40,7 @@ def test_private_user_creation_suppresses_email_and_uses_authoritative_sub():
     assert request['Username'] == EMAIL
     assert {a['Name']: a['Value'] for a in request['UserAttributes']}['custom:rehearsal'] == MARKER
     assert client.admin_set_user_password.call_args.kwargs == {
-        'UserPoolId': 'eu-south-2_Synthetic131', 'Username': SUB,
+        'UserPoolId': 'eu-west-1_Synthetic131', 'Username': SUB,
         'Password': 'Ec1!' + 'b' * 48, 'Permanent': True}
     client.admin_get_user.side_effect = None
     client.admin_get_user.return_value = {'Username': SUB, 'UserAttributes': attributes}

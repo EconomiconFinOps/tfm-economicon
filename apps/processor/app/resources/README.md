@@ -1,9 +1,9 @@
 # Public RDS trust bundle
 
-`rds-eu-south-2.pem` is the public CA bundle downloaded on 2026-10-22 from
-https://truststore.pki.rds.amazonaws.com/eu-south-2/eu-south-2-bundle.pem.
-SHA256: `6e4db6870d865a83140270728f62fbdb73202a3a017dc500ae2605e3d17344c0`.
-It contains three self-issued Amazon RDS Spain roots, no private keys or
+`rds-eu-west-1.pem` is the public CA bundle downloaded on 2026-10-22 from
+https://truststore.pki.rds.amazonaws.com/eu-west-1/eu-west-1-bundle.pem.
+SHA256: `a11cf9a1d0aadd7db86f92cbaa496466daeb501bf1c5e429d8ce8914a01c15d6`.
+It contains three self-issued Amazon RDS Ireland roots, no private keys or
 project credentials. This is trust material, not proof of database access.
 
 In explicit ECS mode, `app.aws_runtime` verifies the packaged hash, sets

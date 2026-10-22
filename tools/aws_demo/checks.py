@@ -58,7 +58,7 @@ def validate_upload_url(url, bucket):
         parsed = urlsplit(url)
         expect(parsed.scheme == 'https' and not parsed.username and not parsed.password
                and parsed.port in {None, 443} and not parsed.fragment
-               and parsed.hostname == 's3.eu-south-2.amazonaws.com'
+               and parsed.hostname == 's3.eu-west-1.amazonaws.com'
                and parsed.path.startswith('/' + bucket + '/staging/') and bool(parsed.query), 'upload-url')
         return url
     except Exception:
@@ -222,7 +222,7 @@ def prepare_live(config, outputs, record):
     """SDK readiness and configuration receipts precede application acceptance."""
     cluster = 'economicon-' + config['cycle_id']
     expect(outputs['ecs_cluster_name'] == cluster, 'cluster')
-    ecs = sdk_client('ecs', 'eu-south-2')
+    ecs = sdk_client('ecs', 'eu-west-1')
     names = ['backend', 'processor', 'azure-cost-api']
     ecs.get_waiter('services_stable').wait(cluster=cluster, services=names, WaiterConfig={'Delay': 10, 'MaxAttempts': 60})
     response = ecs.describe_services(cluster=cluster, services=names)
@@ -239,15 +239,15 @@ def prepare_live(config, outputs, record):
             env = {item['name']: item['value'] for item in containers[0]['environment']}
             expect(env.get('EMBEDDING_PROVIDER') == 'bedrock' and env.get('EMBEDDING_DIMENSION') == '1024'
                    and env.get('EMBEDDING_MODEL') == 'amazon.titan-embed-text-v2:0'
-                   and env.get('BEDROCK_REGION') == 'eu-south-2', 'ecs-runtime')
+                   and env.get('BEDROCK_REGION') == 'eu-west-1', 'ecs-runtime')
             if service['serviceName'] == 'processor':
                 expect(env.get('LLM_PROVIDER') == 'bedrock' and env.get('BEDROCK_CHAT_MODEL_ID') == outputs['bedrock_chat']['profile_id']
                        and env.get('BEDROCK_CHAT_MODEL_ID') in {
                     'eu.amazon.nova-micro-v1:0', 'eu.amazon.nova-lite-v1:0'}, 'ecs-runtime')
     readiness = outputs['readiness']
-    expect(re.fullmatch(f"arn:aws:elasticloadbalancing:eu-south-2:{config['account_id']}:targetgroup/{cluster}-api/[a-f0-9]{{16}}",
+    expect(re.fullmatch(f"arn:aws:elasticloadbalancing:eu-west-1:{config['account_id']}:targetgroup/{cluster}-api/[a-f0-9]{{16}}",
                         readiness['api_target_group_arn']), 'alb-reference')
-    lb = sdk_client('elbv2', 'eu-south-2')
+    lb = sdk_client('elbv2', 'eu-west-1')
     lb.get_waiter('target_in_service').wait(TargetGroupArn=readiness['api_target_group_arn'],
                                           WaiterConfig={'Delay': 10, 'MaxAttempts': 60})
     targets = lb.describe_target_health(TargetGroupArn=readiness['api_target_group_arn'])['TargetHealthDescriptions']
@@ -255,16 +255,16 @@ def prepare_live(config, outputs, record):
     cf = sdk_client('cloudfront', 'us-east-1')
     cf.get_waiter('distribution_deployed').wait(Id=outputs['cloudfront_distribution_id'], WaiterConfig={'Delay': 10, 'MaxAttempts': 60})
     record('infrastructure', {'status': 'PASS', 'services': 3, 'healthy_targets': 2, 'desired_tasks': 6})
-    prefix = f"arn:aws:secretsmanager:eu-south-2:{config['account_id']}:secret:{cluster}/rehearsal/credentials-"
+    prefix = f"arn:aws:secretsmanager:eu-west-1:{config['account_id']}:secret:{cluster}/rehearsal/credentials-"
     arn = outputs['rehearsal_secret_arn']
     expect(re.fullmatch(re.escape(prefix) + r'[A-Za-z0-9]{6}', arn), 'credentials-reference')
-    bundle = _read_secret(sdk_client('secretsmanager', 'eu-south-2'), arn, config)
+    bundle = _read_secret(sdk_client('secretsmanager', 'eu-west-1'), arn, config)
     expect(bundle['_cycle_id'] == config['cycle_id'] and bundle['_source_sha'] == config['source_sha'], 'credentials-ownership')
     user = bundle['smoke_user']
     expect(user['email'] == 'aws-defensa+' + config['cycle_id'] + '@example.com', 'credentials-ownership')
     pool = outputs['cognito']['user_pool_id']
-    expect(re.fullmatch(r'eu-south-2_[A-Za-z0-9]+', pool), 'cognito-pool')
-    cognito = sdk_client('cognito-idp', 'eu-south-2')
+    expect(re.fullmatch(r'eu-west-1_[A-Za-z0-9]+', pool), 'cognito-pool')
+    cognito = sdk_client('cognito-idp', 'eu-west-1')
     response = cognito.admin_get_user(UserPoolId=pool, Username=user['email'])
     attributes = {a['Name']: a['Value'] for a in response['UserAttributes']}
     sub = identifier(attributes['sub'])

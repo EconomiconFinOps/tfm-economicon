@@ -20,10 +20,10 @@ def validate_config(config, actual_sha):
     require(re.fullmatch(r"[0-9]{12}", config.get("account_id", "")), "Set the real account_id")
     require(re.fullmatch(r"[a-f0-9]{40}", config.get("source_sha", "")), "Set the reviewed full SHA")
     require(config["source_sha"] == actual_sha, "Source SHA differs from approved config")
-    require(config.get("region") == "eu-south-2", "Demo must use Spain")
+    require(config.get("region") == "eu-west-1", "Demo must use Ireland")
     require(config.get("control_region") == "eu-west-3", "Control must use Paris")
     zones = config.get("availability_zones", [])
-    require(len(zones) == 3 and len(set(zones)) == 3 and all(re.fullmatch(r"eu-south-2[a-z]", z) for z in zones), "Three Spain AZs required")
+    require(len(zones) == 3 and len(set(zones)) == 3 and all(re.fullmatch(r"eu-west-1[a-z]", z) for z in zones), "Three Ireland AZs required")
     require(config.get("frontend_domain") == "economicon.danteinferno.es", "Unexpected frontend domain")
     require(config.get("origin_domain") == "origin.economicon.danteinferno.es", "Unexpected origin domain")
     require(re.fullmatch(r"Z[A-Z0-9]{5,}", config.get("route53_zone_id", "")), "Set verified public zone ID")
@@ -60,7 +60,7 @@ def validate_recipe(recipe):
             require(not re.search(r"PASSWORD|SECRET|TOKEN|DATABASE_URL|RABBITMQ_URL|API_KEY|ACCESS_KEY|HMAC|PRIVATE_KEY|CREDENTIAL", key, re.I), "Secret-like field in public application_environment")
     models = recipe.get("bedrock_model_arns", [])
     require(isinstance(models, list) and all(
-        model == "arn:aws:bedrock:eu-south-2::foundation-model/amazon.titan-embed-text-v2:0" for model in models
+        model == "arn:aws:bedrock:eu-west-1::foundation-model/amazon.titan-embed-text-v2:0" for model in models
     ), "Only the reviewed regional Titan embedding model may enter this release")
     profile = recipe.get("bedrock_chat_profile_id")
     require(profile is None or profile in ("eu.amazon.nova-micro-v1:0", "eu.amazon.nova-lite-v1:0"),

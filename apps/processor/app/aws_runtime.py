@@ -14,8 +14,8 @@ import tempfile
 from urllib.parse import parse_qsl, urlsplit
 
 
-RDS_CA_PATH = Path(__file__).parent / 'resources/rds-eu-south-2.pem'
-RDS_CA_SHA256 = '6e4db6870d865a83140270728f62fbdb73202a3a017dc500ae2605e3d17344c0'
+RDS_CA_PATH = Path(__file__).parent / 'resources/rds-eu-west-1.pem'
+RDS_CA_SHA256 = 'a11cf9a1d0aadd7db86f92cbaa496466daeb501bf1c5e429d8ce8914a01c15d6'
 
 
 class AwsRuntimeError(RuntimeError):

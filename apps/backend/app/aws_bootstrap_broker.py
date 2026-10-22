@@ -14,7 +14,7 @@ class BrokerAPI:
         parsed = urlsplit(url)
         require(parsed.scheme == 'https' and parsed.port in {None, 443} and not parsed.username
                 and not parsed.password and not parsed.query and not parsed.fragment and parsed.path in {'', '/'}
-                and re.fullmatch(r'b-[a-f0-9-]+\.mq\.eu-south-2\.(?:amazonaws\.com|on\.aws)', parsed.hostname or ''))
+                and re.fullmatch(r'b-[a-f0-9-]+\.mq\.eu-west-1\.(?:amazonaws\.com|on\.aws)', parsed.hostname or ''))
         require(username == 'economicon_admin' and isinstance(password, str) and 12 <= len(password) <= 250)
         self.host = parsed.hostname
         self.authorization = 'Basic ' + base64.b64encode((username + ':' + password).encode()).decode('ascii')

@@ -28,8 +28,8 @@ def iam_env(monkeypatch):
     for name in ('DOCUMENT_S3_ACCESS_KEY', 'DOCUMENT_S3_SECRET_KEY', 'DOCUMENT_S3_PUBLIC_ENDPOINT'):
         monkeypatch.delenv(name, raising=False)
     for name, value in {
-        'DOCUMENT_S3_AUTH_MODE': 'iam', 'DOCUMENT_S3_REGION': 'eu-south-2',
-        'DOCUMENT_S3_ENDPOINT': 'https://s3.eu-south-2.amazonaws.com',
+        'DOCUMENT_S3_AUTH_MODE': 'iam', 'DOCUMENT_S3_REGION': 'eu-west-1',
+        'DOCUMENT_S3_ENDPOINT': 'https://s3.eu-west-1.amazonaws.com',
         'DOCUMENT_S3_BUCKET': 'economicon-synthetic-documents',
         'RUNTIME_ENVIRONMENT': 'production',
     }.items():
@@ -42,7 +42,7 @@ def test_role_credentials_sign_upload_without_static_keys(storage_module, iam_en
     def client(service, **options):
         assert service == 's3'
         assert not any(key.startswith('aws_') for key in options)
-        assert options['region_name'] == 'eu-south-2'
+        assert options['region_name'] == 'eu-west-1'
         assert options['config'].ignore_configured_endpoint_urls is True
         assert options['config'].proxies == {}
         value = Mock()
@@ -70,7 +70,7 @@ def test_real_presigner_keeps_temporary_session_token(storage_module, iam_env, m
         parsed = urlsplit(store.presign('staging/tenant/user/upload', 42))
         query = parse_qs(parsed.query)
         assert parsed.scheme == 'https'
-        assert parsed.netloc == 's3.eu-south-2.amazonaws.com'
+        assert parsed.netloc == 's3.eu-west-1.amazonaws.com'
         assert parsed.path == '/economicon-synthetic-documents/staging/tenant/user/upload'
         assert query['X-Amz-Security-Token'] == ['synthetic-temporary-session']
         assert query['X-Amz-Expires'] == ['180']
@@ -82,7 +82,7 @@ def test_real_presigner_keeps_temporary_session_token(storage_module, iam_env, m
 @pytest.mark.parametrize('name,value', [
     ('DOCUMENT_S3_ENDPOINT', 'https://signed-requests.attacker.invalid'),
     ('DOCUMENT_S3_PUBLIC_ENDPOINT', 'https://signed-requests.attacker.invalid'),
-    ('DOCUMENT_S3_ENDPOINT', 'http://s3.eu-south-2.amazonaws.com'),
+    ('DOCUMENT_S3_ENDPOINT', 'http://s3.eu-west-1.amazonaws.com'),
     ('DOCUMENT_S3_REGION', 'us-east-1'),
     ('DOCUMENT_S3_ACCESS_KEY', 'synthetic-static-key'),
     ('DOCUMENT_S3_SECRET_KEY', 'synthetic-static-secret'),

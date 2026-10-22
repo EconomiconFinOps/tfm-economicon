@@ -7,6 +7,7 @@ import contextlib
 from datetime import datetime, timezone
 import hashlib
 import json
+import math
 import os
 import re
 from pathlib import Path
@@ -150,8 +151,18 @@ class Runner:
         # runtime inference remains on the scoped ECS task role.
         expected_profile(self.config["account_id"], profile)
         metadata = self.aws("bedrock", "get-inference-profile", "--inference-profile-identifier", profile,
-                            "--region", "eu-south-2", deploy=True)
+                            "--region", "eu-west-1", deploy=True)
         validate_profile(metadata, self.config["account_id"], profile)
+
+    def validate_quotas(self):
+        for region, service, code, minimum in (
+            ('eu-west-1', 'fargate', 'L-3032A538', 6),
+            ('eu-west-3', 'codebuild', 'L-2DC20C30', 1),
+        ):
+            value = self.aws('service-quotas', 'get-service-quota', '--service-code', service,
+                             '--quota-code', code, '--region', region, deploy=True)['Quota'].get('Value')
+            require(type(value) in (int, float) and math.isfinite(value) and value >= minimum,
+                    f'Effective {service} quota in {region} must be at least {minimum}')
 
     def validate(self):
         expiry = datetime.fromisoformat(self.config["expires_at"].replace("Z", "+00:00"))
@@ -163,9 +174,10 @@ class Runner:
         with urllib.request.urlopen(request, timeout=30) as response:
             ci = json.load(response)
         require(ci["head_sha"] == self.config["source_sha"] and ci["conclusion"] == "success" and ci["path"] == ".github/workflows/ci.yml", "CI for exact source SHA must pass")
+        self.validate_quotas()
         self.validate_bedrock_profile(recipe)
-        regions = self.aws("ec2", "describe-regions", "--all-regions", "--region", "eu-south-2", deploy=True)["Regions"]
-        require(any(r["RegionName"] == "eu-south-2" and r["OptInStatus"] in ("opt-in-not-required", "opted-in") for r in regions), "Spain region not enabled")
+        regions = self.aws("ec2", "describe-regions", "--all-regions", "--region", "eu-west-1", deploy=True)["Regions"]
+        require(any(r["RegionName"] == "eu-west-1" and r["OptInStatus"] in ("opt-in-not-required", "opted-in") for r in regions), "Ireland region not enabled")
         zone = self.aws("route53", "get-hosted-zone", "--id", self.config["route53_zone_id"], deploy=True)["HostedZone"]
         require(not zone["Config"]["PrivateZone"] and any(self.config["frontend_domain"] == zone["Name"].rstrip(".") or self.config["frontend_domain"].endswith("." + zone["Name"].rstrip(".")) for _ in [0]), "Wrong public DNS zone")
         for domain in (self.config["frontend_domain"], self.config["origin_domain"]):
@@ -236,8 +248,8 @@ class Runner:
         recipe = self.recipe()
         images = {}
         with self.resource_credentials():
-            registry = f'{self.config["account_id"]}.dkr.ecr.eu-south-2.amazonaws.com'
-            password = self.aws("ecr", "get-login-password", "--region", "eu-south-2", deploy=True, raw=True)
+            registry = f'{self.config["account_id"]}.dkr.ecr.eu-west-1.amazonaws.com'
+            password = self.aws("ecr", "get-login-password", "--region", "eu-west-1", deploy=True, raw=True)
             run(["docker", "login", "--username", "AWS", "--password-stdin", registry], self.deploy_env, password)
             for name in APPLICATIONS:
                 archive = self.download(name + ".tar")
@@ -333,7 +345,7 @@ class Runner:
 
     def retire_bootstrap_definitions(self, cluster):
         require(cluster == "economicon-" + self.config["cycle_id"], "Unexpected bootstrap cleanup cluster")
-        prefix = f'arn:aws:ecs:eu-south-2:{self.config["account_id"]}:task-definition/{cluster}-bootstrap-'
+        prefix = f'arn:aws:ecs:eu-west-1:{self.config["account_id"]}:task-definition/{cluster}-bootstrap-'
         inventory = self.aws("ecs", "list-task-definitions", "--family-prefix", cluster + "-bootstrap-",
                              "--status", "ACTIVE", deploy=True)
         retired = []
@@ -412,7 +424,7 @@ class Runner:
                        "RetryPolicy": {"MaximumRetryAttempts": 3, "MaximumEventAgeInSeconds": 3600}}})
 
     def inspect_residuals(self):
-        result = {"active": [], "pending_deletion": [], "retired_metadata": [], "regions": ["eu-south-2", "us-east-1"]}
+        result = {"active": [], "pending_deletion": [], "retired_metadata": [], "regions": ["eu-west-1", "us-east-1"]}
         for region in result["regions"]:
             inventory = self.aws("resourcegroupstaggingapi", "get-resources", "--region", region, "--tag-filters",
                 "Key=Project,Values=economicon", "Key=Environment,Values=" + self.config["cycle_id"], deploy=True)

@@ -5,6 +5,16 @@ from tools.aws_demo.bedrock_contract import validate_profile, expected_profile
 
 
 class BedrockProfileTests(unittest.TestCase):
+    def test_ireland_has_four_pinned_destinations_and_rejects_spain(self):
+        profile, value = self.fixture()
+        expected = expected_profile('123456789012', profile)
+        self.assertEqual(expected['arn'], 'arn:aws:bedrock:eu-west-1:123456789012:inference-profile/' + profile)
+        self.assertEqual({arn.split(':')[3] for arn in expected['models']},
+                         {'eu-central-1', 'eu-north-1', 'eu-west-1', 'eu-west-3'})
+        value['models'].append({'modelArn': 'arn:aws:bedrock:eu-south-2::foundation-model/amazon.nova-micro-v1:0'})
+        with self.assertRaises(ValueError):
+            validate_profile(value, '123456789012', profile)
+
     def fixture(self):
         profile='eu.amazon.nova-micro-v1:0'
         expected=expected_profile('123456789012',profile)

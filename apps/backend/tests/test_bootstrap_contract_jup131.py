@@ -11,9 +11,9 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 def fixture_inputs():
-    prefix = 'arn:aws:secretsmanager:eu-south-2:123456789012:secret:'
-    return dict(account_id='123456789012', region='eu-south-2', cycle_id='ensayo1', source_sha='a' * 40,
-        database_endpoints={key: {'host': f'economicon-ensayo1-{key}.synthetic.eu-south-2.rds.amazonaws.com',
+    prefix = 'arn:aws:secretsmanager:eu-west-1:123456789012:secret:'
+    return dict(account_id='123456789012', region='eu-west-1', cycle_id='ensayo1', source_sha='a' * 40,
+        database_endpoints={key: {'host': f'economicon-ensayo1-{key}.synthetic.eu-west-1.rds.amazonaws.com',
                                  'port': 5432, 'database': database}
                             for key, database in [('operational', 'economicon'), ('vectors', 'embeddings')]},
         database_admin_secret_arns={key: prefix + 'rds!db-' + key + '-ABC123' for key in ['operational', 'vectors']},

@@ -1,5 +1,149 @@
 # Cloud AWS — arquitectura documental
 
+## Irlanda autorizada y cuotas solicitadas — 22/10/2026
+
+Usuario autoriza dos solicitudes y adaptación de configuración, sin despliegue.
+Historial vacío antes de enviar, STS cuenta correcta. Respuestas guardadas
+.work/aws-access/quota-requests.json.
+
+- fargate eu-west-1 6: `f99f920429964ca680587d60e46e465dWHq54fCI`, PENDING al enviar.
+- codebuild eu-west-3 1: `cda02ccd14c240a1882db2a85a62a7deVt04gbzC`, PENDING al enviar.
+
+No son cuotas aprobadas. Solo estas mutaciones AWS autorizadas; sin recursos,
+DNS/IAM/secretos/control creados. Código Irlanda implementado, TLS/CA nueva
+SHA a11cf9a1d0aadd7db86f92cbaa496466daeb501bf1c5e429d8ce8914a01c15d6,
+cuatro destinos Nova y rechazo de contrato español. Tests RED observados y
+luego backend135PASS/1SKIP, processor61PASS/6SKIP, referenciaTF12PASS.
+Controlador conforme salvo hash de receta deliberadamente pendiente de renovar.
+Añadido gate de cuotas efectivas y permiso solo GetServiceQuota para los dos
+ARNs exactos. Imágenes de producción backend fab7b1a4ebd8/processor54ddb1f177f5 construidas;
+CA/contrato nativo/tmp0700/nonroot/readOnly comprobados. Linux focal135/61PASS
+(mismos skips1/6); controlTF1PASS tras fijar atributos mock ARN conocidos para
+evaluar la política real en plan. Revisión técnica incremental APPROVE sin nuevos P1/P2 regionales; no sustituye
+los dictámenes humanos ni acepta los8puntos previos. CI del SHA final pendiente.
+
+Nueva revisión humana lmatsan sobre41cace CHANGES_REQUESTED recibida y leída
+completa, con8puntos previos (applicationsplan/source/leaseCAS/env/ARNcleanup/
+publicvalues/recipeproviders/JWKS). No se corrigen ni dan por aceptados por el
+cambio regional; requieren seguimiento antes de aceptación/merge/ensayo.
+No hubo comentarios generales ni inline nuevos en ese momento.
+
+## España deja de ser requisito; alternativa contrastada — 22/10/2026
+
+Usuario indica expresamente que España NO es requisito y pide otra región sin
+bloqueos. No habilitar eu-south-2 por los planes anteriores. Comprobadas por API
+Irlanda/Paris/Francfort/Estocolmo: habilitadas sin opt-in; todas las cuotas
+CodeBuild Linux Small/Medium/Large/XL/2XL =0 y Fargate On-Demand vCPU =0.
+Virginia/Ohio tambien CodeBuild Medium0 y Fargate0. No se encontró una región
+sin estos bloqueos entre las seis comprobadas; no extrapolar a todo AWS ni
+afirmar que solo cambiando región el ensayo queda lanzable.
+
+Irlanda eu-west-1 candidata compatible: AZa/b/c available, RDS db.t4g.medium
+PostgreSQL16.9..16.15 MultiAZ ofertado, MQ mq.m5.large RabbitMQ3.13 con
+CLUSTER_MULTI_AZ. TitanV2 ACTIVE ON_DEMAND y perfil EU NovaMicro ACTIVE; desde
+Irlanda devuelve4destinos (eu-central-1/eu-north-1/eu-west-1/eu-west-3), frente
+a5desde España. Solo metadatos; no se invocaron modelos ni se probaron permisos
+de inferencia reales. Fargate Irlanda0 adjustable=true.
+
+Siguiente paso propuesto: Fargate Irlanda cuota6vCPU para servicios/rolling y
+CodeBuild Paris Medium1; solicitudes NO enviadas. Antes comprobar historial y
+cuotas de otros servicios/uso concurrente. Region candidata, no lanzamiento
+autorizado. Control Paris preservado. Codigo/receta/validadores aun fijan España:
+si se adopta Irlanda, adaptar de forma coherente IAM, ARNs, preflight, TLS/CA,
+MQ/S3 y contratos/fingerprints de embeddings y perfil4destinos, con regresión
+y CI nueva. No sustituir texto globalmente ni trasladar evidencia española
+a bytes cambiados. Paquete ensayo1 anterior no constituye configuración Irlanda.
+
+Evidencia ignorada .work/aws-access/region-quotas.json e ireland-candidate.json.
+Consulta MQ corregida de list-broker-instance-options (inexistente) a
+describe-broker-instance-options; resultado final conforme. Ningun cambio AWS.
+
+## Preflight inicial y presupuesto aclarado — 22/10/2026
+
+CLI STS confirma cuenta7607/root. Solo lectura: ec2 describe-regions devuelve
+España not-opted-in, Paris/Virginia opt-in-not-required. Route53 no devuelve zona
+coincidente danteinferno.es; CodeConnections Paris vacio; SecretsManager con
+filtro de nombre economicon en Paris vacio (no afirmar ausencia global).
+Unica politica IAM local Inicio_Apagado, no boundary del proyecto. Cuota
+CodeBuild Paris L-2DC20C30 (Linux/Medium) =0; Terraform usa ese tamaño, solicitar
+al menos1 y comprobar aprobacion antes de pipelines. No solicitud enviada.
+
+DNS publico: diva.ns.cloudflare.com y salvador.ns.cloudflare.com. Usuario confirma
+acceso Cloudflare y aclara que60EUR es LIMITE TOTAL de gasto, no credito AWS.
+No tratar available_credit_eur=60 como saldo/promocion confirmado; paquete
+permanece bloqueado. Coste real/estimacion y margen pendientes. No se consulto
+Cost Explorer ni se ejecutaron inferencias.
+
+Orden propuesto: cuota+region, identidad/roles/boundary fuera de root, zona y
+delegacion de subzona en Cloudflare, CodeConnections/secretos Paris, estimacion
+y ventana, plan/autorizacion de bootstrap y ensayo. .work/aws-access guarda
+preflight-readonly.json y preparacion-cuenta.md con comandos NO ejecutados.
+No mutaciones AWS ni cambios DNS/permisos/recursos en este hito.
+
+## Autenticación CLI comprobada — 22/10/2026
+
+Renovado el flujo que había caducado. El navegador externo lo abre aws login;
+la selección en el navegador integrado sí completó el retorno local. CLI informó
+perfil economicon-proyecto actualizado. La espera posterior era la pregunta
+opcional de instalación de skills/MCP de AWS: respondido n, sin instalar extras.
+STS get-caller-identity --profile economicon-proyecto --region eu-west-3
+terminó exit0 y confirmó la cuenta esperada y ARN root. Acceso temporal efectivo,
+no claves permanentes nuevas. Los párrafos anteriores de login pendiente quedan
+superados por esta comprobación. No guardar códigos/URLs de callback ni tokens.
+No se ha creado infraestructura ni modificado permisos/roles/regiones.
+Antes de desplegar sigue pendiente preparar acceso por roles y los prerrequisitos
+externos del runbook; sesión root limitada por acuerdo a comprobaciones de lectura.
+
+## Acceso inicial a la cuenta — 22/10/2026
+
+Usuario confirmó que la cuenta terminada7607 es la destinada al proyecto/60EUR.
+Consola abierta como root con MFA; no hay usuarios IAM, hay7roles existentes
+de servicios/otros usos. No se han cambiado roles, claves ni políticas.
+España no figura en el selector entre regiones activas (17deshabilitadas);
+confirmación formal de estado regional pendiente. No habilitada por este turno.
+
+AWS CLI2.38.4 instalado para el usuario en
+%LOCALAPPDATA%/Programs/Amazon/AWSCLIV2/aws.exe, MSI oficial de Amazon con firma
+Authenticode Valid comprobada y salida0. No se han creado claves permanentes.
+Iniciado aws login --profile economicon-proyecto --region eu-west-3; segunda
+pestaña de navegador espera selección de sesión por el usuario. Login aún
+pendiente, sin get-caller-identity ni preflight CLI ejecutado. No registrar URLs
+de autorización, códigos ni tokens. Tras login verificar identidad y limitar
+las operaciones iniciales a lectura; preparar accesos de operación por separado,
+sin desplegar infraestructura ni ampliar permisos sin revisión concreta.
+
+## Cierre de preparación offline — 22/10/2026
+
+Candidato publicado41cace0daef38f5461cb086a107a94ee95be3759 en PR146
+(borrador). [CI técnica39762874111](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39762874111)
+SUCCESS: ocho jobs técnicos, incluido processor completo; policy omitida en push.
+[SQL nativo chat39762881374](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39762881374)
+SUCCESS. Las pruebas locales con cinco fallos de esperado quedan superadas por
+la ejecución completa verde del candidato. ZIP limpio del SHA valida receta,
+hash de aplicación344e7fd765ed9f59baad45a886104105ace479a5a81b3993097f9c8f0db13091
+y cuatro evidencias. Guardas destroy/count corregidas y dictamen incremental
+técnico APPROVE; no aceptación real AWS.
+
+Usuario autorizó elegir responsables: Alejandro Aguado liderazgo, Lucia Mateo
+pairing, Victor Mendez revisión, Paris Arcos Martin validación. Actualizados
+mediante integración Trello DockerServer, tarjeta6ad8e4097bda49d228e90b91,
+y PR146; readback conforme. Son asignaciones, no pairing/reviews realizados.
+JUP policy SUCCESS en39764363226 tras actualizar esos metadatos; el resto de
+ese relanzamiento está en curso sobre el mismo SHA ya probado. JUP reviews sigue pendiente
+de Revision JUP-131 y Validacion JUP-131 humanas. Sin merge/cierre de tarjeta.
+
+.work/ensayo1/config.json/readiness.json/start-up.json/start-down.json y
+prerequisitos.md preparados para SHA41cace/CI39762874111. aws_deployable=false,
+aws_preflight_executed=false, crédito0 y entradas de cuenta/DNS/motores pendientes.
+Contenedor PG propio y volumen anónimo retirados tras comprobar etiqueta; túnel
+propio PID25980 cerrado. Ningún servicio ajeno modificado.
+
+Se avisó explícitamente: ya es necesaria la sesión con AWS para preparar/verificar
+identidad y roles/boundary, conexión GitHub París y referencias Secrets Manager,
+España/cuotas/motores/modelos, DNS y saldo/coste/ventana. No se ha accedido a AWS
+ni se autoriza despliegue por preparar el acceso; no recoger secretos en chat.
+Runbook docs/deployment/aws-defensa.md concreta entradas y secuencia futura.
+
 ## Candidato integrado y revisión técnica — 22/10/2026
 
 Desarrollo local ee934326 más develop4567e8e7, recursos JUP132 v4 conservados y

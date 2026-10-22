@@ -17,7 +17,7 @@ from test_vector_settings_pgvector import vector_database, backend_query_store
 
 
 def config():
-    return {'cycle_id': 'ensayo1', 'source_sha': 'a' * 40, 'region': 'eu-south-2', 'embedding': {'dimension': 1024}}
+    return {'cycle_id': 'ensayo1', 'source_sha': 'a' * 40, 'region': 'eu-west-1', 'embedding': {'dimension': 1024}}
 
 
 @pytest.fixture
@@ -36,7 +36,7 @@ def fixture_store(vector_database):
 
 def native_provider():
     provider = BedrockEmbeddingProvider(SimpleNamespace(embedding_model=TITAN_MODEL, embedding_dimension=1024,
-        bedrock_region='eu-south-2', bedrock_timeout_seconds=30))
+        bedrock_region='eu-west-1', bedrock_timeout_seconds=30))
     sdk = Mock()
     sdk.invoke_model.side_effect = lambda **kwargs: {'body': BytesIO(json.dumps({
         'embedding': [1.0] + [0.0] * 1023, 'inputTextTokenCount': 20}).encode())}

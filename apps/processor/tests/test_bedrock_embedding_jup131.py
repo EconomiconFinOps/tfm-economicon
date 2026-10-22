@@ -14,7 +14,7 @@ from app.embeddings.space import EmbeddingSpace
 
 def settings(**changes):
     return Settings(embedding_provider='bedrock', embedding_model=TITAN_MODEL,
-        embedding_dimension=1024, bedrock_region='eu-south-2', **changes, _env_file=None)
+        embedding_dimension=1024, bedrock_region='eu-west-1', **changes, _env_file=None)
 
 
 def test_configuration_accepts_native_bedrock_without_gateway_credentials():
@@ -33,7 +33,7 @@ def test_native_factory_and_verified_batches_bind_exact_model_and_configuration(
         counter=SimpleNamespace(count=lambda text: 3))
     assert len(vectors) == 2 and all(len(vector) == 1024 for vector in vectors)
     assert provider.name == 'bedrock' and provider.dimension == 1024
-    assert provider.mapping_sha256 == embedding_fingerprint('eu-south-2',1024)
+    assert provider.mapping_sha256 == embedding_fingerprint('eu-west-1',1024)
     assert len(provider.usage_records) == 2
     with pytest.raises(ValueError):
         provider.embed_batch(['texto'], expected_model='openai/text-embedding-3-small',
@@ -45,14 +45,14 @@ def test_native_factory_and_verified_batches_bind_exact_model_and_configuration(
     dict(embedding_model='economicon-embedding')])
 def test_rejects_unbound_or_incompatible_native_settings(changes):
     values=dict(embedding_provider='bedrock',embedding_model=TITAN_MODEL,
-        embedding_dimension=1024,bedrock_region='eu-south-2')
+        embedding_dimension=1024,bedrock_region='eu-west-1')
     values.update(changes)
     with pytest.raises(ValidationError):
         Settings(**values, _env_file=None)
 
 
 def test_native_space_has_a_different_identity_and_rejects_relabelled_dimensions():
-    identity = EmbeddingSpace('bedrock', TITAN_MODEL, embedding_fingerprint('eu-south-2',1024),
+    identity = EmbeddingSpace('bedrock', TITAN_MODEL, embedding_fingerprint('eu-west-1',1024),
         'preparation-tokenizer', dimension=1024)
     assert EmbeddingSpace.from_descriptor(identity.descriptor()) == identity
     with pytest.raises(ValueError):

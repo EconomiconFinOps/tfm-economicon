@@ -60,3 +60,32 @@ y [access tokens](https://docs.aws.amazon.com/cognito/latest/developerguide/amaz
 Pendientes para ensayo: conectar outputs/receta, crear usuario y membresías por
 bootstrap, comprobar login/logout reales y aislamiento contra el entorno AWS
 autorizado. No se ha aceptado la aplicación AWS como desplegable.
+
+## Adaptación regional vigente — 22/10/2026
+
+El usuario autoriza Irlanda (eu-west-1), conservando París para control y Virginia
+para edge, sin despliegue. Sustituye el contrato regional español de los hitos
+anteriores; sus resultados conservan su fecha/alcance histórico.
+
+Runtime, endpoints, tareas privadas, CA TLS y validadores usan Irlanda. Bundle
+público RDS irlandés con SHA256
+a11cf9a1d0aadd7db86f92cbaa496466daeb501bf1c5e429d8ce8914a01c15d6,
+idéntico en ambas apps; tres raíces irlandesas y rechazo de alteraciones probados.
+El fingerprint de embeddings incluye región y no reutiliza la identidad española.
+Nova UE exige exactamente cuatro destinos; IAM y contrato offline coinciden con
+GetInferenceProfile consultado en Irlanda. Solo metadatos, no inferencia real.
+
+Pruebas regionales nuevas: backend135PASS/1SKIP y processor61PASS/6SKIP tanto
+Windows como Linux sin red. Omitidas incluyen SQL/servicios que requieren opt-in;
+no se presentan como ejecuciones reales en esta adaptación. CI PostgreSQL del
+nuevo SHA repetirá esos contratos. Referencia Terraform12PASS y control1PASS mock.
+Dos imágenes de producción reconstruidas y comprobadas sin red, raízRO,
+uid10001 y volumen ordinario /tmp0700: backend fab7b1a4ebd8 y processor54ddb1f177f5.
+CA/Bedrock/tokenizer de processor comprobados en esas imágenes, no solo en sources.
+
+Fargate6vCPU Irlanda/CodeBuild Medium1 París solicitados, no suponer aprobación.
+Preflight exige cuotas efectivas6/1 antes de plan/lease/alta demo; IAM solo lee
+los dos ARNs de cuota y no puede pedir aumentos. Cuenta/DNS/roles/secretos,
+ventana/presupuesto60EUR y reviews humanas conservan sus gates externos.
+CI del SHA definitivo y revisión incremental se registrarán en PR146/continuidad.
+Logs ignorados .work/aws-region-irlanda/. Ver plan aws-ireland-transition.md.

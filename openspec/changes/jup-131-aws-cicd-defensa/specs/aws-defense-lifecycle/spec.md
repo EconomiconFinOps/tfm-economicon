@@ -35,3 +35,16 @@ without contacting AWS or claiming deployability when required inputs are missin
 #### Scenario: Example configuration
 - **WHEN** the user prepares ensayo1 from the example without real account inputs
 - **THEN** files are generated with explicit blockers and no AWS resources are created
+
+### Requirement: Approved regional and quota contract
+The system SHALL deploy the application in Ireland, preserve Paris control and
+Virginia edge, and verify effective Fargate6vCPU/CodeBuild Medium1 quotas before
+provisioning the disposable cycle. A pending increase SHALL NOT satisfy this gate.
+
+#### Scenario: Quota request is pending
+- **WHEN** the effective quota is below the required value despite a pending request
+- **THEN** validation rejects the cycle before acquiring the deployment lease
+
+#### Scenario: Cross-region configuration is supplied
+- **WHEN** the application region, CA, endpoint or Bedrock source contract differs from the reviewed Ireland configuration
+- **THEN** the corresponding validator rejects it rather than falling back to another region

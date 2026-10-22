@@ -67,7 +67,7 @@ def _write_secret(client, arn, value, config, label):
 
 def ensure_runtime_secrets(client, config, outputs):
     cluster = 'economicon-' + config['cycle_id']
-    prefix = f"arn:aws:secretsmanager:eu-south-2:{config['account_id']}:secret:{cluster}/"
+    prefix = f"arn:aws:secretsmanager:eu-west-1:{config['account_id']}:secret:{cluster}/"
     arns = outputs['runtime_secret_arns']
     check(set(arns) == set(COMPONENTS))
     for name in COMPONENTS:
@@ -77,11 +77,11 @@ def ensure_runtime_secrets(client, config, outputs):
     endpoint = urlsplit(outputs['rabbitmq_endpoints'][0])
     check(endpoint.scheme == 'amqps' and endpoint.port in {None, 5671} and not endpoint.username
           and not endpoint.password and not endpoint.query and not endpoint.fragment and endpoint.path in {'', '/'}
-          and re.fullmatch(r'b-[a-f0-9-]+\.mq\.eu-south-2\.(?:amazonaws\.com|on\.aws)', endpoint.hostname or ''))
+          and re.fullmatch(r'b-[a-f0-9-]+\.mq\.eu-west-1\.(?:amazonaws\.com|on\.aws)', endpoint.hostname or ''))
     for database, expected_name in [('operational', 'economicon'), ('vectors', 'embeddings')]:
         db = outputs['database_endpoints'][database]
         check(db['database'] == expected_name and db['port'] == 5432 and re.fullmatch(
-            re.escape(cluster + '-' + database) + r'\.[a-z0-9]+\.eu-south-2\.rds\.amazonaws\.com', db['host']))
+            re.escape(cluster + '-' + database) + r'\.[a-z0-9]+\.eu-west-1\.rds\.amazonaws\.com', db['host']))
     identity = {'_schema': 1, '_cycle_id': config['cycle_id'], '_source_sha': config['source_sha']}
     bundle = _read_secret(client, bundle_arn, config)
     if bundle is None:
@@ -133,7 +133,7 @@ def load_control_context():
     config = validate_config(json.loads(raw), os.environ['SOURCE_SHA'])
     check(datetime.now(timezone.utc) < datetime.fromisoformat(config['expires_at'].replace('Z', '+00:00')))
     outputs = json.loads(_load_file('DEMO_OUTPUTS', 65536))
-    identity = sdk_client('sts', 'eu-south-2').get_caller_identity()
+    identity = sdk_client('sts', 'eu-west-1').get_caller_identity()
     role = os.environ['DEPLOY_ROLE_ARN']
     check(re.fullmatch(f"arn:aws:iam::{config['account_id']}:role/economicon-[a-z0-9-]+-deploy", role))
     check(identity['Account'] == config['account_id'] and re.fullmatch(
@@ -157,11 +157,11 @@ def main():
             temporary.write_text(json.dumps({'source_sha': config['source_sha'], 'cycle_id': config['cycle_id'], 'events': events}) + '\n')
             os.chmod(temporary, 0o600)
             temporary.replace(path)
-        tasks = PrivateTasks(sdk_client('ecs', 'eu-south-2'), config, outputs, images, record)
+        tasks = PrivateTasks(sdk_client('ecs', 'eu-west-1'), config, outputs, images, record)
         # Check every image/network/role before populating credentials.
         for component in ('backend', 'processor'):
             tasks.definition(component, 'database', payload)
-        ensure_runtime_secrets(sdk_client('secretsmanager', 'eu-south-2'), config, outputs)
+        ensure_runtime_secrets(sdk_client('secretsmanager', 'eu-west-1'), config, outputs)
         for component in ('backend', 'processor'):
             tasks.run(component, 'database', payload)
         tasks.run('backend', 'broker', payload)

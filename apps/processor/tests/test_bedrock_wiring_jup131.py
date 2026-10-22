@@ -14,7 +14,7 @@ from app.agents.providers import get_provider
 
 
 def settings(**changes):
-    values = dict(llm_provider='bedrock',llm_model='economicon-chat',bedrock_region='eu-south-2',
+    values = dict(llm_provider='bedrock',llm_model='economicon-chat',bedrock_region='eu-west-1',
         bedrock_chat_model_id='eu.amazon.nova-micro-v1:0',embedding_provider='bedrock',
         embedding_model=TITAN_MODEL,embedding_dimension=1024,ai_execution_mode='evaluation')
     values.update(changes)

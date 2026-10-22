@@ -201,8 +201,12 @@ resource "aws_iam_role_policy" "deploy" {
   policy = jsonencode({ Version = "2012-10-17", Statement = [
     # Resource creation APIs often lack resource-level scoping. Restrict regional
     # APIs and IAM privilege separately. Dedicated project account only.
-    { Effect = "Allow", Action = ["ec2:*", "elasticloadbalancing:*", "rds:*", "mq:*", "ecs:*", "ecr:*", "servicediscovery:*", "cognito-idp:*", "secretsmanager:*", "kms:*", "logs:*", "cloudwatch:*", "sns:*", "acm:*", "cloudfront:*", "wafv2:*", "tag:GetResources"], Resource = "*", Condition = { StringEquals = { "aws:RequestedRegion" = ["eu-south-2", "us-east-1"] } } },
+    { Effect = "Allow", Action = ["ec2:*", "elasticloadbalancing:*", "rds:*", "mq:*", "ecs:*", "ecr:*", "servicediscovery:*", "cognito-idp:*", "secretsmanager:*", "kms:*", "logs:*", "cloudwatch:*", "sns:*", "acm:*", "cloudfront:*", "wafv2:*", "tag:GetResources"], Resource = "*", Condition = { StringEquals = { "aws:RequestedRegion" = ["eu-west-1", "us-east-1"] } } },
     { Effect = "Allow", Action = ["route53:GetHostedZone", "route53:ListResourceRecordSets", "route53:ChangeResourceRecordSets"], Resource = "arn:aws:route53:::hostedzone/${var.route53_zone_id}" },
+    { Effect = "Allow", Action = "servicequotas:GetServiceQuota", Resource = [
+      "arn:aws:servicequotas:eu-west-1:${var.account_id}:fargate/L-3032A538",
+      "arn:aws:servicequotas:eu-west-3:${var.account_id}:codebuild/L-2DC20C30"
+    ] },
     { Effect = "Allow", Action = "route53:GetChange", Resource = "arn:aws:route53:::change/*" },
     { Effect = "Allow", Action = ["s3:CreateBucket", "s3:DeleteBucket", "s3:ListBucket", "s3:GetBucket*", "s3:PutBucket*", "s3:DeleteBucketPolicy", "s3:GetObject*", "s3:PutObject", "s3:DeleteObject*", "s3:ListBucketVersions"], Resource = ["arn:aws:s3:::economicon-ensayo*", "arn:aws:s3:::economicon-defensa*"] },
     { Effect = "Allow", Action = ["iam:CreateRole", "iam:PutRolePermissionsBoundary"], Resource = "arn:aws:iam::${var.account_id}:role/economicon-*", Condition = { StringEquals = { "iam:PermissionsBoundary" = var.permissions_boundary_arn } } },
@@ -222,9 +226,9 @@ resource "aws_iam_role_policy" "bedrock_metadata" {
       Effect = "Allow"
       Action = ["bedrock:GetInferenceProfile"]
       Resource = [for profile in ["eu.amazon.nova-micro-v1:0", "eu.amazon.nova-lite-v1:0"] :
-        "arn:aws:bedrock:eu-south-2:${var.account_id}:inference-profile/${profile}"
+        "arn:aws:bedrock:eu-west-1:${var.account_id}:inference-profile/${profile}"
       ]
-      Condition = { StringEquals = { "aws:RequestedRegion" = "eu-south-2" } }
+      Condition = { StringEquals = { "aws:RequestedRegion" = "eu-west-1" } }
     }]
   })
 }
