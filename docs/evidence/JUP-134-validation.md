@@ -3,7 +3,7 @@
 - Fecha: 2026-10-22.
 - Trello: https://trello.com/c/zg2LSCjb/126-jup-134
 - Rama: `fix/JUP-134-tema-y-limitaciones-es`, desde `origin/develop` en `4567e8e7`.
-- OpenSpec: `openspec/changes/jup-134-tema-y-limitaciones-es/` (propuesta, deltas de `frontend-brand-identity` y `cost-anomaly-episodes`, diseño, tareas y `review.md`).
+- OpenSpec: `openspec/changes/archive/2026-10-22-jup-134-tema-y-limitaciones-es/` (propuesta, deltas de `frontend-brand-identity` y `cost-anomaly-episodes`, diseño, tareas y `review.md`).
 - Estado: evidencia técnica de esta sesión. No sustituye la revisión ni la validación funcional de quienes tengan esos roles en Trello. Incluye comprobación en navegador real.
 
 ## Qué cambia
