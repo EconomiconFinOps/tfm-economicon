@@ -115,3 +115,15 @@ Tarea doc-only: mutación N/A y sin ciclo Red/Green (no cambia código de produc
 | `cost-anomaly-episodes` | Las limitaciones del episodio se devuelven en español, una sola lista compartida con el asistente |
 
 Mutación: 9 de 9 (selector) y 15 de 15 (limitaciones). Quedan abiertos, sin bloquear: el aislamiento opcional de `test_anomaly_evidence_limitations_copy.py` y la ejecución de la CI para backend y procesador completos. Evidencia compartida en `docs/evidence/JUP-134-validation.md`.
+
+## Human Approval
+
+- Change: jup-134-tema-y-limitaciones-es
+- Approval type: post-review
+- Decision: approved
+- Approver: Victor
+- Date: 2026-10-22
+- Adversarial review: no ejecutada; la verificación independiente fue el agente `qa` por grupo (grupo 1: accept; grupo 2: changes-requested y accept tras cerrar el mutante superviviente)
+- Accepted findings: aislamiento opcional de `test_anomaly_evidence_limitations_copy.py` (no bloqueante, sin corregir); cambio de identificador de evidencia para una anomalía explicada antes y después del despliegue (riesgo aceptado en `design.md`)
+- Archive decision: archive
+- Notes: aprobación registrada por Victor el 2026-10-22 a petición propia, tras ver la evidencia de los cuatro grupos y la comprobación en navegador real. Quedan fuera de esta aprobación y pendientes en Trello: las reviews `Revision JUP-134` y `Validacion JUP-134`, la ejecución de la CI en GitHub y las suites completas de backend y procesador, que no se pueden ejecutar en local por `tokenizer.json` y `markdown_it`. El PR no está abierto.
