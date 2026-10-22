@@ -97,14 +97,23 @@ Sección, afirmación del documento, fuente y cambio previsto. El estado «aplic
 | 10 | §3.2 | Sin chunking estructural | ADR-0023 | Añadirlo con enlace | aplicado |
 | 11 | §3.4 | Todo el vertical es objetivo | 1.3 | Integrado: contexto verificado y búsqueda documental. Objetivo: tools de ownership, anomalías y gasto | aplicado |
 | 12 | §4 | «backend migra sus ocho tablas» | 1.2 | 15 tablas; añadir almacén de objetos | aplicado |
-| 13 | §5 | Sin Cognito | JUP-131 | Una frase sobre el modo Cognito para AWS | pendiente |
-| 14 | §6.1 | «9 servicios base y 5 volúmenes»; ai «11 y 6» | 1.1 | 10 + 2 y 6; con ai 12 + 2 y 7; demo +1 y +1 | pendiente |
-| 15 | §6.1 | Figura sin MinIO, redes ni perfil demo | 1.1 | Rehacerla | pendiente |
-| 16 | §6.1 | Tabla de versiones sin MinIO | `infra/minio/Dockerfile` | Añadir fila | pendiente |
-| 17 | §6.1 | Orden de arranque sin MinIO ni `backend-migrate` | 1.1 | Corregir | pendiente |
-| 18 | §6.3 | «no se desplegará» (AWS) | JUP-131, ADR-0027 | Código para modos AWS y pipeline, sin despliegue a la fecha | pendiente |
-| 19 | §7 | Sin ADR-0022 a 0027 | `docs/adr/` | Citar por archivo | pendiente |
-| 20 | §8 | «nueve servicios» en el CD | `dockerserver-cd.md`, 1.1 | Referirse al Compose general | pendiente |
+| 13 | §5 | Sin Cognito | JUP-131 | Una frase sobre el modo Cognito para AWS | aplicado |
+| 14 | §6.1 | «9 servicios base y 5 volúmenes»; ai «11 y 6» | 1.1 | 10 + 2 y 6; con ai 12 + 2 y 7; demo +1 y +1 | aplicado |
+| 15 | §6.1 | Figura sin MinIO, redes ni perfil demo | 1.1 | Rehacerla | aplicado |
+| 16 | §6.1 | Tabla de versiones sin MinIO | `infra/minio/Dockerfile` | Añadir fila | aplicado |
+| 17 | §6.1 | Orden de arranque sin MinIO ni `backend-migrate` | 1.1 | Corregir | aplicado |
+| 18 | §6.3 | «no se desplegará» (AWS) | JUP-131, ADR-0027 | Código para modos AWS y pipeline, sin despliegue a la fecha | aplicado |
+| 19 | §7 | Sin ADR-0022 a 0027 | `docs/adr/` | Citar por archivo | aplicado |
+| 20 | §8 | «nueve servicios» en el CD | `dockerserver-cd.md`, 1.1 | Referirse al Compose general | aplicado |
+
+## 4. Desfases nuevos descubiertos al editar
+
+| # | Sección | Hallazgo | Cambio |
+| --- | --- | --- | --- |
+| 21 | §8 | La frase de CI no incluía los jobs de JUP-131 (contrato PostgreSQL y demo AWS offline) ni la política JUP y la landing | Reescrita con los jobs de `ci.yml` |
+| 22 | §6.1 | `chat-private` es interna y el puerto 8003 no se publica; la frase «la red base no restringe egress» podía leerse como aplicable a ella | Aclarado |
+| 23 | §3.1 | El router de chat cuelga de `/assistant`, no de `/chat` (corrige mi nota inicial) | El documento usa las rutas reales |
+| 24 | §6.2 | La fila de JUP-050 dice «nueve servicios»: es evidencia histórica fechada del 01/10 | Se conserva sin cambios |
 
 ## 3. Hallazgos fuera de alcance
 

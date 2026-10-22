@@ -26,15 +26,15 @@
 
 ## 3. Editar docs/architecture.md: identidad, despliegue y decisiones (§5 a §8)
 
-- [ ] 3.1 `docs/architecture.md` §5: añadir el modo Cognito como alternativa para AWS sin cambiar lo que se dice de la autenticación de
+- [x] 3.1 `docs/architecture.md` §5: añadir el modo Cognito como alternativa para AWS sin cambiar lo que se dice de la autenticación de
   la demo (D4)
-- [ ] 3.2 §6.1: actualizar la figura de topología, los recuentos por combinación de perfiles con el comando que
+- [x] 3.2 §6.1: actualizar la figura de topología, los recuentos por combinación de perfiles con el comando que
   los reproduce, la tabla de versiones (MinIO) y las dependencias de arranque; recomprobar la frase de «las
   cuatro apps»
-- [ ] 3.3 §6.3: añadir el párrafo mínimo de JUP-131 y retirar «no se desplegará», con enlaces al runbook, la nota
+- [x] 3.3 §6.3: añadir el párrafo mínimo de JUP-131 y retirar «no se desplegará», con enlaces al runbook, la nota
   de continuidad y ADR-0027 (D4)
-- [ ] 3.4 §7: citar ADR-0022 a ADR-0027 por su archivo canónico, sin renumerar ni cambiar estados (D5)
-- [ ] 3.5 §8: corregir los recuentos del CD privado si ya no son ciertos; revisar
+- [x] 3.4 §7: citar ADR-0022 a ADR-0027 por su archivo canónico, sin renumerar ni cambiar estados (D5)
+- [x] 3.5 §8: corregir los recuentos del CD privado si ya no son ciertos; revisar
   `docs/deployment/dockerserver-cd.md` y, si contradice el Compose actual, anotarlo como hallazgo sin editarlo
 
 ## 4. Comprobación y cierre

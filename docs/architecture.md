@@ -467,6 +467,13 @@ expiración/cambio de sesión. CORS usa orígenes explícitos
 La auth demo [ADR-0014](adr/ADR-0014-demo-auth-boundary.md) no acredita IdP,
 MFA, revocación ni seguridad de una aplicación pública.
 
+JUP-131 añade un segundo modo, `AUTH_PROVIDER=cognito` (por defecto `local`): el
+backend verifica el token de acceso de Cognito (RS256 contra el JWKS, con emisor
+y cliente exactos), vincula su `sub` a un usuario local y sigue resolviendo
+tenant y membresía en la base de datos; el login local responde 403. Es el modo
+del entorno AWS de referencia (§6.3): ningún Compose lo activa y no sustituye la
+frontera de la auth demo descrita arriba.
+
 Las credenciales operativas se suministran en runtime, fuera de Git e imágenes;
 el simulador Azure conserva valores locales de prueba explícitos. Variables VITE_*
 son públicas. Clave upstream OpenRouter y clave maestra quedan en gateway;
@@ -484,6 +491,7 @@ trasladar el host a cloud no amplía esa excepción.
 flowchart TB
   Browser[Navegador: acceso privado previsto] --> F[Frontend: host 5173]
   Browser --> B[Backend: host 8000]
+  Browser -->|PUT con URL firmada| S3
   subgraph Compose[Compose local: red de aplicación]
     F
     B
@@ -492,31 +500,51 @@ flowchart TB
     CR[CockroachDB: host 26257 y 8080]
     Q[RabbitMQ: host 5672 y 15672]
     V[pgvector: host 5433]
+    S3[MinIO: host 9000]
     P[Prometheus: host 9090]
     G[Grafana: host 3000]
+    MIG[backend-migrate: un solo uso]
+    INI[minio-init: un solo uso]
+  end
+  subgraph DEMO[Perfil demo opcional]
+    AZD[Azure simulada con datos de demo]
+    DD[demo-data: un solo uso]
   end
   subgraph AI[Perfil ai opcional]
     L[LiteLLM: host 44000]
     PG[PostgreSQL gateway: sin puerto host]
     L --> PG
   end
+  B -.->|Chat: red chat-private, puerto 8003, HMAC| W
   B -.-> L
   W -.-> L
+  MIG --> CR
+  INI --> S3
+  DD --> AZD
   CR --> CV[(cockroach-data)]
   Q --> QV[(rabbitmq-data)]
   V --> VV[(pgvector-data)]
   P --> PV[(prometheus-data)]
   G --> GV[(grafana-data)]
+  S3 --> SV[(document-artifacts)]
   PG --> LV[(gateway-data)]
 ```
 
-Valores por defecto de [docker-compose.yml](../docker-compose.yml): **9 servicios
-base y 5 volúmenes**; ai añade LiteLLM/PostgreSQL/gateway-data (**11 y 6**).
+Valores por defecto de [docker-compose.yml](../docker-compose.yml): **10 servicios
+de larga ejecución, 2 de un solo uso (`backend-migrate` y `minio-init`) y 6
+volúmenes**. El perfil `demo` añade la API Azure con los datos de demostración y
+`demo-data` (de un solo uso, **11 y 3**); el perfil `ai` añade LiteLLM, su
+PostgreSQL y `gateway-data` (**12 y 2**, y 7 volúmenes). Los recuentos se
+reproducen con `docker compose config --services` y `--volumes`, con las
+variables obligatorias definidas y, para `ai`, el overlay de abajo.
 Las cuatro apps publican puerto **sin dirección loopback por defecto**;
-las publicaciones de infraestructura sí usan 127.0.0.1. El objetivo privado
+las publicaciones de infraestructura, MinIO incluido, sí usan 127.0.0.1 (la URL
+firmada de una subida se firma para ese host y puerto). El puerto 8003 del
+processor solo existe en la red interna `chat-private`: no se publica.
+El objetivo privado
 requiere configurar bindings/red/firewall del host: Compose por sí solo no
 demuestra privacidad. /metrics tampoco exige auth al publicar la API.
-La red base no restringe egress. No hay HA: host, bases single-node y cola
+La red base no restringe egress; `chat-private` es interna. No hay HA: host, bases single-node y cola
 son puntos de fallo.
 
 | Dependencia | Referencia fijada en código |
@@ -525,14 +553,16 @@ son puntos de fallo.
 | RabbitMQ / pgvector | 3-management / pg17 por digest; esos tags no identifican patch por sí solos |
 | Prometheus / Grafana | v2.55.1 / 11.3.0 por tag, sin digest |
 | LiteLLM / DB gateway | 1.103.2 / postgres:17-alpine por digest |
+| MinIO / mc | RELEASE.2025-10-15T17-29-55Z / RELEASE.2025-08-13T08-35-41Z, compilados desde fuentes con checksum sobre golang:1.24.8 por digest; imagen final python:3.12-slim por digest |
 | Apps Python | python:3.12-slim por digest; requirements usan rangos, no resolución pip completamente fijada |
 | Frontend | node:20-alpine por digest; pnpm 9.0.0 y lockfile. CI usa Node 22 |
 
 Los digests completos están en los Dockerfiles de las aplicaciones, Compose y
 [Compose gateway](../infra/litellm/docker-compose.yml); no se mantiene otra
 lista que pueda divergir. Son versiones del proyecto, no recomendaciones
-de versiones actuales. Orden: DB/cola/vector sanos → backend migrado →
-processor; processor espera además Azure. Frontend espera backend;
+de versiones actuales. Orden: DB/cola/vector sanos y MinIO inicializado →
+backend migrado y sano → processor; processor espera además Azure.
+Frontend espera backend;
 Prometheus espera backend/processor y Grafana espera Prometheus.
 Grafana no tiene healthcheck Compose.
 
@@ -542,6 +572,7 @@ dimensiones ni claves. Seguir los recorridos mock/IA/retorno del
 [README](../README.md), con proyectos separados para índices mock y reales.
 Frontend sirve con **Vite preview**, no servidor de producción.
 Las cuatro apps usan usuario sin privilegios, raíz de solo lectura y tmpfs;
+MinIO y los servicios de un solo uso añaden raíz de solo lectura y tmpfs, pero
 no se extiende esa garantía a toda la infraestructura.
 `down` conserva volúmenes nombrados; `down -v` los elimina.
 Persistencia ante recreación no equivale a backup/restore.
@@ -557,7 +588,7 @@ Persistencia ante recreación no equivale a backup/restore.
 | [JUP-078](evidence/JUP-078-operational-closure.md) | Gateway dedicado y claves limitadas verificados en su corte del 10/10. | No adopción automática por el CD mock ni nueva prueba upstream o de chat generativo. |
 | Revisión estática JUP-060 | Código/configuración disponibles para reproducir. | No inventario vivo, capacidad, HA, RPO/RTO o despliegue final aceptado. |
 
-### 6.3 AWS: arquitectura de referencia y Terraform sin despliegue
+### 6.3 AWS: arquitectura de referencia, Terraform y pipeline sin despliegue
 
 ```mermaid
 flowchart TB
@@ -574,25 +605,40 @@ flowchart TB
   C[Cognito: identidad; tenant en aplicación] -.-> API
 ```
 
-Todas las conexiones son **conceptuales**. El usuario confirmó el 10/10 que AWS
-forma parte del entregable documental y no se desplegará. El
+Todas las conexiones son **conceptuales**. El 10/10 se confirmó que AWS formaba
+parte del entregable documental y no se desplegaría; JUP-131 amplió el alcance
+el 21/10 con el código y el pipeline que se describen abajo, **sin que a la fecha
+del corte haya nada desplegado en AWS**. El
 [esquema AWS completo](architecture-aws.md) incluye correspondencia con el stack,
 seguridad, alternativas de acceso, operación, fuentes y límites. La
 [plantilla Terraform](../infra/aws-reference/README.md) incorpora recursos,
 variables, ejemplos y pruebas simuladas como complemento técnico solicitado.
-Terraform es alternativa a CDK/CloudFormation; el pipeline CodePipeline/CodeBuild
-del esquema sigue conceptual y no está implementado por la plantilla.
+Terraform es alternativa a CDK/CloudFormation. La plantilla no incluye el
+pipeline CodePipeline/CodeBuild del esquema: lo aporta JUP-131 aparte, como
+código de control en [infra/aws-bootstrap](../infra/aws-bootstrap) y
+[infra/aws-cicd](../infra/aws-cicd), con dos pipelines manuales de creación y
+retirada de un ciclo desechable para dos ensayos y la defensa
+([runbook](deployment/aws-defensa.md), [ADR-0027](adr/ADR-0027-aws-defense-lifecycle.md),
+en estado Proposed).
 
-CockroachDB → PostgreSQL, Cognito y Bedrock requieren adaptaciones hipotéticas;
-no son capacidades integradas ni nuevas tareas de runtime en JUP-060. Las tareas
-ECS están desactivadas por defecto; un apply crearía el resto de recursos con
-coste, por lo que ese flag no es un modo de simulación. Solo se validan formato,
-esquema y pruebas con proveedores mock, sin plan real, credenciales ni apply.
+**Lo que el código admite desde JUP-131, apagado por defecto y sin ejecutar
+nada en AWS.** PostgreSQL como base operativa además de CockroachDB,
+`AUTH_PROVIDER=cognito` (§5) y `EMBEDDING_PROVIDER=bedrock` con Titan V2 en
+`eu-west-1`. Ningún Compose los activa y su evidencia
+([PostgreSQL](evidence/JUP-131-postgresql.md), [Cognito](evidence/JUP-131-cognito.md),
+[Bedrock](evidence/JUP-131-bedrock.md)) es local: no acredita RDS desplegado,
+un login contra Cognito real ni invocaciones a Bedrock. Las tareas ECS siguen desactivadas por defecto; un
+apply crearía el resto de recursos con coste, por lo que ese flag no es un modo
+de simulación. El estado operativo del ensayo (cuotas, regiones, entradas
+pendientes, reviews) cambia a diario y se consulta en el
+[runbook](deployment/aws-defensa.md) y en la
+[nota de continuidad](continuidad/cloud-aws.md), no aquí.
 
 La [propuesta EC2 del 09/10](planning/aws-deployment-proposal.md) queda como
 antecedente histórico: sus preguntas de cuenta/presupuesto, demo y fases
 operativas ya no son pendientes para esta entrega. La aceptación documental
-no exige recursos, migraciones, URL operativa ni pruebas AWS.
+no exige recursos, migraciones, URL operativa ni pruebas AWS; el ensayo de
+JUP-131 es una entrega operativa aparte con su propia evidencia.
 
 ## 7. Por que esta separado asi
 
@@ -604,10 +650,16 @@ no exige recursos, migraciones, URL operativa ni pruebas AWS.
 | API Azure simulada | [ADR-0001](adr/ADR-0001-azure-cost-api-simulation.md): HTTP, paginación y errores sin tenant real; CSV directo no probaría ese contrato. Datos limitados. |
 | LiteLLM/OpenRouter | [ADR-0002](adr/ADR-0002-litellm-openrouter.md): concentrar credenciales/políticas; su aceptación no implica calidad ni gasto autorizado. [ADR-0017](adr/ADR-0017-backend-query-embedding-own-key.md) separa clave del backend y fija compatibilidad de embeddings. |
 | Compose local | [ADR-0015](adr/ADR-0015-local-compose-deployment-boundary.md): topología reproducible; no selecciona Kubernetes, HA o hosting productivo. |
+| MinIO y extracción aislada | [ADR-0022 de artefactos](adr/ADR-0022-document-ingestion-artifact-lifecycle.md) (Proposed): el binario no pasa por la cola ni vive indefinidamente, y el texto normalizado durable permite recuperar y citar sin él. Añade operar MinIO (AGPL-3.0) y herramientas locales de OCR y conversión; la extracción falla cerrada si no hay aislamiento Linux. |
+| Chunking determinista | [ADR-0023 de chunking](adr/ADR-0023-deterministic-document-chunking.md) (Proposed): unidades estructurales reproducibles y sin modelos, a costa de no optimizar el recall. |
+| Recuperación verificada, contextual e híbrida | [ADR-0024](adr/ADR-0024-verified-contextual-retrieval.md) (Proposed): generaciones inmutables por tenant y espacios de embeddings verificados; más almacenamiento y preparación explícita, sin garantía de mejora universal. Apagada por defecto. |
+| Modelo generativo único | [ADR-0026](adr/ADR-0026-default-chat-model.md) (Proposed) resuelve el alias `economicon-chat` a un solo modelo sin alternativa de reserva; [ADR-0025](adr/ADR-0025-chat-model-selection.md) conserva la configuración de evaluación histórica (el archivo `ADR-0023-chat-model-selection.md` es solo un alias hacia él). |
+| Ciclo AWS desechable | [ADR-0027](adr/ADR-0027-aws-defense-lifecycle.md) (Proposed): control separado y pipelines manuales de creación y retirada; no hay despliegue a la fecha del corte (§6.3). |
 
 Se conservan estados de los ADR originales, incluidos los Proposed:
-documentar o integrar no ratifica decisiones. Esta consolidación no introduce
-una decisión arquitectónica nueva.
+documentar o integrar no ratifica decisiones. Los números 0013, 0022 y 0023
+se repiten en archivos distintos; por eso los ADR se citan por su archivo y no
+se renumeran. Esta consolidación no introduce una decisión arquitectónica nueva.
 
 ## 8. Observabilidad, entrega y límites
 
@@ -628,14 +680,19 @@ sus resultados se ven en un dashboard de Grafana aparte, alimentado desde el esq
 [ADR-0022](adr/ADR-0022-assistant-evaluation-results-in-grafana.md)).
 Ese dashboard muestra también tres indicadores medidos para la memoria (calidad de la detección de anomalías, coste de IA facturado frente a estimado, y frescura y reconciliación de los datos de coste): los mide `tools/memory-indicators.py`, que consulta al detector, al gateway de IA y a OpenRouter y escribe informes versionados que `evaluation-dashboard:load` carga como cualquier otro; Grafana no accede a la base del gateway ([nota](continuidad/indicadores-memoria.md)).
 
-[CI](../.github/workflows/ci.yml) ejecuta gobernanza/OpenSpec, pruebas y sintaxis
-de tres servicios Python, lint/test/build/typecheck frontend.
+[CI](../.github/workflows/ci.yml) ejecuta gobernanza/OpenSpec y política JUP,
+pruebas y sintaxis de tres servicios Python, lint/test/build/typecheck del
+frontend, las comprobaciones estáticas de la landing y, desde JUP-131, un
+contrato de aplicación sobre PostgreSQL y las comprobaciones offline de la demo
+AWS.
 [Reviews](../.github/workflows/pr-reviews.yml) aplica el proceso JUP.
 El [workflow CD](../.github/workflows/cd.yml) reutiliza CI y publica elegibilidad
 para el SHA de develop. El [agente privado](deployment/dockerserver-cd.md) consulta
 cada cinco minutos, construye una release aislada, fuerza puertos a loopback y
 ejecuta smoke antes de promover; state.json/journal acreditan despliegue real.
-Este CD usa nueve servicios en modo mock y datos desechables; no incorpora
+Este CD arranca el Compose general sin perfiles (los 10 servicios de larga
+ejecución y los 2 de un solo uso de §6.1, MinIO incluido) en modo mock y datos
+desechables; no incorpora
 automáticamente el gateway dedicado de JUP-078 ni es un despliegue productivo.
 No se deduce despliegue de sus checks. Rama JUP → PR a develop → revisión y
 validación separadas → integración según [CONTRIBUTING](../CONTRIBUTING.md).
