@@ -20,23 +20,11 @@ from decimal import Decimal, localcontext
 # `display_label` se importa y no se copia: es el escape ya probado en JUP-037 y duplicarlo dejaría dos
 # versiones del mismo saneamiento que podrían divergir. No se mueve a un módulo común para no tocar el
 # archivo de JUP-037 ni sus pruebas (design.md, decisión 6).
-from app.services.anomaly_episodes import REFERENCE_DAYS, RULES, RULES_VERSION, money, severity, triggers
+from app.services.anomaly_episodes import LIMITATIONS, REFERENCE_DAYS, RULES, RULES_VERSION, money, severity, triggers
 from app.services.ownership_questions import display_label
 
 SCHEMA_VERSION = "1.0"
 ADAPTER_VERSION = "anomaly-explanation-1.0"
-
-# Las limitaciones del episodio son valores de la API en inglés (JUP-117 las dejó así); la respuesta la lee
-# la persona que decide, así que se redactan en español, una por cada entrada de `LIMITATIONS` y en el
-# mismo orden. Una prueba falla si el número deja de coincidir, para obligar a traducir las nuevas.
-LIMITATIONS_ES = (
-    "Es un candidato para investigar, no una causa demostrada, un ahorro ni una confianza estadística.",
-    "No se verifica que los datos de coste estén completos; un día puede evaluarse antes de que lleguen registros tardíos.",
-    "Un servicio sin gasto previo no abre anomalía su primer día; desde el segundo la referencia es la media de 7 días, "
-    "que incluye ese primer día, así que un gasto nuevo y estable puede abrir una anomalía y escalar hasta que alguien la cierre.",
-    "Los ciclos semanales pueden dar candidatas falsas y un pico reciente sube la media de 7 días.",
-    "Solo se vigila el servicio; solo se evalúan EUR y USD, con umbrales nominales.",
-)
 
 # Palabras del panel de anomalías, para que el asistente y la interfaz no digan cosas distintas.
 STATUS_WORDS = {"new": "Nueva", "investigating": "Investigando", "resolved": "Resuelta", "false_positive": "Falso positivo"}
@@ -260,7 +248,7 @@ def explain_episode(snapshot: dict, *, tenant_id: str, explained_at: datetime) -
                    "through_date": episode["impact_through_date"].isoformat(), "severity": code,
                    "severity_band": rules["severity"][code]},
         "rounding_notes": notes, "includes_synthetic_data": snapshot["includes_synthetic_data"],
-        "cause_status": "not_established", "assumptions": [], "limitations": list(LIMITATIONS_ES),
+        "cause_status": "not_established", "assumptions": [], "limitations": list(LIMITATIONS),
     }
     evidence_id = _evidence_id(tenant_id, body)
     evidence = {"id": evidence_id, **body, "explained_at": explained}
@@ -285,7 +273,7 @@ def explain_episode(snapshot: dict, *, tenant_id: str, explained_at: datetime) -
     lines += [
         "Causa no establecida: es un candidato para investigar, no una causa demostrada ni un ahorro.",
         "Limitaciones:",
-        *(f"- {text}" for text in LIMITATIONS_ES),
+        *(f"- {text}" for text in LIMITATIONS),
     ]
     if snapshot["includes_synthetic_data"]:
         lines.append("Aviso: los datos de este cliente incluyen datos sintéticos de demostración.")
