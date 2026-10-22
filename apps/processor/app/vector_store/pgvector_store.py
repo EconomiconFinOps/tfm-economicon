@@ -7,7 +7,7 @@ import math
 from sqlalchemy import create_engine, text
 
 from app.core.runtime_secrets import StartupError
-from app.db.migration_runner import MigrationRunner
+from app.db.migration_runner import MigrationRunner, initialize_schema
 
 
 _UNGUARDED = object()
@@ -18,12 +18,13 @@ class StalePublication(RuntimeError):
 
 
 class PgVectorStore:
-    def __init__(self, database_url: str, embedding_dimension: int):
+    def __init__(self, database_url: str, embedding_dimension: int, *, engine=None):
         if embedding_dimension <= 0:
             raise ValueError("embedding_dimension must be greater than zero")
         self.database_url = database_url
         self.embedding_dimension = embedding_dimension
-        self.engine = create_engine(database_url, future=True, pool_pre_ping=True)
+        # Bootstrap can supply its owner engine with pinned RDS TLS connect_args.
+        self.engine = engine if engine is not None else create_engine(database_url, future=True, pool_pre_ping=True)
         self.store_name = "pgvector"
 
     def initialize(self) -> None:
@@ -34,7 +35,19 @@ class PgVectorStore:
             version_table="vector_schema_migrations",
             migration_kwargs={"001": {"embedding_dimension": self.embedding_dimension}},
         )
-        runner.run()
+        initialize_schema(runner, {
+            'knowledge_documents': {'id', 'tenant_id', 'text_content', 'metadata'},
+            'document_chunks': {'id', 'document_id', 'content', 'metadata'},
+            'chunk_embeddings': {'id', 'chunk_id', 'embedding', 'dimension'},
+            'embedding_spaces': {'id', 'descriptor'},
+            'embedding_cache': {'tenant_id', 'space_id', 'text_hash', 'embedding'},
+            'rag_document_revisions': {'id', 'tenant_id', 'document_id', 'metadata'},
+            'rag_revision_chunks': {'tenant_id', 'revision_id', 'chunk_id', 'content'},
+            'rag_chunk_vectors': {'tenant_id', 'revision_id', 'chunk_id', 'space_id'},
+            'rag_generations': {'id', 'tenant_id', 'state', 'space_id'},
+            'rag_generation_members': {'tenant_id', 'generation_id', 'document_id', 'revision_id'},
+            'tenant_rag_head': {'tenant_id', 'generation_id', 'version', 'catalog_revision'},
+        })
         with self.engine.connect() as connection:
             dimension = connection.execute(text("""
                 SELECT atttypmod FROM pg_attribute

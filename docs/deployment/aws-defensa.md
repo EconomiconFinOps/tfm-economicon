@@ -5,6 +5,50 @@ Implementación preparada el21/10/2026. [Trello](https://trello.com/c/NtiH8R4Z),
 **No se ha desplegado nada en AWS.** El ensayo1 está preparado localmente, pero
 no es lanzable hasta completar sus entradas y la evidencia funcional pendiente.
 
+## Corte de verificación — 22/10/2026
+
+La [CI39681182813](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39681182813)
+terminó SUCCESS para `3e543b6fd58283c5d942ce9899fa7a00faa1d985`: ocho jobs
+técnicos conformes y JUP policy omitido en el evento push. Incluye PostgreSQL
+real, controlador offline, backend/processor, frontend y OpenSpec. No valida los
+cambios locales posteriores de Bedrock ni una ejecución en AWS.
+
+La PR146 permanece en borrador, sin reviews publicadas. Tras fetch, develop
+está en `4567e8e7`; merge-tree detecta un conflicto textual en
+`docs/continuidad/README.md`. Además incorpora JUP-132 (modelo generativo y
+recursos v4), que requiere comprobar compatibilidad con Bedrock antes de publicar
+el conjunto. También coincide el número ADR-0026 de ambas ramas: resolver el
+índice y numeración al integrar, conservando los documentos.
+
+Reejecutado localmente: controlador Python27PASS/1SKIP (PostgreSQL necesita
+opt-in), Terraform referencia10PASS con mocks y `git diff --check` conforme.
+El contrato de perfiles Bedrock ya está conectado al preflight del runner;
+no se ha ejecutado contra la cuenta. El hito posterior de runtime privado
+S3/HMAC/TLS tiene95PASS Linux, controlador30PASS/1SKIP y Terraform13PASS mock;
+ver [evidencia y límites](../evidence/JUP-131-aws-runtime.md). No cubre las tareas
+de bootstrap/checks que siguen pendientes.
+`prepare.py --allow-incomplete` conserva `aws_deployable=false` y
+`aws_preflight_executed=false`. No se llama a AWS.
+
+### Qué desbloquea el primer ensayo
+
+| Bloque | Trabajo o dato concreto | Criterio para avanzar |
+| --- | --- | --- |
+| Código pendiente | Cerrar Bedrock, tareas privadas de bootstrap, fixtures y checks funcionales; conectar configuración/outputs y permisos runtime | Receta real `infra/aws-cicd/release.json`, scripts existentes, hashes y evidencias verificables; sin comandos REPLACE |
+| Integración y aceptación | Reconciliar develop, probar los recursos de chat actuales, publicar el candidato y obtener revisión/validación según CONTRIBUTING | CI SUCCESS del SHA final; no reutilizar el run de3e543b6f para código posterior |
+| Acceso a cuenta | ID12dígitos y acceso mediante identidad/rol autorizado; España habilitada y boundary aprobada | Preflight futuro verifica identidad, cuotas, AZ, versiones RDS/MQ y permisos efectivos |
+| DNS | Zona pública Route53 o delegación de la subzona de `danteinferno.es`, con zone ID | Control de `economicon.danteinferno.es` y `origin.economicon.danteinferno.es` para certificados y registros |
+| Conexión de fuente | ARN CodeConnections AVAILABLE en París para este repositorio | Instalación de GitHub completada; origen manual fijado al SHA revisado |
+| Secretos y modelos | ARN de los secretos GitHub/MQ en París, boundary IAM; disponibilidad y permiso de los modelos elegidos | Solo referencias públicas en configuración; valores en Secrets Manager. Metadatos/permisos de modelo verificados en la cuenta, no inferidos del catálogo |
+| Coste y ventana | Crédito utilizable real, estimación del ciclo completo, margen residual, caducidad UTC y horario de defensa29/10 | Coste compatible con60€ y ventana de ensayo acordada. El ejemplo23/10 18:00UTC debe confirmarse antes de usarlo |
+| Lanzamiento | Preparación del bootstrap de control y paquete revisado; autorización futura de despliegue | No ejecutar apply ni iniciar pipelines hasta recibir esa autorización |
+
+Los tres primeros bloques de código/integración se preparan en el proyecto;
+las referencias de cuenta, DNS, conexión y crédito deben proceder de sus
+administradores. No pedir ni guardar contraseñas o tokens en Git/chat. El primer
+ensayo verificará arranque, aceptación funcional, retirada y residuos: esos
+resultados no pueden acreditarse antes del despliegue autorizado.
+
 ## Componentes y uso local
 
 - `infra/aws-bootstrap/`: control en París, state S3 privado/versionado, artefactos
@@ -58,9 +102,11 @@ Los ejemplos no contienen IDs reales ni secretos y fallan por diseño al validar
    evidencias en `docs/evidence/` verificadas por SHA256 y scripts Python reales
    en `tools/aws_demo/`. No rellenar hashes ficticios ni sustituir checks por true.
 
-El CI/CD no implementa esas migraciones/adaptadores de producto. Su ausencia
-bloquea la fase validate ANTES de crear infraestructura demo. No hay receta real
-de bootstrap/checks suministrada ni aceptación funcional AWS en esta entrega.
+La entrega inicial de CI/CD no incluía esas adaptaciones. El trabajo posterior
+incorpora [runtime privado](../evidence/JUP-131-aws-runtime.md) y
+[bootstrap de bases](../evidence/JUP-131-aws-bootstrap-db.md). Todavía faltan
+MQ/identidades/fixtures/checks y receta completa; su ausencia bloquea validate
+ANTES de crear infraestructura demo. No hay aceptación funcional AWS.
 
 ## Contrato de la receta de release
 

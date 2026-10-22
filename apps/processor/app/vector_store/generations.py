@@ -59,7 +59,7 @@ class GenerationStore:
     def cache_embeddings(self, tenant, space, prepared, provider):
         self.register_space(space)
         if (provider.name != space.provider or provider.dimension != space.dimension
-                or (provider.name == 'litellm' and getattr(provider, 'mapping_sha256', None) != space.mapping_sha256)):
+                or (provider.name in {'litellm','bedrock'} and getattr(provider, 'mapping_sha256', None) != space.mapping_sha256)):
             raise ValueError('Provider is incompatible with the requested embedding space')
         unique = {item.text_hash: item for item in prepared}
         if any(not isinstance(item.text, str) or not item.text.strip()
@@ -80,7 +80,7 @@ class GenerationStore:
             if len(vectors) != len(missing):
                 raise ValueError('Incomplete embedding result')
             for item, vector in zip(missing, vectors):
-                if (len(vector) != 1536 or any(type(v) not in {int, float} or not math.isfinite(v) for v in vector)
+                if (len(vector) != space.dimension or any(type(v) not in {int, float} or not math.isfinite(v) for v in vector)
                         or not any(float(f'{v:.6f}') != 0 for v in vector)):
                     raise ValueError('Invalid cache vector')
             with self.engine.begin() as connection:
@@ -91,7 +91,7 @@ class GenerationStore:
                          'vector': '[' + ','.join(f'{v:.6f}' for v in vector) + ']', 'tokens': item.token_count})
                 # A concurrent winner is canonical: never publish a losing HTTP result.
                 known = {row.text_hash: json.loads(row.vector) for row in connection.execute(query, parameters)}
-        if set(known) != set(unique) or any(len(v) != 1536 or not any(v) or not all(math.isfinite(x) for x in v) for v in known.values()):
+        if set(known) != set(unique) or any(len(v) != space.dimension or not any(v) or not all(math.isfinite(x) for x in v) for v in known.values()):
             raise ValueError('Invalid or incomplete embedding cache')
         with self.engine.begin() as connection:
             connection.execute(text('UPDATE embedding_cache SET last_used_at=clock_timestamp() WHERE tenant_id=:tenant AND space_id=:space AND text_hash IN :hashes')

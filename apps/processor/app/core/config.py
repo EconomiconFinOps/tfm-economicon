@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     embedding_provider: str = "mock"
     embedding_dimension: int = 8
     embedding_model: str = "economicon-embedding"
+    bedrock_region: Literal["eu-south-2"] | None = None
+    bedrock_timeout_seconds: float = Field(default=20, gt=0, le=30, allow_inf_nan=False)
     embedding_mapping_sha256: str | None = Field(default=None, pattern=r'^[0-9a-f]{64}$')
     embedding_deployment_id: str | None = Field(default=None, strict=True, pattern=r'^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$')
     # Character settings remain available for the explicit legacy comparison utility.
@@ -34,6 +36,7 @@ class Settings(BaseSettings):
     embedding_chunk_overlap: int = 50
     llm_provider: str = "mock"
     llm_model: str = "economicon-chat"
+    bedrock_chat_model_id: Literal["eu.amazon.nova-micro-v1:0", "eu.amazon.nova-lite-v1:0"] | None = None
     ai_execution_mode: str = "development"
     litellm_base_url: str = "http://litellm:4000/v1"
     litellm_api_key: SecretStr | None = None
@@ -73,8 +76,8 @@ class Settings(BaseSettings):
     @classmethod
     def validate_ai_provider(cls, value: str) -> str:
         normalized = value.strip().lower()
-        if normalized not in {"mock", "litellm"}:
-            raise ValueError("AI providers must be either 'mock' or 'litellm'")
+        if normalized not in {"mock", "litellm", "bedrock"}:
+            raise ValueError("AI providers must be 'mock', 'litellm' or 'bedrock'")
         return normalized
 
     @field_validator("ai_execution_mode")
@@ -87,9 +90,10 @@ class Settings(BaseSettings):
 
     @field_validator("llm_model", "embedding_model")
     @classmethod
-    def validate_logical_model_alias(cls, value: str) -> str:
+    def validate_logical_model_alias(cls, value: str, info) -> str:
         normalized = value.strip()
-        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}", normalized):
+        native_embedding = info.field_name == 'embedding_model' and normalized == 'amazon.titan-embed-text-v2:0'
+        if not native_embedding and not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}", normalized):
             raise ValueError("services must use a non-empty LiteLLM logical model alias")
         return normalized
 
@@ -229,6 +233,15 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_runtime(self) -> "Settings":
+        if self.embedding_model == 'amazon.titan-embed-text-v2:0' and self.embedding_provider != 'bedrock':
+            raise ValueError('Native embedding model identity requires the Bedrock provider')
+        if self.llm_provider == 'bedrock' and (self.bedrock_region is None
+                or self.bedrock_chat_model_id is None or self.llm_model != 'economicon-chat'):
+            raise ValueError('Bedrock chat requires an explicit EU profile from Spain and the approved chat contract')
+        if self.embedding_provider == 'bedrock':
+            if (self.bedrock_region is None or self.embedding_model != 'amazon.titan-embed-text-v2:0'
+                    or self.embedding_dimension not in {256,512,1024}):
+                raise ValueError('Bedrock embeddings require explicit Spain region, Titan V2 and a native dimension')
         validate_connections(self)
         return self
 

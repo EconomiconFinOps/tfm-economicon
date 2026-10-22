@@ -1,6 +1,26 @@
 from app.agents.schemas import FinOpsResponse
 from app.clients.litellm import LiteLLMClient, ProviderError
 from app.core.config import Settings
+from app.core.bedrock import BedrockRuntime, BedrockError
+import json
+
+
+class BedrockLLMProvider:
+    def __init__(self, settings):
+        self.runtime = BedrockRuntime(settings.bedrock_region,timeout=settings.bedrock_timeout_seconds)
+        self.model_id = settings.bedrock_chat_model_id
+        self.max_tokens = settings.llm_max_output_tokens
+        self.usage_records = []
+
+    def invoke(self, prompt, *, response_format):
+        definition = response_format['json_schema']
+        try:
+            value,usage = self.runtime.converse([{'role':'user','content':prompt}],schema=definition['schema'],
+                schema_name=definition['name'],model_id=self.model_id,max_tokens=self.max_tokens)
+        except BedrockError as failure:
+            raise ProviderError(failure.category) from None
+        self.usage_records.append(usage)
+        return json.dumps(value,ensure_ascii=False,allow_nan=False)
 
 
 class MockLLMProvider:
@@ -59,6 +79,10 @@ class LiteLLMProvider:
 
 
 def get_provider(provider_name: str, settings: Settings | None = None):
+    if provider_name == 'bedrock':
+        if settings is None:
+            raise ValueError('Bedrock requires explicit regional settings')
+        return BedrockLLMProvider(settings)
     if provider_name == "mock":
         return MockLLMProvider()
     if provider_name == "litellm":

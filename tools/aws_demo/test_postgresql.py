@@ -55,6 +55,8 @@ class PostgreSQLApplicationTests(unittest.TestCase):
 from app.core.config import get_settings
 from app.db.database import Database
 from app.db.migration_runner import MigrationRunner
+from app.aws_bootstrap_identity import bind_identity
+from app.aws_bootstrap_common import BootstrapError
 from pathlib import Path
 from sqlalchemy import text
 d=Database(get_settings().database_url.get_secret_value())
@@ -68,6 +70,21 @@ try:
     with d.engine.connect() as c:
         assert c.execute(text('SELECT count(*) FROM schema_migrations')).scalar_one()==6
         assert c.execute(text('SELECT count(*) FROM users')).scalar_one()==1
+    identity={'id':'dd0a7871-d3c3-441f-9c40-d01aee724131','email':'aws-defensa+ensayo1@example.com'}
+    bind_identity(d.engine,identity)
+    bind_identity(d.engine,identity)
+    assert d.user_has_tenant(identity['id'],'tenant-core')
+    assert not d.user_has_tenant(identity['id'],'tenant-growth')
+    with d.engine.begin() as c:
+        c.execute(text("INSERT INTO user_tenants(user_id,tenant_id,role,created_at) VALUES(:id,'tenant-growth','analyst',now())"),identity)
+    try:
+        bind_identity(d.engine,identity)
+    except BootstrapError:
+        pass
+    else:
+        raise AssertionError('Bootstrap accepted a conflicting membership')
+    with d.engine.connect() as c:
+        assert c.execute(text('SELECT count(*) FROM users')).scalar_one()==2
 finally: d.dispose()
 """)
             run("processor", """

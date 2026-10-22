@@ -10,6 +10,17 @@ resource "aws_cognito_user_pool" "main" {
   admin_create_user_config {
     allow_admin_create_user_only = true
   }
+  schema {
+    name                     = "rehearsal"
+    attribute_data_type      = "String"
+    developer_only_attribute = false
+    mutable                  = false
+    required                 = false
+    string_attribute_constraints {
+      min_length = 1
+      max_length = 128
+    }
+  }
   password_policy {
     minimum_length                   = 14
     require_lowercase                = true
@@ -23,6 +34,9 @@ resource "aws_cognito_user_pool_client" "frontend" {
   name                                 = "${local.name}-web"
   user_pool_id                         = aws_cognito_user_pool.main.id
   generate_secret                      = false
+  explicit_auth_flows                  = ["ALLOW_ADMIN_USER_PASSWORD_AUTH", "ALLOW_REFRESH_TOKEN_AUTH"]
+  read_attributes                      = ["email", "email_verified", "name"]
+  write_attributes                     = ["email", "name"]
   allowed_oauth_flows_user_pool_client = true
   allowed_oauth_flows                  = ["code"]
   allowed_oauth_scopes                 = ["openid", "email", "profile"]

@@ -1,5 +1,180 @@
 # Cloud AWS — arquitectura documental
 
+## Fixtures y checker implementados; integración pendiente — 22/10/2026
+
+Turno previo y actual clasificados como progreso: cambios verificables en código
+y pruebas. [Evidencia](../evidence/JUP-131-aws-fixtures-checks.md).
+Fixture sintético versionado Core12,50EUR/Growth999,99EUR, corpus por tenant y
+generaciones Titan1024, reintento sin inferir de nuevo ni sobrescribir conflictos.
+Bootstrap secuencial de cinco tareas conectado; no declara application_ready.
+6 PASS processor, incluidos dos casos PG/pgvector reales con SDK Bedrock simulado;
+bases UUID retiradas. Constructor PgVectorStore acepta motor externo para
+conservar connect_args TLS del bootstrap. CI PG incluye esas pruebas.
+
+Nuevo `tools/aws_demo/checks.py`: guardas comunes, estabilidad ECS/ALB/CloudFront,
+login Cognito/sub, aislamiento401/403, importe, ingesta Markdown mediante S3/MQ,
+chat con cita del nuevo documento y schema/uso. Informe privado sin secretos;
+runner lo publica incluso al fallar, READY solo tras éxito. Instrumento probado
+con HTTP/SDK simulados, controlador total49PASS/1SKIP(50). No ejecutado en AWS.
+
+Hallazgo previo a receta: Nova exige raíz de tool schema limitada a
+type/properties/required; chat actual tiene anyOf/$defs. Próximo paso: envolver
+de forma equivalente y adaptar lectura Converse/ConverseStream, conservando
+validación y streaming. Fuente exacta en evidencia. No confundir soporte de
+toolChoice (confirmado documentalmente) con soporte del schema enviado actual.
+Dockerfiles ya declaran VOLUME /tmp con uid10001/modo0700 por contrato ECS;
+pendiente build/prueba con volumen normal, no solo tmpfs. No repetir todos los
+tests anteriores antes de estos cambios de integración.
+
+Siguen pendientes Nova, develop/JUP-132 v4/ADR, receta, pruebas Linux finales,
+CI del candidato y revisión. Todos estos cambios aún locales. Mantener aviso al
+usuario cuando se necesite entrar en AWS; todavía queda trabajo offline útil.
+Contenedor PG propio/túnel56328 conservados para fixtures; broker propio retirado.
+
+Comprobación posterior: adaptación Nova implementada sin fusionar ramas del
+schema. Wrapper response con referencias locales reubicadas, lector incremental
+y validación original/duplicados/envoltura. Recibo de tokens nativos completo
+independiente de un precio que sigue desconocido. 57 PASS Windows de protocolo,
+schema, factories, resumen y revisión privada; Terraform referencia12PASS.
+Sustituye el pendiente de implementación Nova anterior. Faltan regresión Linux
+del conjunto integrado, receta, develop/ADR, CI final y revisión.
+
+## MQ e identidad de ensayo preparados parcialmente — 22/10/2026
+
+Continúa el objetivo activo, sin despliegue ni llamadas a la cuenta AWS.
+El usuario pide aviso cuando sea necesario conectarse para preparar acceso;
+todavía no es necesario: quedan datos/corpus, checks y receta verificables offline.
+La futura sesión debe preparar acceso por roles y completar las entradas del
+runbook; no pedir ni registrar claves en el chat.
+
+Bootstrap ahora ejecuta bases backend/processor, administración MQ y fixtures de
+identidad backend. `aws_bootstrap_broker.py` valida HTTPS España, limita respuestas,
+no sigue redirects y prepara vhost con marcador de ciclo/SHA y usuarios sin tags
+de administración. Contrato probado con transporte simulado; publicación/consumo
+con RabbitMQ real todavía pendientes.
+`aws_bootstrap_identity.py` crea el usuario Cognito con SUPPRESS y contraseña
+permanente; exige sub UUID, correo verificado y marcador custom inmutable antes
+de modificar contraseñas. Vincula por sub; rechaza colisiones de correo/usuario,
+tenants o membresías y autoriza solo tenant-core, con login local inutilizado.
+El cliente permite autenticación administrativa para el checker y excluye el
+marcador de atributos escribibles. No se ha llamado a Cognito real.
+
+Verificado en este corte: 20 tests backend PASS (MQ, identidad y bootstrap DB);
+la asociación SQL usa SQLite con la migración inicial real, aún sin aceptación PG
+específica de esa asociación. Controlador completo de las cuatro tareas probado
+con SDK simulado: éxito y fallo MQ, retiro de definiciones y manifiesto sin
+credenciales. Terraform referencia 12 PASS con proveedores mock, incluyendo
+atributo inmutable y auth administrativa. Logs ignorados `identity-controller`,
+`identity-tools`, `identity-terraform`; nuevos tests versionados correspondientes.
+La última CI publicada sigue cubriendo 3e543b6f, no estos cambios sin publicar.
+
+Verificación posterior del mismo hito: 20 PASS también en Linux/Python3.12,
+sin red/raíz RO/tmpfs; controlador 44 PASS/1 SKIP (45 casos totales).
+`test_postgresql.py` ejecutó migraciones, reintentos y asociación de identidad
+contra PG16 desechable: PASS, incluido rechazo de membresía conflictiva;
+bases UUID y administración temporal retiradas. Prueba AMQP real opt-in
+`test_bootstrap_broker_wire_jup131.py`: PASS en RabbitMQ3.13 management,
+digest `sha256:e582c0bc7766f3342496d8485efb5a1df782b5ce3886ad017e2eaae442311f69`.
+Dos bootstraps consecutivos, publish con confirmación, consumo/ack, denegación de
+otra cola y acceso administrativo denegado. Transporte de management loopback
+HTTP solo en test; TLS Amazon MQ sigue pendiente del ensayo. Contenedor propio
+`economicon-jup131-broker-test` y volumen anónimo retirados tras verificar etiqueta.
+Logs `identity-linux`, `identity-pg`, `broker-wire` en el directorio ignorado.
+Esto sustituye los pendientes de PG/AMQP de los párrafos anteriores; no acredita
+integración AWS ni cierra las otras tareas del objetivo.
+
+Esta sección sustituye los pendientes MQ/identidad/controlador de la sección
+anterior solo en cuanto a implementación y pruebas simuladas descritas. Siguen
+pendientes fixtures coste/corpus/vectorización, checks reales, receta, integración
+develop/JUP-132, CI final y revisión. `application_ready=false` se mantiene.
+
+## Bootstrap DB privado implementado localmente — 22/10/2026
+
+Continúa el mismo objetivo; no es su cierre. [Evidencia y comandos](../evidence/JUP-131-aws-bootstrap-db.md).
+Nuevo `tools/aws_demo/bootstrap.py`: guardas CodeBuild/config/identidad,
+credenciales persistidas coherentemente para reintentos y secuencia de tareas
+privadas backend→processor. `private_tasks.py`: imágenes digest/SG privados,
+espera de exit0, parada ante timeout, retirada y manifiesto. Imágenes incluyen
+`app.aws_bootstrap` y helper común para migraciones owner/roles SCRAM. Terraform
+añade rol/SG separado, bundle SM sin valores, referencia MQ admin y fija modos
+verify y Cognito. El SDK del controlador tiene lock explícito instalado por buildspec.
+
+Comprobado: controlador43PASS/1SKIP; backend11PASS más runtime previo106PASS Linux;
+processor14PASS; PostgreSQL roles/verify2PASS Windows y Linux, combinado16PASS
+Linux. Terraform12+1PASS mock, diff-check conforme. El test de rol reproduce
+y corrige TEMPORARY permitido por PUBLIC; ahora deniega tablas temporales,
+persistentes y esquemas en las bases de aplicación, conservando DML/login.
+Windows venv SDK1.43.117 no tiene el pin1.43.114 en caché offline; la paridad del
+lock se comprobó en la imagen Linux instalada1.43.114, no se atribuye ese fallo a código.
+
+Ruling: avanzar la fase SQL/secretos, independiente del modelo generativo,
+mientras sigue pendiente integración de JUP-132. No declarar Bedrock ni el
+objetivo completo aceptados por cerrar esta fase. Cambios aún sin publicar.
+Bootstrap solo implementa fase database y dice application_ready=false.
+Down ya incluye barrido de definiciones bootstrap huérfanas: namespace/cuenta y
+etiquetas Project/Environment/Purpose/SourceSha exactas, sin tocar otras fuentes;
+inventario distingue INACTIVE y no declara coste cero. Dos pruebas adicionales
+conformes. Faltan MQ, Cognito/tenants/fixtures/corpus/vectorización, checks, receta
+y CI final, además de integración simulada completa del controlador.
+Mantener cuenta/DNS/roles/crédito/ventana como entradas externas del runbook.
+
+Recurso local intencionalmente conservado para los próximos tests de fixtures:
+contenedor propio `economicon-jup131-native-vector-test`, etiqueta JUP-131,
+sin volúmenes y puerto remoto loopback25432. Túnel nuevo handle56328; el anterior
+no daba conexión. Al retirar, verificar PID/comando exacto; no tocar otros SSH.
+Las bases UUID y roles creados por los tests se eliminan. No hay recursos AWS.
+
+## Runtime privado preparado parcialmente — 22/10/2026
+
+Continuación del objetivo completo de adaptación, sin AWS. Cerradas conexiones
+S3 por rol, HMAC en fichero privado y CA/TLS RDS empaquetada; DNS/SG8003 para chat.
+Runner incluye permisos/modelos antes del bootstrap y preflight estricto de
+metadatos Bedrock; deploy solo puede consultar esos perfiles. Config frontend
+Cognito corregida. Ver [evidencia runtime](../evidence/JUP-131-aws-runtime.md).
+Este hito sustituye la anotación anterior de contrato no conectado al runner.
+
+Verificado este corte:95PASS Windows y95PASS Linux/Python3.12 sin red, raízRO,
+tmpfs y usuario no root;7PASS supervisor processor; controlador30PASS/1SKIP;
+Terraform referencia12PASS y bootstrap1PASS con mocks; diff-check conforme.
+Código local aún sin publicar, no cubierto por la CI remota3e543b6f.
+CA pública oficial España SHA256
+`6e4db6870d865a83140270728f62fbdb73202a3a017dc500ae2605e3d17344c0`,
+procedencia y rotación documentadas junto a ambos recursos. No hay credenciales
+ni certificados privados en Git. Sin llamadas API de cuenta AWS o despliegue.
+
+Siguiente: rol/tareas de bootstrap, modo verify de esquema processor (hoy migra
+al arrancar), SQL/MQ/identidad/fixtures/corpus, checks y receta real. Conservar
+reconciliación develop/modelo/ADR y CI final como pendientes. No presentar este
+hito como aceptación AWS ni como final del objetivo. Paquete sigue no lanzable.
+
+## Verificación de CI y desbloqueo — 22/10/2026
+
+Origen: petición «Comprueba que la CI quede en verde y concreta qué necesitamos
+para desbloquear el primer ensayo para desplegar en AWS». Chat ID no disponible.
+GitHub consultado: PR146 draft, head `3e543b6fd58283c5d942ce9899fa7a00faa1d985`,
+sin reviews/conversación/inline. [CI39681182813](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39681182813)
+SUCCESS con ocho jobs técnicos y policy omitido por push. Esta comprobación
+supersede las referencias a CI pendiente de los apartados anteriores; no cubre
+Bedrock local sin publicar. No se ha integrado ni desplegado.
+
+Fetch develop `4567e8e7`: merge-tree identifica conflicto solo en índice de
+continuidad del head publicado. JUP-132 cambia modelo/recursos activos a v4;
+revalidar compatibilidad semántica con Bedrock. Colisión ADR-0026 a reconciliar.
+Los cambios locales de Bedrock/packaging/vector/IAM siguen en curso; se conservan.
+El test nuevo importaba un módulo inexistente: implementado contrato offline
+de identidad/perfil EU/destinos exactos; no conectado aún al runner.
+Verificación de este corte: unittest controlador27PASS/1SKIP, Terraform10PASS
+con mocks y diff-check conforme. Preparación offline vuelve a declarar
+`aws_deployable=false`; no sustituirlo por READY.
+
+Lista concreta de bloqueo y criterios en
+[runbook, corte22/10](../deployment/aws-defensa.md#corte-de-verificación--22102026).
+Pendientes nuestros: completar bootstrap/checks/fixtures/receta, integración y
+CI final. Externos: cuenta/rol/boundary, zonaDNS/delegación, conexiónGitHub y ARNs
+de secretos, cuotas/motores/modelos, crédito real/estimación y ventanaUTC.
+Hora defensa29Oct pendiente. No se han solicitado ni guardado valores secretos,
+ejecutado llamadas AWS, iniciado pipelines, aplicado Terraform o hecho merge.
+
 ## Adaptaciones autorizadas y en curso — 21/10/2026
 
 El usuario autoriza completar aplicación y scripts para desbloquear el ensayo,

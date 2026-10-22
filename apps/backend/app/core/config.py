@@ -38,6 +38,8 @@ class Settings(BaseSettings):
     embedding_provider: str = "mock"
     embedding_dimension: int = 8
     embedding_model: str = "economicon-embedding"
+    bedrock_region: Literal["eu-south-2"] | None = None
+    bedrock_timeout_seconds: float = Field(default=20, gt=0, le=30, allow_inf_nan=False)
     embedding_mapping_sha256: str | None = Field(default=None, pattern=r'^[0-9a-f]{64}$')
     embedding_deployment_id: str | None = Field(default=None, strict=True, pattern=r'^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$')
     rag_verified_enabled: bool = False
@@ -118,15 +120,15 @@ class Settings(BaseSettings):
     @classmethod
     def validate_embedding_provider(cls, value: str) -> str:
         normalized = value.strip().lower()
-        if normalized not in {"mock", "litellm"}:
-            raise ValueError("embedding_provider must be either 'mock' or 'litellm'")
+        if normalized not in {"mock", "litellm", "bedrock"}:
+            raise ValueError("embedding_provider must be 'mock', 'litellm' or 'bedrock'")
         return normalized
 
     @field_validator("embedding_model")
     @classmethod
     def validate_embedding_model(cls, value: str) -> str:
         normalized = value.strip()
-        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}", normalized):
+        if normalized != 'amazon.titan-embed-text-v2:0' and not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}", normalized):
             raise ValueError("embedding_model must be a non-empty LiteLLM logical model alias")
         return normalized
 
@@ -220,10 +222,16 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_embedding_configuration(self) -> "Settings":
-        if self.rag_verified_enabled and (self.embedding_dimension != 1536
+        if self.embedding_model == 'amazon.titan-embed-text-v2:0' and self.embedding_provider != 'bedrock':
+            raise ValueError('Native embedding model identity requires the Bedrock provider')
+        supported_dimensions = {256,512,1024} if self.embedding_provider == 'bedrock' else {1536}
+        if self.rag_verified_enabled and (self.embedding_dimension not in supported_dimensions
                 or (self.embedding_provider == 'litellm' and (self.embedding_mapping_sha256 is None
                     or self.embedding_deployment_id is None))):
-            raise ValueError('Verified retrieval requires dimension 1536 and an accredited embedding mapping/deployment binding')
+            raise ValueError('Verified retrieval requires dimension 1536 or native Bedrock dimensions and an accredited embedding mapping/deployment binding')
+        if self.embedding_provider == 'bedrock' and (self.bedrock_region is None
+                or self.embedding_model != 'amazon.titan-embed-text-v2:0' or self.embedding_dimension not in {256,512,1024}):
+            raise ValueError('Bedrock embeddings require explicit Spain region, Titan V2 and a native dimension')
         if (self.rag_contextual_enabled or self.rag_hybrid_enabled) and not self.rag_verified_enabled:
             raise ValueError('Contextual/hybrid flags require verified retrieval')
         if (self.embedding_max_retries + 1) * self.embedding_timeout_seconds > MAX_QUESTION_ATTEMPT_SECONDS:

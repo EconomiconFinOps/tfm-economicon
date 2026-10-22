@@ -1,4 +1,13 @@
 .git
+.work
+.superpowers
+**/.terraform
+**/*.tfstate
+**/*.tfstate.*
+**/terraform.tfvars
+**/*.auto.tfvars
+**/*.tfvars
+**/*.tfvars.json
 .secrets
 **/.secrets
 **/chat/v2/tokenizer.json

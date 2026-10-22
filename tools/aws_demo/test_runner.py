@@ -15,6 +15,71 @@ from test_control import config
 
 
 class RunnerTests(unittest.TestCase):
+    def test_orphan_bootstrap_definitions_are_scoped_before_retirement(self):
+        item = object.__new__(runner.Runner)
+        item.config = config()
+        prefix = 'arn:aws:ecs:eu-south-2:123456789012:task-definition/economicon-ensayo1-bootstrap-'
+        owned, foreign = prefix + 'backend-database:1', prefix + 'processor-database:2'
+        calls = []
+        def aws(*args, **kwargs):
+            calls.append(args)
+            if args[1] == 'list-task-definitions':
+                return {'taskDefinitionArns': [owned, foreign, 'arn:aws:ecs:eu-south-2:999999999999:task-definition/foreign:1']}
+            if args[1] == 'describe-task-definition':
+                arn = args[3]
+                tags = dict(Project='economicon', Environment='ensayo1', Purpose='bootstrap', SourceSha='a' * 40 if arn == owned else 'b' * 40)
+                return {'taskDefinition': {'taskDefinitionArn': arn, 'status': 'ACTIVE'},
+                        'tags': [{'key': key, 'value': value} for key, value in tags.items()]}
+            return {}
+        item.aws = aws
+        self.assertEqual(item.retire_bootstrap_definitions('economicon-ensayo1'), [owned])
+        retired = [args[3] for args in calls if args[1] == 'deregister-task-definition']
+        self.assertEqual(retired, [owned])
+
+    def test_inactive_definition_is_retired_metadata_not_active_inventory(self):
+        item = object.__new__(runner.Runner)
+        item.config = config()
+        arn = 'arn:aws:ecs:eu-south-2:123456789012:task-definition/economicon-ensayo1-bootstrap-backend-database:1'
+        def aws(*args, **kwargs):
+            if args[0] == 'resourcegroupstaggingapi':
+                return {'ResourceTagMappingList': [{'ResourceARN': arn}]} if args[3] == 'eu-south-2' else {}
+            return {'taskDefinition': {'status': 'INACTIVE'}}
+        item.aws = aws
+        result = item.inspect_residuals()
+        self.assertEqual(result['active'], [])
+        self.assertEqual(result['retired_metadata'], [arn])
+
+    def test_base_plan_has_embedding_and_chat_permissions_before_bootstrap(self):
+        item = object.__new__(runner.Runner)
+        item.config = config()
+        recipe = {"application_environment": {"processor": {"BEDROCK_REGION": "eu-south-2"}},
+                  "bedrock_model_arns": ["arn:aws:bedrock:eu-south-2::foundation-model/amazon.titan-embed-text-v2:0"],
+                  "bedrock_chat_profile_id": "eu.amazon.nova-micro-v1:0"}
+        item.recipe = lambda: recipe
+        with patch.dict(os.environ, BOUNDARY_ARN="arn:aws:iam::123456789012:policy/synthetic"):
+            values = item.base_vars()
+        self.assertFalse(values["deploy_applications"])
+        self.assertEqual(values["bedrock_model_arns"], recipe["bedrock_model_arns"])
+        self.assertEqual(values["bedrock_chat_profile_id"], recipe["bedrock_chat_profile_id"])
+        self.assertEqual(values["application_environment"], recipe["application_environment"])
+
+    def test_bedrock_metadata_preflight_rejects_destination_drift(self):
+        from bedrock_contract import expected_profile
+        item = object.__new__(runner.Runner)
+        item.config = config()
+        profile = "eu.amazon.nova-micro-v1:0"
+        contract = expected_profile(item.config["account_id"], profile)
+        value = dict(inferenceProfileArn=contract["arn"], inferenceProfileId=profile,
+                     status="ACTIVE", type="SYSTEM_DEFINED", models=[{"modelArn": x} for x in contract["models"]])
+        calls = []
+        item.aws = lambda *a, **kw: calls.append((a, kw)) or value
+        item.validate_bedrock_profile({"bedrock_chat_profile_id": profile})
+        self.assertEqual(calls[0], (("bedrock", "get-inference-profile", "--inference-profile-identifier", profile,
+                                    "--region", "eu-south-2"), {"deploy": True}))
+        value["models"] = value["models"][:-1]
+        with self.assertRaises(ValueError):
+            item.validate_bedrock_profile({"bedrock_chat_profile_id": profile})
+
     def test_inventory_reports_active_resources_separately_from_pending_deletion(self):
         item = object.__new__(runner.Runner)
         item.config = config()

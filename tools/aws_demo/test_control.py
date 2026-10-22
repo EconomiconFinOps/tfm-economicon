@@ -102,6 +102,22 @@ class PlanTests(unittest.TestCase):
 
 
 class ReleaseTests(unittest.TestCase):
+    def test_recipe_rejects_unreviewed_models_and_inline_task_keys(self):
+        recipe = dict(application_sha256="a" * 64,
+                      evidence={name: {"path": "docs/evidence/synthetic.md", "sha256": "b" * 64}
+                                for name in ("postgresql", "cognito", "bedrock", "demo_data")},
+                      bootstrap=[["python", "tools/aws_demo/bootstrap.py"]],
+                      checks=[["python", "tools/aws_demo/checks.py"]])
+        for field, value in [
+            ("bedrock_model_arns", ["arn:aws:bedrock:eu-south-2::foundation-model/*"]),
+            ("bedrock_model_arns", ["arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0"]),
+            ("bedrock_chat_profile_id", "global.amazon.nova-micro-v1:0"),
+            ("application_environment", {"backend": {"CHAT_HMAC_KEY": "synthetic-secret"}}),
+            ("application_environment", {"processor": {"AWS_ACCESS_KEY_ID": "synthetic-key"}}),
+        ]:
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                control.validate_recipe(dict(recipe, **{field: value}))
+
     def test_text_digest_is_portable_between_windows_and_linux(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "evidence.md"

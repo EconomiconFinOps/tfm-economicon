@@ -214,6 +214,20 @@ resource "aws_iam_role_policy" "deploy" {
     { Effect = "Deny", Action = ["iam:DeleteRole", "iam:PutRolePolicy", "iam:DeleteRolePolicy", "iam:PutRolePermissionsBoundary"], Resource = [aws_iam_role.build.arn, "arn:aws:iam::${var.account_id}:role/${local.name}-deploy", "arn:aws:iam::${var.account_id}:role/${local.name}-pipeline", "arn:aws:iam::${var.account_id}:role/${local.name}-expiry"] }
   ] })
 }
+resource "aws_iam_role_policy" "bedrock_metadata" {
+  role = aws_iam_role.deploy.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = ["bedrock:GetInferenceProfile"]
+      Resource = [for profile in ["eu.amazon.nova-micro-v1:0", "eu.amazon.nova-lite-v1:0"] :
+        "arn:aws:bedrock:eu-south-2:${var.account_id}:inference-profile/${profile}"
+      ]
+      Condition = { StringEquals = { "aws:RequestedRegion" = "eu-south-2" } }
+    }]
+  })
+}
 resource "aws_iam_role" "pipeline" {
   name               = "${local.name}-pipeline"
   assume_role_policy = jsonencode({ Version = "2012-10-17", Statement = [{ Effect = "Allow", Action = "sts:AssumeRole", Principal = { Service = "codepipeline.amazonaws.com" } }] })
@@ -245,11 +259,12 @@ resource "aws_codebuild_project" "runner" {
     privileged_mode = true
     dynamic "environment_variable" {
       for_each = {
-        CONTROL_BUCKET   = aws_s3_bucket.control.id, LEASE_TABLE = aws_dynamodb_table.lease.name,
-        EXPECTED_ACCOUNT = var.account_id, DEPLOY_ROLE_ARN = aws_iam_role.deploy.arn,
-        BOUNDARY_ARN     = var.permissions_boundary_arn, EXPIRY_ROLE_ARN = aws_iam_role.expiry.arn,
-        RUNNER_NAME      = local.name, CONTROL_REGION = "eu-west-3"
-        EXPIRY_DLQ_ARN   = aws_sqs_queue.expiry_dlq.arn
+        CONTROL_BUCKET         = aws_s3_bucket.control.id, LEASE_TABLE = aws_dynamodb_table.lease.name,
+        EXPECTED_ACCOUNT       = var.account_id, DEPLOY_ROLE_ARN = aws_iam_role.deploy.arn,
+        BOUNDARY_ARN           = var.permissions_boundary_arn, EXPIRY_ROLE_ARN = aws_iam_role.expiry.arn,
+        RUNNER_NAME            = local.name, CONTROL_REGION = "eu-west-3"
+        EXPIRY_DLQ_ARN         = aws_sqs_queue.expiry_dlq.arn
+        MQ_PASSWORD_SECRET_ARN = var.mq_password_secret_arn
       }
       content {
         name  = environment_variable.key

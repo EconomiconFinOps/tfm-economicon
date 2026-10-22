@@ -27,4 +27,11 @@ run "manual_serialized_pipelines_and_private_state" {
     condition     = length([for env in aws_codebuild_project.runner.environment[0].environment_variable : env if env.type == "SECRETS_MANAGER"]) == 2
     error_message = "Only secret ARNs may enter the runner definition, never secret values."
   }
+  assert {
+    condition = jsondecode(aws_iam_role_policy.bedrock_metadata.policy).Statement[0].Action == ["bedrock:GetInferenceProfile"] && toset(jsondecode(aws_iam_role_policy.bedrock_metadata.policy).Statement[0].Resource) == toset([
+      "arn:aws:bedrock:eu-south-2:123456789012:inference-profile/eu.amazon.nova-micro-v1:0",
+      "arn:aws:bedrock:eu-south-2:123456789012:inference-profile/eu.amazon.nova-lite-v1:0"
+    ])
+    error_message = "Deploy may read only the reviewed profile metadata; model invocation belongs to ECS."
+  }
 }

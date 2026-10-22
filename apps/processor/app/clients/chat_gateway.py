@@ -21,6 +21,9 @@ import ssl
 import threading
 import time
 from urllib import error,request
+from types import SimpleNamespace
+from app.core.bedrock import BedrockError, native_review_usage
+from app.clients.bedrock import BedrockTransport
 
 from app.agents.schemas import chat_wire_schema, assemble_chat_response
 from app.clients.chat_dns import resolve
@@ -356,12 +359,16 @@ class _ChatHTTPSHandler(_ChatHandler,request.HTTPSHandler):
 class ChatGateway:
     requires_tool_result=True
     def __init__(self,settings):
-        if settings.llm_model!='economicon-chat' or settings.litellm_api_key is None:
+        self.native = getattr(settings,'llm_provider','litellm') == 'bedrock'
+        if settings.llm_model!='economicon-chat' or (not self.native and settings.litellm_api_key is None):
             raise ValueError('Chat gateway configuration.')
         self.settings=settings
         self.resources=None
-        self.client=LiteLLMClient(settings)
-        self.client.transport=request.build_opener(request.ProxyHandler({}),_RejectRedirectHandler(),_ChatHTTPHandler(),_ChatHTTPSHandler())
+        if self.native:
+            self.client=SimpleNamespace(transport=BedrockTransport(settings))
+        else:
+            self.client=LiteLLMClient(settings)
+            self.client.transport=request.build_opener(request.ProxyHandler({}),_RejectRedirectHandler(),_ChatHTTPHandler(),_ChatHTTPSHandler())
 
     def _records(self,context,deadline,holder,cancelled,tool_choice=None):
         from app.core.chat_review import DRAFT_TOKENS,FINAL_TOKENS,draft_schema,validate_draft
@@ -394,8 +401,13 @@ class ChatGateway:
                     'schema':draft_schema(context.get('authorized_evidence',[]))}
             if self.resources is not None:
                 self.resources.check_messages(payload['messages'],payload['response_format']['json_schema']['schema'])
-            req=request.Request(self.client.base_url+'/chat/completions',data=json.dumps(payload,ensure_ascii=False,allow_nan=False).encode(),
-                headers={'Authorization':'Bearer '+self.settings.litellm_api_key.get_secret_value(),'Content-Type':'application/json'},method='POST')
+            if self.native:
+                payload.pop('provider');payload.pop('reasoning')
+                payload['native_model_id']=self.client.transport.model_id
+                req=SimpleNamespace(data=json.dumps(payload,ensure_ascii=False,allow_nan=False).encode())
+            else:
+                req=request.Request(self.client.base_url+'/chat/completions',data=json.dumps(payload,ensure_ascii=False,allow_nan=False).encode(),
+                    headers={'Authorization':'Bearer '+self.settings.litellm_api_key.get_secret_value(),'Content-Type':'application/json'},method='POST')
             request_hash=hashlib.sha256(req.data).hexdigest()
         except Exception as failure:
             diagnostic('request',failure)
@@ -490,6 +502,10 @@ class ChatGateway:
             category,retryable=_transport_failure(failure.reason)
             diagnostic('transport',failure,category='transport' if retryable else 'request')
             yield {'type':'error','category':'transport' if retryable else 'request','status':None}
+        except BedrockError as failure:
+            category='timeout' if failure.category=='timeout' else 'transport'
+            diagnostic('transport',failure,category=category)
+            yield {'type':'error','category':category,'status':503 if failure.category=='rate_limit' else 502}
         except (TimeoutError,OSError) as failure:
             diagnostic('transport',failure,category='transport')
             yield {'type':'error','category':'transport'}
@@ -548,7 +564,9 @@ class ChatGateway:
                 if record.get('type') in ('candidate','error'):
                     if attempted>len(usages):usages.append(record.get('usage',holder.get('usage')))
                     report=review_usage(usages,attempted) if attempted else None
-                    record={**record,'usage_report':report,'usage':report['observed'] if report and report['complete'] else None}
+                    receipt = native_review_usage(usages, attempted) if isinstance(self.client.transport, BedrockTransport) else (
+                        report['observed'] if report and report['complete'] else None)
+                    record={**record,'usage_report':report,'usage':receipt}
                     await asyncio.to_thread(iterator.close)
                     yield record
                     return
@@ -602,5 +620,5 @@ def configured_gateway():
         from app.clients.mock_chat import MockChatGateway,require_local_mock
         require_local_mock(settings)
         return MockChatGateway()
-    if settings.llm_provider!='litellm': return None
+    if settings.llm_provider not in {'litellm','bedrock'}: return None
     return ChatGateway(settings)

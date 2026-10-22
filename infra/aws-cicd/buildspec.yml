@@ -5,6 +5,7 @@ phases:
       python: '3.12'
       nodejs: '22'
     commands:
+      - python -m pip install --require-hashes -r tools/aws_demo/requirements.lock
       - python tools/aws_demo/install_terraform.py
       - export PATH="$CODEBUILD_SRC_DIR/.work/bin:$PATH"
   build:

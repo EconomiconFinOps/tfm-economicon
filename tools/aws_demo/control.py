@@ -57,7 +57,14 @@ def validate_recipe(recipe):
             require(str(path).startswith("tools/aws_demo/") and ".." not in path.parts and path.suffix == ".py", "Recipe script must be versioned in tools/aws_demo")
     for environment in recipe.get("application_environment", {}).values():
         for key in environment:
-            require(not re.search(r"PASSWORD|SECRET|TOKEN|DATABASE_URL|RABBITMQ_URL|API_KEY", key, re.I), "Secret-like field in public application_environment")
+            require(not re.search(r"PASSWORD|SECRET|TOKEN|DATABASE_URL|RABBITMQ_URL|API_KEY|ACCESS_KEY|HMAC|PRIVATE_KEY|CREDENTIAL", key, re.I), "Secret-like field in public application_environment")
+    models = recipe.get("bedrock_model_arns", [])
+    require(isinstance(models, list) and all(
+        model == "arn:aws:bedrock:eu-south-2::foundation-model/amazon.titan-embed-text-v2:0" for model in models
+    ), "Only the reviewed regional Titan embedding model may enter this release")
+    profile = recipe.get("bedrock_chat_profile_id")
+    require(profile is None or profile in ("eu.amazon.nova-micro-v1:0", "eu.amazon.nova-lite-v1:0"),
+            "Unreviewed Bedrock chat profile")
     return recipe
 
 

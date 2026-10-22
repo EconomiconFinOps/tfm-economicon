@@ -5,6 +5,7 @@ Kept identical in backend and processor (independent Python deployments).
 from dataclasses import dataclass, field
 import hashlib
 import os
+import re
 from urllib.parse import urlsplit
 
 
@@ -25,10 +26,21 @@ class StorageConfig:
     endpoint: str
     public_endpoint: str
     region: str
-    access_key: str = field(repr=False)
-    secret_key: str = field(repr=False)
+    access_key: str | None = field(repr=False)
+    secret_key: str | None = field(repr=False)
     max_bytes: int = MAX_FILE_BYTES
     url_seconds: int = 180
+    auth_mode: str = 'static'
+
+    def __post_init__(self):
+        if self.auth_mode not in {'static', 'iam'}:
+            raise ValueError('Invalid document storage authentication mode')
+        if self.auth_mode == 'iam':
+            endpoint = 'https://s3.eu-south-2.amazonaws.com'
+            if (self.region != 'eu-south-2' or self.endpoint != endpoint
+                    or self.public_endpoint != endpoint or self.access_key or self.secret_key
+                    or not re.fullmatch(r'[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]', self.bucket)):
+                raise ValueError('IAM document storage requires the reviewed regional endpoint and task credentials')
 
     @classmethod
     def from_env(cls):
@@ -46,12 +58,14 @@ class StorageConfig:
                 raise ValueError('Invalid document storage endpoint')
             if os.getenv('RUNTIME_ENVIRONMENT', 'production') == 'production' and parsed.scheme != 'https':
                 raise ValueError('Document storage requires HTTPS in production')
-        access = os.environ['DOCUMENT_S3_ACCESS_KEY']
-        secret = os.environ['DOCUMENT_S3_SECRET_KEY']
+        mode = os.getenv('DOCUMENT_S3_AUTH_MODE', 'static')
+        access = os.getenv('DOCUMENT_S3_ACCESS_KEY')
+        secret = os.getenv('DOCUMENT_S3_SECRET_KEY')
         bucket = os.environ['DOCUMENT_S3_BUCKET']
-        if not access.strip() or not secret.strip() or not bucket.strip():
+        if (not bucket.strip() or (mode == 'static'
+                and (not access or not access.strip() or not secret or not secret.strip()))):
             raise ValueError('Document storage credentials and bucket are required')
-        return cls(bucket, endpoint, public, os.getenv('DOCUMENT_S3_REGION', 'us-east-1'), access, secret, maximum, seconds)
+        return cls(bucket, endpoint, public, os.getenv('DOCUMENT_S3_REGION', 'us-east-1'), access, secret, maximum, seconds, mode)
 
 
 class S3Storage:
@@ -59,10 +73,13 @@ class S3Storage:
         import boto3
         from botocore.config import Config
         self.config = config or StorageConfig.from_env()
-        options = dict(region_name=self.config.region, aws_access_key_id=self.config.access_key,
-                       aws_secret_access_key=self.config.secret_key,
+        sdk_options = {'ignore_configured_endpoint_urls': True, 'proxies': {}} if self.config.auth_mode == 'iam' else {}
+        options = dict(region_name=self.config.region,
                        config=Config(signature_version='s3v4', s3={'addressing_style': 'path'},
+                                     **sdk_options,
                                      connect_timeout=5, read_timeout=15, retries={'max_attempts': 1}))
+        if self.config.auth_mode == 'static':
+            options.update(aws_access_key_id=self.config.access_key, aws_secret_access_key=self.config.secret_key)
         self.internal = boto3.client('s3', endpoint_url=self.config.endpoint, **options)
         self.public = boto3.client('s3', endpoint_url=self.config.public_endpoint, **options)
 

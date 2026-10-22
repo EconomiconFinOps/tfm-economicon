@@ -103,6 +103,15 @@ variable "mq_admin_password" {
     error_message = "MQ password: 12-250 characters; no comma, colon or equals sign."
   }
 }
+variable "mq_admin_secret_arn" {
+  description = "Existing Paris Secrets Manager reference for the private MQ bootstrap task; JSON password, AWS-managed secret key only. Never a value."
+  type        = string
+  default     = null
+  validation {
+    condition     = var.mq_admin_secret_arn == null || can(regex("^arn:aws:secretsmanager:eu-west-3:[0-9]{12}:secret:[A-Za-z0-9/_+=.@-]+$", var.mq_admin_secret_arn))
+    error_message = "Use an existing Secrets Manager ARN in Paris."
+  }
+}
 variable "deploy_applications" {
   description = "False by default: no ECS task definitions/services. Infrastructure would still be created by apply."
   type        = bool
@@ -134,6 +143,17 @@ variable "bedrock_model_arns" {
   validation {
     condition     = alltrue([for arn in var.bedrock_model_arns : can(regex("^arn:aws:bedrock:${var.region}::foundation-model/[^*]+$", arn))])
     error_message = "Use exact regional foundation-model ARNs, without wildcard or cross-region profiles."
+  }
+}
+variable "bedrock_chat_profile_id" {
+  description = "Explicit reviewed EU Nova profile invoked from Spain; null grants no chat inference. No global routing."
+  type        = string
+  default     = null
+  validation {
+    condition = var.bedrock_chat_profile_id == null || (var.region == "eu-south-2" && contains([
+      "eu.amazon.nova-micro-v1:0", "eu.amazon.nova-lite-v1:0"
+    ], var.bedrock_chat_profile_id))
+    error_message = "Use only the reviewed EU Nova Micro/Lite profile from eu-south-2."
   }
 }
 variable "desired_count" {

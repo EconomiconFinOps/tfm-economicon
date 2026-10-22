@@ -80,6 +80,12 @@ resource "aws_secretsmanager_secret" "application" {
   kms_key_id              = aws_kms_key.data.arn
   recovery_window_in_days = 30
 }
+resource "aws_secretsmanager_secret" "rehearsal" {
+  name                    = "${local.name}/rehearsal/credentials"
+  description             = "Private bootstrap credential bundle and smoke user; values are provisioned outside Terraform."
+  kms_key_id              = aws_kms_key.data.arn
+  recovery_window_in_days = 30
+}
 resource "aws_s3_bucket" "main" {
   for_each      = toset(["frontend", "documents"])
   bucket_prefix = "${local.name}-${each.key}-"
@@ -98,6 +104,15 @@ resource "aws_s3_bucket_versioning" "main" {
   bucket   = each.value.id
   versioning_configuration {
     status = "Enabled"
+  }
+}
+resource "aws_s3_bucket_cors_configuration" "documents" {
+  bucket = aws_s3_bucket.main["documents"].id
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["PUT"]
+    allowed_origins = ["https://${var.frontend_domain}"]
+    max_age_seconds = 300
   }
 }
 resource "aws_s3_bucket_server_side_encryption_configuration" "main" {

@@ -2,11 +2,11 @@ locals {
   applications = {
     backend = {
       port        = 8000
-      secret_keys = ["DATABASE_URL", "VECTOR_DATABASE_URL", "RABBITMQ_URL", "AUTH_SECRET_KEY"]
+      secret_keys = ["DATABASE_URL", "VECTOR_DATABASE_URL", "RABBITMQ_URL", "AUTH_SECRET_KEY", "CHAT_HMAC_KEY"]
     }
     processor = {
       port        = 8001
-      secret_keys = ["DATABASE_URL", "VECTOR_DATABASE_URL", "RABBITMQ_URL", "AZURE_COST_API_TOKEN"]
+      secret_keys = ["DATABASE_URL", "VECTOR_DATABASE_URL", "RABBITMQ_URL", "AZURE_COST_API_TOKEN", "CHAT_HMAC_KEY"]
     }
     azure-cost-api = {
       port        = 8002
@@ -90,17 +90,19 @@ resource "aws_iam_role_policy" "bedrock" {
   })
 }
 resource "aws_iam_role_policy" "documents" {
-  role = aws_iam_role.task["processor"].id
+  for_each = toset(["backend", "processor"])
+  role     = aws_iam_role.task[each.key].id
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [
+    Statement = concat([
       { Effect = "Allow", Action = "s3:ListBucket", Resource = aws_s3_bucket.main["documents"].arn },
-      { Effect = "Allow", Action = ["s3:GetObject", "s3:PutObject"], Resource = "${aws_s3_bucket.main["documents"].arn}/*" },
+      { Effect = "Allow", Action = "s3:GetObject", Resource = each.key == "backend" ? ["${aws_s3_bucket.main["documents"].arn}/staging/*", "${aws_s3_bucket.main["documents"].arn}/confirmed/*"] : ["${aws_s3_bucket.main["documents"].arn}/confirmed/*"] },
+      { Effect = "Allow", Action = "s3:DeleteObject", Resource = ["${aws_s3_bucket.main["documents"].arn}/staging/*", "${aws_s3_bucket.main["documents"].arn}/confirmed/*"] },
       {
-        Effect    = "Allow", Action = ["kms:Decrypt", "kms:GenerateDataKey"], Resource = aws_kms_key.data.arn
+        Effect    = "Allow", Action = each.key == "backend" ? ["kms:Decrypt", "kms:GenerateDataKey"] : ["kms:Decrypt"], Resource = aws_kms_key.data.arn
         Condition = { StringEquals = { "kms:ViaService" = "s3.${var.region}.amazonaws.com" } }
       }
-    ]
+    ], each.key == "backend" ? [{ Effect = "Allow", Action = "s3:PutObject", Resource = ["${aws_s3_bucket.main["documents"].arn}/staging/*", "${aws_s3_bucket.main["documents"].arn}/confirmed/*"] }] : [])
   })
 }
 resource "aws_service_discovery_private_dns_namespace" "main" {
@@ -109,6 +111,17 @@ resource "aws_service_discovery_private_dns_namespace" "main" {
 }
 resource "aws_service_discovery_service" "fixture" {
   name = "azure-cost-api"
+  dns_config {
+    namespace_id   = aws_service_discovery_private_dns_namespace.main.id
+    routing_policy = "MULTIVALUE"
+    dns_records {
+      ttl  = 10
+      type = "A"
+    }
+  }
+}
+resource "aws_service_discovery_service" "processor" {
+  name = "processor"
   dns_config {
     namespace_id   = aws_service_discovery_private_dns_namespace.main.id
     routing_policy = "MULTIVALUE"
@@ -141,7 +154,7 @@ resource "aws_ecs_task_definition" "application" {
     readonlyRootFilesystem = true
     linuxParameters        = { initProcessEnabled = true }
     mountPoints            = [{ sourceVolume = "tmp", containerPath = "/tmp", readOnly = false }]
-    portMappings           = [{ containerPort = each.value.port, hostPort = each.value.port, protocol = "tcp" }]
+    portMappings           = concat([{ containerPort = each.value.port, hostPort = each.value.port, protocol = "tcp" }], each.key == "processor" ? [{ containerPort = 8003, hostPort = 8003, protocol = "tcp" }] : [])
     environment = [for key, value in merge(
       lookup(var.application_environment, each.key, {}),
       {
@@ -150,11 +163,25 @@ resource "aws_ecs_task_definition" "application" {
         ALLOW_INSECURE_LOCAL_DATABASE = "false"
         DEMO_SEED_ENABLED             = "false"
       },
+      contains(["backend", "processor"], each.key) ? {
+        ECONOMICON_AWS_RUNTIME      = "ecs"
+        DOCUMENT_S3_AUTH_MODE       = "iam"
+        DOCUMENT_S3_REGION          = var.region
+        DOCUMENT_S3_BUCKET          = aws_s3_bucket.main["documents"].id
+        DOCUMENT_S3_ENDPOINT        = "https://s3.${var.region}.amazonaws.com"
+        DOCUMENT_S3_PUBLIC_ENDPOINT = "https://s3.${var.region}.amazonaws.com"
+      } : {},
       each.key == "backend" ? {
-        CORS_ALLOWED_ORIGINS = jsonencode(["https://${var.frontend_domain}"])
+        AUTH_PROVIDER           = "cognito"
+        COGNITO_ISSUER          = "https://cognito-idp.${var.region}.amazonaws.com/${aws_cognito_user_pool.main.id}"
+        COGNITO_CLIENT_ID       = aws_cognito_user_pool_client.frontend.id
+        CORS_ALLOWED_ORIGINS    = jsonencode(["https://${var.frontend_domain}"])
+        BACKEND_SCHEMA_MODE     = "verify"
+        PROCESSOR_CHAT_BASE_URL = "http://processor.${aws_service_discovery_private_dns_namespace.main.name}:8003"
       } : {},
       each.key == "processor" ? {
         AZURE_COST_API_BASE_URL = "http://azure-cost-api.${aws_service_discovery_private_dns_namespace.main.name}:8002"
+        PROCESSOR_SCHEMA_MODE   = "verify"
       } : {},
       each.key == "azure-cost-api" ? { AZURE_COST_AUTH_ENABLED = "true" } : {}
     ) : { name = key, value = value }]
@@ -217,14 +244,14 @@ resource "aws_ecs_service" "application" {
     }
   }
   dynamic "service_registries" {
-    for_each = each.key == "azure-cost-api" ? [1] : []
+    for_each = contains(["azure-cost-api", "processor"], each.key) ? [1] : []
     content {
-      registry_arn = aws_service_discovery_service.fixture.arn
+      registry_arn = each.key == "processor" ? aws_service_discovery_service.processor.arn : aws_service_discovery_service.fixture.arn
     }
   }
   depends_on = [
     aws_lb_listener.https, aws_route.app_egress, aws_iam_role_policy.execution,
     aws_db_instance.main, aws_mq_broker.main, aws_iam_role_policy.bedrock,
-    aws_iam_role_policy.documents
+    aws_iam_role_policy.documents, aws_iam_role_policy.bedrock_chat
   ]
 }

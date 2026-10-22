@@ -89,6 +89,8 @@ async def serve_dual(settings,health,chat,bound,address):
 
 @startup_boundary
 def main() -> None:
+    from app.aws_runtime import prepare_runtime
+    prepare_runtime('processor')
     settings=get_settings()
     configure_logging()
     capacity=None

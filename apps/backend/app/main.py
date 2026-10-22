@@ -23,7 +23,7 @@ from app.core.runtime_secrets import StartupError
 from app.db.database import Database
 from app.services.assistant import AssistantService
 from app.core.embedding_startup import log_embedding_configuration
-from app.services.embedding_provider import LiteLLMEmbeddingProvider, MockEmbeddingProvider
+from app.services.embedding_provider import BedrockEmbeddingProvider, LiteLLMEmbeddingProvider, MockEmbeddingProvider
 from app.services import reference_date
 from app.services.rabbitmq_queue import RabbitMQQueue
 from app.services.vector_store import PgVectorQueryStore
@@ -104,7 +104,8 @@ async def lifespan(app: FastAPI):
             app.state.vector_store = vector_store
             app.state.assistant_service = AssistantService()
             embedding_provider = (
-                LiteLLMEmbeddingProvider(settings) if settings.embedding_provider == "litellm"
+                BedrockEmbeddingProvider(settings) if settings.embedding_provider == "bedrock"
+                else LiteLLMEmbeddingProvider(settings) if settings.embedding_provider == "litellm"
                 else MockEmbeddingProvider(settings.embedding_dimension)
             )
             vector_store.verify_dimension(embedding_provider.dimension)

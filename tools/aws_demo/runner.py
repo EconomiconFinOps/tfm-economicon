@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -17,6 +18,7 @@ import zipfile
 from control import (require, validate_config, validate_recipe, validate_recipe_files, state_key, lock_key,
                      bind_plan, verify_binding, cleanup_inventory, check_destroy_plan, check_unlock_plan,
                      application_digest, source_files, source_sha256, resources)
+from bedrock_contract import expected_profile, validate_profile
 
 ROOT = Path(__file__).resolve().parents[2]
 WORK = ROOT / ".work/aws-demo"
@@ -49,6 +51,7 @@ class Runner:
         raw = self.aws("s3", "cp", f"s3://{self.bucket}/{key}", "-", raw=True).encode()
         require(key == f"configs/{hashlib.sha256(raw).hexdigest()}.json", "Configuration must be immutable/content addressed")
         self.config = validate_config(json.loads(raw), os.environ["SOURCE_SHA"])
+        (WORK / "config.json").write_bytes(raw)
         require(self.config["account_id"] == os.environ["EXPECTED_ACCOUNT"], "Bootstrap account mismatch")
         identity = self.aws("sts", "get-caller-identity")
         require(identity["Account"] == self.config["account_id"], "AWS credentials belong to another account")
@@ -75,13 +78,18 @@ class Runner:
 
     def base_vars(self):
         c = self.config
+        recipe = self.recipe()
         return {"project": "economicon", "environment": c["cycle_id"], "region": c["region"],
                 "availability_zones": c["availability_zones"], "route53_zone_id": c["route53_zone_id"],
                 "frontend_domain": c["frontend_domain"], "origin_domain": c["origin_domain"],
                 "postgres_version": c["postgres_version"], "postgres_parameter_family": "postgres" + c["postgres_version"].split(".")[0],
                 "rabbitmq_version": c["rabbitmq_version"], "permissions_boundary_arn": os.environ["BOUNDARY_ARN"],
+                "mq_admin_secret_arn": os.environ.get("MQ_PASSWORD_SECRET_ARN"),
                 "final_snapshot_suffix": c["cycle_id"] + "-" + c["source_sha"][:8],
-                "deploy_applications": False, "application_adaptations_verified": False}
+                "deploy_applications": False, "application_adaptations_verified": False,
+                "application_environment": recipe.get("application_environment", {}),
+                "bedrock_model_arns": recipe.get("bedrock_model_arns", []),
+                "bedrock_chat_profile_id": recipe.get("bedrock_chat_profile_id")}
 
     def tf(self, *args):
         varfile = WORK / "cycle.tfvars.json"
@@ -134,16 +142,28 @@ class Runner:
         recipe = validate_recipe(json.loads(path.read_text()))
         return validate_recipe_files(recipe, ROOT)
 
+    def validate_bedrock_profile(self, recipe):
+        profile = recipe.get("bedrock_chat_profile_id")
+        if profile is None:
+            return
+        # Reject unknown targets before contacting AWS. This reads metadata only;
+        # runtime inference remains on the scoped ECS task role.
+        expected_profile(self.config["account_id"], profile)
+        metadata = self.aws("bedrock", "get-inference-profile", "--inference-profile-identifier", profile,
+                            "--region", "eu-south-2", deploy=True)
+        validate_profile(metadata, self.config["account_id"], profile)
+
     def validate(self):
         expiry = datetime.fromisoformat(self.config["expires_at"].replace("Z", "+00:00"))
         require(0 < (expiry - datetime.now(timezone.utc)).total_seconds() <= 8 * 3600, "Cycle must expire within eight hours of launch")
-        self.recipe()  # Fail BEFORE provisioning if application adaptation is absent.
+        recipe = self.recipe()  # Fail BEFORE provisioning if application adaptation is absent.
         token = os.environ["GITHUB_TOKEN"]
         request = urllib.request.Request(f'https://api.github.com/repos/EconomiconFinOps/tfm-economicon/actions/runs/{self.config["ci_run_id"]}',
             headers={"Authorization": "Bearer " + token, "Accept": "application/vnd.github+json"})
         with urllib.request.urlopen(request, timeout=30) as response:
             ci = json.load(response)
         require(ci["head_sha"] == self.config["source_sha"] and ci["conclusion"] == "success" and ci["path"] == ".github/workflows/ci.yml", "CI for exact source SHA must pass")
+        self.validate_bedrock_profile(recipe)
         regions = self.aws("ec2", "describe-regions", "--all-regions", "--region", "eu-south-2", deploy=True)["Regions"]
         require(any(r["RegionName"] == "eu-south-2" and r["OptInStatus"] in ("opt-in-not-required", "opted-in") for r in regions), "Spain region not enabled")
         zone = self.aws("route53", "get-hosted-zone", "--id", self.config["route53_zone_id"], deploy=True)["HostedZone"]
@@ -230,12 +250,17 @@ class Runner:
                 images[name] = outputs["ecr_repositories"][name] + "@" + detail["imageDetails"][0]["imageDigest"]
             (WORK / "images.json").write_text(json.dumps(images))
             for command in recipe["bootstrap"]:
-                run(command, dict(self.deploy_env, DEMO_OUTPUTS=str(WORK / "outputs.json"), DEMO_IMAGES=str(WORK / "images.json")))
+                try:
+                    run(command, dict(self.deploy_env, DEMO_CONFIG=str(WORK / "config.json"), DEMO_OUTPUTS=str(WORK / "outputs.json"), DEMO_IMAGES=str(WORK / "images.json")))
+                finally:
+                    if (WORK / "bootstrap-tasks.json").is_file():
+                        self.upload("bootstrap-tasks.json")
         self.vars.update(deploy_applications=True, application_adaptations_verified=True, container_images=images)
         # Recipe supplies only public runtime configuration; secret values are
         # written to Secrets Manager by the controlled bootstrap task.
         self.vars["application_environment"] = recipe.get("application_environment", {})
         self.vars["bedrock_model_arns"] = recipe.get("bedrock_model_arns", [])
+        self.vars["bedrock_chat_profile_id"] = recipe.get("bedrock_chat_profile_id")
         self.make_plan("applications")
         self.apply_saved("applications")
         # Persist full non-secret variables so teardown never turns apps off
@@ -244,11 +269,16 @@ class Runner:
         self.upload("images.json")
         run(["corepack", "pnpm", "install", "--frozen-lockfile"], self.control_env)
         run(["corepack", "pnpm", "--filter", "@finops/frontend", "build"], dict(self.control_env,
-            VITE_API_BASE_URL="/api", VITE_COGNITO_CLIENT_ID=outputs["cognito"]["client_id"], VITE_COGNITO_ISSUER=outputs["cognito"]["issuer"]))
+            VITE_API_BASE_URL="/api", VITE_AUTH_PROVIDER="cognito",
+            VITE_COGNITO_CLIENT_ID=outputs["cognito"]["client_id"], VITE_COGNITO_DOMAIN=outputs["cognito"]["login_domain"]))
         with self.resource_credentials():
             self.aws("s3", "sync", "apps/frontend/dist", "s3://" + outputs["buckets"]["frontend"], "--delete", raw=True, deploy=True)
             for command in recipe["checks"]:
-                run(command, dict(self.deploy_env, DEMO_OUTPUTS=str(WORK / "outputs.json")))
+                try:
+                    run(command, dict(self.deploy_env, DEMO_CONFIG=str(WORK / "config.json"), DEMO_OUTPUTS=str(WORK / "outputs.json")))
+                finally:
+                    if (WORK / "acceptance.json").is_file():
+                        self.upload("acceptance.json")
         (WORK / "ready.json").write_text(json.dumps({"source_sha": self.config["source_sha"], "url": outputs["frontend_url"], "ready_at": datetime.now(timezone.utc).isoformat()}))
         self.upload("ready.json")
         self.lease("READY")
@@ -296,6 +326,29 @@ class Runner:
                     self.aws("ecs", "stop-task", "--cluster", cluster, "--task", task, "--reason", "Disposable demo teardown", deploy=True)
                 for start in range(0, len(tasks), 100):
                     self.aws("ecs", "wait", "tasks-stopped", "--cluster", cluster, "--tasks", *tasks[start:start + 100], deploy=True)
+                name = resource["values"].get("name")
+                if name:
+                    retired = self.retire_bootstrap_definitions(name)
+                    self.bootstrap_retirements = getattr(self, "bootstrap_retirements", []) + retired
+
+    def retire_bootstrap_definitions(self, cluster):
+        require(cluster == "economicon-" + self.config["cycle_id"], "Unexpected bootstrap cleanup cluster")
+        prefix = f'arn:aws:ecs:eu-south-2:{self.config["account_id"]}:task-definition/{cluster}-bootstrap-'
+        inventory = self.aws("ecs", "list-task-definitions", "--family-prefix", cluster + "-bootstrap-",
+                             "--status", "ACTIVE", deploy=True)
+        retired = []
+        for arn in inventory.get("taskDefinitionArns", []):
+            if not re.fullmatch(re.escape(prefix) + r'(backend|processor)-(database|broker|fixtures|reindex):[1-9][0-9]*', arn):
+                continue
+            details = self.aws("ecs", "describe-task-definition", "--task-definition", arn, "--include", "TAGS", deploy=True)
+            require(details["taskDefinition"]["taskDefinitionArn"] == arn, "Bootstrap definition identity differs")
+            tags = {tag["key"]: tag["value"] for tag in details.get("tags", [])}
+            expected = {"Project": "economicon", "Environment": self.config["cycle_id"],
+                        "Purpose": "bootstrap", "SourceSha": self.config["source_sha"]}
+            if details["taskDefinition"]["status"] == "ACTIVE" and all(tags.get(key) == value for key, value in expected.items()):
+                self.aws("ecs", "deregister-task-definition", "--task-definition", arn, deploy=True)
+                retired.append(arn)
+        return retired
 
     def destroy(self):
         require(self.lease() == "TEARDOWN", "Down plan required")
@@ -330,6 +383,7 @@ class Runner:
         with self.resource_credentials():
             residuals = self.inspect_residuals()
         report = {"cycle_id": self.config["cycle_id"], "terraform_managed_resources": 0, "residual_inventory": residuals,
+                  "bootstrap_definitions_deregistered": getattr(self, "bootstrap_retirements", []),
                   "cost_zero_verified": False, "pending": ["KMS scheduled deletion (30d)", "Secrets Manager recovery (30d)",
                     "RDS retained automated backups, snapshots and exported logs must be inventoried", "Bootstrap/state/artifacts remain in Paris"],
                   "destroyed_at": datetime.now(timezone.utc).isoformat()}
@@ -358,12 +412,17 @@ class Runner:
                        "RetryPolicy": {"MaximumRetryAttempts": 3, "MaximumEventAgeInSeconds": 3600}}})
 
     def inspect_residuals(self):
-        result = {"active": [], "pending_deletion": [], "regions": ["eu-south-2", "us-east-1"]}
+        result = {"active": [], "pending_deletion": [], "retired_metadata": [], "regions": ["eu-south-2", "us-east-1"]}
         for region in result["regions"]:
             inventory = self.aws("resourcegroupstaggingapi", "get-resources", "--region", region, "--tag-filters",
                 "Key=Project,Values=economicon", "Key=Environment,Values=" + self.config["cycle_id"], deploy=True)
             for resource in inventory.get("ResourceTagMappingList", []):
                 arn = resource["ResourceARN"]
+                if ":ecs:" in arn and ":task-definition/" in arn:
+                    definition = self.aws("ecs", "describe-task-definition", "--task-definition", arn, "--region", region, deploy=True)["taskDefinition"]
+                    if definition.get("status") in {"INACTIVE", "DELETE_IN_PROGRESS"}:
+                        result["retired_metadata"].append(arn)
+                        continue
                 if ":kms:" in arn:
                     details = self.aws("kms", "describe-key", "--key-id", arn, "--region", region, deploy=True)["KeyMetadata"]
                     pending = details.get("KeyState") == "PendingDeletion"

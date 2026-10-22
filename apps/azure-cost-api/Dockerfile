@@ -14,7 +14,9 @@ COPY docs/api/azure-cost-query.openapi.json ./docs/api/azure-cost-query.openapi.
 COPY docs/api/azure-cost-query-mapping.json ./docs/api/azure-cost-query-mapping.json
 COPY fixtures/azure-cost/EA-Cost-Actual.sample.csv ./fixtures/azure-cost/EA-Cost-Actual.sample.csv
 
-RUN useradd --create-home --uid 10001 azureapi
+RUN useradd --create-home --uid 10001 azureapi \
+    && chown azureapi:azureapi /tmp && chmod 0700 /tmp
+VOLUME ["/tmp"]
 
 ENV AZURE_COST_DATASET_PATH=/app/fixtures/azure-cost/EA-Cost-Actual.sample.csv
 ENV AZURE_COST_MAPPING_PATH=/app/docs/api/azure-cost-query-mapping.json
