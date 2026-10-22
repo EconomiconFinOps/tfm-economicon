@@ -148,3 +148,13 @@ def test_basis_first_streams_before_json_finishes_and_basis_last_defers():
     assert last.finish()==first.finish()
     with pytest.raises(ValueError):SegmentAnswerJSON([]).feed('{"basis":"foreign","answer":[]}')
     with pytest.raises(ValueError):SegmentAnswerJSON([]).feed('{"basis":"greeting","basis":"user_scenario"}')
+
+
+def test_blank_interpretation_segment_is_omitted_not_fatal():
+    # A blank inference carries no claim; it must not discard the rest of the answer.
+    assert render_segments([{'inference':'Dato A.'},{'inference':''},{'inference':'  '}],[])==render_segments([{'inference':'Dato A.'}],[])
+    with pytest.raises(ValueError,match='Empty rendered text'):render_segments([{'inference':' '}],[])
+    with pytest.raises(ValueError,match='Invalid segment text'):render_segments([{'inference':None}],[])
+    raw=json.dumps({'basis':'user_scenario','answer':[{'inference':'Dato A.'},{'inference':''}],'next_actions':[]})
+    parser=SegmentAnswerJSON([])
+    assert parser.feed(raw).startswith('') and 'Dato A.' in parser.finish()

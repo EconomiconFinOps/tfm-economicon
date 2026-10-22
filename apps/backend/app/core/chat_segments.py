@@ -327,7 +327,9 @@ def render_segment(segment, records, expressions=None):
         return render_text(text,[])
     if set(segment)=={'inference'}:
         text=segment['inference']
-        if not isinstance(text,str) or not text.strip():raise ValueError('Invalid inference text.')
+        if not isinstance(text,str):raise ValueError('Invalid inference text.')
+        # A blank interpretation carries no claim: omit it instead of discarding the whole answer.
+        if not text.strip():return ''
         return '\nInterpretación: '+render_segment({'text':text},records,expressions)+'\n'
     if set(segment)=={'documentary'}:
         if expressions is None:raise ValueError('Documentary selection source unavailable.')

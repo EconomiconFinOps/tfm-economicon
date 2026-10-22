@@ -239,7 +239,7 @@ class ChatOperations:
                         self._emit(current,'delta',attempt_id=row['current_attempt_id'],seq=seq,offset=offset,text=value)
                         offset+=len(value.encode('utf-16-le'))//2
                     elif record.get('type')=='error':
-                        transient=record.get('status') in [429,502,503,504] or record.get('category') in ['timeout','transport','eof']
+                        transient=record.get('status') in [429,502,503,504] or record.get('category') in ['timeout','transport','eof','invalid_response']
                         await self._error(scope,row,transient,self._delay(record.get('retry_after'),row['attempt_count']) if transient else 0)
                         return
                     elif record.get('type')=='candidate':

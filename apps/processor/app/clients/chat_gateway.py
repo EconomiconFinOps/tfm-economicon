@@ -78,13 +78,23 @@ def _diagnostic_uuid(value):
         return None
 
 
+_attempt_number = ContextVar('chat_attempt_number', default=1)
+
+
+def retry_temperature(number):
+    """First attempt stays deterministic; a retry must not replay the same degenerate output."""
+    return 0 if type(number) is not int or number <= 1 else min(.2 * (number - 1), .6)
+
+
 @contextmanager
-def diagnostic_scope(operation_id, attempt_id):
+def diagnostic_scope(operation_id, attempt_id, attempt_number=1):
     """Keep authenticated correlation local to the consuming stream/task."""
     token = _diagnostic_context.set((_diagnostic_uuid(operation_id), _diagnostic_uuid(attempt_id)))
+    number = _attempt_number.set(attempt_number)
     try:
         yield
     finally:
+        _attempt_number.reset(number)
         _diagnostic_context.reset(token)
 
 
@@ -379,7 +389,7 @@ class ChatGateway:
             yield {'type':'error','category':'timeout'};return
         try:
             payload={'model':'economicon-chat','messages':context['messages'],'stream':True,
-                'stream_options':{'include_usage':True},'max_tokens':DRAFT_TOKENS if phase=='draft' else FINAL_TOKENS,'num_retries':0,'temperature':0,
+                'stream_options':{'include_usage':True},'max_tokens':DRAFT_TOKENS if phase=='draft' else FINAL_TOKENS,'num_retries':0,'temperature':retry_temperature(_attempt_number.get()),
                 'timeout':remaining,'stream_timeout':remaining,'reasoning':{'enabled':False},
                 'provider':{'order':['deepinfra/fp8'],'allow_fallbacks':False,'require_parameters':True}}
             from app.core.chat_expressions import context_quantities

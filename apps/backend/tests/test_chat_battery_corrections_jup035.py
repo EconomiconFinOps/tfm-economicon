@@ -160,7 +160,7 @@ def test_chat_output_budget_is_separate_from_ingestion(monkeypatch):
 
 
 def test_hypothetical_answer_does_not_turn_user_numbers_into_financial_evidence():
-    from app.schemas.chat import validate_response
+    from app.schemas.chat import UNVERIFIED_METRIC_LIMITATION, validate_response
     response = copy.deepcopy(ANSWER)
     response.update(answer='Ejemplo hipotetico: 125 EUR por dos unidades son 250 EUR.',
         assumptions=['Cifras aportadas por el usuario; multiplicacion.'],
@@ -169,9 +169,13 @@ def test_hypothetical_answer_does_not_turn_user_numbers_into_financial_evidence(
     source = {'id': 'definition', 'kind': 'corpus', 'source': 'synthetic', 'title': 'Definition'}
     response.update(status='partial', evidence=[source],
         metrics=[{'name': 'total_cost', 'value': '250', 'unit': 'EUR', 'evidence_ids': ['definition']}])
-    with pytest.raises(ValueError) as caught:
-        validate_response(response, [source], expected_subscriptions=[])
-    assert caught.value.rule_code == 'financial_metric_unverified'
+    # An unverified figure is omitted and flagged; the rest of the answer survives.
+    omitted = validate_response(response, [source], expected_subscriptions=[])
+    assert omitted['metrics'] == [] and omitted['limitations'][-1] == UNVERIFIED_METRIC_LIMITATION
+    assert omitted['answer'] == response['answer'] and omitted['evidence'] == response['evidence']
+    response['limitations'] = ['x'] * 10
+    assert validate_response(response, [source], expected_subscriptions=[])['limitations'][-1] == UNVERIFIED_METRIC_LIMITATION
+    response['limitations'] = ['No son costes Azure contrastados.']
     financial = {'id': 'cost:verified', 'kind': 'cost_query', 'source': 'billing-summary-v2',
         'title': 'Verified', 'metrics': [{'name': 'total_cost', 'value': '0.00', 'unit': 'EUR'}]}
     response.update(status='ok', evidence=[{k: financial[k] for k in ('id', 'kind', 'source', 'title')}],

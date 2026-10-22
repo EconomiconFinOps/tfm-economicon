@@ -173,6 +173,20 @@ describe("assistant conversations", () => {
     expect(requests.some((request) => request.path === `${collectionPath}/${secondConversation.id}`)).toBe(true);
   });
 
+  it("shows the persisted notice of an omitted figure when the history is reopened", async () => {
+    const notice = "Se omitió una cifra financiera que no pudo verificarse con la consulta de costes.";
+    const saved = { ...assistantMessage, content: "Interpretación: el total del periodo es 60815.14 EUR.",
+      metadata: { response: { limitations: [notice], metrics: [], next_actions: [] } } };
+    mockBackend({
+      [`GET ${collectionPath}`]: () => jsonResponse({ items: [conversation] }),
+      [`GET ${detailPath}`]: () => jsonResponse({ conversation, messages: [userMessage, saved] })
+    });
+    restoreSession();
+    renderApp(["/assistant"]);
+    expect(await screen.findByText(saved.content)).toBeVisible();
+    expect(await screen.findByText(notice)).toBeVisible();
+  });
+
   it("preserves the proposed title after conversation creation fails", async () => {
     const user = userEvent.setup();
     mockBackend({

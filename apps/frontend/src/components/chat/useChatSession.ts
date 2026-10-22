@@ -61,6 +61,10 @@ class ChatSession {
       changes = { ...changes, memory: null, memoryLoading: false, memoryError: false };
     }
     this.update({ ...this.value, cells: { ...this.value.cells, [id]: { ...current, ...changes } } });
+    // A failed or cancelled first question never reaches finish(), so its memory would stay unloaded and block sending.
+    const next = changes.operation;
+    if (next && ["failed", "cancelled"].includes(next.state)
+        && (current.operation?.operation_id !== next.operation_id || current.operation.state !== next.state)) void this.loadMemory(id);
   }
   attach() { this.alive = true; }
   detach() {
