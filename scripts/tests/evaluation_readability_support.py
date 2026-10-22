@@ -168,6 +168,19 @@ def catalogo() -> list:
 
 _PG: dict = {}
 
+# Banco de JUP-069 con el chat real (JUP-133): la única campaña de JUP-070 real del conjunto versionado. Las pruebas de
+# legibilidad describen escenarios sobre las dos campañas de plantilla de octubre (columnas, orden, «no real», resumen),
+# así que su montaje las deja fuera; `test_evaluation_readability_real_campaign.py` carga el conjunto completo.
+BANCO_JUP133 = "docs/evidence/JUP-133/JUP-133-bank28-report.json"
+
+
+def conjunto_versionado(herramienta, *, con_banco_jup133: bool) -> dict:
+    dataset = herramienta.build_dataset([herramienta.DEFAULT_MANIFEST])
+    if not con_banco_jup133:
+        dataset["runs"] = [item for item in dataset["runs"] if item["run"]["report_path"] != BANCO_JUP133]
+    return dataset
+
+
 
 def servidor() -> evaluation_pg_helper.PostgresServer:
     """Servidor del proceso con el conjunto versionado y el rol de lectura; se crea en el primer uso.
@@ -188,7 +201,7 @@ def servidor() -> evaluation_pg_helper.PostgresServer:
             raise
         try:
             herramienta = evaluation_pg_helper.load_tool()
-            _PG["instance"].load_dataset(herramienta.build_dataset([herramienta.DEFAULT_MANIFEST]), herramienta)
+            _PG["instance"].load_dataset(conjunto_versionado(herramienta, con_banco_jup133=False), herramienta)
             resultado = _PG["instance"].psql(stdin=herramienta.build_role_sql(secrets.token_urlsafe(18)))
             if resultado.returncode != 0:
                 raise RuntimeError(f"no se pudo crear el rol de lectura: {resultado.stderr.strip()}")
