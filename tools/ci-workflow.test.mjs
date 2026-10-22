@@ -294,3 +294,24 @@ test("restricts permanent branches to squash or rebase and keeps main linear", (
   assert.deepEqual(mainPullRequest.parameters.allowed_merge_methods, ["squash", "rebase"]);
   assert.deepEqual(developPullRequest.parameters.allowed_merge_methods, ["squash", "rebase"]);
 });
+
+// JUP-089: static landing checks do not replace existing product checks.
+test("checks the independent public landing without production dependencies", () => {
+  const job = workflow.jobs["landing-static"];
+  assert.equal(job.name, "Landing static checks");
+  assert.equal(job.if, undefined);
+  assert.equal(job["continue-on-error"], undefined);
+  const local = job.steps.filter(step => step["working-directory"] === "apps/landing");
+  assert.deepEqual(local.map(step => step.run), [
+    "node --check src/app.js && node --check scripts/build.mjs && node --check scripts/serve.mjs",
+    "node --test tests/build.test.mjs tests/server.test.mjs",
+    "node scripts/build.mjs"
+  ]);
+  for (const step of local) { assert.equal(step.if, undefined); assert.equal(step["continue-on-error"], undefined); }
+  assert.ok(workflow.jobs.governance.steps.some(step => step.run?.includes("node --test tools/landing-turbo.test.mjs")));
+  const rootBuild = workflow.jobs.governance.steps.find(step => step.run === "corepack pnpm build --filter=@finops/landing");
+  assert.equal(rootBuild.env.SITE_ORIGIN, "https://landing.example.test");
+  assert.equal(rootBuild.env.LANDING_OUT_DIR, "${{ runner.temp }}/economicon-landing-ci/dist");
+  assert.equal(rootBuild.if, undefined);
+  assert.equal(rootBuild["continue-on-error"], undefined);
+});

@@ -18,6 +18,7 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
+| [Landing publica](landing-publica.md) | JUP-089 / PR142: reconciliacion con develop 7f6c8d56 preparada para merge por excepcion humana expresa22Oct; se omiten validaciones pendientes sin nuevas aprobaciones ni despliegue publico. | 2026-10-22 |
 | [Despliegue AWS](cloud-aws.md) | PR146: correcciones implementadas; reconciliacion con develop f224226d y merge autorizados por excepcion humana22Oct. Sin nueva validacion funcional ni despliegue AWS. | 2026-10-22 |
 | [Cortes de respuesta del chat](cortes-respuesta-chat.md) | JUP-135 integrada por squash f224226d en PR153, con excepcion humana de merge; CI tecnica previa conforme. Agregados de medicion comunicados y pendientes documentales conservados; sin aceptacion generativa nueva. | 2026-10-22 |
 | [Reevaluacion de metricas tras el cambio de modelo](reevaluacion-metricas-modelo.md) | JUP-133 / PR150 integrada22Oct17:24UTC. Inventario, identidad del modelo e informes de evaluacion; resultados provisionales y limites de comparacion conservados. | 2026-10-22 |
