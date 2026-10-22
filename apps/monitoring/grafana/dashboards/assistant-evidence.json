@@ -1,0 +1,3756 @@
+{
+  "id": null,
+  "uid": "economicon-assistant-evidence",
+  "title": "Asistente y evidencia",
+  "description": "Resultados de una campaña, diagnóstico, recuperación histórica, comparación de modelos y mediciones de pruebas. Lo no medido permanece ausente; comparar contextos distintos no demuestra una mejora.",
+  "editable": false,
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "utc",
+  "time": {
+    "from": "now-1y",
+    "to": "now"
+  },
+  "refresh": "",
+  "tags": [
+    "asistente",
+    "evaluación",
+    "evidencia"
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "campaign",
+        "label": "Campaña",
+        "type": "query",
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "evaluation-postgres"
+        },
+        "query": "SELECT to_char(r.run_at AT TIME ZONE 'UTC','DD mon HH24:MI') || ' · ' || CASE WHEN r.source='JUP-071' THEN 'Experimental' WHEN 'doble'=ANY(r.non_real_reasons) THEN 'Plantilla y simulación' WHEN 'plantilla'=ANY(r.non_real_reasons) THEN 'Plantilla' ELSE 'Campaña' END AS __text,r.run_id AS __value FROM evaluation.runs r WHERE r.source IN ('JUP-070','JUP-071') AND r.run_at IS NOT NULL ORDER BY r.run_at DESC,r.run_id DESC",
+        "definition": "SELECT to_char(r.run_at AT TIME ZONE 'UTC','DD mon HH24:MI') || ' · ' || CASE WHEN r.source='JUP-071' THEN 'Experimental' WHEN 'doble'=ANY(r.non_real_reasons) THEN 'Plantilla y simulación' WHEN 'plantilla'=ANY(r.non_real_reasons) THEN 'Plantilla' ELSE 'Campaña' END AS __text,r.run_id AS __value FROM evaluation.runs r WHERE r.source IN ('JUP-070','JUP-071') AND r.run_at IS NOT NULL ORDER BY r.run_at DESC,r.run_id DESC",
+        "refresh": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": {},
+        "sort": 0
+      },
+      {
+        "name": "reference",
+        "label": "Referencia",
+        "type": "query",
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "evaluation-postgres"
+        },
+        "query": "SELECT 'Sin referencia' AS __text,'__none__' AS __value UNION ALL SELECT __text,__value FROM (SELECT to_char(r.run_at AT TIME ZONE 'UTC','DD mon HH24:MI') || ' · ' || CASE WHEN r.source='JUP-071' THEN 'Experimental' WHEN 'doble'=ANY(r.non_real_reasons) THEN 'Plantilla y simulación' WHEN 'plantilla'=ANY(r.non_real_reasons) THEN 'Plantilla' ELSE 'Campaña' END AS __text,r.run_id AS __value FROM evaluation.runs r WHERE r.source IN ('JUP-070','JUP-071') AND r.run_at IS NOT NULL ORDER BY r.run_at DESC,r.run_id DESC) available",
+        "definition": "SELECT 'Sin referencia' AS __text,'__none__' AS __value UNION ALL SELECT __text,__value FROM (SELECT to_char(r.run_at AT TIME ZONE 'UTC','DD mon HH24:MI') || ' · ' || CASE WHEN r.source='JUP-071' THEN 'Experimental' WHEN 'doble'=ANY(r.non_real_reasons) THEN 'Plantilla y simulación' WHEN 'plantilla'=ANY(r.non_real_reasons) THEN 'Plantilla' ELSE 'Campaña' END AS __text,r.run_id AS __value FROM evaluation.runs r WHERE r.source IN ('JUP-070','JUP-071') AND r.run_at IS NOT NULL ORDER BY r.run_at DESC,r.run_id DESC) available",
+        "refresh": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": {
+          "text": "Sin referencia",
+          "value": "__none__"
+        },
+        "sort": 0
+      },
+      {
+        "name": "model_availability",
+        "type": "query",
+        "label": "Disponibilidad de modelos",
+        "hide": 2,
+        "skipUrlSync": true,
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "evaluation-postgres"
+        },
+        "query": "SELECT estado AS __text, estado AS __value FROM (\n SELECT CASE count(*) WHEN 0 THEN 'Sin datos' WHEN 2 THEN 'Dos observaciones' ELSE 'Datos parciales' END AS estado\n FROM (\n  SELECT x.behavior FROM evaluation.results x JOIN evaluation.runs r USING(run_id)\n  WHERE r.run_id='jup-063-undated-1df92bdb' AND r.source='JUP-063' AND r.format='jup-063-paired-v1'\n   AND x.grp='paired_local_provisional' AND x.status='measured'\n   AND x.behavior IN ('DeepSeekV4.1Flash','GLM5.2')\n   AND x.metric_id IN ('reported_phase_cost_usd','generation_seconds_p95')\n  GROUP BY x.behavior HAVING count(DISTINCT x.metric_id)=2\n ) observations\n) availability",
+        "definition": "SELECT estado AS __text, estado AS __value FROM (\n SELECT CASE count(*) WHEN 0 THEN 'Sin datos' WHEN 2 THEN 'Dos observaciones' ELSE 'Datos parciales' END AS estado\n FROM (\n  SELECT x.behavior FROM evaluation.results x JOIN evaluation.runs r USING(run_id)\n  WHERE r.run_id='jup-063-undated-1df92bdb' AND r.source='JUP-063' AND r.format='jup-063-paired-v1'\n   AND x.grp='paired_local_provisional' AND x.status='measured'\n   AND x.behavior IN ('DeepSeekV4.1Flash','GLM5.2')\n   AND x.metric_id IN ('reported_phase_cost_usd','generation_seconds_p95')\n  GROUP BY x.behavior HAVING count(DISTINCT x.metric_id)=2\n ) observations\n) availability",
+        "refresh": 2,
+        "current": {},
+        "options": [],
+        "multi": false,
+        "includeAll": false
+      }
+    ]
+  },
+  "links": [],
+  "panels": [
+    {
+      "id": 301,
+      "title": "RESULTADOS DEL ASISTENTE · CAMPAÑA SELECCIONADA",
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 2
+      },
+      "description": "Fecha y carácter de la campaña seleccionada. Plantilla y simulación no miden calidad de generación; un modelo declarado no acredita su verificación.",
+      "transparent": false,
+      "pluginVersion": "11.3.0",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT to_char(r.run_at AT TIME ZONE 'UTC','DD mon YYYY HH24:MI UTC') || ' · ' || CASE WHEN r.run_id='JUP-071-a543144c9a55' THEN 'Experimental · una repetición / una persona evaluadora · modelo sin verificar' WHEN 'plantilla'=ANY(r.non_real_reasons) THEN 'Plantilla · no mide calidad de generación' WHEN r.source='JUP-071' THEN 'Experimental · ver condiciones del informe' ELSE 'Modelo declarado: ' || COALESCE(r.generation_model,'sin verificar') END AS contexto FROM evaluation.runs r WHERE r.run_id IN (${campaign:sqlstring})",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#6ED0E0"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "left",
+        "textMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/.*/",
+          "values": false
+        },
+        "text": {
+          "valueSize": 16,
+          "titleSize": 12
+        }
+      }
+    },
+    {
+      "id": 102,
+      "title": "Favorables provisionales",
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 2,
+        "w": 6,
+        "h": 3
+      },
+      "description": "Dato de una campaña seleccionada. No demuestra aceptación completa ni desempeño con usuarios reales. Las referencias históricas son de plantilla; la campaña experimental tiene una repetición, una persona evaluadora y modelo sin verificar.",
+      "transparent": false,
+      "pluginVersion": "11.3.0",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT (max(x.case_count) FILTER(WHERE x.status='pass'))::int::text || ' / ' || max(x.denominator)::text AS casos FROM evaluation.results x JOIN evaluation.runs r USING(run_id) WHERE x.run_id IN (${campaign:sqlstring}) AND x.grp='cases' AND x.metric_id='cases' AND x.behavior='all'",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#6ED0E0"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/.*/",
+          "values": false
+        },
+        "text": {
+          "valueSize": 42,
+          "titleSize": 12
+        }
+      }
+    },
+    {
+      "id": 103,
+      "title": "Casos fallidos",
+      "type": "stat",
+      "gridPos": {
+        "x": 6,
+        "y": 2,
+        "w": 6,
+        "h": 3
+      },
+      "description": "Dato de una campaña seleccionada. No demuestra aceptación completa ni desempeño con usuarios reales. Las referencias históricas son de plantilla; la campaña experimental tiene una repetición, una persona evaluadora y modelo sin verificar.",
+      "transparent": false,
+      "pluginVersion": "11.3.0",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT (max(x.case_count) FILTER(WHERE x.status='fail'))::int::text || ' / ' || max(x.denominator)::text AS casos FROM evaluation.results x JOIN evaluation.runs r USING(run_id) WHERE x.run_id IN (${campaign:sqlstring}) AND x.grp='cases' AND x.metric_id='cases' AND x.behavior='all'",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#F2495C"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/.*/",
+          "values": false
+        },
+        "text": {
+          "valueSize": 42,
+          "titleSize": 12
+        }
+      }
+    },
+    {
+      "id": 104,
+      "title": "Sin medir / evaluar",
+      "type": "stat",
+      "gridPos": {
+        "x": 12,
+        "y": 2,
+        "w": 6,
+        "h": 3
+      },
+      "description": "Dato de una campaña seleccionada. No demuestra aceptación completa ni desempeño con usuarios reales. Las referencias históricas son de plantilla; la campaña experimental tiene una repetición, una persona evaluadora y modelo sin verificar.",
+      "transparent": false,
+      "pluginVersion": "11.3.0",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT (sum(x.case_count) FILTER(WHERE x.status IN ('blocked','not_run')))::int::text || ' / ' || max(x.denominator)::text AS casos FROM evaluation.results x JOIN evaluation.runs r USING(run_id) WHERE x.run_id IN (${campaign:sqlstring}) AND x.grp='cases' AND x.metric_id='cases' AND x.behavior='all'",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#B8A5E4"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/.*/",
+          "values": false
+        },
+        "text": {
+          "valueSize": 42,
+          "titleSize": 12
+        }
+      }
+    },
+    {
+      "id": 105,
+      "title": "Puntuables · ver cobertura",
+      "type": "stat",
+      "gridPos": {
+        "x": 18,
+        "y": 2,
+        "w": 6,
+        "h": 3
+      },
+      "description": "Dato de una campaña seleccionada. No demuestra aceptación completa ni desempeño con usuarios reales. Las referencias históricas son de plantilla; la campaña experimental tiene una repetición, una persona evaluadora y modelo sin verificar.",
+      "transparent": false,
+      "pluginVersion": "11.3.0",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT (sum(x.case_count) FILTER(WHERE x.status IN ('pass','fail')))::int::text || ' / ' || max(x.denominator)::text AS casos FROM evaluation.results x JOIN evaluation.runs r USING(run_id) WHERE x.run_id IN (${campaign:sqlstring}) AND x.grp='cases' AND x.metric_id='cases' AND x.behavior='all'",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#8F93A8"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/.*/",
+          "values": false
+        },
+        "text": {
+          "valueSize": 42,
+          "titleSize": 12
+        }
+      }
+    },
+    {
+      "id": 302,
+      "type": "text",
+      "title": "¿Cuántos casos completos pasan?",
+      "gridPos": {
+        "x": 0,
+        "y": 5,
+        "w": 12,
+        "h": 3
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "Una sola campaña seleccionada, con su propio denominador. **Los casos sin medir no cuentan como favorables.** Una plantilla no acredita calidad de generación."
+      },
+      "description": "Mide los resultados existentes del informe indicado. No demuestra calidad con usuarios reales ni aceptación completa.",
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido"
+        }
+      }
+    },
+    {
+      "id": 303,
+      "type": "text",
+      "title": "¿Dónde fallan las perturbaciones?",
+      "gridPos": {
+        "x": 12,
+        "y": 5,
+        "w": 12,
+        "h": 3
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "Perturbaciones de la campaña seleccionada cuando su informe las incluye. **Son un subconjunto de los casos, no otra campaña ni otra repetición.** Sin filas: sin datos."
+      },
+      "description": "Mide los resultados existentes del informe indicado. No demuestra calidad con usuarios reales ni aceptación completa.",
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido"
+        }
+      }
+    },
+    {
+      "id": 106,
+      "title": "Estados de la campaña seleccionada",
+      "type": "piechart",
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 7
+      },
+      "description": "Estados de una sola campaña. Una repetición, una persona evaluadora y modelo sin verificar en la campaña experimental. Los casos bloqueados o sin ejecutar se conservan en detalle. No acredita aceptación completa.",
+      "transparent": false,
+      "pluginVersion": "11.3.0",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT max(x.case_count) FILTER(WHERE x.status='pass') AS \"Favorables\",max(x.case_count) FILTER(WHERE x.status='fail') AS \"Fallidos\",sum(x.case_count) FILTER(WHERE x.status IN ('blocked','not_run')) AS \"Sin evaluar\" FROM evaluation.results x WHERE x.run_id IN (${campaign:sqlstring}) AND x.grp='cases' AND x.metric_id='cases' AND x.behavior='all'",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "noValue": "No medido",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Favorables"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#56B899"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Fallidos"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F2495C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Sin evaluar"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8F93A8"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "pieType": "donut",
+        "displayLabels": [
+          "percent"
+        ],
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 304,
+      "type": "barchart",
+      "title": "Perturbaciones · subconjunto de la campaña",
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 7
+      },
+      "description": "Resultados de las 16 perturbaciones de la campaña experimental. Son un subconjunto de los 29 casos, no otra campaña. No demuestra generalización ni aceptación.",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT CASE x.behavior WHEN 'tagging' THEN 'Etiquetas' WHEN 'allocation' THEN 'Asignación' WHEN 'costs' THEN 'Costes' WHEN 'scope' THEN 'Alcance' WHEN 'anomalies' THEN 'Anomalías' ELSE 'Otra categoría' END || ' · n=' || max(x.denominator)::text AS \"Categoría\",max(x.case_count) FILTER(WHERE x.status='pass') AS \"Favorables\",max(x.case_count) FILTER(WHERE x.status='fail') AS \"Fallidos\",sum(x.case_count) FILTER(WHERE x.status IN ('blocked','not_run')) AS \"Sin medir\" FROM evaluation.results x JOIN evaluation.runs r USING(run_id) WHERE x.run_id IN (${campaign:sqlstring}) AND x.grp='category' AND x.metric_id='cases' GROUP BY x.behavior ORDER BY x.behavior",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido",
+          "decimals": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short",
+          "min": 0,
+          "custom": {
+            "fillOpacity": 85,
+            "lineWidth": 0,
+            "axisBorderShow": false,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Favorables"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#6ED0E0"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Fallidos"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F2495C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Sin medir"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#B8A5E4"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.65,
+        "groupWidth": 0.7,
+        "showValue": "never",
+        "stacking": "normal",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 305,
+      "type": "text",
+      "title": "Robustez del asistente · ¿Qué explica el resultado provisional?",
+      "gridPos": {
+        "x": 0,
+        "y": 15,
+        "w": 24,
+        "h": 3
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**Calidad del core y conversación:** cada medida conserva su denominador. Puntuable no implica cobertura completa; el experimento tiene cobertura reducida. Ausencias: «No medido». Transporte completado no equivale a calidad."
+      },
+      "description": "Mide los resultados existentes del informe indicado. No demuestra calidad con usuarios reales ni aceptación completa.",
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido"
+        }
+      }
+    },
+    {
+      "id": 306,
+      "title": "Fallos objetivos de cifras",
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 18,
+        "w": 6,
+        "h": 4
+      },
+      "description": "Indicador de la campaña experimental, con su propio denominador. El 3/15 es un proxy de rúbrica mixta, no un detector puro; el 0/55 no acredita ausencia general de invenciones. No mide calidad global.",
+      "transparent": false,
+      "pluginVersion": "11.3.0",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT max(case_count)::text || ' / ' || max(denominator)::text AS evidencia FROM evaluation.results WHERE run_id IN (${campaign:sqlstring}) AND grp='numeric' AND metric_id='numeric_checks' AND status='fail'",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#B8A5E4"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/.*/",
+          "values": false
+        },
+        "text": {
+          "valueSize": 36,
+          "titleSize": 12
+        }
+      }
+    },
+    {
+      "id": 307,
+      "title": "Puntos requeridos satisfechos",
+      "type": "stat",
+      "gridPos": {
+        "x": 6,
+        "y": 18,
+        "w": 6,
+        "h": 4
+      },
+      "description": "Indicador de la campaña experimental, con su propio denominador. El 3/15 es un proxy de rúbrica mixta, no un detector puro; el 0/55 no acredita ausencia general de invenciones. No mide calidad global.",
+      "transparent": false,
+      "pluginVersion": "11.3.0",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT max(numerator)::int::text || ' / ' || max(denominator)::text AS evidencia FROM evaluation.results WHERE run_id IN (${campaign:sqlstring}) AND grp='rob_core' AND metric_id='required_coverage'",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#B8A5E4"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/.*/",
+          "values": false
+        },
+        "text": {
+          "valueSize": 36,
+          "titleSize": 12
+        }
+      }
+    },
+    {
+      "id": 308,
+      "title": "Proxy de petición · rúbrica mixta",
+      "type": "stat",
+      "gridPos": {
+        "x": 12,
+        "y": 18,
+        "w": 6,
+        "h": 4
+      },
+      "description": "Indicador de la campaña experimental, con su propio denominador. El 3/15 es un proxy de rúbrica mixta, no un detector puro; el 0/55 no acredita ausencia general de invenciones. No mide calidad global.",
+      "transparent": false,
+      "pluginVersion": "11.3.0",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT max(numerator)::int::text || ' / ' || max(denominator)::text AS evidencia FROM evaluation.results WHERE run_id IN (${campaign:sqlstring}) AND grp='rob_conversation' AND metric_id='request_rate'",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#B8A5E4"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/.*/",
+          "values": false
+        },
+        "text": {
+          "valueSize": 36,
+          "titleSize": 12
+        }
+      }
+    },
+    {
+      "id": 309,
+      "title": "Prohibiciones fallidas",
+      "type": "stat",
+      "gridPos": {
+        "x": 18,
+        "y": 18,
+        "w": 6,
+        "h": 4
+      },
+      "description": "Indicador de la campaña experimental, con su propio denominador. El 3/15 es un proxy de rúbrica mixta, no un detector puro; el 0/55 no acredita ausencia general de invenciones. No mide calidad global.",
+      "transparent": false,
+      "pluginVersion": "11.3.0",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT max(numerator)::int::text || ' / ' || max(denominator)::text AS evidencia FROM evaluation.results WHERE run_id IN (${campaign:sqlstring}) AND grp='rob_core' AND metric_id='invention_rate'",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#B8A5E4"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/.*/",
+          "values": false
+        },
+        "text": {
+          "valueSize": 36,
+          "titleSize": 12
+        }
+      }
+    },
+    {
+      "id": 310,
+      "type": "text",
+      "title": "Controles estructurales y límites",
+      "gridPos": {
+        "x": 0,
+        "y": 22,
+        "w": 24,
+        "h": 3
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "Citas válidas y literales son controles estructurales, no éxito global. La petición es un proxy de rúbrica mixta. **Usuarios reales, relevancia y fidelidad sin aceptación independiente.** La campaña experimental del 20 oct no midió latencia."
+      },
+      "description": "Mide los resultados existentes del informe indicado. No demuestra calidad con usuarios reales ni aceptación completa.",
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido"
+        }
+      }
+    },
+    {
+      "id": 203,
+      "type": "text",
+      "title": "¿Qué cambia al ajustar k y distancia?",
+      "gridPos": {
+        "x": 0,
+        "y": 25,
+        "w": 12,
+        "h": 3
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**Recuperación:** calibración histórica del 15 oct · 20 casos/celda · cuatro candidatos a 0,6. Corpus y batería distintos; sin causalidad sobre otras campañas."
+      },
+      "description": "Mide los resultados existentes del informe indicado. No demuestra calidad con usuarios reales ni aceptación completa.",
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido"
+        }
+      }
+    },
+    {
+      "id": 202,
+      "type": "text",
+      "title": "¿Recuperamos documento y sección?",
+      "gridPos": {
+        "x": 12,
+        "y": 25,
+        "w": 12,
+        "h": 3
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**Recuperación documental · 08 oct · plantilla · 20 casos.** Referencia histórica independiente: la campaña experimental no mide estas tasas; no se rellenan con cero."
+      },
+      "description": "Mide los resultados existentes del informe indicado. No demuestra calidad con usuarios reales ni aceptación completa.",
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido"
+        }
+      }
+    },
+    {
+      "id": 110,
+      "title": "Acierto de sección · matriz de calibración",
+      "type": "table",
+      "gridPos": {
+        "x": 0,
+        "y": 28,
+        "w": 12,
+        "h": 9
+      },
+      "description": "Acierto de sección: 20 casos por celda, calibración histórica del 15 oct. Cuatro candidatos a distancia 0,6; no hay un ganador único. Corpus de 66 fragmentos y batería distintos de los 52 fragmentos de la recuperación histórica; sin causalidad entre ensayos.",
+      "transparent": false,
+      "pluginVersion": "11.3.0",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT CASE WHEN split_part(x.behavior,'max_distance=',2)='none' THEN 'Sin umbral' WHEN split_part(x.behavior,'max_distance=',2)='0.6' THEN '0.60 · candidatos' ELSE split_part(x.behavior,'max_distance=',2) END AS \"Distancia máxima\", max(x.value*100) FILTER (WHERE x.behavior LIKE 'top_k=3,%') AS \"k = 3\",max(x.value*100) FILTER (WHERE x.behavior LIKE 'top_k=4,%') AS \"k = 4\",max(x.value*100) FILTER (WHERE x.behavior LIKE 'top_k=5,%') AS \"k = 5\",max(x.value*100) FILTER (WHERE x.behavior LIKE 'top_k=6,%') AS \"k = 6\" FROM evaluation.results x JOIN evaluation.runs r USING(run_id) WHERE r.run_id='jup-022-20261015T092121Z-1d88198f' AND x.grp='calibration' AND x.metric_id='section_hit_answer' AND x.status='measured' GROUP BY split_part(x.behavior,'max_distance=',2) ORDER BY CASE WHEN split_part(x.behavior,'max_distance=',2)='none' THEN 0 ELSE 1 END, split_part(x.behavior,'max_distance=',2)",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido",
+          "decimals": 0,
+          "color": {
+            "mode": "continuous-BlPu"
+          },
+          "custom": {
+            "align": "center",
+            "cellOptions": {
+              "type": "color-background",
+              "mode": "gradient"
+            },
+            "filterable": false
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Distancia máxima"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "custom.width",
+                "value": 170
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto"
+                }
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "k = 3"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "k = 4"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "k = 5"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "k = 6"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      }
+    },
+    {
+      "id": 107,
+      "title": "Documento y sección · referencia histórica",
+      "type": "barchart",
+      "gridPos": {
+        "x": 12,
+        "y": 28,
+        "w": 12,
+        "h": 9
+      },
+      "description": "Mide: REL-1/REL-2 en la misma campaña. No demuestra: calidad de respuesta. REL-3 vacío queda separado por conducta en detalle; vacío puede ser correcto.",
+      "transparent": false,
+      "pluginVersion": "11.3.0",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT '08 oct · segunda pasada · 20 casos de respuesta' AS \"Muestra\",max(x.value*100) FILTER(WHERE x.metric_id='REL-1') AS \"Documento correcto\",max(x.value*100) FILTER(WHERE x.metric_id='REL-2') AS \"Sección correcta\" FROM evaluation.results x JOIN evaluation.runs r USING(run_id) WHERE x.run_id = 'jup-070-20261008T210144Z-b64cca76' AND x.metric_id IN ('REL-1','REL-2') AND x.status='measured'",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido",
+          "decimals": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 85,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 0,
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Documento correcto"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#6ED0E0"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Sección correcta"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#5794F2"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "orientation": "vertical",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "showValue": "always",
+        "stacking": "none",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "text": {
+          "valueSize": 18
+        }
+      }
+    },
+    {
+      "id": 112,
+      "title": "MODELOS · COMPARACIÓN HISTÓRICA SEPARADA",
+      "type": "text",
+      "gridPos": {
+        "x": 0,
+        "y": 37,
+        "w": 24,
+        "h": 3
+      },
+      "description": "",
+      "transparent": false,
+      "pluginVersion": "11.3.0",
+      "options": {
+        "mode": "markdown",
+        "content": "**16 oct · contexto congelado · 28 preguntas × 3 = 84 respuestas por modelo.** Valoración local provisional, sin aceptación ni adjudicación independiente. Referencia opcional: si no está cargada, los gráficos quedan sin datos."
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido"
+        }
+      }
+    },
+    {
+      "id": 205,
+      "type": "text",
+      "title": "¿Qué dice la valoración provisional?",
+      "gridPos": {
+        "x": 0,
+        "y": 40,
+        "w": 12,
+        "h": 3
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "84 respuestas por modelo en el informe histórico, cuando está cargado. **Valoración provisional, sin aceptación ni evaluación independiente.**"
+      },
+      "transparent": false,
+      "description": "Mide los resultados existentes del informe indicado. No demuestra calidad con usuarios reales ni aceptación completa.",
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido"
+        }
+      }
+    },
+    {
+      "id": 206,
+      "type": "text",
+      "title": "¿Qué coste y p95 se observaron?",
+      "gridPos": {
+        "x": 12,
+        "y": 40,
+        "w": 12,
+        "h": 3
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**Rendimiento:** X, coste de fases (USD); Y, p95 de generación (s). Misma cohorte; **dos puntos no indican tendencia ni calidad**. Sin informe cargado: sin datos."
+      },
+      "transparent": false,
+      "description": "Mide los resultados existentes del informe indicado. No demuestra calidad con usuarios reales ni aceptación completa.",
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido"
+        }
+      }
+    },
+    {
+      "id": 113,
+      "title": "Valoración provisional · 84 respuestas por modelo",
+      "type": "barchart",
+      "gridPos": {
+        "x": 0,
+        "y": 43,
+        "w": 12,
+        "h": 9
+      },
+      "description": "Mide: recuentos locales provisionales de84respuestas/modelo. No demuestra: aceptación humana, ACC-1, casosE2E ni superioridad estadística.",
+      "transparent": false,
+      "pluginVersion": "11.3.0",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT CASE WHEN x.behavior ILIKE '%deepseek%' THEN 'DeepSeek' ELSE 'GLM' END AS \"Modelo\", max(x.value) FILTER(WHERE x.metric_id='provisional_pass') AS \"Favorable provisional\",max(x.value) FILTER(WHERE x.metric_id='provisional_fail') AS \"Desfavorable\",max(x.value) FILTER(WHERE x.metric_id='pending') AS \"Pendiente\" FROM evaluation.results x JOIN evaluation.runs r USING(run_id) WHERE x.grp='paired_local_provisional' AND r.format='jup-063-paired-v1' AND x.status='measured' AND r.run_id='jup-063-undated-1df92bdb' GROUP BY x.behavior ORDER BY x.behavior",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido",
+          "decimals": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 85,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 0,
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          },
+          "unit": "short",
+          "min": 0,
+          "max": 84
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Favorable provisional"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#6ED0E0"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Desfavorable"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F2495C"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pendiente"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8F93A8"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "orientation": "vertical",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "showValue": "never",
+        "stacking": "normal",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "text": {
+          "valueSize": 18
+        }
+      }
+    },
+    {
+      "id": 114,
+      "title": "Coste de fases frente a p95 de generación · ${model_availability:text}",
+      "type": "xychart",
+      "gridPos": {
+        "x": 12,
+        "y": 43,
+        "w": 12,
+        "h": 9
+      },
+      "description": "Dos observaciones de la misma cohorte del 16 oct, 84 respuestas por modelo y contexto congelado. Coste de fases en USD y p95 de generación en segundos. No es facturación ni latencia de conversación completa. Rutas y cuantizaciones distintas; sin tendencia, superioridad estadística o calidad implícita.",
+      "transparent": false,
+      "pluginVersion": "11.3.0",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT max(x.value) FILTER(WHERE x.metric_id='reported_phase_cost_usd') AS \"Coste de fases (USD)\",max(x.value) FILTER(WHERE x.metric_id='generation_seconds_p95') AS \"DeepSeek\" FROM evaluation.results x JOIN evaluation.runs r USING(run_id) WHERE r.run_id='jup-063-undated-1df92bdb' AND r.source='JUP-063' AND r.format='jup-063-paired-v1' AND x.grp='paired_local_provisional' AND x.status='measured' AND x.behavior='DeepSeekV4.1Flash'",
+          "editorMode": "code"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT max(x.value) FILTER(WHERE x.metric_id='reported_phase_cost_usd') AS \"Coste de fases (USD)\",max(x.value) FILTER(WHERE x.metric_id='generation_seconds_p95') AS \"GLM\" FROM evaluation.results x JOIN evaluation.runs r USING(run_id) WHERE r.run_id='jup-063-undated-1df92bdb' AND r.source='JUP-063' AND r.format='jup-063-paired-v1' AND x.grp='paired_local_provisional' AND x.status='measured' AND x.behavior='GLM5.2'",
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 2,
+          "min": 0,
+          "noValue": "No medido",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "p95 generación (s)",
+            "axisPlacement": "left",
+            "axisBorderShow": true,
+            "show": "points",
+            "pointSize": {
+              "fixed": 16
+            },
+            "pointStrokeWidth": 2,
+            "fillOpacity": 85,
+            "lineWidth": 0,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Coste de fases (USD)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 3
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "custom.axisLabel",
+                "value": "Coste de fases (USD)"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "DeepSeek"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#6ED0E0"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "GLM"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#B8A5E4"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "mapping": "manual",
+        "series": [
+          {
+            "name": {
+              "fixed": "DeepSeek"
+            },
+            "frame": {
+              "matcher": {
+                "id": "byIndex",
+                "options": 0
+              }
+            },
+            "x": {
+              "matcher": {
+                "id": "byName",
+                "options": "Coste de fases (USD)"
+              }
+            },
+            "y": {
+              "matcher": {
+                "id": "byName",
+                "options": "DeepSeek"
+              }
+            }
+          },
+          {
+            "name": {
+              "fixed": "GLM"
+            },
+            "frame": {
+              "matcher": {
+                "id": "byIndex",
+                "options": 1
+              }
+            },
+            "x": {
+              "matcher": {
+                "id": "byName",
+                "options": "Coste de fases (USD)"
+              }
+            },
+            "y": {
+              "matcher": {
+                "id": "byName",
+                "options": "GLM"
+              }
+            }
+          }
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "transformations": [
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "fieldName": "Coste de fases (USD)",
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                }
+              }
+            ],
+            "match": "all",
+            "type": "include"
+          }
+        }
+      ]
+    },
+    {
+      "id": 311,
+      "type": "table",
+      "title": "Comparación entre ejecuciones",
+      "gridPos": {
+        "x": 0,
+        "y": 52,
+        "w": 24,
+        "h": 4
+      },
+      "description": "Comparación sólo entre fechas ordenadas, misma fuente y misma clave de comparabilidad. La ausencia o incompatibilidad no se presenta como mejora. Las cuatro familias son calidad del core, recuperación, rendimiento y conversación/usuario; no hay evidencia de usuarios reales.",
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Estado"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 220
+              }
+            ]
+          }
+        ]
+      },
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH selected AS (SELECT * FROM evaluation.runs WHERE run_id IN (${campaign:sqlstring})),\nreference AS (SELECT * FROM evaluation.runs WHERE run_id IN (${reference:sqlstring})),\npair AS (SELECT s.run_id AS current_id,p.run_id AS reference_id,\nCASE WHEN s.run_id IS NULL THEN 'Sin datos' WHEN p.run_id IS NULL THEN 'Sin referencia'\nWHEN s.run_id=p.run_id THEN 'Misma ejecución'\nWHEN s.run_at IS NULL OR p.run_at IS NULL OR p.run_at>=s.run_at THEN 'Sin orden temporal'\nWHEN s.source<>p.source OR s.comparability_key IS NULL OR p.comparability_key IS NULL OR s.comparability_key<>p.comparability_key THEN 'No comparable'\nELSE 'Comparación disponible' END AS state\nFROM (SELECT 1) one LEFT JOIN selected s ON true LEFT JOIN reference p ON true)\nSELECT state AS \"Estado\",CASE state WHEN 'Comparación disponible' THEN 'Ver cambios por métrica en el detalle; son cambios observados, sin significación estadística ni causalidad.' WHEN 'No comparable' THEN 'Cambian contexto, batería, corpus, modelo o condiciones; no se infiere mejora.' WHEN 'Sin referencia' THEN 'Selecciona una referencia anterior. Sin pareja compatible no se infiere mejora o empeoramiento.' WHEN 'Misma ejecución' THEN 'Selecciona otra ejecución; una campaña no es su propia versión anterior.' WHEN 'Sin orden temporal' THEN 'La referencia debe tener fecha anterior a la campaña.' ELSE 'No hay una campaña cargada para comparar.' END AS \"Lectura\" FROM pair",
+          "editorMode": "code"
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 320,
+      "type": "row",
+      "title": "Coste de las pruebas, detección de anomalías y conciliación de datos · desplegar",
+      "collapsed": true,
+      "gridPos": {
+        "x": 0,
+        "y": 56,
+        "w": 24,
+        "h": 1
+      },
+      "panels": [
+        {
+          "id": 321,
+          "type": "text",
+          "title": "Mediciones de pruebas y demo",
+          "gridPos": {
+            "x": 0,
+            "y": 57,
+            "w": 24,
+            "h": 2
+          },
+          "options": {
+            "mode": "markdown",
+            "content": "Coste local: 09–21 oct UTC. Detector y datos sintéticos: referencia 30 oct. **No producción ni puntualidad de una ingesta real**."
+          },
+          "description": "Mide los resultados existentes del informe indicado. No demuestra calidad con usuarios reales ni aceptación completa.",
+          "fieldConfig": {
+            "defaults": {
+              "noValue": "No medido"
+            }
+          }
+        },
+        {
+          "id": 322,
+          "type": "barchart",
+          "title": "¿Qué se estimó y facturó? ·100 consultas",
+          "gridPos": {
+            "x": 0,
+            "y": 59,
+            "w": 12,
+            "h": 6
+          },
+          "description": "Coste local confirmado de las pruebas frente a la estimación, 100 consultas. No demuestra coste de producción ni el coste de la comparación histórica de modelos. Embeddings estimados aparte.",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "evaluation-postgres"
+              },
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT '100 consultas ·09–21 oct' AS \"Ventana\",max(x.value) FILTER(WHERE x.metric_id='cost_estimated_total') AS \"Estimado\",max(x.value) FILTER(WHERE x.metric_id='cost_billed_total') AS \"Facturado\" FROM evaluation.results x JOIN evaluation.runs r USING(run_id) WHERE r.run_id='jup130-ai-cost-2026-10-09-to-2026-10-21' AND r.source='JUP-130-ai-cost' AND x.grp='ai_cost' AND x.behavior='all'",
+              "editorMode": "code"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "noValue": "No medido",
+              "decimals": 3,
+              "color": {
+                "mode": "palette-classic"
+              },
+              "unit": "currencyUSD",
+              "min": 0,
+              "custom": {
+                "fillOpacity": 85,
+                "lineWidth": 0,
+                "axisBorderShow": false,
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                }
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Estimado"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "mode": "fixed",
+                      "fixedColor": "#B8A5E4"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Facturado"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "mode": "fixed",
+                      "fixedColor": "#6ED0E0"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "options": {
+            "orientation": "vertical",
+            "barWidth": 0.65,
+            "groupWidth": 0.7,
+            "showValue": "always",
+            "stacking": "none",
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi"
+            }
+          }
+        },
+        {
+          "id": 323,
+          "type": "barchart",
+          "title": "¿Qué detecta la regla sintética?",
+          "gridPos": {
+            "x": 12,
+            "y": 59,
+            "w": 12,
+            "h": 6
+          },
+          "description": "Siete eventos sintéticos: 5/7 detectados en total y 5/5 entre los diseñados como detectables; precisión 5/5. Retraso cero por construcción. No demuestra validez estadística ni detección sobre facturas reales.",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "evaluation-postgres"
+              },
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT CASE metric_id WHEN 'recall_all' THEN 'Todos ·5/7' ELSE 'Detectables ·5/5' END AS \"Eventos\",value*100 AS \"Detectados\" FROM evaluation.results x JOIN evaluation.runs r USING(run_id) WHERE r.run_id='jup130-anomalies-2026-10-30' AND r.source='JUP-130-anomalies' AND grp='anomaly_detection' AND metric_id IN ('recall_all','recall_designed') AND status='measured' ORDER BY metric_id",
+              "editorMode": "code"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "noValue": "No medido",
+              "decimals": 1,
+              "color": {
+                "mode": "palette-classic"
+              },
+              "unit": "percent",
+              "min": 0,
+              "custom": {
+                "fillOpacity": 85,
+                "lineWidth": 0,
+                "axisBorderShow": false,
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                }
+              },
+              "max": 100
+            },
+            "overrides": []
+          },
+          "options": {
+            "orientation": "vertical",
+            "barWidth": 0.65,
+            "groupWidth": 0.7,
+            "showValue": "always",
+            "stacking": "none",
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi"
+            }
+          }
+        },
+        {
+          "id": 324,
+          "type": "table",
+          "title": "Coste y errores · denominadores separados",
+          "gridPos": {
+            "x": 0,
+            "y": 65,
+            "w": 12,
+            "h": 6
+          },
+          "description": "Cobertura confirmada 100/100 y coste por consulta. Separados: 429 del gateway, 3/924; errores 5xx del proveedor, 6/924. No equivalen a nueve fallos entre cien consultas.",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "evaluation-postgres"
+              },
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT CASE metric_id WHEN 'cost_per_query' THEN 'Facturado / consulta' WHEN 'billed_coverage' THEN 'Cobertura confirmada' WHEN 'gateway_rejection_rate' THEN '429 del gateway' ELSE '5xx del proveedor' END AS \"Medida\",CASE WHEN status<>'measured' THEN 'No medido' WHEN metric_id='cost_per_query' THEN round(value::numeric,9)::text || ' USD' ELSE numerator::int::text || ' / ' || denominator::text END AS \"Valor\" FROM evaluation.results x JOIN evaluation.runs r USING(run_id) WHERE r.run_id='jup130-ai-cost-2026-10-09-to-2026-10-21' AND r.source='JUP-130-ai-cost' AND x.grp='ai_cost' AND x.behavior='all' AND metric_id IN ('cost_per_query','billed_coverage','gateway_rejection_rate','provider_error_rate') ORDER BY metric_id",
+              "editorMode": "code"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "noValue": "No medido",
+              "decimals": 0,
+              "color": {
+                "mode": "palette-classic"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "showHeader": true,
+            "cellHeight": "sm"
+          }
+        },
+        {
+          "id": 325,
+          "type": "table",
+          "title": "¿Concilian los datos de demo? ·referencia 30 oct",
+          "gridPos": {
+            "x": 12,
+            "y": 65,
+            "w": 12,
+            "h": 6
+          },
+          "description": "Conciliación por inquilino y divisa; no sumar EUR y USD. Frescura simulada respecto al 30 oct, con backend preconstruido. No demuestra integridad de datos reales ni puntualidad de una ingesta real.",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "evaluation-postgres"
+              },
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT x.behavior AS \"Inquilino / divisa\",x.value AS \"Δ unidades menores\",f.value AS \"Frescura (d)\" FROM evaluation.results x JOIN evaluation.runs r USING(run_id) LEFT JOIN evaluation.results f ON f.run_id=x.run_id AND f.grp='data_quality' AND f.metric_id='freshness_days' AND f.behavior=split_part(x.behavior,'/',1) WHERE r.run_id='jup130-data-2026-10-30' AND r.source='JUP-130-data' AND x.grp='data_quality' AND x.metric_id='reconciliation_delta_minor' ORDER BY x.behavior",
+              "editorMode": "code"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "noValue": "No medido",
+              "decimals": 0,
+              "color": {
+                "mode": "palette-classic"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "showHeader": true,
+            "cellHeight": "sm"
+          }
+        }
+      ]
+    },
+    {
+      "id": 117,
+      "title": "Salud técnica · señales operativas · desplegar",
+      "type": "row",
+      "gridPos": {
+        "x": 0,
+        "y": 57,
+        "w": 24,
+        "h": 1
+      },
+      "description": "",
+      "transparent": false,
+      "pluginVersion": "11.3.0",
+      "collapsed": true,
+      "panels": [
+        {
+          "id": 901,
+          "type": "text",
+          "title": "¿Está sano el servicio?",
+          "gridPos": {
+            "x": 0,
+            "y": 53,
+            "w": 24,
+            "h": 3
+          },
+          "options": {
+            "mode": "markdown",
+            "content": "Señales de Prometheus del servicio, separadas de los experimentos. **Sin series disponibles: sin datos; no significa cero errores.** El p95 HTTP de todas las rutas no es el p95 del chat, y servicio sano no demuestra respuestas correctas."
+          },
+          "description": "Mide señales operativas emitidas por el servicio cuando están disponibles. No demuestra calidad de respuestas ni aceptación con usuarios.",
+          "fieldConfig": {
+            "defaults": {
+              "noValue": "No medido"
+            }
+          }
+        },
+        {
+          "id": 902,
+          "title": "Latencia p95 por servicio (ms)",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 0,
+            "y": 57,
+            "w": 12,
+            "h": 8
+          },
+          "targets": [
+            {
+              "expr": "1000 * histogram_quantile(0.95, sum(rate(backend_http_request_duration_seconds_bucket[5m])) by (le))",
+              "legendFormat": "backend p95"
+            },
+            {
+              "expr": "1000 * histogram_quantile(0.95, sum(rate(processor_http_request_duration_seconds_bucket[5m])) by (le))",
+              "legendFormat": "processor p95"
+            }
+          ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Mide el percentil 95 de la duración HTTP por servicio, en milisegundos y para todas las rutas. No demuestra latencia específica del chat ni corrección de respuestas; sin tráfico no hay una medida.",
+          "fieldConfig": {
+            "defaults": {
+              "noValue": "No medido"
+            }
+          },
+          "timeFrom": "1h"
+        },
+        {
+          "id": 903,
+          "title": "Tasa de error por servicio (%)",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 12,
+            "y": 57,
+            "w": 12,
+            "h": 8
+          },
+          "targets": [
+            {
+              "expr": "100 * (sum(rate(backend_http_requests_total{status_code=~\"5..\"}[5m])) or vector(0)) / sum(rate(backend_http_requests_total[5m]))",
+              "legendFormat": "backend error %"
+            },
+            {
+              "expr": "100 * (sum(rate(processor_http_requests_total{status_code=~\"5..\"}[5m])) or vector(0)) / sum(rate(processor_http_requests_total[5m]))",
+              "legendFormat": "processor error %"
+            }
+          ],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Mide la proporción de errores HTTP por servicio sobre sus peticiones terminadas. No demuestra acierto del asistente ni detección de anomalías de coste; sin denominador no se inventa un cero.",
+          "fieldConfig": {
+            "defaults": {
+              "noValue": "No medido"
+            }
+          },
+          "timeFrom": "1h"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Mide la proporción de consultas cuya recuperación falló sobre las consultas terminadas. No demuestra corrección de las respuestas: una recuperación sin error puede producir una respuesta incorrecta.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "decimals": 1,
+              "min": 0,
+              "noValue": "Sin datos: no hubo consultas",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "text",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "percentunit",
+              "max": 1
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 65,
+            "w": 24,
+            "h": 7
+          },
+          "hideTimeOverride": false,
+          "id": 904,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "sum(rate(backend_retrieval_failures_total[5m])) / (sum(rate(backend_assistant_queries_total[5m])) + sum(rate(backend_retrieval_failures_total[5m])) > 0)",
+              "instant": false,
+              "legendFormat": "fallos de recuperaciÃ³n",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "timeFrom": "1h",
+          "title": "Fallos de recuperación sobre consultas terminadas",
+          "type": "timeseries"
+        }
+      ]
+    },
+    {
+      "id": 118,
+      "title": "Comparación por métrica y detalle de las fuentes · desplegar",
+      "type": "row",
+      "gridPos": {
+        "x": 0,
+        "y": 58,
+        "w": 24,
+        "h": 1
+      },
+      "description": "",
+      "transparent": false,
+      "pluginVersion": "11.3.0",
+      "collapsed": true,
+      "panels": [
+        {
+          "id": 330,
+          "type": "table",
+          "title": "Cambios observados · sólo pareja compatible",
+          "gridPos": {
+            "x": 0,
+            "y": 59,
+            "w": 24,
+            "h": 7
+          },
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "evaluation-postgres"
+              },
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "WITH selected AS (SELECT * FROM evaluation.runs WHERE run_id IN (${campaign:sqlstring})),\nreference AS (SELECT * FROM evaluation.runs WHERE run_id IN (${reference:sqlstring})),\npair AS (SELECT s.run_id AS current_id,p.run_id AS reference_id,\nCASE WHEN s.run_id IS NULL THEN 'Sin datos' WHEN p.run_id IS NULL THEN 'Sin referencia'\nWHEN s.run_id=p.run_id THEN 'Misma ejecución'\nWHEN s.run_at IS NULL OR p.run_at IS NULL OR p.run_at>=s.run_at THEN 'Sin orden temporal'\nWHEN s.source<>p.source OR s.comparability_key IS NULL OR p.comparability_key IS NULL OR s.comparability_key<>p.comparability_key THEN 'No comparable'\nELSE 'Comparación disponible' END AS state\nFROM (SELECT 1) one LEFT JOIN selected s ON true LEFT JOIN reference p ON true)\nSELECT CASE a.metric_id WHEN 'ACC-1' THEN 'Casos con resultado pass' WHEN 'ACC-2' THEN 'Comprobaciones objetivas cumplidas' WHEN 'ACC-3' THEN 'Casos clarify y abstain con resultado pass' WHEN 'REL-1' THEN 'Acierto de documento' WHEN 'REL-2' THEN 'Acierto de seccion' WHEN 'REL-3' THEN 'Resultado vacio' WHEN 'REL-4' THEN 'Confianza de la recuperacion' WHEN 'GRD-1' THEN 'Citas validas' WHEN 'GRD-2' THEN 'Cifras sin rastro' WHEN 'GRD-3' THEN 'Integridad de referencias de evidencia' WHEN 'LAT-1' THEN 'Latencia mediana' WHEN 'LAT-2' THEN 'Latencia percentil 95' WHEN 'LAT-3' THEN 'Latencia maxima' WHEN 'LAT-4' THEN 'Llamadas fallidas o agotadas' WHEN 'STR-1' THEN 'Respuestas que cumplen el esquema' WHEN 'STR-2' THEN 'Fallos por categoria' WHEN 'AVL-1' THEN 'Disponibilidad del chat' WHEN 'cases' THEN 'Casos por estado' ELSE 'Indicador del informe' END AS \"Medida\",a.behavior AS \"Variante\",a.status AS \"Estado\",COALESCE(a.value,a.case_count::double precision) AS \"Actual\",COALESCE(b.value,b.case_count::double precision) AS \"Referencia\",a.denominator AS \"n actual\",b.denominator AS \"n referencia\",a.unit AS \"Unidad\",CASE WHEN COALESCE(a.value,a.case_count::double precision) IS NULL OR COALESCE(b.value,b.case_count::double precision) IS NULL THEN 'No medido' WHEN COALESCE(a.value,a.case_count::double precision)=COALESCE(b.value,b.case_count::double precision) THEN 'Sin cambio observado' WHEN COALESCE(a.value,a.case_count::double precision)>COALESCE(b.value,b.case_count::double precision) THEN 'Aumenta' ELSE 'Disminuye' END AS \"Cambio observado\" FROM pair JOIN evaluation.results a ON a.run_id=pair.current_id JOIN evaluation.results b ON b.run_id=pair.reference_id AND a.grp=b.grp AND a.metric_id=b.metric_id AND a.behavior=b.behavior AND a.status=b.status AND a.unit=b.unit WHERE pair.state='Comparación disponible' ORDER BY a.grp,a.metric_id,a.behavior,a.status",
+              "editorMode": "code"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "noValue": "No medido",
+              "decimals": 3
+            },
+            "overrides": []
+          },
+          "options": {
+            "showHeader": true,
+            "cellHeight": "sm"
+          },
+          "description": "Valores existentes de una pareja compatible; no se crean métricas ni una puntuación global. Tolerancia cero para etiquetar igualdad exacta. Aumentar o disminuir no significa siempre mejorar: interpretar cada unidad y orientación. La ausencia de una fila no se rellena con cero."
+        },
+        {
+          "id": 910,
+          "type": "table",
+          "title": "Detalle de mediciones · fuentes separadas",
+          "gridPos": {
+            "x": 0,
+            "y": 66,
+            "w": 24,
+            "h": 14
+          },
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "evaluation-postgres"
+              },
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT r.source,x.grp,x.metric_id,x.behavior,x.status,x.value,x.numerator,x.denominator,x.case_count,x.judgment FROM evaluation.results x JOIN evaluation.runs r USING(run_id) ORDER BY r.source,x.grp,x.metric_id,x.behavior,x.status"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "noValue": "No medido",
+              "decimals": 3
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "source"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Fuente"
+                  },
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "value",
+                        "options": {
+                          "JUP-070": {
+                            "text": "Recuperación documental histórica",
+                            "index": 0
+                          },
+                          "JUP-071": {
+                            "text": "Robustez experimental",
+                            "index": 1
+                          },
+                          "JUP-022": {
+                            "text": "Calibración de la búsqueda",
+                            "index": 2
+                          },
+                          "JUP-063": {
+                            "text": "Comparación de modelos",
+                            "index": 3
+                          },
+                          "JUP-068": {
+                            "text": "Tiempo, asignación y ahorro",
+                            "index": 4
+                          },
+                          "JUP-078": {
+                            "text": "Rendimiento de búsqueda",
+                            "index": 5
+                          },
+                          "JUP-130-ai-cost": {
+                            "text": "Coste de las pruebas",
+                            "index": 6
+                          },
+                          "JUP-130-anomalies": {
+                            "text": "Detección de anomalías",
+                            "index": 7
+                          },
+                          "JUP-130-data": {
+                            "text": "Conciliación de datos",
+                            "index": 8
+                          },
+                          "JUP-067": {
+                            "text": "Catálogo documental",
+                            "index": 9
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "run_id"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "commit_sha"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "commit_corto"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "report_sha256"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "suite_version"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "report_path"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "run_at"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Fecha"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "generation_model"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Modelo declarado"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "non_real_reasons"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Límites de la medición"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "grp"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Grupo"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "metric_id"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Medida"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "behavior"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Variante"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "status"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Estado"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "value"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Valor"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "numerator"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Numerador"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "denominator"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Denominador"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "case_count"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Casos"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "judgment"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Tipo de juicio"
+                  }
+                ]
+              }
+            ]
+          },
+          "options": {
+            "showHeader": true,
+            "cellHeight": "sm"
+          },
+          "description": "Mide los resultados existentes del informe indicado. No demuestra calidad con usuarios reales ni aceptación completa."
+        },
+        {
+          "id": 911,
+          "type": "table",
+          "title": "Procedencia de las mediciones",
+          "gridPos": {
+            "x": 0,
+            "y": 80,
+            "w": 24,
+            "h": 6
+          },
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "evaluation-postgres"
+              },
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT source,run_id,run_at,commit_sha,generation_model,non_real_reasons,report_sha256 FROM evaluation.runs ORDER BY source,run_at"
+            }
+          ],
+          "description": "Fuentes funcionales, fechas y modelo declarado. Los identificadores técnicos se conservan en las evidencias internas. Modelo declarado no equivale a modelo verificado.",
+          "fieldConfig": {
+            "defaults": {
+              "noValue": "No medido"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "source"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Fuente"
+                  },
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "value",
+                        "options": {
+                          "JUP-070": {
+                            "text": "Recuperación documental histórica",
+                            "index": 0
+                          },
+                          "JUP-071": {
+                            "text": "Robustez experimental",
+                            "index": 1
+                          },
+                          "JUP-022": {
+                            "text": "Calibración de la búsqueda",
+                            "index": 2
+                          },
+                          "JUP-063": {
+                            "text": "Comparación de modelos",
+                            "index": 3
+                          },
+                          "JUP-068": {
+                            "text": "Tiempo, asignación y ahorro",
+                            "index": 4
+                          },
+                          "JUP-078": {
+                            "text": "Rendimiento de búsqueda",
+                            "index": 5
+                          },
+                          "JUP-130-ai-cost": {
+                            "text": "Coste de las pruebas",
+                            "index": 6
+                          },
+                          "JUP-130-anomalies": {
+                            "text": "Detección de anomalías",
+                            "index": 7
+                          },
+                          "JUP-130-data": {
+                            "text": "Conciliación de datos",
+                            "index": 8
+                          },
+                          "JUP-067": {
+                            "text": "Catálogo documental",
+                            "index": 9
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "run_id"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "commit_sha"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "commit_corto"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "report_sha256"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "suite_version"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "report_path"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "run_at"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Fecha"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "generation_model"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Modelo declarado"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "non_real_reasons"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Límites de la medición"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "grp"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Grupo"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "metric_id"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Medida"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "behavior"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Variante"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "status"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Estado"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "value"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Valor"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "numerator"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Numerador"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "denominator"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Denominador"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "case_count"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Casos"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "judgment"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Tipo de juicio"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "evaluation-postgres"
+          },
+          "description": "Mide: tiempo ahorrado, gasto asignado y ahorro potencial y realizado de los registros de negocio, con lo no medido como «No medido»\nNo demuestra: un beneficio observado mientras no haya un piloto real; hoy el registro es sintético y el ahorro realizado no se midió",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "filterable": false,
+                "inspect": false
+              },
+              "mappings": [
+                {
+                  "type": "special",
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "No medido",
+                      "index": 0
+                    }
+                  }
+                }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "text",
+                    "value": null
+                  }
+                ]
+              },
+              "noValue": "Sin datos: no hay registros de negocio",
+              "decimals": 0
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "run_id"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "run_at"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Fecha"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 160
+                  },
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "special",
+                        "options": {
+                          "match": "null",
+                          "result": {
+                            "text": "No registrada",
+                            "index": 0
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "unit",
+                    "value": "dateTimeAsIso"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "suite_version"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Versión de la batería"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 160
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "commit_corto"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Commit"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 105
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "commit_sha"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "generation_model"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Modelo de generación"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 175
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "estado"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Tipo de ejecución"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 140
+                  },
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "regex",
+                        "options": {
+                          "pattern": "^no real.*",
+                          "result": {
+                            "color": "purple",
+                            "index": 0
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "grp"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Bloque"
+                  },
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  },
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "value",
+                        "options": {
+                          "time": {
+                            "text": "Tiempo",
+                            "index": 0
+                          },
+                          "allocation": {
+                            "text": "Asignación de gasto",
+                            "index": 1
+                          },
+                          "savings": {
+                            "text": "Ahorro",
+                            "index": 2
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "metric_id"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Medida"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 205
+                  },
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "value",
+                        "options": {
+                          "time_trials": {
+                            "text": "Parejas de tiempo por estado",
+                            "index": 0
+                          },
+                          "manual_time": {
+                            "text": "Tiempo manual",
+                            "index": 1
+                          },
+                          "assisted_time": {
+                            "text": "Tiempo asistido",
+                            "index": 2
+                          },
+                          "time_saved": {
+                            "text": "Tiempo ahorrado",
+                            "index": 3
+                          },
+                          "time_saved_percent": {
+                            "text": "Tiempo ahorrado (%)",
+                            "index": 4
+                          },
+                          "allocated": {
+                            "text": "Importe asignado",
+                            "index": 5
+                          },
+                          "shared": {
+                            "text": "Importe compartido",
+                            "index": 6
+                          },
+                          "unallocated": {
+                            "text": "Importe sin asignar",
+                            "index": 7
+                          },
+                          "excluded": {
+                            "text": "Importe excluido",
+                            "index": 8
+                          },
+                          "total": {
+                            "text": "Importe total",
+                            "index": 9
+                          },
+                          "eligible": {
+                            "text": "Importe elegible",
+                            "index": 10
+                          },
+                          "assigned_percent": {
+                            "text": "Gasto asignado (%)",
+                            "index": 11
+                          },
+                          "governed_percent": {
+                            "text": "Gasto gobernado (%)",
+                            "index": 12
+                          },
+                          "unallocated_percent": {
+                            "text": "Gasto sin asignar (%)",
+                            "index": 13
+                          },
+                          "opportunities": {
+                            "text": "Oportunidades de ahorro",
+                            "index": 14
+                          },
+                          "potential_savings": {
+                            "text": "Ahorro potencial",
+                            "index": 15
+                          },
+                          "potential_savings_percent": {
+                            "text": "Ahorro potencial (%)",
+                            "index": 16
+                          },
+                          "realized_savings": {
+                            "text": "Ahorro realizado",
+                            "index": 17
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "behavior"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "variante"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Variante"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 130
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "status"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Resultado"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 100
+                  },
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "value",
+                        "options": {
+                          "measured": {
+                            "text": "Medido",
+                            "index": 0
+                          },
+                          "not_measured": {
+                            "text": "No medido",
+                            "index": 1
+                          },
+                          "pass": {
+                            "text": "Aprobado",
+                            "index": 2
+                          },
+                          "fail": {
+                            "text": "Fallido",
+                            "index": 3
+                          },
+                          "blocked": {
+                            "text": "Bloqueado",
+                            "index": 4
+                          },
+                          "not_run": {
+                            "text": "No ejecutado",
+                            "index": 5
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "value"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "valor_texto"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Valor"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 85
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "unit"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "numerator"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "denominator"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "numerador_texto"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Numerador"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 110
+                  },
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "special",
+                        "options": {
+                          "match": "null",
+                          "result": {
+                            "text": "—",
+                            "index": 0
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "denominador_texto"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Denominador"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 120
+                  },
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "special",
+                        "options": {
+                          "match": "null",
+                          "result": {
+                            "text": "—",
+                            "index": 0
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "source"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Fuente"
+                  },
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "value",
+                        "options": {
+                          "JUP-070": {
+                            "text": "Recuperación documental histórica",
+                            "index": 0
+                          },
+                          "JUP-071": {
+                            "text": "Robustez experimental",
+                            "index": 1
+                          },
+                          "JUP-022": {
+                            "text": "Calibración de la búsqueda",
+                            "index": 2
+                          },
+                          "JUP-063": {
+                            "text": "Comparación de modelos",
+                            "index": 3
+                          },
+                          "JUP-068": {
+                            "text": "Tiempo, asignación y ahorro",
+                            "index": 4
+                          },
+                          "JUP-078": {
+                            "text": "Rendimiento de búsqueda",
+                            "index": 5
+                          },
+                          "JUP-130-ai-cost": {
+                            "text": "Coste de las pruebas",
+                            "index": 6
+                          },
+                          "JUP-130-anomalies": {
+                            "text": "Detección de anomalías",
+                            "index": 7
+                          },
+                          "JUP-130-data": {
+                            "text": "Conciliación de datos",
+                            "index": 8
+                          },
+                          "JUP-067": {
+                            "text": "Catálogo documental",
+                            "index": 9
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "run_id"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "commit_sha"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "commit_corto"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "report_sha256"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "suite_version"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "report_path"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "run_at"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Fecha"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "generation_model"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Modelo declarado"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "non_real_reasons"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Límites de la medición"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "grp"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Grupo"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "metric_id"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Medida"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "behavior"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Variante"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "status"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Estado"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "value"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Valor"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "numerator"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Numerador"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "denominator"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Denominador"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "case_count"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Casos"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "judgment"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Tipo de juicio"
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 86,
+            "w": 24,
+            "h": 8
+          },
+          "id": 326,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "showHeader": true
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "evaluation-postgres"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT\n  r.run_id,\n  r.run_at,\n  COALESCE(r.suite_version, 'no registrado') AS suite_version,\n  COALESCE(r.commit_sha, 'no registrado') AS commit_sha,\n  COALESCE(left(r.commit_sha, 8), 'no registrado') AS commit_corto,\n  COALESCE(r.generation_model, 'no registrado') AS generation_model,\n  CASE WHEN r.is_real THEN 'real'\n       ELSE 'no real: ' || array_to_string(r.non_real_reasons, ', ')\n  END AS estado,\n  x.grp,\n  x.metric_id,\n  x.behavior,\n  CASE x.behavior\n      WHEN 'all' THEN 'todos'\n      WHEN 'candidate' THEN 'candidatas'\n      WHEN 'estimated' THEN 'estimadas'\n      WHEN 'not_evaluable' THEN 'no evaluables'\n      ELSE x.behavior\n    END AS variante,\n  x.status,\n  x.value,\n  CASE\n    WHEN x.case_count IS NOT NULL THEN to_char(x.case_count, 'FM9999999990')\n    WHEN x.unit = 'tasa' THEN to_char(x.value * 100, 'FM990.0') || ' %'\n    WHEN x.unit = 'porcentaje' THEN to_char(x.value, 'FM990.0') || ' %'\n    WHEN x.unit = 'ms' THEN to_char(x.value / 60000, 'FM9999990.0') || ' min'\n    WHEN x.unit = 'similitud' THEN to_char(x.value, 'FM0.000')\n    WHEN x.unit = 'recuento' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'parejas' THEN to_char(x.value, 'FM9999999990')\n    WHEN x.unit = 'eur_minor_2' THEN to_char(x.value / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(round(x.value::numeric, 4))::text || ' ' || x.unit\n  END AS valor_texto,\n  x.unit,\n  x.numerator,\n  x.denominator,\n  CASE\n    WHEN x.numerator IS NULL THEN NULL\n    WHEN x.unit = 'porcentaje' AND x.grp = 'time' THEN to_char(x.numerator / 60000, 'FM9999990.0') || ' min'\n    WHEN x.unit = 'porcentaje' AND x.grp IN ('allocation', 'savings') THEN to_char(x.numerator / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(x.numerator::numeric)::text\n  END AS numerador_texto,\n  CASE\n    WHEN x.denominator IS NULL THEN NULL\n    WHEN x.unit = 'porcentaje' AND x.grp = 'time' THEN to_char(x.denominator / 60000, 'FM9999990.0') || ' min'\n    WHEN x.unit = 'porcentaje' AND x.grp IN ('allocation', 'savings') THEN to_char(x.denominator / 100, 'FM9999999990.00') || ' €'\n    ELSE trim_scale(x.denominator::numeric)::text\n  END AS denominador_texto\nFROM evaluation.results x\nJOIN evaluation.runs r ON r.run_id = x.run_id\nWHERE x.measure_type = 'B' AND r.source = 'JUP-068'\nORDER BY CASE x.grp WHEN 'time' THEN 1 WHEN 'allocation' THEN 2 ELSE 3 END, x.metric_id, x.behavior, x.status",
+              "refId": "A"
+            }
+          ],
+          "title": "Tiempo, asignación y ahorro",
+          "type": "table"
+        }
+      ]
+    }
+  ]
+}
