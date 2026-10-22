@@ -2,6 +2,18 @@
 
 Actualización documental: 22/10/2026. Los cortes anteriores conservan sus revisiones y límites. [Tarjeta](https://trello.com/c/fD7nJKRl) · [OpenSpec archivado](../../openspec/changes/archive/2026-10-19-jup-089-public-landing/) · [Evidencia](../evidence/JUP-089-validation.md).
 
+
+## Incremento vigente para publicación — 22/10/2026
+
+La composición local anterior recibió revisión técnica y validación funcional focales favorables; su aceptación integral permanece sin validar. El liderazgo la conservó como commit local `c72f99f47eff36b72d6a51df4b314f3f33dab0af`, con origen c684 y base c000. Paris autoriza ahora subir la reconciliación, comprobar CI y solicitar a Lucía revalidación limitada al delta. Antes de subir se integra develop `4567e8e7667c3fa5ad2d17eedd2f3da7a332e4bb` (PR151), todavía sin commit de esta segunda integración. La fila de landing y la de composición de evaluación se conservan una vez, junto con toda la aportación entrante. Las operaciones Git y la publicación corresponden al liderazgo; no hay permiso de merge o despliegue público.
+
+Los 20 archivos de landing, sus 11 contratos y las entradas de las comprobaciones focales y de gobernanza conservan los bytes de R1. El delta de base aporta 31 rutas de Grafana/evidencia/especificación/pruebas propias de esa entrega, sin dependencia runtime de la landing. Sólo se actualizan los mismos cinco documentos de continuidad/evidencia/notas del archivo existente. Los enlaces, pie, HSTS y contraste ya corregidos en c684 se conservan; no son arreglos nuevos de esta ronda.
+
+Se reutilizan con fecha y atribución las 46 pruebas focales R1, builds/lint, 13 HTTP, artefacto local de 14 entradas y 231.052 bytes (manifiesto `8a475d9747d6161c3fbe1e2b673f075ef26e916e86ece7404dfaf1932442a502`), UI y Lighthouse anteriores. No se presentan como nuevas ejecuciones. Se comprueban únicamente trazabilidad, OpenSpec y enlaces/diff afectados; los dos evaluadores originales deciden la aplicabilidad mediante adendas del candidato fijo y referencias nuevas, conservando sus informes originales. No se repiten suites completas, builds, navegador, campañas ni llamadas a modelos por una fila del índice.
+
+La aprobación desestimada de Lucía sigue siendo trabajo histórico sobre c227; no se interpreta como ausencia de validación ni se aplica al candidato final. La nueva solicitud delimita c227→candidato final y aprovecha su evidencia anterior. Paris conserva liderazgo, Víctor su contraste/pruebas posteriores sobre c227 sin coautoría de construcción, Alejandro revisión y Lucía validación. Reduced-motion interactivo conserva NOT_VALIDATED, límite aceptado; dominio/titular/renovación, hosting/DNS/HTTPS, despliegue/reversión públicos, vídeo aprobado y demo auténtica siguen pendientes. CI c684 es histórica; la CI final se comprobará tras el push autorizado. Las secciones siguientes conservan sus cortes históricos y permisos de cada fecha.
+
+
 ## Estado vigente: reconciliación local de PR142 — 22/10/2026
 
 Paris autoriza reconciliar el HEAD publicado `c684210275e2788de2c660b52cf3ad8098d7fd32` con develop `c00063dbaa83a1237431edef9de6d71d1bfd1ffd`, comprobar el delta con revisión/validación independientes y mostrar resultados antes de subir nada. La integración se prepara sin commit; único conflicto en el índice de continuidad, resuelto conservando una vez las filas de landing y modelo único. Las operaciones Git y los controles originales de evaluación corresponden al liderazgo; esta preparación no autoriza commit/push, publicación, despliegue o merge.

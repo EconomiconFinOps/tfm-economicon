@@ -37,3 +37,13 @@ Revisión y validación independientes del candidato fijo requieren nuevas refer
 
 
 Comprobaciones nativas de este corte: OpenSpec estricto **88 PASS/0 FAIL**, trazabilidad e higiene conformes (2.305 fuentes). Git diff --check PASS con Git Windows. El primer intento Git WSL no pudo resolver la ruta Windows de objetos alternativos del checkout; error de entorno conservado, sin cambiar objetos/configuración, y sólo ese control se completó con el Git del host. No es un fallo de producto o una guarda fallida. Los 104 controles de política PR y 15 de gobernanza de c684 se reutilizan por identidad comprobada de todas sus herramientas, fixtures, plantillas, proceso y entradas de gobernanza/workflows; no se presentan como ejecutados otra vez. CI remota del candidato sin commit pendiente.
+
+
+## Incremento de base para publicación — 22/10/2026
+
+R1 local sobre c684+c000 terminó con revisión y validación focales favorables; el liderazgo lo conservó como commit local c72f99f47eff36b72d6a51df4b314f3f33dab0af. Paris autoriza subir, comprobar CI y solicitar a Lucía revalidación sólo del delta. Se incorpora develop4567e8e7667c3fa5ad2d17eedd2f3da7a332e4bb/PR151 sin commit todavía de esta segunda integración; el conflicto de índice conserva ambas filas y todos los cambios entrantes. Las 20 fuentes de landing,11contratos y entradas de pruebas R1 mantienen identidad; reutilización explícita de46pruebas/builds/HTTP/UI/Lighthouse, sin baterías nuevas. Se ejecutan sólo controles documentales afectados; los mismos evaluadores emiten adendas independientes con referencias nuevas, sin sustituir originales. Véase el [incremento vigente](../../../../docs/evidence/JUP-089-validation.md#incremento-vigente-para-publicación--22102026).
+
+Sin cambios de producto, requisitos o rearchivo. La tarea4.4 y los requisitos humanos/públicos conservan su alcance; aprobaciónLucía c227 dismissed es histórica, pairingVíctor c227 preservado y reduced-motion interactivo NOT_VALIDATED aceptado. Autorización de publicación no acredita CI del SHA futuro, aceptación pública o merge. Git/publicación a cargo del liderazgo.
+
+
+Controles documentales de este incremento: OpenSpec estricto89/89, trazabilidad e higiene conformes (2.332fuentes); enlaces locales comprobados. Diff del aporte PR142 contra develop4567 conforme. La comparación con HEADc72 detecta una línea vacía final en la especificación entrante assistant-evaluation-composition: se reproduce idéntica en c000→4567 y se conserva sin modificar trabajo ajeno; no es una regresión propia ni se oculta el resultado adverso. Sólo se usaron herramientas Windows ya existentes; el runtime WSL temporal anterior no estaba disponible y no se instaló/configuró ningún reemplazo. No se repitieron pruebas de producto.
