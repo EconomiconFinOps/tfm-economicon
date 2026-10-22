@@ -23,7 +23,7 @@ Verificación del conjunto: backend Linux2714PASS/369SKIP; processor Linux
 para incluir005 (sus siete casos focales pasan). Compatibilidad nativa/v4:
 66PASS. Las tres imágenes se construyen y funcionan como uid10001 con raíz de
 solo lectura y volumen ordinario /tmp privado. Terraform referencia12PASS;
-controlador52casos,51PASS/1SKIP (el opt-in SQL se comprobó por separado).
+controlador53casos,52PASS/1SKIP (el opt-in SQL se comprobó por separado).
 La revisión técnica independiente encontró un bloqueo de destroy con count;
 regresión reproducida y corregida conservando las guardas de ámbito/acciones.
 
@@ -207,3 +207,9 @@ plan separado; el bucket de state tiene `prevent_destroy` y nunca se vacía por 
 Ver [evidencia JUP-131](../evidence/JUP-131-aws-cicd.md). Pruebas locales/mock no
 acreditan permisos/cuotas, soporte de versiones, duración, coste, DNS/TLS, build
 Linux real, bootstrap SQL ni aceptación de la aplicación en AWS.
+
+Receta/evidencias comprobadas también desde un ZIP de git archive del candidato
+68ced055, sin archivos generados locales. Revisión técnica incremental APPROVE
+tras corregir destroy/count; no sustituye las dos reviews humanas. La prueba
+de preparación bloqueada usa explícitamente account_id pendiente, sin depender
+de que falte una receta. Nuevo contrato de receta integrado en CI.

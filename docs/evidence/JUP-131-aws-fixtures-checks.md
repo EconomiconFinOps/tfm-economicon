@@ -104,7 +104,7 @@ privado comprobados. Backend completo2714PASS/369SKIP. Processor completo:
 corregido y siete casos focales PASS. No se atribuye una segunda ejecución
 completa a esa corrección de prueba; la CI final ejecutará la batería de nuevo.
 Fixtures SQL reales2PASS más4unitarios; Terraform referencia12PASS.
-Controlador52casos,51PASS/1SKIP; el test SQL opt-in se verificó por separado.
+Controlador53casos,52PASS/1SKIP; el test SQL opt-in se verificó por separado.
 
 Revisión técnica independiente del conjunto: un P1 en la guardia destroy, que
 rechazaba aws_iam_role_policy.bedrock_chat[0]. Regresión RED reproducida, índices
@@ -113,3 +113,9 @@ para índices inválidos, módulos, nombres ajenos y reemplazos. Batería contro
 conforme tras corregirlo. Logs ignorados integrated-*-full.log,
 migration-ledger-green.log y controller-review-green.log en .work/aws-application/.
 CI del SHA definitivo y reviews humanas siguen pendientes en este corte.
+
+Receta/evidencias comprobadas también desde un ZIP de git archive del candidato
+68ced055, sin archivos generados locales. Revisión técnica incremental APPROVE
+tras corregir destroy/count; no sustituye las dos reviews humanas. La prueba
+de preparación bloqueada usa explícitamente account_id pendiente, sin depender
+de que falte una receta. Nuevo contrato de receta integrado en CI.

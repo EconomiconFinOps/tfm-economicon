@@ -50,3 +50,11 @@ TLS/DNS o permisos efectivos.
 
 Progreso reproducible en `.work/aws-application/progress.md` (ignorado);
 resumen duradero en `docs/continuidad/cloud-aws.md` y evidencia JUP-131.
+
+## Estado de implementación — 22/10/2026
+
+Tareas1–5 implementadas y comprobadas offline; tarea6 con receta real, integración
+de develop/v4, tres imágenes y revisión técnica independiente conformes. La CI
+del candidato publicado se consulta en PR146; su resultado no debe extrapolarse
+a una ejecución AWS. El paquete del ensayo conserva placeholders de cuenta y
+crédito0 hasta verificar las entradas externas. No se ejecutó despliegue.

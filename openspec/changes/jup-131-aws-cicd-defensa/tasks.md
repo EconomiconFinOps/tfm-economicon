@@ -8,11 +8,14 @@
 - [x] 1.6 Generar paquete local bloqueado de ensayo1 y runbook con entradas pendientes.
 - [x] 1.7 Adaptar DSN/migraciones/consulta de costes a PostgreSQL y probar esquema completo, reejecución y tenant en PostgreSQL16 real; conservar contratos Cockroach.
 - [x] 1.8 Integrar Cognito con frontend PKCE y verificación de identidad/tenant en backend; pruebas locales sin pool AWS.
-- [ ] 1.9 Integrar Bedrock y dimensión/reindexación coherentes en backend/processor.
-- [ ] 1.10 Implementar bootstrap privado, datos reproducibles y checks funcionales; completar receta/evidencia local sin simular aceptación AWS.
+- [x] 1.9 Integrar Bedrock y dimensión/reindexación coherentes en backend/processor.
+- [x] 1.10 Implementar bootstrap privado, datos reproducibles y checks funcionales; completar receta/evidencia local sin simular aceptación AWS.
 - [ ] 2.1 Completar cuenta/DNS/saldo/motores y aceptación de aplicación antes de ensayo real.
 - [ ] 2.2 Obtener revisión/validación oficiales por roles humanos asignados.
 - [ ] 2.3 Tras autorización futura, ejecutar ensayo1 y registrar tiempos/coste/retirada.
 
 No hay autorización de despliegue en esta entrega. Las pruebas cloud y las
 adaptaciones de producto no se marcan completadas por existir el pipeline.
+
+Implementación local y revisión técnica incremental conformes el22/10/2026;
+la CI del candidato se consulta en PR146. La aceptación AWS sigue pendiente.

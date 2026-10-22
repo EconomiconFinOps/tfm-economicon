@@ -15,7 +15,7 @@
     },
     "demo_data": {
       "path": "docs/evidence/JUP-131-aws-fixtures-checks.md",
-      "sha256": "4c03bc5552fb52bcbd9e7775827a0755747fc5facf3f228ca3e3efc17189e56e"
+      "sha256": "f168f98c3f620ee1693bcac67387c8c0658871ed7cb26c5a6b4f840c0cb68975"
     }
   },
   "bootstrap": [
