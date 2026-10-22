@@ -20,5 +20,5 @@
 
 ## 4. Comprobación final
 
-- [ ] 4.1 Ver en el navegador (`docker compose up --build`, `/anomalias`) el texto del selector en claro, en oscuro y tras recargar, y el desplegable «Limitaciones» del detalle de una anomalía en español
-- [ ] 4.2 `corepack pnpm lint`, `corepack pnpm build`, `corepack pnpm test`, `corepack pnpm openspec:validate` y `corepack pnpm jup:check -- --change jup-134-tema-y-limitaciones-es` en verde
+- [ ] 4.1 (pendiente: requiere el stack completo con secretos, que no estaba disponible; lo hace una persona con el stack levantado) Ver en el navegador (`docker compose up --build`, `/anomalias`) el texto del selector en claro, en oscuro y tras recargar, y el desplegable «Limitaciones» del detalle de una anomalía en español
+- [x] 4.2 `corepack pnpm lint`, `corepack pnpm build`, `corepack pnpm test`, `corepack pnpm openspec:validate` y `corepack pnpm jup:check -- --change jup-134-tema-y-limitaciones-es` en verde (test: frontend completo y backend con las pruebas de anomalías en verde; el backend y el procesador completos no se ejecutan en local por `tokenizer.json` y `markdown_it`, ver `review.md`)

@@ -101,3 +101,17 @@ Tarea doc-only: mutación N/A y sin ciclo Red/Green (no cambia código de produc
 - `docs/continuidad/frontend-espanol.md`: excepción de JUP-134 en «Límites» (limitaciones de los episodios en español en origen, una sola lista, efecto sobre el identificador de evidencia, y las limitaciones de `app/schemas/anomalies.py` que quedan fuera con su motivo).
 - `docs/continuidad/README.md`: las filas de las dos notas, con la fecha 2026-10-22.
 - `docs/api/anomaly-explanations.md` ya decía que las limitaciones van en español, y ninguna otra documentación describe las limitaciones en inglés (Grep sin resultados), así que no se toca.
+
+## Grupo 4: comprobación final (tareas 4.1 y 4.2)
+
+- **4.2 hecha.** `corepack pnpm build` y `lint` con 4 de 4 tareas, `openspec:validate` con 89 de 89, `jup:check` del change, `jup:check:test` (7), `jup:cleanup:check` y `jup:cleanup:test` (6) correctos. La suite del frontend (1400) y las pruebas del backend de anomalías (555 y las 108 del grupo) están en verde. Backend y procesador completos no se pueden ejecutar en local (`tokenizer.json` ausente y falta `markdown_it`); el backend completo coincide con la base en sus 210 fallos y 102 errores.
+- **4.1 pendiente.** La comprobación en navegador exige el stack completo y `docker compose` pide secretos (`DOCUMENT_S3_*`, `MINIO_*`) que no están en el repositorio; las imágenes locales son de código anterior al cambio. No se ha inventado ninguna credencial. La hace una persona con el stack levantado: ver el selector en claro, en oscuro y tras recargar, y abrir el detalle de una anomalía en `/anomalias`.
+
+## Resumen del change
+
+| Capacidad | Resultado |
+| --- | --- |
+| `frontend-brand-identity` | El control de tema muestra el tema activo, con nombre accesible igual al texto |
+| `cost-anomaly-episodes` | Las limitaciones del episodio se devuelven en español, una sola lista compartida con el asistente |
+
+Mutación: 9 de 9 (selector) y 15 de 15 (limitaciones). Quedan abiertos, sin bloquear: la comprobación en navegador (4.1), el aislamiento opcional de `test_anomaly_evidence_limitations_copy.py` y la ejecución de la CI para backend y procesador completos. Evidencia compartida en `docs/evidence/JUP-134-validation.md`.
