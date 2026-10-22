@@ -8,10 +8,10 @@
 
 ## 2. Limitaciones de los episodios en español (cost-anomaly-episodes, D2)
 
-- [ ] 2.1 Añadir una prueba de backend de regresión: un episodio leído devuelve las cinco limitaciones en español, en orden, y ninguna de las cinco frases en inglés anteriores (Red)
-- [ ] 2.2 Reescribir en `test_anomaly_explanations.py` la prueba de la pareja inglés/español para que exija que la explicación use la misma lista que el episodio (`LIMITATIONS`), conservando la redacción literal esperada (Red)
-- [ ] 2.3 Pasar `LIMITATIONS` de `anomaly_episodes.py` a las cinco frases en español y hacer que `anomaly_explanations.py` la importe, eliminando `LIMITATIONS_ES` y actualizando su comentario (Green)
-- [ ] 2.4 Comprobar que el texto del asistente, `anomaly_evidence.limitations` y la prueba de cambio de identificador por limitaciones siguen igual; pruebas de mutación sobre las listas y regresión del backend en verde
+- [x] 2.1 Añadir una prueba de backend de regresión: un episodio leído devuelve las cinco limitaciones en español, en orden, y ninguna de las cinco frases en inglés anteriores (Red)
+- [x] 2.2 Reescribir en `test_anomaly_explanations.py` la prueba de la pareja inglés/español para que exija que la explicación use la misma lista que el episodio (`LIMITATIONS`), conservando la redacción literal esperada (Red)
+- [x] 2.3 Pasar `LIMITATIONS` de `anomaly_episodes.py` a las cinco frases en español y hacer que `anomaly_explanations.py` la importe, eliminando `LIMITATIONS_ES` y actualizando su comentario (Green)
+- [x] 2.4 Comprobar que el texto del asistente, `anomaly_evidence.limitations` y la prueba de cambio de identificador por limitaciones siguen igual; pruebas de mutación sobre las listas y regresión del backend en verde
 
 ## 3. Documentación
 
