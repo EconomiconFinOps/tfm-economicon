@@ -1,6 +1,6 @@
 # Medición del arreglo de los cortes de respuesta del chat
 
-Fecha: 22/10/2026. Código medido: rama `fix/chat-respuesta-cortada` (commit `445a028e`), con el chat real, `tenant-growth` y `tenant-core`. Una repetición por batería. Gasto aproximado: 0,27 USD de OpenRouter.
+Fecha: 22/10/2026. Tarjeta JUP-135. Código medido: commit `445a028e`, hoy en la rama `fix/JUP-135-cortes-respuesta-chat` (se subió antes como `fix/chat-respuesta-cortada`), con el chat real, `tenant-growth` y `tenant-core`. Una repetición por batería. Gasto aproximado: 0,27 USD de OpenRouter.
 
 ## Problema
 

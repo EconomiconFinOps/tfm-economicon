@@ -1,3 +1,5 @@
+# JUP-135: cortes de respuesta del chat
+
 ## Context
 Causas vistas en los diagnosticos: `financial_metric_unverified` (backend), `invalid_inference_text`, `expression_incompatible_units`, `narrative_evidence_required`, `non_actionable_with_metrics_or_recommendations`, `classification_unverified_prose`, corte por longitud (el modelo llega al tope de 2.200 tokens) y cierre de conexion. Con temperatura 0 el reintento repetia la misma peticion y la misma salida desbocada.
 

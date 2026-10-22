@@ -1,6 +1,6 @@
 # Cortes de respuesta del chat
 
-Rama `fix/chat-respuesta-cortada`, sin tarjeta JUP todavía (el nombre de la rama y la PR deberán llevar su identificador cuando exista). Evidencia completa en [la medición](../evidence/chat-cortes-de-respuesta-medicion.md).
+Tarjeta [JUP-135](https://trello.com/c/RCR1nFkj), rama `fix/JUP-135-cortes-respuesta-chat` y cambio de OpenSpec `jup-135-cortes-respuesta-chat`. Evidencia completa en [la medición](../evidence/chat-cortes-de-respuesta-medicion.md). El primer commit medido, `445a028e`, se subió antes con el nombre provisional `fix/chat-respuesta-cortada`; el contenido es el mismo.
 
 Actualización documental: 22/10/2026, sobre develop `4567e8e7`.
 
@@ -17,7 +17,7 @@ Causas vistas en los diagnósticos del procesador y del backend: `financial_metr
 - Métrica financiera no verificada omitida con una limitación visible.
 - La interfaz carga la memoria al terminar en `failed` o `cancelled`.
 
-Decisión de Lucia del 22/10/2026, sin consenso previo del equipo y a revisar más adelante si se quiere revertirla: reclasificar `invalid_response` como reintentable, repararla omitiendo la cifra y reintentar con temperatura mayor que 0. El borrador de los cambios de spec está al final de este documento hasta que haya tarjeta para crear el cambio de OpenSpec.
+Decisión de Lucia del 22/10/2026, sin consenso previo del equipo y a revisar más adelante si se quiere revertirla: reclasificar `invalid_response` como reintentable, repararla omitiendo la cifra y reintentar con temperatura mayor que 0. Los cambios de spec están en el cambio de OpenSpec; el borrador original se conserva al final de este documento.
 
 ## Resultado
 
@@ -33,12 +33,12 @@ Una repetición por batería y juicios de una sola persona. Las métricas de rec
 
 - Sin resolver: las frases con huecos donde debería ir una cifra y que el asistente no pida aclaración cuando faltan datos.
 - Siguen apareciendo, y se reintentan, el corte por longitud, el cierre de conexión y dos reglas de validación de prosa y de unidades.
-- Crear la tarjeta, renombrar la rama, pasar el borrador de spec a un cambio de OpenSpec, abrir la PR contra `develop` y pedir revisión y validación de otras personas.
+- Abrir la PR contra `develop` y pedir revisión y validación de otras personas.
 - Cuando la identidad del modelo del manifiesto (PR #150) esté integrada, añadir la misma `model_identity` a las dos entradas nuevas de `docs/validation/evaluation-runs.json`.
 
 ## Borrador de spec
 
-Pendiente de moverlo a `openspec/changes/<jup-xxx>/specs/conversational-web-interface/spec.md`.
+Ya trasladado a `openspec/changes/jup-135-cortes-respuesta-chat/specs/conversational-web-interface/spec.md`; este texto queda como referencia.
 
 ### Cambios de requisitos propuestos (capacidad `conversational-web-interface`)
 
