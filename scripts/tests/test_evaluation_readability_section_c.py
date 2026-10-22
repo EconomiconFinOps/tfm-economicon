@@ -213,8 +213,13 @@ class TasaDeErrorConPromtoolTests(unittest.TestCase):
                                             encoding="utf-8")
             (base / "test.yml").write_text(
                 "rule_files: [rules.yml]\nevaluation_interval: 1m\ntests:\n" + "".join(casos), encoding="utf-8")
+            # Prometheus ejecuta promtool como usuario sin privilegios, distinto
+            # del propietario del temporal. Sólo estos YAML sintéticos son legibles.
+            base.chmod(0o755)
+            for fichero in (base / "rules.yml", base / "test.yml"):
+                fichero.chmod(0o644)
             return subprocess.run(
-                ["docker", "run", "--rm", "--entrypoint", "promtool", "-v", f"{base}:/t", self.imagen,
+                ["docker", "run", "--rm", "--entrypoint", "promtool", "-v", f"{base}:/t:ro", self.imagen,
                  "test", "rules", "/t/test.yml"],
                 capture_output=True, timeout=180, check=False)
 
