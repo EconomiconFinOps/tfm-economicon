@@ -42,7 +42,8 @@ describe("armazón de marca", () => {
   });
 
   it("la cabecera ofrece el conmutador de tema", () => {
-    expect(within(renderHeader()).getByRole("button", { name: "Tema oscuro" })).toBeTruthy();
+    // JUP-134: el conmutador nombra el tema ACTIVO; esta prueba arranca en claro (sin preferencia ni elección guardada), así que se llama «Tema claro».
+    expect(within(renderHeader()).getByRole("button", { name: "Tema claro" })).toBeTruthy();
   });
 
   it("cada control de la cabecera tiene un foco propio visible sobre el índigo", () => {

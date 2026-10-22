@@ -21,12 +21,16 @@ RULES = {
 TRACKING_STATUSES = ("new", "investigating")
 CLOSED_STATUSES = ("resolved", "false_positive")
 _TRANSITIONS = {"new": {"investigating", "resolved", "false_positive"}, "investigating": {"resolved", "false_positive"}}
+# Son valores de la API y los lee la persona que decide, por eso se redactan en español en el origen. Es la
+# única lista: la usan el panel, la API y la explicación del asistente, sin una copia traducida aparte que
+# pudiera divergir.
 LIMITATIONS = [
-    "A candidate for investigation, not a demonstrated cause, saving or statistical confidence.",
-    "Cost data completeness is not verified; a day may be evaluated before late records arrive.",
-    "A service with no earlier spend does not open an episode on its first day; from its second day the reference is the seven-day mean that includes that first day, so steady new spend can open an episode and escalate until someone closes it.",
-    "Weekly cycles may produce false candidates and a recent spike raises the seven-day mean.",
-    "Only the service dimension is watched; only EUR and USD are evaluated, with nominal thresholds.",
+    "Es un candidato para investigar, no una causa demostrada, un ahorro ni una confianza estadística.",
+    "No se verifica que los datos de coste estén completos; un día puede evaluarse antes de que lleguen registros tardíos.",
+    "Un servicio sin gasto previo no abre anomalía su primer día; desde el segundo la referencia es la media de 7 días, "
+    "que incluye ese primer día, así que un gasto nuevo y estable puede abrir una anomalía y escalar hasta que alguien la cierre.",
+    "Los ciclos semanales pueden dar candidatas falsas y un pico reciente sube la media de 7 días.",
+    "Solo se vigila el servicio; solo se evalúan EUR y USD, con umbrales nominales.",
 ]
 SEVERITY_RANK = {"P1": 0, "P2": 1, "P3": 2}
 
