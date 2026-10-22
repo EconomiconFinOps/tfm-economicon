@@ -6,15 +6,19 @@
 - `corepack pnpm openspec:validate` (88 de 88), `jup:check` del change, `jup:cleanup:check`, `gateway-config-hash:test` (10 de 10) y `lint` en verde.
 - Grafana real: las 18 consultas SQL de los paneles responden sin error con 12 ejecuciones y 647 resultados; ver [la evidencia](../../../docs/evidence/JUP-133-validation.md).
 
-## Revisión adversarial
+## Adversarial Review
 
-Se hizo una pasada ligera, por decisión de Lucia, sobre el código de producto (huella del gateway, identidad del modelo, vistas de cambio y comparabilidad), sin el JSON de Grafana ni los documentos. Veredicto: accept, sin hallazgos bloqueantes ni altos.
+Pasada 1 (ligera). Se hizo una pasada ligera, por decisión de Lucia, sobre el código de producto (huella del gateway, identidad del modelo, vistas de cambio y comparabilidad), sin el JSON de Grafana ni los documentos. Verdict: accept. Sin hallazgos bloqueantes ni altos.
 
 | Id | Severidad | Resolución |
 | --- | --- | --- |
 | ADV-1 | Media | Corregido: `provider.only` con trozos de más o vacíos se rechaza en vez de descartarlos; prueba añadida. |
 | ADV-2 | Baja | Aceptado: la huella incluye todo `litellm_params` salvo `api_key`, así que rotar un secreto puesto en `extra_headers` cambia la huella. La spec solo exige excluir `api_key`; ningún secreto entra en claro. |
 | ADV-3 | Baja | Aceptado: una anotación `null` sobre un campo que ya trae el informe da conflicto; es coherente con «el informe manda». |
+
+## ADR
+
+No hace falta ADR nuevo (ADR not applicable): la identidad del modelo es una consecuencia de ADR-0022; se añadió una nota de enmienda a ese ADR que enlaza el change.
 
 ## Hallazgos del arnés
 
@@ -28,4 +32,7 @@ Las cifras de la reevaluación son provisionales (una repetición, una revisora)
 
 ## Human Approval
 
-Aprobado por Lucia el 22/10/2026, después de la revisión adversarial y de las pruebas anteriores, con las cifras provisionales y los límites descritos arriba.
+Approval type: post-review
+Decision: approved
+Archive decision: archive
+Approved by: Lucia, 22/10/2026, después de la revisión adversarial y de las pruebas anteriores, con las cifras provisionales y los límites descritos arriba.

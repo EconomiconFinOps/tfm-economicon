@@ -45,5 +45,5 @@ Trello: https://trello.com/c/Yv1ETc2G
 - [x] 5.2 Revisión adversarial con el agente `adversarial-reviewer` hasta `accept` (adjetivos de la spec en cada campo, combinaciones de identidad parcial, claves antiguas intactas)
 - [x] 5.3 Escribir `review.md` y la evidencia en `docs/evidence/JUP-133-validation.md`
 - [x] 5.4 Actualizar `docs/continuidad/README.md` y el tema `docs/continuidad/` correspondiente
-- [ ] 5.5 Sección `## Human Approval` posterior a la revisión, a cargo de Lucia
-- [ ] 5.6 Archivar el change en el mismo PR y abrir el PR contra `develop`
+- [x] 5.5 Sección `## Human Approval` posterior a la revisión, a cargo de Lucia
+- [x] 5.6 Archivar el change en el mismo PR y abrir el PR contra `develop`
