@@ -2,7 +2,7 @@
 
 [Tarjeta](https://trello.com/c/Yv1ETc2G) · [Change](../../openspec/changes/archive/2026-10-22-jup-133-reevaluacion-metricas-modelo/) · [Informe antes y después](../validation/model-reevaluation-report.md) · [Evidencia](../evidence/JUP-133-validation.md).
 
-Lucía lidera. Última actualización documental: 22/10/2026, rama feat/JUP-133-reevaluacion-metricas-modelo sobre develop con JUP-132 (ee84f791). Sin push ni PR todavía.
+Lucía lidera. Última actualización documental: 22/10/2026, rama feat/JUP-133-reevaluacion-metricas-modelo sobre develop con JUP-132 (ee84f791). PR #150 abierto contra develop; Víctor pidió cambios sobre 3c204724 y están atendidos en el push posterior; faltan la reaprobación de Víctor, la validación de Paris, el merge y el comentario en Trello.
 
 ## Qué quedó hecho
 
@@ -21,5 +21,5 @@ Lucía lidera. Última actualización documental: 22/10/2026, rama feat/JUP-133-
 ## Pendiente
 
 - Capturas de pantalla de Grafana (hoy verificado por API).
-- Revisión adversarial, aprobación de Lucía, archivo del change y PR único contra develop cuando ella lo pida; comentario en Trello cuando ella lo pida.
-- Cifras de la hoja de hechos sin origen en el repositorio (latencia 22,5/40,8 s, coste 0,1806/0,0392 USD, campañas RAG A-D): indicar fuente antes de mantenerlas.
+- Reaprobación de Víctor, `Validacion JUP-133` de Paris, merge del PR #150 y comentario en Trello (cuando Lucía lo pida). La revisión adversarial, la aprobación de Lucía y el archivo del change están hechos.
+- Cifras de la hoja de hechos sin origen en el repositorio (latencia 22,5/40,8 s, campañas RAG A-D); el coste 0,1806 USD de 28 operaciones sale del informe del 19/10 de Paris (véase la lista de cifras): indicar fuente antes de mantenerlas.

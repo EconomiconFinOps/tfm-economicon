@@ -88,4 +88,3 @@ El sistema DEBE (SHALL) entregar una lista de las cifras de la memoria que cambi
 #### Scenario: La memoria no entra en Git
 - **WHEN** se revisa el diff del cambio
 - **THEN** no contiene el texto de la memoria, solo referencias a sus secciones según `docs/memoria/README.md`
-

@@ -115,6 +115,14 @@ def load_inventory() -> dict:
 
 
 class InventoryContractTests(unittest.TestCase):
+    def test_the_jup_070_source_does_not_hide_the_live_bank_campaign_behind_the_template_baseline(self) -> None:
+        # La fuente JUP-070 del manifiesto agrupa las dos ejecuciones de plantilla y el banco con el chat real del 22/10.
+        entry = next(e for e in load_inventory()["entries"] if e["sources"] == ["JUP-070"])
+        self.assertEqual(entry["class"], "historica")
+        self.assertIn("dos ejecuciones de plantilla", entry["name"])
+        self.assertIn("22/10/2026", entry["justification"])
+        self.assertIn("no es histórica ni de plantilla", entry["justification"])
+
     def test_real_inventory_is_valid(self) -> None:
         validate_inventory(load_inventory(), manifest_sources())
 

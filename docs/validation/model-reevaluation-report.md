@@ -73,7 +73,7 @@ Las 28 preguntas del banco de JUP-069 (20 de responder, 6 de pedir el dato que f
 
 - **Más de la mitad de los fallos son del lector numérico.** 9 de los 18 casos fallan solo por la comprobación numérica automática (`001`, `002`, `006`, `007`, `011`, `013`, `018`, `021`, `027`); a mano tienen las cuentas correctas. Es la limitación conocida del lector de JUP-070, que exige una etiqueta concreta antes de la cifra.
 - **Dos fallos por reglas automáticas que a mano no se incumplen.** `JUP-069-008` (la regla ve «verde» aunque la respuesta lo niega) y `JUP-069-014` (la regla ve 1200 EUR en una línea de cálculo).
-- **Ocho puntos juzgados fallan.** Cinco son «no pide lo que falta» (`009`, `016`, `019`, `020`, `026`), uno es que no dice que las claves van en minúsculas (`010`) y dos son de `005`, donde el chat se niega a clasificar aunque el enunciado da la regla.
+- **Ocho de los 46 puntos requeridos fallan** (cinco de los 30 de los casos de responder, que son los «puntos juzgados cumplidos 25 de 30» de la tabla; los otros tres son de los casos de pedir o abstenerse). El informe del banco no trae datos por caso. Por motivo: cinco son «no pide lo que falta» (`009`, `016`, `019`, `020`, `026`), uno es que no dice que las claves van en minúsculas (`010`) y dos son de `005`, donde el chat se niega a clasificar aunque el enunciado da la regla.
 - **Fundamento.** Las citas son válidas en las 22 emitidas. Hay una cifra sin rastro (en `JUP-069-008`), en un caso no crítico.
 
 **Límites propios del banco.**

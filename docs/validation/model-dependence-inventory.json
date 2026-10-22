@@ -138,10 +138,10 @@
     },
     {
       "id": "template-baseline-jup070",
-      "name": "Línea base de plantilla de JUP-070 (28 casos, 0 aciertos)",
+      "name": "Línea base de plantilla de JUP-070 (28 casos, 0 aciertos): las dos ejecuciones de plantilla de octubre",
       "cards": ["JUP-070"],
       "class": "historica",
-      "justification": "Las dos ejecuciones son de plantilla sin modelo de generación (plantilla-sin-modelo): sirvieron para probar el instrumento y fijar una línea base. No describen el producto con ningún modelo, y repetirlas no mediría el cambio.",
+      "justification": "Las dos ejecuciones son de plantilla sin modelo de generación (plantilla-sin-modelo): sirvieron para probar el instrumento y fijar una línea base. No describen el producto con ningún modelo, y repetirlas no mediría el cambio. La fuente JUP-070 del manifiesto agrupa también la campaña generativa del banco de 28 preguntas del 22/10/2026 (chat real con DeepSeek V4.1 Flash): esa campaña no es histórica ni de plantilla, depende del modelo y se registra con su identidad completa; sus cifras van en la lista de la memoria (latencia y referencia de N3/N5), no en esta clasificación.",
       "check": {
         "kind": "report",
         "ref": "docs/evidence/JUP-070-run-2-report.json",

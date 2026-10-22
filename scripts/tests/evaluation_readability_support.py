@@ -170,7 +170,8 @@ _PG: dict = {}
 
 # Banco de JUP-069 con el chat real (JUP-133): la única campaña de JUP-070 real del conjunto versionado. Las pruebas de
 # legibilidad describen escenarios sobre las dos campañas de plantilla de octubre (columnas, orden, «no real», resumen),
-# así que su montaje las deja fuera; `test_evaluation_readability_real_campaign.py` carga el conjunto completo.
+# así que su montaje las deja fuera; `test_evaluation_readability_real_campaign.py` repite lo esencial con el conjunto
+# completo (`servidor_completo`).
 BANCO_JUP133 = "docs/evidence/JUP-133/JUP-133-bank28-report.json"
 
 
@@ -182,8 +183,8 @@ def conjunto_versionado(herramienta, *, con_banco_jup133: bool) -> dict:
 
 
 
-def servidor() -> evaluation_pg_helper.PostgresServer:
-    """Servidor del proceso con el conjunto versionado y el rol de lectura; se crea en el primer uso.
+def _montar(clave: str, *, con_banco_jup133: bool) -> evaluation_pg_helper.PostgresServer:
+    """Servidor `clave` del proceso con el conjunto versionado (con o sin el banco de JUP-133) y el rol de lectura.
 
     Si no hay Docker lanza `SkipTest` (y recuerda el motivo); si el montaje falla, repite el error en cada uso en lugar
     de levantar otro contenedor. El contenedor lo borra el `atexit` del ayudante aunque ningún `tearDownModule` llegue
@@ -191,25 +192,35 @@ def servidor() -> evaluation_pg_helper.PostgresServer:
     """
     if "failure" in _PG:
         raise unittest.SkipTest(_PG["failure"])
-    if "error" in _PG:
-        raise RuntimeError(_PG["error"])
-    if "instance" not in _PG:
+    if f"error-{clave}" in _PG:
+        raise RuntimeError(_PG[f"error-{clave}"])
+    if clave not in _PG:
         try:
-            _PG["instance"] = evaluation_pg_helper.PostgresServer()
+            _PG[clave] = evaluation_pg_helper.PostgresServer()
         except unittest.SkipTest as skip:
             _PG["failure"] = str(skip)
             raise
         try:
             herramienta = evaluation_pg_helper.load_tool()
-            _PG["instance"].load_dataset(conjunto_versionado(herramienta, con_banco_jup133=False), herramienta)
-            resultado = _PG["instance"].psql(stdin=herramienta.build_role_sql(secrets.token_urlsafe(18)))
+            _PG[clave].load_dataset(conjunto_versionado(herramienta, con_banco_jup133=con_banco_jup133), herramienta)
+            resultado = _PG[clave].psql(stdin=herramienta.build_role_sql(secrets.token_urlsafe(18)))
             if resultado.returncode != 0:
                 raise RuntimeError(f"no se pudo crear el rol de lectura: {resultado.stderr.strip()}")
         except BaseException as error:
-            _PG["error"] = f"no se pudo montar la prueba: {error}"
-            _PG["instance"].stop()
+            _PG[f"error-{clave}"] = f"no se pudo montar la prueba: {error}"
+            _PG[clave].stop()
             raise
-    return _PG["instance"]
+    return _PG[clave]
+
+
+def servidor() -> evaluation_pg_helper.PostgresServer:
+    """Servidor del proceso con las dos campañas de plantilla de octubre (sin el banco de JUP-133)."""
+    return _montar("instance", con_banco_jup133=False)
+
+
+def servidor_completo() -> evaluation_pg_helper.PostgresServer:
+    """Servidor del proceso con el conjunto versionado COMPLETO, banco de JUP-133 incluido (segundo contenedor)."""
+    return _montar("completo", con_banco_jup133=True)
 
 
 def sustituir_macros(sql: str) -> str:
@@ -227,7 +238,7 @@ def sustituir_macros(sql: str) -> str:
 _RESULTADOS: dict = {}
 
 
-def ejecutar(sql: str, preparacion: str = "") -> dict:
+def ejecutar(sql: str, preparacion: str = "", *, completo: bool = False) -> dict:
     """Ejecuta `sql` (tal cual está en el dashboard) con el rol de lectura y devuelve columnas y filas tipadas.
 
     `preparacion` es SQL de administrador (inserciones o borrados sintéticos) que se aplica ANTES de cambiar de rol y
@@ -235,7 +246,7 @@ def ejecutar(sql: str, preparacion: str = "") -> dict:
     al siguiente. Devuelve `{"columnas": [(nombre, tipo)], "filas": [dict]}`; se materializa en una tabla temporal para
     conocer los tipos incluso con cero filas. Con caché por (preparación, consulta).
     """
-    clave = (preparacion, sql)
+    clave = (preparacion, sql, completo)
     if clave in _RESULTADOS:
         return _RESULTADOS[clave]
     cuerpo = sustituir_macros(sql).strip()
@@ -252,7 +263,7 @@ def ejecutar(sql: str, preparacion: str = "") -> dict:
         "'rows', (SELECT COALESCE(jsonb_agg(to_jsonb(q)), '[]'::jsonb) FROM q));\n"
         "ROLLBACK;\n"
     )
-    resultado = servidor().psql(stdin=guion)
+    resultado = (servidor_completo() if completo else servidor()).psql(stdin=guion)
     if resultado.returncode != 0:
         raise AssertionError(f"la consulta falló: {resultado.stderr.strip()}\n--- SQL ---\n{cuerpo}")
     lineas = [linea for linea in resultado.stdout.split("\n") if linea.strip().startswith("{")]

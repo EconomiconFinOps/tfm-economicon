@@ -98,8 +98,26 @@ class FiguresTests(unittest.TestCase):
             linked = self.inventory.get(item["inventory_id"] or "")
             if linked is None or item["status"] == "sin_origen_verificable":
                 continue
+            if item["status"] == "obsoleta_sin_sustituto":
+                # Una medida que depende del modelo y no se reejecutó: sin valor nuevo medido.
+                self.assertEqual(linked["class"], "dependiente", item["id"])
+                self.assertEqual(item["new_value"], "No medido", item["id"])
+                continue
             expected = {"dependiente": "cambia", "independiente": "se_mantiene", "historica": "se_mantiene"}
             self.assertEqual(item["status"], expected[linked["class"]], item["id"])
+
+    def test_the_n3_n5_conformity_is_listed_as_not_measured(self) -> None:
+        item = next(item for item in self.data["figures"] if item["inventory_id"] == "chat-battery-n3-n5")
+        self.assertEqual((item["status"], item["new_value"]), ("obsoleta_sin_sustituto", "No medido"))
+        self.assertIn("no la sustituye", item["note"])
+
+    def test_the_cost_per_100_figure_keeps_its_denominators_apart(self) -> None:
+        item = next(item for item in self.data["figures"] if item["id"] == "cost-per-100-queries")
+        self.assertIn("por 100 operaciones", item["previous_value"])
+        self.assertIn("por 100 operaciones", item["new_value"])
+        self.assertIn("por llamada al modelo", item["new_value"])
+        self.assertIn("drive.google.com/file/d/1e_X5dpDBifJrDUDKGyy9HeXpdNeBpSv3", item["note"])
+        self.assertIn("no un orden de magnitud", item["note"])
 
     def test_the_list_does_not_copy_the_memory_or_its_hashes(self) -> None:
         text = FIGURES.read_text(encoding="utf-8")
@@ -111,7 +129,7 @@ class FiguresTests(unittest.TestCase):
     def test_dependent_measures_all_have_a_figure_or_an_explanation(self) -> None:
         covered = {item["inventory_id"] for item in self.data["figures"]}
         for entry_id, entry in self.inventory.items():
-            if entry["class"] == "dependiente" and entry_id != "chat-battery-n3-n5":
+            if entry["class"] == "dependiente":
                 self.assertIn(entry_id, covered, entry_id)
         self.assertIn("chat-battery-n3-n5", PLAN.read_text(encoding="utf-8"))
 

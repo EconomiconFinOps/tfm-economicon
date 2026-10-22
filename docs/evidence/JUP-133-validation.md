@@ -19,6 +19,8 @@ Esta evidencia describe cómo se obtuvieron las cifras y qué se comprobó. No v
 
 Los juicios de los puntos requeridos de ambas campañas los preparó un agente de programación con un criterio fijo («pedir» cumple solo si la respuesta pide el dato; las prohibiciones cumplen si no se incurre en la conducta) y los aprobó Lucía el 22/10/2026 sin cambios; constan como revisora única (`lucia`), por lo que los informes son provisionales. Los ficheros crudos con texto de respuestas y los juicios están fuera del repositorio.
 
+La ejecución del banco consta con fecha `2026-10-22T00:00:00Z`: el informe de JUP-070 solo trae la fecha, sin hora, y es lo que muestra el dashboard («2026-10-22 00:00»).
+
 ## Gasto
 
 0,0435 USD (contrastados con OpenRouter: campaña, muestra de coste y reintentos) más 0,033 USD estimados por el gateway del banco: ≈ 0,077 USD de los 1,5 USD autorizados. Cada gasto se lanzó con la confirmación expresa de Lucía en ese momento.

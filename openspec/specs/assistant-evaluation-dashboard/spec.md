@@ -415,4 +415,3 @@ Una entrada del manifiesto DEBE (SHALL) poder llevar un objeto `model_identity` 
 #### Scenario: Valor no acreditable
 - **WHEN** la evidencia del repositorio no acredita la cuantización de una ejecución antigua
 - **THEN** la anotación no la inventa y el dashboard la muestra «no registrada»
-

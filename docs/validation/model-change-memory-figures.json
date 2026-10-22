@@ -73,13 +73,13 @@
       "sections": [
         "b"
       ],
-      "figure": "Estimación del coste por 100 consultas del caso de negocio",
-      "previous_value": "Aproximadamente 0,64 USD por 100 consultas (medido con GLM-5.2 sobre 28 consultas)",
-      "new_value": "Aproximadamente 0,06 USD por 100 consultas con DeepSeek V4.1 Flash (0,000596 USD facturados por consulta, 73 consultas, 21/10/2026)",
+      "figure": "Coste del chat por 100 operaciones del caso de negocio",
+      "previous_value": "Aproximadamente 0,64 USD por 100 operaciones con GLM-5.2 (0,18059109 USD sobre 28 operaciones; informe del 19/10/2026 preparado por Paris, que incluye intentos fallidos y embeddings de consulta y excluye la indexación)",
+      "new_value": "Aproximadamente 0,11 USD por 100 operaciones con DeepSeek V4.1 Flash (cost_per_query 0,001118 USD, 21/10/2026); por llamada al modelo, 0,06 USD por 100 (0,000596 USD, 73 consultas)",
       "status": "cambia",
       "inventory_id": "ai-cost-jup130",
       "evidence": "docs/evidence/JUP-133/JUP-133-ai-cost.md",
-      "note": "Medido sobre las consultas de la campaña ligera, no sobre una carga de uso real. Con GLM-5.2 eran 0,002601 USD por consulta."
+      "note": "Solo es comparable el cociente por operación (0,64 frente a 0,11: unas 6 veces menos, no un orden de magnitud), y aun así las dos cifras proceden de campañas, ventanas y contabilidades distintas, así que la diferencia no se atribuye solo al modelo. Los 0,06 USD por 100 llamadas al modelo no se comparan con los 0,64 por 100 operaciones. Los 0,002601 USD por llamada con GLM-5.2 (JUP-130) son otro corte y otra unidad: no sustituyen al 0,64. Informe del 19/10/2026: https://drive.google.com/file/d/1e_X5dpDBifJrDUDKGyy9HeXpdNeBpSv3/view"
     },
     {
       "id": "latency-live-vs-target",
@@ -207,6 +207,19 @@
       "inventory_id": "retrieval-calibration-jup022",
       "evidence": "docs/spikes/JUP-022-retrieval-calibration.json",
       "note": "Depende del modelo de embeddings, que este cambio no toca."
+    },
+    {
+      "id": "conformity-n3-n5",
+      "sections": [
+        "h"
+      ],
+      "figure": "Conformidad por requisito de la batería N3/N5 (28 casos, tres repeticiones)",
+      "previous_value": "Conformidad por requisito de las 78 respuestas recogidas de 84 ejecuciones (JUP-123, revisión local)",
+      "new_value": "No medido",
+      "status": "obsoleta_sin_sustituto",
+      "inventory_id": "chat-battery-n3-n5",
+      "evidence": "docs/validation/JUP-123-N3-local-review.md",
+      "note": "No se repitió: necesita el ejecutor de la campaña B y la revisión por requisito. El banco de 28 preguntas con el chat real (22/10/2026) usa otra metodología y no la sustituye."
     }
   ]
 }
