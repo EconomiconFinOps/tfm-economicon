@@ -1,6 +1,6 @@
 # Reevaluación de métricas tras el cambio de modelo — JUP-133
 
-[Tarjeta](https://trello.com/c/Yv1ETc2G) · [Change](../../openspec/changes/jup-133-reevaluacion-metricas-modelo/) · [Informe antes y después](../validation/model-reevaluation-report.md) · [Evidencia](../evidence/JUP-133-validation.md).
+[Tarjeta](https://trello.com/c/Yv1ETc2G) · [Change](../../openspec/changes/archive/2026-10-22-jup-133-reevaluacion-metricas-modelo/) · [Informe antes y después](../validation/model-reevaluation-report.md) · [Evidencia](../evidence/JUP-133-validation.md).
 
 Lucía lidera. Última actualización documental: 22/10/2026, rama feat/JUP-133-reevaluacion-metricas-modelo sobre develop con JUP-132 (ee84f791). Sin push ni PR todavía.
 

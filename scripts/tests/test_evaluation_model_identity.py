@@ -1,6 +1,6 @@
 """Identidad del modelo de generación en las ejecuciones del dashboard de evaluación (JUP-133, grupo 2).
 
-Contrato que se valida (`openspec/changes/jup-133-reevaluacion-metricas-modelo/specs/assistant-evaluation-dashboard`):
+Contrato que se valida (`openspec/changes/archive/2026-10-22-jup-133-reevaluacion-metricas-modelo/specs/assistant-evaluation-dashboard`):
 
 * Cuatro campos opcionales en `run` (`IDENTITY_KEYS`): `generation_model_id`, `generation_provider`,
   `generation_quantization` y `gateway_config_sha256`. Nulos por defecto; un valor no válido falla nombrando el campo.

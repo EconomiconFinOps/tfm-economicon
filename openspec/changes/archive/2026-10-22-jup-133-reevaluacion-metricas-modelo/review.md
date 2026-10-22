@@ -4,7 +4,7 @@
 
 - Pruebas de evaluación: los ficheros afectados por el crecimiento del conjunto versionado (SQL, filas, manifiesto, carga, atomicidad, vistas, conciliación, consultas de paneles, anotaciones, permisos y permisos con opciones de concesión) y los nuevos (inventario, identidad, documentación, actualización de una base existente y huella del gateway) pasan. No se repitió la batería completa de `evaluation-dashboard:test` en local; la ejecuta el CI del PR.
 - `corepack pnpm openspec:validate` (88 de 88), `jup:check` del change, `jup:cleanup:check`, `gateway-config-hash:test` (10 de 10) y `lint` en verde.
-- Grafana real: las 18 consultas SQL de los paneles responden sin error con 12 ejecuciones y 647 resultados; ver [la evidencia](../../../docs/evidence/JUP-133-validation.md).
+- Grafana real: las 18 consultas SQL de los paneles responden sin error con 12 ejecuciones y 647 resultados; ver [la evidencia](../../../../../docs/evidence/JUP-133-validation.md).
 
 ## Adversarial Review
 
@@ -28,7 +28,7 @@ No hace falta ADR nuevo (ADR not applicable): la identidad del modelo es una con
 
 ## Límites
 
-Las cifras de la reevaluación son provisionales (una repetición, una revisora) y no permiten afirmar mejora ni empeoramiento; ver el [informe](../../../docs/validation/model-reevaluation-report.md). Las capturas de pantalla de Grafana están pendientes.
+Las cifras de la reevaluación son provisionales (una repetición, una revisora) y no permiten afirmar mejora ni empeoramiento; ver el [informe](../../../../../docs/validation/model-reevaluation-report.md). Las capturas de pantalla de Grafana están pendientes.
 
 ## Human Approval
 
