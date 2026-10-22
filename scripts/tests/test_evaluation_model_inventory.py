@@ -115,13 +115,21 @@ def load_inventory() -> dict:
 
 
 class InventoryContractTests(unittest.TestCase):
-    def test_the_jup_070_source_does_not_hide_the_live_bank_campaign_behind_the_template_baseline(self) -> None:
-        # La fuente JUP-070 del manifiesto agrupa las dos ejecuciones de plantilla y el banco con el chat real del 22/10.
-        entry = next(e for e in load_inventory()["entries"] if e["sources"] == ["JUP-070"])
-        self.assertEqual(entry["class"], "historica")
-        self.assertIn("dos ejecuciones de plantilla", entry["name"])
-        self.assertIn("22/10/2026", entry["justification"])
-        self.assertIn("no es histórica ni de plantilla", entry["justification"])
+    def test_each_jup_070_run_is_classified_by_its_own_report(self) -> None:
+        # La fuente JUP-070 agrupa las dos ejecuciones de plantilla y el banco con el chat real del 22/10: cada ejecución
+        # debe constar, por su informe, en la entrada que le corresponde (plantilla histórica o banco dependiente).
+        entries = load_inventory()["entries"]
+        runs = [item["run"] for item in tool.build_dataset([tool.DEFAULT_MANIFEST])["runs"] if item["run"]["source"] == "JUP-070"]
+        self.assertEqual(len(runs), 3, [run["run_id"] for run in runs])
+        for run in runs:
+            owners = [e for e in entries if run["report_path"] in e["evidence"]]
+            self.assertEqual(len(owners), 1, run["run_id"])
+            esperado = "dependiente" if run["report_path"].startswith("docs/evidence/JUP-133/") else "historica"
+            self.assertEqual(owners[0]["class"], esperado, run["run_id"])
+        banco = next(e for e in entries if e["id"] == "bank28-live-jup133")
+        self.assertEqual(banco["sources"], [])
+        self.assertEqual(banco["check"]["ref"], "docs/evidence/JUP-133/JUP-133-bank28-report.json")
+        self.assertIn("22/10/2026", banco["check"]["finding"])
 
     def test_real_inventory_is_valid(self) -> None:
         validate_inventory(load_inventory(), manifest_sources())

@@ -82,6 +82,19 @@
       "note": "Solo es comparable el cociente por operación (0,64 frente a 0,11: unas 6 veces menos, no un orden de magnitud), y aun así las dos cifras proceden de campañas, ventanas y contabilidades distintas, así que la diferencia no se atribuye solo al modelo. Los 0,06 USD por 100 llamadas al modelo no se comparan con los 0,64 por 100 operaciones. Los 0,002601 USD por llamada con GLM-5.2 (JUP-130) son otro corte y otra unidad: no sustituyen al 0,64. Informe del 19/10/2026: https://drive.google.com/file/d/1e_X5dpDBifJrDUDKGyy9HeXpdNeBpSv3/view"
     },
     {
+      "id": "bank28-cases-passed",
+      "sections": [
+        "h"
+      ],
+      "figure": "Banco de 28 preguntas: casos aprobados",
+      "previous_value": "0 de 28 casos aprobados con la plantilla sin modelo (08/10/2026)",
+      "new_value": "10 de 28 casos aprobados con el chat real y DeepSeek V4.1 Flash (22/10/2026, una repetición, una revisora, provisional)",
+      "status": "cambia",
+      "inventory_id": "bank28-live-jup133",
+      "evidence": "docs/evidence/JUP-133/JUP-133-bank28-report.md",
+      "note": "No es una mejora medida: la plantilla no usa modelo de generación y el valor anterior es solo una línea base del instrumento. El lector numérico automático hace fallar casos con cálculos correctos a mano (véase el informe)."
+    },
+    {
       "id": "latency-live-vs-target",
       "sections": [
         "b",

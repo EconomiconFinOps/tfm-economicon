@@ -25,7 +25,8 @@ Una medida solo es `independiente` si la comprobación está hecha y es localiza
 | Métricas de negocio (JUP-068) | independiente | Registros de tiempo y gasto, ejemplo sintético | No |
 | Calibración de la recuperación (JUP-022) | independiente | Solo embeddings, que JUP-132 no cambia | No, salvo que JUP-132 toque el alias de embeddings |
 | Catálogo de métricas (JUP-067) | independiente | Definiciones, sin valores | No |
-| Línea base de plantilla (JUP-070) | histórica | Plantilla sin modelo de generación | No |
+| Línea base de plantilla (JUP-070, 08/10/2026) | histórica | Plantilla sin modelo de generación | No |
+| Banco de 28 preguntas con el chat real (JUP-069/070, 22/10/2026) | dependiente | Puntúa respuestas generadas por el modelo servido | Hecho una vez en JUP-133 |
 | Benchmark de modelos (JUP-078) | histórica | Compara candidatos, no el defecto nuevo | No |
 | Comparativa GLM/DeepSeek (JUP-063) | histórica | Antecedente de la elección | No |
 

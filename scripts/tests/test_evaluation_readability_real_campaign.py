@@ -69,10 +69,10 @@ class MatrizConElBancoTests(unittest.TestCase):
         for cabecera in self.cabeceras:
             self.assertEqual(sum(1 for fila in self.filas if fila["ejecucion"] == cabecera), len(pares), cabecera)
 
-    def test_ninguna_celda_muestra_un_identificador_crudo_ni_queda_vacia(self):
+    def test_ninguna_celda_queda_vacia(self):
+        # Los identificadores crudos de las categorías de operación los vigila `test_evaluation_readability_operation_labels.py`.
         for fila in self.filas:
             self.assertTrue(str(fila["celda"]).strip(), fila)
-            self.assertNotRegex(fila["metrica"], r"^[a-z_]+$", fila)
 
 
 if __name__ == "__main__":

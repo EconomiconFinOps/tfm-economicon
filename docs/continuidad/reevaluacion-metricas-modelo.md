@@ -14,7 +14,7 @@ Lucía lidera. Última actualización documental: 22/10/2026, rama feat/JUP-133-
 ## Qué hay que saber para leerlo
 
 - Las comparaciones con GLM-5.2 de JUP-071 no se pueden leer como mejora o empeoramiento: cambiaron a la vez el modelo, los recursos del chat (v3 a v4), el método de recogida y la muestra.
-- El banco de 28 preguntas no tiene medición anterior con el chat real: es una referencia nueva, con 10 de 28 casos aprobados (más de la mitad de los fallos son del lector numérico automático).
+- El banco de 28 preguntas no tiene medición anterior con el chat real: es una referencia nueva, con 10 de 28 casos aprobados (la mitad de los fallos, 9 de 18, son solo del lector numérico automático).
 - La latencia, la disponibilidad y los fallos técnicos son de la máquina local de Lucía; la lista de las que hay que repetir en la infraestructura definitiva está en el [plan](../validation/model-reevaluation-plan.md#sensibilidad-a-la-infraestructura-local).
 - No se repitió la batería N3/N5 de 84 ejecuciones (necesita el ejecutor de la campaña B y revisión por requisito).
 

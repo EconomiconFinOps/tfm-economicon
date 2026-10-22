@@ -11,7 +11,7 @@
     { "path": "docs/evidence/JUP-130/JUP-130-ai-cost.rows.json", "format": "rows-v1", "milestone": true, "model_identity": { "generation_model_id": "openrouter/z-ai/glm-5.2" } },
     { "path": "docs/evidence/JUP-071-live-r1-rows.json", "format": "rows-v1", "milestone": true, "model_identity": { "generation_model_id": "openrouter/z-ai/glm-5.2" } },
     { "path": "docs/evidence/JUP-071-live-flash-r1-rows.json", "format": "rows-v1", "milestone": true, "model_identity": { "generation_model_id": "openrouter/deepseek/deepseek-v4.1-flash", "generation_provider": "deepinfra", "generation_quantization": "fp8", "gateway_config_sha256": "9f74f807263a5278d696d6262022e54e71b1b0533e1968a9816c65c8605405f2" } },
-    { "path": "docs/evidence/JUP-133/JUP-133-ai-cost.rows.json", "format": "rows-v1", "milestone": true },
+    { "path": "docs/evidence/JUP-133/JUP-133-ai-cost.rows.json", "format": "rows-v1", "milestone": true, "model_identity": { "generation_model_id": "mixto:deepseek-v4.1-flash=73+glm-5.2=2" } },
     { "path": "docs/evidence/JUP-133/JUP-133-bank28-report.json", "format": "jup-070-report-v1", "milestone": true, "model_identity": { "generation_model_id": "openrouter/deepseek/deepseek-v4.1-flash", "generation_provider": "deepinfra", "generation_quantization": "fp8", "gateway_config_sha256": "9f74f807263a5278d696d6262022e54e71b1b0533e1968a9816c65c8605405f2" } }
   ]
 }

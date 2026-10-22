@@ -47,7 +47,7 @@ Una repetición de 29 casos en ambas campañas, sin intervalos de confianza. Las
 
 **Notas del autor** (no son lecturas de la tabla):
 
-- El coste del chat baja con un orden de magnitud que no cabe en las diferencias de muestra o de recursos: por consulta al modelo pasa de 0,0026 a 0,0006 USD facturados, y por operación de 0,0065 a 0,0011 USD según el servidor. Los tokens de entrada por operación son un 6 % más con los recursos v4. La regla de lectura impide escribir «mejora» porque las condiciones no son iguales, y las dos cifras son de ventanas distintas con distinto número de consultas.
+- El coste del chat baja entre 4 y 6 veces según la unidad (no un orden de magnitud): por consulta al modelo pasa de 0,0026 a 0,0006 USD facturados (unas 4,4 veces menos), y por operación de 0,0065 a 0,0011 USD según el servidor (unas 5,8 veces menos). Las ventanas, las campañas y la contabilidad son distintas, así que la diferencia no se atribuye solo al modelo ni se descartan efectos de la muestra o de los recursos. Los tokens de entrada por operación son un 6 % más con los recursos v4. La regla de lectura impide escribir «mejora» porque las condiciones no son iguales, y las dos cifras son de ventanas distintas con distinto número de consultas.
 - Las comprobaciones numéricas automáticas pasan de 4 a 0 aciertos. Es la limitación conocida del lector numérico de JUP-070, que exige una etiqueta concreta antes de la cifra; con las respuestas nuevas el formato cambió. Cinco casos fallan solo por esa comprobación (`JUP-069-002`, `-011`, `-027`, `JUP-071-002` y `-003`): tienen todos los puntos humanos en pass y los cálculos correctos a mano, así que no debe leerse como una caída de calidad.
 - La muestra evaluada pasa de 24 a 28 casos porque hay menos casos bloqueados (de 5 a 1). Cambia el denominador de todas las tasas.
 
@@ -71,7 +71,7 @@ Las 28 preguntas del banco de JUP-069 (20 de responder, 6 de pedir el dato que f
 
 **Cómo leerlo.**
 
-- **Más de la mitad de los fallos son del lector numérico.** 9 de los 18 casos fallan solo por la comprobación numérica automática (`001`, `002`, `006`, `007`, `011`, `013`, `018`, `021`, `027`); a mano tienen las cuentas correctas. Es la limitación conocida del lector de JUP-070, que exige una etiqueta concreta antes de la cifra.
+- **La mitad de los fallos son del lector numérico.** 9 de los 18 casos fallan solo por la comprobación numérica automática (`001`, `002`, `006`, `007`, `011`, `013`, `018`, `021`, `027`); a mano tienen las cuentas correctas. Es la limitación conocida del lector de JUP-070, que exige una etiqueta concreta antes de la cifra.
 - **Dos fallos por reglas automáticas que a mano no se incumplen.** `JUP-069-008` (la regla ve «verde» aunque la respuesta lo niega) y `JUP-069-014` (la regla ve 1200 EUR en una línea de cálculo).
 - **Ocho de los 46 puntos requeridos fallan** (cinco de los 30 de los casos de responder, que son los «puntos juzgados cumplidos 25 de 30» de la tabla; los otros tres son de los casos de pedir o abstenerse). El informe del banco no trae datos por caso. Por motivo: cinco son «no pide lo que falta» (`009`, `016`, `019`, `020`, `026`), uno es que no dice que las claves van en minúsculas (`010`) y dos son de `005`, donde el chat se niega a clasificar aunque el enunciado da la regla.
 - **Fundamento.** Las citas son válidas en las 22 emitidas. Hay una cifra sin rastro (en `JUP-069-008`), en un caso no crítico.

@@ -17,6 +17,21 @@
       "rerun": "Campaña ligera de JUP-071: una repetición, una revisora, informe provisional. Tope autorizado de 1,5 USD en total con la clave de OpenRouter de Lucia; el proveedor es el que fije JUP-132."
     },
     {
+      "id": "bank28-live-jup133",
+      "name": "Banco de 28 preguntas de JUP-069 con el chat real (suite 1.0.1, 22/10/2026): casos aprobados, puntos requeridos y citas",
+      "cards": ["JUP-133", "JUP-069", "JUP-070"],
+      "class": "dependiente",
+      "justification": "Puntúa con la herramienta de JUP-070 las respuestas que genera el modelo servido (DeepSeek V4.1 Flash por DeepInfra, FP8): los casos aprobados, los puntos requeridos, las citas y la latencia dependen del modelo y del proveedor. No es la línea base de plantilla, que no usa modelo de generación.",
+      "check": {
+        "kind": "report",
+        "ref": "docs/evidence/JUP-133/JUP-133-bank28-report.json",
+        "finding": "La ejecución del 22/10/2026 lleva la identidad completa del modelo en el manifiesto (identificador, proveedor, cuantización y huella del gateway) y 10 de 28 casos aprobados; las dos ejecuciones de plantilla del 08/10/2026 no tienen modelo de generación."
+      },
+      "sources": [],
+      "evidence": ["docs/evidence/JUP-133/JUP-133-bank28-report.json", "docs/evidence/JUP-133/JUP-133-bank28-report.md"],
+      "rerun": "Hecho una vez en JUP-133 (una repetición, una revisora, provisional). Repetir con la infraestructura definitiva antes de usar la latencia en la memoria. La fuente JUP-070 del manifiesto la comparte con la línea base de plantilla (entrada template-baseline-jup070); la clasificación de cada ejecución va por su informe, en la evidencia de cada entrada."
+    },
+    {
       "id": "chat-battery-n3-n5",
       "name": "Batería del chat con 28 casos y tres repeticiones (N3/N5): conformidad por requisito",
       "cards": ["JUP-035", "JUP-120", "JUP-123"],
@@ -141,7 +156,7 @@
       "name": "Línea base de plantilla de JUP-070 (28 casos, 0 aciertos): las dos ejecuciones de plantilla de octubre",
       "cards": ["JUP-070"],
       "class": "historica",
-      "justification": "Las dos ejecuciones son de plantilla sin modelo de generación (plantilla-sin-modelo): sirvieron para probar el instrumento y fijar una línea base. No describen el producto con ningún modelo, y repetirlas no mediría el cambio. La fuente JUP-070 del manifiesto agrupa también la campaña generativa del banco de 28 preguntas del 22/10/2026 (chat real con DeepSeek V4.1 Flash): esa campaña no es histórica ni de plantilla, depende del modelo y se registra con su identidad completa; sus cifras van en la lista de la memoria (latencia y referencia de N3/N5), no en esta clasificación.",
+      "justification": "Las dos ejecuciones son de plantilla sin modelo de generación (plantilla-sin-modelo): sirvieron para probar el instrumento y fijar una línea base. No describen el producto con ningún modelo, y repetirlas no mediría el cambio. La fuente JUP-070 del manifiesto agrupa también la campaña generativa del banco de 28 preguntas del 22/10/2026 (chat real con DeepSeek V4.1 Flash): esa campaña no es histórica ni de plantilla, depende del modelo y se registra con su identidad completa; su clasificación dependiente es la entrada bank28-live-jup133.",
       "check": {
         "kind": "report",
         "ref": "docs/evidence/JUP-070-run-2-report.json",

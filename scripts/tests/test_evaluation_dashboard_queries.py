@@ -599,13 +599,14 @@ class ConjuntoVersionadoTests(unittest.TestCase):
     def test_la_anotacion_solo_marca_los_cambios_de_modelo_con_los_datos_versionados(self):
         # Las dos ejecuciones de JUP-070 de octubre solo difieren en el proveedor de embeddings (no es batería, modelo,
         # prompt ni corpus): sin anotación. Hay tres cambios anotados desde JUP-133: el banco con el chat real frente
-        # a la plantilla, la campaña de robustez con otro modelo servido y la ventana de coste sin identidad registrada.
+        # a la plantilla, la campaña de robustez con otro modelo servido y la ventana de coste con identidad mixta de
+        # GLM-5.2 y DeepSeek V4.1 Flash; las dos últimas cambian el identificador de modelo.
         anotacion = S.anotaciones_propias()[0]["target"]
         resultado = ejecutar(anotacion["rawSql"], REAL)
         self.assertEqual(len(resultado["filas"]), 3)
         textos = sorted(f["text"] for f in resultado["filas"])
         self.assertTrue(all(texto.startswith("Cambia: ") for texto in textos), textos)
-        self.assertEqual(sum("identificador de modelo" in texto for texto in textos), 1)
+        self.assertEqual(sum("identificador de modelo" in texto for texto in textos), 2)
         self.assertEqual(sum("proveedor de embeddings" in texto for texto in textos), 0)
         self.assertTrue({"time", "text", "tags"} <= set(nombres(resultado)))
 

@@ -22,6 +22,8 @@ Medición de JUP-133 sobre la ventana 2026-10-21 a 2026-10-22 (inicio incluido, 
 | openrouter/deepseek/deepseek-v4.1-flash | 73 | 0,000596 USD |
 | openrouter/z-ai/glm-5.2 | 2 | 0,003139 USD |
 
+En el manifiesto del dashboard esta ventana lleva la identidad `mixto:deepseek-v4.1-flash=73+glm-5.2=2`: el agregado mezcla dos modelos, por lo que no se etiqueta como Flash ni se le atribuye proveedor, cuantización ni huella del gateway. El desglose por modelo de arriba consta también como filas propias (una por modelo) en el conjunto cargado.
+
 ## Qué no demuestra
 
 - El gasto es local a la máquina que ejecutó las consultas: no demuestra el coste de un uso real ni de otros equipos.
