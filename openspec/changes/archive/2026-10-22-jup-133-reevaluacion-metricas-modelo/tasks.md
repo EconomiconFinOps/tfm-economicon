@@ -1,0 +1,49 @@
+JUP: JUP-133
+Trello: https://trello.com/c/Yv1ETc2G
+
+## 1. Inventario y clasificación (sin modelo nuevo)
+
+- [x] 1.1 Listar las fuentes de medida reales leyendo el manifiesto, `docs/validation/` y los temas de continuidad de JUP-035/123, 070/071, 022/067, 078, 130, 068 y 063
+- [x] 1.2 Crear `docs/validation/model-dependence-inventory.json` con clase (`dependiente`, `independiente`, `historica`), justificación y comprobación por entrada
+- [x] 1.3 Comprobar en el código que el detector de anomalías y la frescura de los datos no usan el modelo de generación y registrar la comprobación
+- [x] 1.4 Validador del inventario y pruebas: una clase por entrada, justificación no vacía, fuente del manifiesto sin clasificar falla, `independiente` sin comprobación falla
+- [x] 1.5 Documento `docs/validation/model-dependence-inventory.md` con la lectura humana del inventario
+
+## 2. Identidad del modelo en las ejecuciones (sin modelo nuevo)
+
+- [x] 2.1 Escribir primero las pruebas en rojo: mismo alias y distinto `generation_model_id` no comparten clave; registrada frente a no registrada tampoco; sin identidad conserva la clave actual
+- [x] 2.2 Añadir los cuatro campos a `RUN_KEYS`, a la validación (`generation_quantization` ≤ 80 caracteres, `gateway_config_sha256` sha256 de 64 minúsculas) y a `rows-v1`
+- [x] 2.3 Extender `comparability_key` para añadir la identidad solo cuando alguno de los campos no es nulo
+- [x] 2.4 Añadir las columnas al DDL de `evaluation.runs`, a la carga y a la proyección de marcas de cambio (nombrar identificador de modelo, proveedor, cuantización y configuración)
+- [x] 2.5 Soportar `model_identity` en las entradas del manifiesto: rellena solo lo que falta, rechaza claves desconocidas y conflictos con el informe, sin tocar `report_sha256`
+- [x] 2.6 Anotar en `docs/validation/evaluation-runs.json` las ejecuciones GLM-5.2 con lo que acredita la evidencia, y `null` en lo no acreditable
+- [x] 2.7 Mostrar modelo, proveedor y cuantización junto al alias en las tablas por ejecución del dashboard (`assistant-evaluation.json`) y actualizar sus pruebas de consultas y etiquetas
+- [x] 2.8 Prueba de que una ejecución posterior al cambio de JUP-132 sin identidad no entra en el manifiesto versionado
+- [x] 2.9 Actualizar `docs/validation/evaluation-dashboard.md` (contrato `run`, manifiesto, lectura de series) y añadir una nota de enmienda a ADR-0022
+- [x] 2.10 Comando de solo lectura que calcula `gateway_config_sha256` de la entrada del chat, con pruebas
+
+## 3. Plan, plantillas y cifras de la memoria (sin modelo nuevo)
+
+- [x] 3.1 Escribir `docs/validation/model-reevaluation-plan.md`: por campaña dependiente, llamadas, coste estimado, proveedor, presupuesto máximo (vacío hasta que lo fije Lucia) y autorización
+- [x] 3.2 Escribir la plantilla del informe antes/después con la columna «después» vacía, las reglas de lectura (intervalos solapados, condiciones distintas, no medido) y el apartado de gasto
+- [x] 3.3 Escribir la lista de cifras de la memoria afectadas, por referencia a las secciones de `docs/memoria/README.md`, con valor anterior y valor nuevo «no medido»
+- [x] 3.4 Prueba que comprueba que cada cifra enlaza con una entrada del inventario o consta «sin origen verificable»
+
+## 4. Reejecución y informe (bloqueado por JUP-132 y por autorización de presupuesto)
+
+- [x] 4.1 Confirmar que JUP-132 está integrado, o que existe un gateway aislado con `economicon-chat` apuntando a DeepSeek V4.1 Flash
+- [x] 4.2 Confirmar con Lucia el lanzamiento del gasto (tope autorizado: 1,5 USD en total, clave de OpenRouter de Lucia, proveedor el que fije JUP-132) y registrarlo en el plan; parar al alcanzar el tope
+- [x] 4.3 Reejecutar las campañas `dependiente` dentro del presupuesto, con identidad completa del modelo en cada ejecución
+- [x] 4.4 Añadir las ejecuciones nuevas al manifiesto versionado y cargarlas con `evaluation-dashboard:load`
+- [x] 4.4b Verificar en una pila real de Grafana (no solo con `rows`) que las ejecuciones nuevas y las de GLM-5.2 salen como ejecuciones distintas con su modelo, que no comparten serie y que cada panel afectado (ejecuciones, matriz por métrica, indicadores de robustez de JUP-071, coste de IA de JUP-130) responde sin error; guardar capturas en `docs/evidence/JUP-133/`
+- [x] 4.5 Rellenar el informe antes/después, la lista de cifras de la memoria, lo no reevaluado y el gasto real frente al presupuesto
+- [x] 4.6 Dejar constancia escrita de cada campaña dependiente que no se reejecutó y su motivo
+
+## 5. Cierre y verificación
+
+- [x] 5.1 Pasar la batería completa: `corepack pnpm evaluation-dashboard:test`, `corepack pnpm test`, `corepack pnpm lint`, `corepack pnpm openspec:validate`, `corepack pnpm jup:check -- --change jup-133-reevaluacion-metricas-modelo` y `corepack pnpm jup:cleanup:check`
+- [x] 5.2 Revisión adversarial con el agente `adversarial-reviewer` hasta `accept` (adjetivos de la spec en cada campo, combinaciones de identidad parcial, claves antiguas intactas)
+- [x] 5.3 Escribir `review.md` y la evidencia en `docs/evidence/JUP-133-validation.md`
+- [x] 5.4 Actualizar `docs/continuidad/README.md` y el tema `docs/continuidad/` correspondiente
+- [x] 5.5 Sección `## Human Approval` posterior a la revisión, a cargo de Lucia
+- [x] 5.6 Archivar el change en el mismo PR y abrir el PR contra `develop`

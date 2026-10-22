@@ -33,7 +33,8 @@ CALIDAD = ("Exactitud, relevancia y fundamento", "A")
 CAMPANA = ("Latencia, formato y disponibilidad de la campaña", "A")
 ROBUSTEZ = ("Robustez", "A")
 NEGOCIO = ("Tiempo, asignación y ahorro", "B")
-COMUNES = ["Fecha", "Versión de la batería", "Commit", "Modelo de generación", "Tipo de ejecución"]
+COMUNES = ["Fecha", "Versión de la batería", "Commit", "Modelo de generación",
+          "Modelo servido (modelo / proveedor / cuantización)", "Tipo de ejecución"]
 VISIBLES_ESPERADAS = {
     CALIDAD: COMUNES + ["Métrica", "Variante", "Valor", "Numerador", "Denominador"],
     CAMPANA: COMUNES + ["Métrica", "Variante", "Valor", "Numerador", "Denominador"],

@@ -59,7 +59,7 @@ TOOL_PATH = Path(os.environ.get("EVALUATION_DASHBOARD_TOOL") or ROOT / "tools" /
 READER = "grafana_evaluation_reader"
 PASSWORD_ENV = "GRAFANA_EVALUATION_DB_PASSWORD"
 DATABASE = "embeddings"
-VERSIONADO = {"runs": 9, "results": 444}
+VERSIONADO = {"runs": 12, "results": 647}
 RELACIONES_DE_EVALUATION = ["comparable_runs", "config_changes", "results", "results_pkey", "runs", "runs_pkey"]
 
 class _Estado(dict):
@@ -393,11 +393,12 @@ class IdempotenciaTests(unittest.TestCase):
         cls.tras_la_tercera, cls.identidad_tercera = tercera["huella"], tercera["identidad"]
 
     def test_la_primera_carga_dejo_el_conjunto_versionado_completo(self):
-        # Precondición de lo demás: «idéntico» tiene que ser sobre algo (9 ejecuciones y 444 resultados, no una base vacía).
+        # Precondición de lo demás: «idéntico» tiene que ser sobre algo (12 ejecuciones y 647 resultados, no una base vacía).
         for salida in self.salidas:
-            self.assertEqual(salida.stdout, "9 ejecuciones y 444 resultados cargados\n")
-        self.assertEqual((self.tras_la_primera["n_runs"], self.tras_la_primera["n_results"]), (9, 444))
-        self.assertEqual(self.tras_la_primera["n_config_changes"], 0)  # el versionado no tiene cambios de configuración
+            self.assertEqual(salida.stdout, "12 ejecuciones y 647 resultados cargados\n")
+        self.assertEqual((self.tras_la_primera["n_runs"], self.tras_la_primera["n_results"]), (12, 647))
+        # El versionado tiene tres cambios anotados desde JUP-133: modelo servido de JUP-071, banco con chat real frente a plantilla y ventana de coste.
+        self.assertEqual(self.tras_la_primera["n_config_changes"], 3)
         vacia = json_de(f"SELECT jsonb_build_object('h', md5(''))")["h"]
         self.assertNotEqual(self.tras_la_primera["runs"], vacia)
         self.assertNotEqual(self.tras_la_primera["results"], vacia)
@@ -709,7 +710,7 @@ class ManifiestoLocalTests(unittest.TestCase):
         self.assertEqual(sorted(set(self.con_local["ids"]) & set(ID_LOCALES)), ID_LOCALES)
         self.assertNotEqual(self.con_local, self.solo_versionado)
         # Las vistas notan las ejecuciones nuevas (cambio de modelo y de batería entre consecutivas y dos comparables).
-        self.assertEqual((self.con_local["n_config_changes"], self.con_local["n_comparable_runs"]), (2, 2))
+        self.assertEqual((self.con_local["n_config_changes"], self.con_local["n_comparable_runs"]), (5, 2))
 
     def test_una_recarga_sin_el_manifiesto_local_lo_quita_y_deja_el_contenido_versionado_original(self):
         self.assertEqual(sorted(set(self.sin_local["ids"]) & set(ID_LOCALES)), [])
@@ -758,7 +759,7 @@ class ConcurrenciaTests(unittest.TestCase):
         entra con la contraseña de una carga que terminó bien, y no con la de la que falló (su transacción del rol no se
         confirma). Al final, (4) una carga sin concurrencia termina bien y deja el contenido esperado.
         """
-        resumen = "9 ejecuciones y 444 resultados cargados\n"
+        resumen = "12 ejecuciones y 647 resultados cargados\n"
         for ronda in range(RONDAS_DE_CONCURRENCIA):
             contrasenas = [contrasena(), contrasena()]
             procesos = [lanzar(clave) for clave in contrasenas]

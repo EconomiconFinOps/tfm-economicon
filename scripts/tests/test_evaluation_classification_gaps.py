@@ -43,6 +43,8 @@ def minimal_run(**overrides):
         "retrieval": {"k": 5},
         "generation_model": "modelo",
         "prompt_sha256": "c" * 64,
+        "generation_model_id": None, "generation_provider": None,
+        "generation_quantization": None, "gateway_config_sha256": None,
     }
     run.update(overrides)
     return run

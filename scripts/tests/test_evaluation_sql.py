@@ -68,6 +68,7 @@ SPEC.loader.exec_module(tool)
 RUN_KEYS = (
     "run_id", "source", "run_at", "commit", "suite", "suite_version", "suite_sha256", "corpus_sha256",
     "embedding_provider", "embedding_alias", "retrieval", "generation_model", "prompt_sha256", "synthetic",
+    "generation_model_id", "generation_provider", "generation_quantization", "gateway_config_sha256",
 )
 RESULT_KEYS = (
     "measure_type", "grp", "metric_id", "behavior", "status", "count", "value", "unit",
@@ -79,6 +80,7 @@ RUN_OUTPUT_KEYS = RUN_KEYS + ("is_real", "non_real_reasons", "comparability_key"
 RUN_COLUMN_LIST = [
     "run_id", "source", "run_at", "commit_sha", "suite", "suite_version", "suite_sha256", "corpus_sha256",
     "embedding_provider", "embedding_alias", "retrieval", "generation_model", "prompt_sha256", "synthetic",
+    "generation_model_id", "generation_provider", "generation_quantization", "gateway_config_sha256",
     "is_real", "non_real_reasons", "comparability_key", "format", "milestone", "report_path", "report_sha256",
 ]
 RESULT_COLUMN_LIST = [
@@ -102,9 +104,10 @@ REAL_RUN_IDS = [
     "jup-070-20261008T201354Z-37175957", "jup-070-20261008T210144Z-b64cca76", "jup-078-undated-7ea00edf",
     JUP_022_RUN_ID, "JUP-068-synthetic-example-v1",
     "jup130-anomalies-2026-10-30", "jup130-data-2026-10-30", "jup130-ai-cost-2026-10-09-to-2026-10-21",
-    "JUP-071-a543144c9a55",
+    "JUP-071-a543144c9a55", "JUP-071-864a0d6dc666",
+    "jup130-ai-cost-2026-10-21-to-2026-10-22", "jup-070-20261022T000000Z-2c5c6500",
 ]
-REAL_ROW_COUNTS = [48, 48, 10, 140, 23, 16, 10, 13, 136]
+REAL_ROW_COUNTS = [48, 48, 10, 140, 23, 16, 10, 13, 136, 136, 15, 52]
 
 # Documento `rows-v1` mínimo y válido para las pruebas de la línea de comandos.
 ROWS_DOCUMENT = {
@@ -331,7 +334,9 @@ RUNS_ITEMS = [squash(item) for item in (
     "run_id text PRIMARY KEY", "source text NOT NULL", "run_at timestamptz", "commit_sha text", "suite text",
     "suite_version text", "suite_sha256 text", "corpus_sha256 text", "embedding_provider text",
     "embedding_alias text", "retrieval jsonb", "generation_model text", "prompt_sha256 text",
-    "synthetic boolean NOT NULL", "is_real boolean NOT NULL", "non_real_reasons text[] NOT NULL",
+    "synthetic boolean NOT NULL", "generation_model_id text", "generation_provider text",
+    "generation_quantization text", "gateway_config_sha256 text", "is_real boolean NOT NULL",
+    "non_real_reasons text[] NOT NULL",
     "comparability_key text NOT NULL", "format text NOT NULL", "milestone boolean NOT NULL", "report_path text",
     "report_sha256 text NOT NULL",
 )]
@@ -408,6 +413,8 @@ def make_run(run_id: str = "run-1", **fields) -> dict:
         "embedding_provider": "mock", "embedding_alias": "mock-alias",
         "retrieval": {"top_k": 4, "max_distance": 0.6, "chunk_size": 500, "chunk_overlap": 50},
         "generation_model": "modelo-1", "prompt_sha256": None, "synthetic": False,
+        "generation_model_id": None, "generation_provider": None, "generation_quantization": None,
+        "gateway_config_sha256": None,
         "is_real": True, "non_real_reasons": [], "comparability_key": "ef" * 32, "format": "rows-v1",
         "milestone": False, "report_path": "docs/evidence/informe.json", "report_sha256": "01" * 32,
     }
@@ -452,7 +459,7 @@ class ConstantsTest(unittest.TestCase):
         self.assertIsInstance(tool.RUN_COLUMNS, dict)
         self.assertEqual(list(tool.RUN_COLUMNS), list(RUN_OUTPUT_KEYS))
         self.assertEqual(list(tool.RUN_COLUMNS.values()), RUN_COLUMN_LIST)
-        self.assertEqual(len(tool.RUN_COLUMNS), 21)
+        self.assertEqual(len(tool.RUN_COLUMNS), 25)
         self.assertEqual(tool.RUN_COLUMNS["commit"], "commit_sha")
 
     def test_columnas_de_resultados_en_el_orden_del_contrato(self) -> None:
@@ -726,9 +733,10 @@ class BuildSqlStructureTest(unittest.TestCase):
             self.assertIn(statement_words, {"CREATE", "ALTER", "COMMENT"})
         # Tras el vaciado solo hay inserciones y el cierre; ejecuciones primero y resultados después.
         tail = words[truncate + 1:-1]
-        self.assertEqual(tail, ["INSERT", "INSERT"])
+        self.assertEqual(tail, ["INSERT", "INSERT", "INSERT"])
         self.assertTrue(squashed[truncate + 1].startswith("INSERT INTO evaluation.runs("))
         self.assertTrue(squashed[truncate + 2].startswith("INSERT INTO evaluation.results("))
+        self.assertTrue(squashed[truncate + 3].startswith("INSERT INTO evaluation.results("))
 
     def test_las_tablas_tienen_las_columnas_y_restricciones_del_contrato(self) -> None:
         by_table = {}
@@ -738,7 +746,7 @@ class BuildSqlStructureTest(unittest.TestCase):
                 by_table[match.group(1)] = split_top_level(match.group(2))
         # Columnas en orden exacto; las restricciones de tabla, como conjunto (su orden no es contrato).
         self.assertEqual(by_table["runs"], RUNS_ITEMS)
-        self.assertEqual(len(by_table["runs"]), 21)
+        self.assertEqual(len(by_table["runs"]), 25)
         results = by_table["results"]
         self.assertEqual(results[:15], RESULTS_COLUMN_ITEMS)
         self.assertEqual(sorted(results[15:]), RESULTS_CONSTRAINTS)
@@ -753,18 +761,19 @@ class BuildSqlStructureTest(unittest.TestCase):
     def test_las_columnas_de_los_insert_son_las_del_contrato(self) -> None:
         script = Script(real_script())
         (runs_columns, _), = script.inserts("runs")
-        (results_columns, _), = script.inserts("results")
+        results_inserts = script.inserts("results")
         self.assertEqual(runs_columns, RUN_COLUMN_LIST)
-        self.assertEqual(results_columns, ["run_id"] + RESULT_COLUMN_LIST)
+        # Con más de 500 filas los resultados salen en dos bloques; todos con las mismas columnas.
+        self.assertEqual([columns for columns, _ in results_inserts], [["run_id"] + RESULT_COLUMN_LIST] * len(results_inserts))
 
     def test_numero_de_tuplas_y_un_unico_bloque_de_resultados(self) -> None:
         script = Script(real_script())
-        self.assertEqual(len(script.rows("runs")), 9)
-        self.assertEqual(len(script.rows("results")), 444)
-        self.assertEqual(sum(REAL_ROW_COUNTS), 444)
+        self.assertEqual(len(script.rows("runs")), 12)
+        self.assertEqual(len(script.rows("results")), 647)
+        self.assertEqual(sum(REAL_ROW_COUNTS), 647)
         self.assertEqual(len(script.inserts("runs")), 1)
-        # Con 444 filas (< 500) hay un único bloque, aunque haya nueve ejecuciones: el corte es sobre la lista global.
-        self.assertEqual(chunk_sizes(script), [444])
+        # Con 647 filas (> 500) hay dos bloques: el corte es sobre la lista global, no por ejecución.
+        self.assertEqual(chunk_sizes(script), [500, 147])
         self.assertTrue(all(size <= 500 for size in chunk_sizes(script)))
 
     def test_cada_insert_lleva_una_tupla_por_linea_separadas_por_coma_y_acaba_en_punto_y_coma(self) -> None:
@@ -772,10 +781,10 @@ class BuildSqlStructureTest(unittest.TestCase):
         pattern = re.compile(
             r"^INSERT INTO evaluation\.(runs|results)\s*\([^)]*\)\s*VALUES\n((?:  \(.*\),\n)*  \(.*\);\n)", re.MULTILINE)
         matches = list(pattern.finditer(text))
-        self.assertEqual([match.group(1) for match in matches], ["runs", "results"])
-        self.assertEqual([match.group(2).count("\n") for match in matches], [9, 444])
+        self.assertEqual([match.group(1) for match in matches], ["runs", "results", "results"])
+        self.assertEqual([match.group(2).count("\n") for match in matches], [12, 500, 147])
         # Todas las sentencias INSERT del script están cubiertas por el patrón (ninguna con otra forma).
-        self.assertEqual(len(re.findall(r"^INSERT INTO", text, re.MULTILINE)), 2)
+        self.assertEqual(len(re.findall(r"^INSERT INTO", text, re.MULTILINE)), 3)
 
 
 class BuildSqlValuesTest(unittest.TestCase):
@@ -784,7 +793,7 @@ class BuildSqlValuesTest(unittest.TestCase):
         self.assertEqual(len(rows), len(DATASET["runs"]))
         for index, (cells, item) in enumerate(zip(rows, DATASET["runs"])):
             with self.subTest(run=REAL_RUN_IDS[index]):
-                self.assertEqual(len(cells), 21)
+                self.assertEqual(len(cells), 25)
                 self.assertEqual(cells, expected_run_cells(item["run"]))
         self.assertEqual([cells[0] for cells in rows], REAL_RUN_IDS)
 
@@ -810,17 +819,18 @@ class BuildSqlValuesTest(unittest.TestCase):
         self.assertRegex(lines[0], r"'not_measured',\s*NULL,\s*NULL,\s*'eur_minor_2',\s*NULL,\s*NULL,\s*NULL,\s*NULL,\s*NULL,\s*FALSE\)")
 
     def test_los_metadatos_nulos_de_las_ejecuciones_reales_salen_como_null(self) -> None:
-        # Las tuplas de ejecución son las de 21 celdas; las de resultado tienen 15.
+        # Las tuplas de ejecución son las de 25 celdas; las de resultado tienen 15.
         by_id = {parse_tuple(line)[0]: line for line in real_script().split("\n")
-                 if line.startswith("  (") and len(parse_tuple(line)) == 21}
+                 if line.startswith("  (") and len(parse_tuple(line)) == 25}
         self.assertEqual(sorted(by_id), sorted(REAL_RUN_IDS))
         # JUP-022 no registra la huella de la batería ni el commit; JUP-070 no registra el prompt.
         jup_022 = parse_tuple(by_id[JUP_022_RUN_ID])
         self.assertEqual((jup_022[3], jup_022[6], jup_022[11], jup_022[12]), (None, None, None, None))
         for run_id in ("jup-070-20261008T201354Z-37175957", "jup-070-20261008T210144Z-b64cca76"):
             self.assertIsNone(parse_tuple(by_id[run_id])[12])
-        # JUP-078 no registra nada salvo la fuente, el formato y la huella: 11 NULL (run_at ... prompt_sha256).
-        self.assertEqual(by_id["jup-078-undated-7ea00edf"].count("NULL"), 11)
+        # JUP-078 no registra nada salvo la fuente, el formato y la huella: 11 NULL (run_at ... prompt_sha256) y los
+        # cuatro campos de identidad del modelo, que ningún informe antiguo trae.
+        self.assertEqual(by_id["jup-078-undated-7ea00edf"].count("NULL"), 15)
 
     def test_ningun_nulo_se_escribe_como_cadena_vacia_ni_como_cero(self) -> None:
         # El dato real no contiene cadenas vacías: cualquier `''` del script sería un NULL mal escrito.
@@ -836,7 +846,9 @@ class BuildSqlValuesTest(unittest.TestCase):
         self.assertIn('\'{"chunk_overlap":50,"chunk_size":500,"max_distance":0.6,"top_k":4}\'::jsonb', text)
         self.assertIn('\'{"chunk_overlap":50,"chunk_size":500,"max_distance":null,"top_k":4}\'::jsonb', text)
         self.assertIn('\'{"chunk_overlap":50,"chunk_size":500}\'::jsonb', text)
-        self.assertEqual(text.count("::jsonb"), 3)
+        # Campaña del banco con el modelo nuevo (JUP-133): top_k 12 por los vecinos que añade el producto.
+        self.assertIn('\'{"chunk_overlap":50,"chunk_size":500,"max_distance":null,"top_k":12}\'::jsonb', text)
+        self.assertEqual(text.count("::jsonb"), 4)
 
     def test_retrieval_none_es_null_y_no_un_jsonb(self) -> None:
         # JUP-078 y JUP-068 no traen `retrieval`: columna 11 a NULL (no la cadena 'null'::jsonb ni '{}').
@@ -853,30 +865,30 @@ class BuildSqlValuesTest(unittest.TestCase):
         # Actualizado tras integrar develop: la fecha de la calibración es la `generated_at` del informe regenerado
         # (antes el literal 2026-10-03T07:15:32.826486+00:00), escrita tal cual con su cast.
         self.assertIn(f"'{JUP_022_RUN_AT}'::timestamptz", text)
-        self.assertEqual(text.count("::timestamptz"), 7)
+        self.assertEqual(text.count("::timestamptz"), 10)
         rows = Script(real_script()).rows("runs")
-        self.assertEqual([cells[2] is None for cells in rows], [False, False, True, False, True, False, False, False, False])
+        self.assertEqual([cells[2] is None for cells in rows], [False, False, True, False, True, False, False, False, False, False, False, False])
 
     def test_non_real_reasons_como_array_de_texto(self) -> None:
         text = real_script()
         self.assertIn("ARRAY['plantilla','doble']::text[]", text)
         self.assertEqual(text.count("ARRAY['plantilla']::text[]"), 1)
         self.assertEqual(text.count("ARRAY['sintetica']::text[]"), 3)
-        self.assertEqual(text.count("ARRAY['sin_modelo_verificado']::text[]"), 1)
+        self.assertEqual(text.count("ARRAY['sin_modelo_verificado']::text[]"), 2)
         # JUP-078, JUP-022 y el coste de IA de JUP-130 son reales: array vacío con su cast (no NULL, la columna es NOT NULL).
-        self.assertEqual(text.count("ARRAY[]::text[]"), 3)
+        self.assertEqual(text.count("ARRAY[]::text[]"), 5)
         rows = Script(real_script()).rows("runs")
-        self.assertEqual([cells[15] for cells in rows], [
+        self.assertEqual([cells[19] for cells in rows], [
             ("array", ["plantilla", "doble"]), ("array", ["plantilla"]), ("array", []), ("array", []),
             ("array", ["sintetica"]), ("array", ["sintetica"]), ("array", ["sintetica"]), ("array", []),
-            ("array", ["sin_modelo_verificado"])])
+            ("array", ["sin_modelo_verificado"]), ("array", ["sin_modelo_verificado"]), ("array", []), ("array", [])])
 
     def test_booleanos_en_mayusculas(self) -> None:
         rows = Script(real_script()).rows("runs")
         # synthetic (13), is_real (14) y milestone (18).
-        self.assertEqual([cells[13] for cells in rows], [False, False, False, False, True, True, True, False, False])
-        self.assertEqual([cells[14] for cells in rows], [False, False, True, True, False, False, False, True, False])
-        self.assertEqual([cells[18] for cells in rows], [True] * 9)
+        self.assertEqual([cells[13] for cells in rows], [False, False, False, False, True, True, True, False, False, False, False, False])
+        self.assertEqual([cells[18] for cells in rows], [False, False, True, True, False, False, False, True, False, False, True, True])
+        self.assertEqual([cells[22] for cells in rows], [True] * 12)
         selected = [cells[14] for cells in Script(real_script()).rows("results")]
         self.assertIn(True, selected)
         self.assertIn(False, selected)
@@ -1025,7 +1037,7 @@ class BuildSqlSyntheticTest(unittest.TestCase):
         text = tool.build_sql(make_dataset((make_run(report_path=attack), [make_row(0)])))
         self.assertIn("'x''); DROP SCHEMA evaluation; --'", text)
         script = Script(text)
-        self.assertEqual(script.rows("runs")[0][19], attack)
+        self.assertEqual(script.rows("runs")[0][23], attack)
         self.assertNotIn("DROP", [word for word in script.first_words()])
 
     def test_nul_en_una_columna_de_texto_es_error(self) -> None:
@@ -1375,7 +1387,7 @@ class CliTest(TmpCase):
         runs = script.rows("runs")
         self.assertEqual(len(runs), 1)
         self.assertEqual(runs[0][0], "JUP-071-demo-1")
-        self.assertEqual(runs[0][19], "dentro/informe.json")
+        self.assertEqual(runs[0][23], "dentro/informe.json")
         self.assertEqual(len(script.rows("results")), 2)
 
     def test_root_fuera_del_informe_deja_report_path_en_null(self) -> None:
@@ -1384,7 +1396,7 @@ class CliTest(TmpCase):
         other.mkdir()
         completed = run_cli_bytes("sql", "--no-versioned", "--manifest", manifest, "--root", other)
         self.assertEqual(completed.returncode, 0, completed.stderr)
-        self.assertIsNone(Script(completed.stdout.decode("utf-8")).rows("runs")[0][19])
+        self.assertIsNone(Script(completed.stdout.decode("utf-8")).rows("runs")[0][23])
 
     def test_varios_manifiestos_conservan_el_orden_de_la_linea_de_comandos(self) -> None:
         first_doc, second_doc = copy.deepcopy(ROWS_DOCUMENT), copy.deepcopy(ROWS_DOCUMENT)
