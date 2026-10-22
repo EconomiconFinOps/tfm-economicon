@@ -1708,7 +1708,9 @@ class CampaignIndicatorsTests(unittest.TestCase):
             self.assertEqual(row["measure_type"], "A")
         keys = [(r["grp"], r["metric_id"], r["behavior"], r["status"]) for r in document["results"]]
         self.assertEqual(len(keys), len(set(keys)))
-        DASHBOARD.validate_rows(document["run"], document["results"])
+        # El instrumento no atestigua el modelo: sus filas no traen los campos de identidad (opcionales en rows-v1) y el
+        # adaptador del dashboard los rellena con None antes de validar; aquí se hace lo mismo.
+        DASHBOARD.validate_rows({**{key: None for key in DASHBOARD.IDENTITY_KEYS}, **document["run"]}, document["results"])
         self.assertEqual(document["run"]["run_id"], robustness.rows_v1(self.build()[0])["run"]["run_id"])
 
     def test_no_text_names_distance_or_latency_leak_into_the_indicators(self):
@@ -1756,7 +1758,9 @@ class CampaignIndicatorsTests(unittest.TestCase):
             self.assertEqual((row["status"], row["value"], row["numerator"], row["count"]), ("not_measured", None, None, None), metric)
             self.assertIsNotNone(row["denominator"] if metric != "literal_quotes" else 0, metric)
         self.assertEqual(find(document, "invention_rate")["denominator"], 0)
-        DASHBOARD.validate_rows(document["run"], document["results"])
+        # El instrumento no atestigua el modelo: sus filas no traen los campos de identidad (opcionales en rows-v1) y el
+        # adaptador del dashboard los rellena con None antes de validar; aquí se hace lo mismo.
+        DASHBOARD.validate_rows({**{key: None for key in DASHBOARD.IDENTITY_KEYS}, **document["run"]}, document["results"])
 
     def test_citations_and_literal_quotations(self):
         quote = "Coste compartido conocido"

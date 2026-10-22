@@ -161,7 +161,11 @@ Todo campo que el informe no trae se guarda como `null` y el dashboard lo muestr
 | `corpus_sha256` | no | Huella del corpus. Para JUP-022, que lista varios documentos, es el sha256 de las líneas `<clave>=<sha256>` ordenadas y unidas con saltos de línea |
 | `embedding_provider`, `embedding_alias` | no | Proveedor y alias de embeddings |
 | `retrieval` | no | Objeto con algunas de las claves `top_k`, `max_distance`, `chunk_size` y `chunk_overlap` (no se exigen las cuatro: la calibración de JUP-022 solo lleva el troceado porque `top_k` y `max_distance` van por fila); valores numéricos o `null` |
-| `generation_model` | no | Alias del modelo de generación |
+| `generation_model` | no | Alias del modelo de generación (el del gateway, por ejemplo `economicon-chat`; no cambia cuando cambia el modelo que hay detrás) |
+| `generation_model_id` | no | Identificador del modelo servido, como lo declara la configuración del gateway (JUP-133) |
+| `generation_provider` | no | Proveedor que sirvió el modelo (JUP-133) |
+| `generation_quantization` | no | Cuantización, por ejemplo `fp8` (JUP-133) |
+| `gateway_config_sha256` | no | sha256 en minúsculas de la entrada del gateway que resuelve el alias: modelo, proveedor y parámetros, sin la referencia a la credencial (JUP-133) |
 | `prompt_sha256` | no | Huella del prompt. Ningún informe actual la registra |
 | `synthetic` | no | `true` si el informe declara ser sintético |
 | `milestone` | no | Lo fija el manifiesto, no el informe; en un `rows-v1` es una clave desconocida y se rechaza |
@@ -209,7 +213,7 @@ El resto de las reglas de filas se conserva. Detalle y modo sin vaciado global:
 
 `python tools/evaluation-dashboard.py sql` (y `corepack pnpm evaluation-dashboard:load`, que lo ejecuta contra la base) genera un script transaccional que crea el esquema `evaluation` si no existe, vacía las dos tablas y las vuelve a llenar a partir del conjunto de datos de `rows`. Es idempotente (dos cargas seguidas dejan lo mismo) y atómico (si algo falla, la transacción deshace el vaciado y quedan los datos de la carga anterior). Usa `TRUNCATE` y no `DROP`, así que los permisos que se concedan después sobreviven. El script nunca lleva credenciales; el rol de solo lectura de Grafana lo crea la carga con otro script.
 
-**`evaluation.runs`**, una fila por ejecución (clave primaria `run_id`): `source`, `run_at` (`timestamptz`, nulo si el informe no trae fecha), `commit_sha`, `suite`, `suite_version`, `suite_sha256`, `corpus_sha256`, `embedding_provider`, `embedding_alias`, `retrieval` (`jsonb`), `generation_model`, `prompt_sha256`, `synthetic`, `is_real`, `non_real_reasons` (`text[]`), `comparability_key`, `format`, `milestone`, `report_path` y `report_sha256`.
+**`evaluation.runs`**, una fila por ejecución (clave primaria `run_id`): `source`, `run_at` (`timestamptz`, nulo si el informe no trae fecha), `commit_sha`, `suite`, `suite_version`, `suite_sha256`, `corpus_sha256`, `embedding_provider`, `embedding_alias`, `retrieval` (`jsonb`), `generation_model`, `prompt_sha256`, `synthetic`, `generation_model_id`, `generation_provider`, `generation_quantization`, `gateway_config_sha256`, `is_real`, `non_real_reasons` (`text[]`), `comparability_key`, `format`, `milestone`, `report_path` y `report_sha256`.
 
 **`evaluation.results`**, una fila por resultado (clave primaria `run_id, grp, metric_id, behavior, status`, y `run_id` referencia a `runs` con `ON DELETE CASCADE`): `measure_type` (`A`/`B`), `grp`, `metric_id`, `behavior`, `status`, `case_count` (`bigint`; es el `count` del contrato), `value` (`double precision`), `unit`, `numerator`, `denominator` (`bigint`), `ci_low`, `ci_high`, `judgment` y `selected`.
 
@@ -221,7 +225,7 @@ Para escribir el script, los valores se convierten a literales SQL con una funci
 
 El mismo script crea dos vistas (`CREATE OR REPLACE VIEW`) de las que beben los paneles:
 
-- **`evaluation.config_changes`**: una fila por cada par de ejecuciones consecutivas de la misma fuente (ordenadas por `run_at`, solo las que tienen fecha) en el que cambió algo. Columnas: `run_id` (la posterior), `previous_run_id`, `source`, `run_at`, `changes` (`text[]` con `bateria`, `modelo`, `prompt` o `corpus`, en ese orden) y `annotation` (`Cambia: bateria, modelo`). Cambia la batería si lo hacen `suite_version` o `suite_sha256`, el modelo si cambia `generation_model`, el corpus si cambia `corpus_sha256`; el prompt solo si las dos huellas están registradas y son distintas (un prompt no registrado no genera anotación). Un par sin cambios no genera fila. Con los datos versionados hoy está vacía: las dos ejecuciones de JUP-070 solo difieren en el proveedor de embeddings y en los parámetros de recuperación.
+- **`evaluation.config_changes`**: una fila por cada par de ejecuciones consecutivas de la misma fuente (ordenadas por `run_at`, solo las que tienen fecha) en el que cambió algo. Columnas: `run_id` (la posterior), `previous_run_id`, `source`, `run_at`, `changes` (`text[]` con `bateria`, `modelo`, `identidad del modelo no registrada en una de las dos`, `identificador de modelo`, `proveedor del modelo`, `cuantizacion`, `configuracion del gateway`, `prompt` o `corpus`, en ese orden) y `annotation` (`Cambia: bateria, modelo`). Cambia la batería si lo hacen `suite_version` o `suite_sha256`, el modelo si cambia `generation_model`; la identidad del modelo, si una ejecución la registra y la otra no, genera una sola anotación, y si las dos la registran, una por cada campo de identidad que difiera; el corpus si cambia `corpus_sha256`; el prompt solo si las dos huellas están registradas y son distintas (un prompt no registrado no genera anotación). Un par sin cambios no genera fila. Con los datos versionados hoy está vacía: las dos ejecuciones de JUP-070 solo difieren en el proveedor de embeddings y en los parámetros de recuperación.
 - **`evaluation.comparable_runs`**: las ejecuciones con fecha cuya clave de comparabilidad tiene al menos dos ejecuciones con fecha. Columnas: `comparability_key`, `run_id`, `source`, `run_at`, `is_real`, `milestone` y `series_runs`. Una clave con una sola ejecución no aparece: de ahí sale el «Sin datos: no hay con qué comparar» de los paneles de evolución (cada panel declara además su `noValue`).
 
 Para usarlas en Grafana: `run_at AS time` directamente (es `timestamptz`), `array_to_string(changes, ',') AS tags` para las anotaciones (una `text[]` llegaría como `{a,b}`) y `'modelo' = ANY(changes)` para filtrar por tipo de cambio.
@@ -248,9 +252,27 @@ Cada ejecución se clasifica como real o no real. Una ejecución no real lleva u
 
 Con los informes actuales, las dos ejecuciones de JUP-070 son de plantilla y la primera además usa embeddings `mock`; el ejemplo de JUP-068 es sintético. Son pruebas del flujo, no calidad del asistente.
 
+## Identidad del modelo de generación (JUP-133)
+
+El alias `economicon-chat` es el mismo antes y después de cambiar el modelo por defecto, así que el alias solo no basta para saber qué modelo respondió. Cada ejecución puede registrar el modelo servido, el proveedor, la cuantización y la huella de la entrada del gateway.
+
+- **Informes nuevos:** los campos van en el bloque `run` de `rows-v1`, o en la entrada del manifiesto (siguiente punto).
+- **Entrada del manifiesto:** admite `model_identity`, un objeto con las cuatro claves anteriores. Rellena solo los campos que el informe no trae; no modifica el informe ni su `report_sha256`. Si el informe y la anotación declaran valores distintos para un campo, la carga falla con `error: <fichero>: model_identity.<campo>: …` y no carga nada. Una clave desconocida o un valor fuera del alfabeto cerrado también hacen fallar la carga.
+
+```json
+{ "path": "docs/evidence/JUP-071-live-r1-rows.json", "format": "rows-v1", "milestone": true,
+  "model_identity": { "generation_model_id": "openrouter/z-ai/glm-5.2" } }
+```
+
+- **Cómo obtener los valores:** `corepack pnpm gateway-config-hash` (opciones `--config` y `--alias`) lee la configuración de LiteLLM y escribe el modelo, el proveedor, la cuantización y la huella de la entrada del alias. Es de solo lectura y no sale ninguna credencial.
+- **Es una declaración.** Los valores salen de la configuración, no de la respuesta del modelo: ni el contrato de JUP-035 ni el instrumento de JUP-071 atestiguan qué modelo respondió, así que las ejecuciones vivas de JUP-071 siguen marcadas «no real: sin modelo verificado». Un campo que no se puede acreditar se deja sin anotar y el dashboard muestra «no registrado».
+- **Historial:** las ejecuciones con GLM-5.2 de JUP-071 y de coste de IA llevan anotado el modelo `openrouter/z-ai/glm-5.2`, que su propia evidencia recoge. El proveedor y la cuantización no constan en esa evidencia y quedan sin registrar. Los informes originales no se han tocado.
+- **En el dashboard:** las tablas por ejecución muestran la columna «Modelo servido (modelo / proveedor / cuantización)» junto al alias.
+- **Compromiso de contrato:** una ejecución de una campaña del chat (JUP-070 o JUP-071) con fecha posterior al 21/10/2026 no entra en el manifiesto versionado sin `generation_model_id`; lo comprueba una prueba.
+
 ## Evolución y comparabilidad
 
-Dos ejecuciones son comparables si comparten la **clave de comparabilidad**: fuente, `suite_version`, `suite_sha256`, `corpus_sha256`, `embedding_provider`, `embedding_alias`, `retrieval`, `generation_model`, `prompt_sha256` y motivos de ejecución no real. Un campo `null` solo es igual a otro `null`.
+Dos ejecuciones son comparables si comparten la **clave de comparabilidad**: fuente, `suite_version`, `suite_sha256`, `corpus_sha256`, `embedding_provider`, `embedding_alias`, `retrieval`, `generation_model`, `prompt_sha256` y motivos de ejecución no real. Un campo `null` solo es igual a otro `null`. Si la ejecución registra alguno de los cuatro campos de identidad del modelo (`generation_model_id`, `generation_provider`, `generation_quantization`, `gateway_config_sha256`), también entran en la clave; si no registra ninguno, la clave es la que tenía antes de JUP-133. Así dos ejecuciones con el mismo alias y distinto modelo, proveedor o cuantización no forman una serie, y una ejecución con identidad nunca se compara con otra sin ella.
 
 - Una serie con una sola ejecución, o sin otra comparable, muestra «Sin datos: no hay con qué comparar». No se dibuja ninguna línea ni un 0 %.
 - Con los datos actuales, las ejecuciones 1 y 2 de JUP-070 tienen claves distintas (cambian el proveedor de embeddings y `max_distance`), así que las dos muestran ese mensaje.

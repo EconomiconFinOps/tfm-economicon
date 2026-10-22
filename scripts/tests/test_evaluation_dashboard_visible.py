@@ -539,8 +539,9 @@ def comprobar_metadatos(caso, filas, runs, laxos=()):
 class MetadatosDelResultadoTests(unittest.TestCase):
     def _comprobar_campana_jup_070(self, clave, grupos, filas_esperadas=None):
         """a3 y a4 (solo JUP-070 con los datos versionados): cada fila trae la fecha, la versión, el commit y el modelo
-        de SU ejecución. Las dos ejecuciones tienen commits y fechas distintos, así que una consulta que tomara los
-        metadatos de otra (o los fijara) se delata; la versión (`1.0.0`) y el modelo son comunes a las dos."""
+        de SU ejecución. Las tres ejecuciones tienen commits y fechas distintos, así que una consulta que tomara los
+        metadatos de otra (o los fijara) se delata. Las dos de octubre comparten versión (`1.0.0`) y modelo (la
+        plantilla); la tercera es el banco con el chat real de JUP-133 (batería `1.0.1`, modelo `economicon-chat`)."""
         resultado = de_panel(clave, REAL)
         self.assertTrue(set(METADATOS) <= set(Q.nombres(resultado)), Q.nombres(resultado))
         self.assertTrue({"run_id", "metric_id", "behavior", "status", "value", "numerator", "denominator"}
@@ -564,18 +565,19 @@ class MetadatosDelResultadoTests(unittest.TestCase):
                 self.assertEqual(len(metadatos), 1, metadatos)
                 (run_at, version, commit, modelo), = metadatos
                 self.assertEqual(Q.instante(run_at), Q.instante(runs[run_id]["run_at"]))
-                self.assertEqual(version, "1.0.0")
-                self.assertEqual(modelo, "plantilla-sin-modelo")
+                con_modelo = run_id.startswith("jup-070-20261022")
+                self.assertEqual(version, "1.0.1" if con_modelo else "1.0.0")
+                self.assertEqual(modelo, "economicon-chat" if con_modelo else "plantilla-sin-modelo")
                 self.assertEqual(commit, runs[run_id]["commit_sha"])
                 self.assertTrue(commit and commit != "no registrado")
         commits = {next(iter(m))[2] for m in por_ejecucion.values()}
         fechas = {next(iter(m))[0] for m in por_ejecucion.values()}
-        self.assertEqual(len(commits), 2, commits)
-        self.assertEqual(len(fechas), 2, fechas)
+        self.assertEqual(len(commits), 3, commits)
+        self.assertEqual(len(fechas), 3, fechas)
 
     def test_a3_calidad_muestra_los_metadatos_de_su_propia_ejecucion(self):
-        # 32 filas (16 métricas de calidad en cada una de las dos ejecuciones de JUP-070).
-        self._comprobar_campana_jup_070("a3", ("accuracy", "relevance", "grounding"), 32)
+        # 49 filas (16 métricas de calidad en cada una de las dos ejecuciones de octubre y 17 en la del banco de JUP-133).
+        self._comprobar_campana_jup_070("a3", ("accuracy", "relevance", "grounding"), 49)
 
     def test_a4_latencia_y_campana_muestra_los_metadatos_de_su_propia_ejecucion(self):
         self._comprobar_campana_jup_070("a4", ("latency", "robustness", "availability"))

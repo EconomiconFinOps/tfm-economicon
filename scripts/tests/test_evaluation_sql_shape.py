@@ -37,6 +37,8 @@ def make_run(run_id: str = "run-1", **fields) -> dict:
         "embedding_provider": "mock", "embedding_alias": "mock-alias",
         "retrieval": {"top_k": 4, "max_distance": 0.6, "chunk_size": 500, "chunk_overlap": 50},
         "generation_model": "modelo-1", "prompt_sha256": None, "synthetic": False,
+        "generation_model_id": None, "generation_provider": None, "generation_quantization": None,
+        "gateway_config_sha256": None,
         "is_real": True, "non_real_reasons": [], "comparability_key": "ef" * 32, "format": "rows-v1",
         "milestone": False, "report_path": "docs/evidence/informe.json", "report_sha256": "01" * 32,
     }

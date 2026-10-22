@@ -143,7 +143,7 @@ def _construir_real() -> dict:
 BASE_RUN = {
     "commit": "abc1234", "suite": "JUP-069", "suite_version": "1.0.0", "suite_sha256": "aa" * 32,
     "corpus_sha256": "bb" * 32, "embedding_provider": "proveedor-1", "embedding_alias": "alias-1",
-    "retrieval": {"top_k": 4}, "generation_model": "modelo-1", "prompt_sha256": "cc" * 32, "synthetic": False,
+    "retrieval": {"top_k": 4}, "generation_model": "modelo-1", "prompt_sha256": "cc" * 32, "synthetic": False, "generation_model_id": None, "generation_provider": None, "generation_quantization": None, "gateway_config_sha256": None,
 }
 
 
@@ -433,28 +433,30 @@ class ConjuntoVersionadoTests(unittest.TestCase):
         # Las dos de JUP-070 son de plantilla (no reales) y la de JUP-078 es real: la tabla las distingue.
         por_fuente = {runs[f["run_id"]]["source"]: f for f in resultado["filas"]}
         self.assertNotIn("no real", " ".join(celdas(por_fuente["JUP-078"])).lower())
-        self.assertEqual(sum(1 for f in resultado["filas"] if runs[f["run_id"]]["source"] == "JUP-070"), 2)
+        self.assertEqual(sum(1 for f in resultado["filas"] if runs[f["run_id"]]["source"] == "JUP-070"), 3)
 
-    def test_a2_estados_de_los_casos_de_las_dos_ejecuciones_de_jup_070(self):
+    def test_a2_estados_de_los_casos_de_las_tres_ejecuciones_de_jup_070(self):
         resultado = de_panel("a2", REAL)
         self.assertTrue(
             {"run_id", "run_at", "suite", "suite_version", "commit_sha", "generation_model", "pass", "fail",
              "blocked", "not_run", "denominator"} <= set(nombres(resultado)), nombres(resultado))
         runs = runs_de_la_base()
         jup070 = {r for r, f in runs.items() if f["source"] == "JUP-070"}
-        self.assertEqual(len(jup070), 2)
+        self.assertEqual(len(jup070), 3)
         self.assertEqual({f["run_id"] for f in resultado["filas"]}, jup070)
-        self.assertEqual(len(resultado["filas"]), 2)
+        self.assertEqual(len(resultado["filas"]), 3)
         for fila in resultado["filas"]:
             with self.subTest(run_id=fila["run_id"]):
                 # Los cuatro estados con su total: 28 casos, todos `fail`; `blocked` y `not_run` son 0 MEDIDOS
                 # (un recuento cero llega como 0, no como NULL ni como otro número) y no se suman a `fail`.
+                # La tercera es el banco de JUP-069 con el chat real de JUP-133 (10 aprobados y 18 fallidos).
+                con_modelo = fila["run_id"].startswith("jup-070-20261022")
                 self.assertEqual(
                     (fila["pass"], fila["fail"], fila["blocked"], fila["not_run"], fila["denominator"]),
-                    (0, 28, 0, 0, 28))
+                    (10, 18, 0, 0, 28) if con_modelo else (0, 28, 0, 0, 28))
                 for estado in ("pass", "fail", "blocked", "not_run", "denominator"):
                     self.assertIsNotNone(fila[estado], estado)
-                self.assertEqual(fila["generation_model"], "plantilla-sin-modelo")
+                self.assertEqual(fila["generation_model"], "economicon-chat" if con_modelo else "plantilla-sin-modelo")
         comprobar_rotulo_real(self, resultado["filas"], lambda f: f["run_id"], runs)
 
     def _comparar_con_la_base(self, clave, grupos, columnas_extra=()):
@@ -481,10 +483,11 @@ class ConjuntoVersionadoTests(unittest.TestCase):
 
     def test_a3_proporciones_de_calidad_con_numerador_denominador_y_estado(self):
         resultado = self._comparar_con_la_base("a3", ("accuracy", "relevance", "grounding"))
-        # Las 16 métricas de calidad de cada ejecución de JUP-070 están medidas: ninguna fila se pierde ni cambia de
-        # estado. Los nulos (métricas no medidas) se ejercitan con el conjunto sintético, porque los datos versionados
-        # no los tienen en estos grupos.
-        self.assertEqual(len(resultado["filas"]), 32)
+        # Las métricas de calidad de cada ejecución de JUP-070 están medidas (16 en cada una de las dos de octubre y 17 en
+        # la del banco con el chat real, que añade GRD-2 por caso): ninguna fila se pierde ni cambia de estado. Los nulos
+        # (métricas no medidas) se ejercitan con el conjunto sintético, porque los datos versionados no los tienen en
+        # estos grupos.
+        self.assertEqual(len(resultado["filas"]), 49)
         self.assertEqual({f["status"] for f in resultado["filas"]}, {"measured"})
         for fila in resultado["filas"]:
             self.assertIsNotNone(fila["value"])
@@ -545,11 +548,11 @@ class ConjuntoVersionadoTests(unittest.TestCase):
         comprobar_rotulo_real(self, resultado["filas"], lambda f: f["run_id"], runs_de_la_base())
 
     def test_a9_robustez_solo_muestra_la_campana_de_jup_071_del_manifiesto(self):
-        # El manifiesto versionado trae la campaña de robustez (136 filas): el panel las muestra y solo ellas. Las filas STR
-        # de JUP-070 son de la campaña (a4), no de robustez: no aparecen aquí.
+        # El manifiesto versionado trae dos campañas de robustez (136 filas cada una: la del GLM-5.2 y la del chat de
+        # JUP-132): el panel las muestra y solo ellas. Las filas STR de JUP-070 son de la campaña (a4), no de robustez.
         resultado = de_panel("a9", REAL)
-        self.assertEqual(len(resultado["filas"]), 136)
-        self.assertEqual({f["run_id"] for f in resultado["filas"]}, {"JUP-071-a543144c9a55"})
+        self.assertEqual(len(resultado["filas"]), 272)
+        self.assertEqual({f["run_id"] for f in resultado["filas"]}, {"JUP-071-a543144c9a55", "JUP-071-864a0d6dc666"})
         self.assertEqual({f["source"] for f in resultado["filas"]}, {"JUP-071"})
         self.assertIn("run_id", nombres(resultado))
 
@@ -593,12 +596,18 @@ class ConjuntoVersionadoTests(unittest.TestCase):
         self.assertEqual(
             {f["status"] for f in filas if f["metric_id"] == "time_trials"}, {"pass", "fail", "blocked", "not_run"})
 
-    def test_la_anotacion_no_devuelve_nada_con_los_datos_versionados(self):
-        # Las dos ejecuciones de JUP-070 solo difieren en el proveedor de embeddings: no es batería, modelo, prompt
-        # ni corpus, así que no hay anotaciones.
+    def test_la_anotacion_solo_marca_los_cambios_de_modelo_con_los_datos_versionados(self):
+        # Las dos ejecuciones de JUP-070 de octubre solo difieren en el proveedor de embeddings (no es batería, modelo,
+        # prompt ni corpus): sin anotación. Hay tres cambios anotados desde JUP-133: el banco con el chat real frente
+        # a la plantilla, la campaña de robustez con otro modelo servido y la ventana de coste con identidad mixta de
+        # GLM-5.2 y DeepSeek V4.1 Flash; las dos últimas cambian el identificador de modelo.
         anotacion = S.anotaciones_propias()[0]["target"]
         resultado = ejecutar(anotacion["rawSql"], REAL)
-        self.assertEqual(resultado["filas"], [])
+        self.assertEqual(len(resultado["filas"]), 3)
+        textos = sorted(f["text"] for f in resultado["filas"])
+        self.assertTrue(all(texto.startswith("Cambia: ") for texto in textos), textos)
+        self.assertEqual(sum("identificador de modelo" in texto for texto in textos), 2)
+        self.assertEqual(sum("proveedor de embeddings" in texto for texto in textos), 0)
         self.assertTrue({"time", "text", "tags"} <= set(nombres(resultado)))
 
 
