@@ -106,7 +106,7 @@ Sección, afirmación del documento, fuente y cambio previsto. El estado «aplic
 | 19 | §7 | Sin ADR-0022 a 0027 | `docs/adr/` | Citar por archivo | aplicado |
 | 20 | §8 | «nueve servicios» en el CD | `dockerserver-cd.md`, 1.1 | Referirse al Compose general | aplicado |
 
-## 4. Desfases nuevos descubiertos al editar
+## 3. Desfases nuevos descubiertos al editar
 
 | # | Sección | Hallazgo | Cambio |
 | --- | --- | --- | --- |
@@ -115,10 +115,49 @@ Sección, afirmación del documento, fuente y cambio previsto. El estado «aplic
 | 23 | §3.1 | El router de chat cuelga de `/assistant`, no de `/chat` (corrige mi nota inicial) | El documento usa las rutas reales |
 | 24 | §6.2 | La fila de JUP-050 dice «nueve servicios»: es evidencia histórica fechada del 01/10 | Se conserva sin cambios |
 
-## 3. Hallazgos fuera de alcance
+## 4. Hallazgos fuera de alcance
 
 - `docs/deployment/dockerserver-cd.md` **no** contradice el Compose actual: habla del «Compose general» y ya
   cubre MinIO y `chat-private`. Sin cambios.
-- Por confirmar durante el apply: `docs/assistant-corpus/product-architecture/economicon-product-context.md`
-  puede arrastrar el mismo desfase (corpus del asistente); se anota, no se edita.
-- Propuesta futura: una comprobación automática de los servicios de Compose frente a `architecture.md`.
+- `docs/assistant-corpus/product-architecture/economicon-product-context.md` **no** está desfasado: por diseño
+  no describe la arquitectura interna (sospecha inicial descartada).
+- `apps/backend/README.md` y `apps/processor/README.md` no mencionan MinIO, las subidas de archivos ni
+  `CHAT_ENABLED` (el README raíz sí cubre MinIO). Probable desfase; es de otra tarjeta y no se edita aquí.
+- `docs/architecture-aws.md` mantiene su cabecera de alcance «exclusivamente documental» del 10/10 con la
+  ampliación de JUP-131 como nota; no se ha revisado el resto (fuera de alcance, lo mantiene JUP-131).
+- Propuesta futura: una comprobación automática de los servicios, redes y volúmenes de Compose frente a
+  `docs/architecture.md`, porque nada lo valida hoy y ya se desfasó una vez.
+
+## 5. Resultado y comprobaciones
+
+Contraste con los escenarios del requisito añadido a `technical-architecture-deliverable`:
+
+| Escenario | Evidencia |
+| --- | --- |
+| Un servicio de Compose aparece en la topología | Los 12 servicios por defecto, los 2 del perfil `demo` y los 2 de `ai` figuran en la figura de §6.1 o en la tabla de §2; los recuentos del texto coinciden con el inventario 1.1 |
+| Capacidad integrada y desactivada por defecto | §1, §3.1 y §3.4 dan `CHAT_ENABLED=false` y los tres flags `RAG_*` en `false`, y rotulan como objetivo solo las tools de ownership, gasto y anomalías |
+| Código cloud sin despliegue | §5 y §6.3 separan los modos `cognito`, `bedrock` y PostgreSQL del despliegue y remiten el estado al runbook y a la nota de continuidad |
+| El corte declara la SHA | Cabecera: `develop 03e97ce6`, 22/10/2026, con el corte anterior |
+
+Comprobaciones ejecutadas:
+
+- Enlaces relativos de `docs/architecture.md`: 109 comprobados, 0 rotos (script local).
+- Anclas entrantes (`docs/adr/README.md`): `#4-que-papel-tienen-rabbitmq-cockroachdb-y-pgvector` y
+  `#7-por-que-esta-separado-asi`; los dos títulos no han cambiado.
+- Diagramas Mermaid: los 10 se analizan y renderizan sin error con Mermaid 10.9.1 en Chrome headless. No se
+  ha comparado la maquetación visual con la vista previa de GitHub.
+- `develop` al cierre sigue en `03e97ce6`: el corte no se ha movido (tarea 4.4).
+- `corepack pnpm openspec:validate`, `jup:check` y `jup:cleanup:check`: ver el cierre de la tarea 4.6.
+
+No verificado:
+
+- No se ha levantado el stack: los recuentos y las dependencias salen de `docker compose config`, no de
+  contenedores en marcha.
+- Las 15 tablas del backend salen de las sentencias `CREATE TABLE` de las migraciones, no de ejecutarlas.
+- No se ha ejecutado el chat generativo ni se ha comprobado su calidad; el documento lo declara integrado,
+  desactivado por defecto y sin calidad acreditada.
+
+## 6. ADR
+
+No aplica: consolidación documental de decisiones ya registradas (ADR-0022 a ADR-0027, sin cambiar sus
+estados). Se enlazan por archivo porque los números 0013, 0022 y 0023 están repetidos.

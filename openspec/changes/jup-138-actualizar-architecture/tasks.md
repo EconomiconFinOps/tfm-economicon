@@ -39,13 +39,13 @@
 
 ## 4. Comprobación y cierre
 
-- [ ] 4.1 Comprobar que todos los enlaces relativos de `docs/architecture.md` resuelven a archivos existentes y que las
+- [x] 4.1 Comprobar que todos los enlaces relativos de `docs/architecture.md` resuelven a archivos existentes y que las
   anclas que usa `docs/adr/README.md` siguen existiendo (D6)
-- [ ] 4.2 Ver en la vista previa de Markdown cada diagrama Mermaid editado y anotarlo en `review.md`
-- [ ] 4.3 Cerrar la tabla de desfases de `review.md` (todos aplicados o justificados) y registrar los hallazgos
+- [x] 4.2 Ver en la vista previa de Markdown cada diagrama Mermaid editado y anotarlo en `review.md`
+- [x] 4.3 Cerrar la tabla de desfases de `review.md` (todos aplicados o justificados) y registrar los hallazgos
   fuera de alcance (corpus del asistente, README de apps, comprobación automática de deriva)
-- [ ] 4.4 Si develop se ha movido, actualizar la rama, revisar el diff entre cortes sobre las fuentes de 1.2 y
+- [x] 4.4 Si develop se ha movido, actualizar la rama, revisar el diff entre cortes sobre las fuentes de 1.2 y
   1.3 y mover el corte (D1)
-- [ ] 4.5 Actualizar `docs/continuidad/README.md` y `docs/continuidad/arquitectura-tecnica.md`
-- [ ] 4.6 `corepack pnpm openspec:validate`, `corepack pnpm jup:check -- --change jup-138-actualizar-architecture`
+- [x] 4.5 Actualizar `docs/continuidad/README.md` y `docs/continuidad/arquitectura-tecnica.md`
+- [x] 4.6 `corepack pnpm openspec:validate`, `corepack pnpm jup:check -- --change jup-138-actualizar-architecture`
   y `corepack pnpm jup:cleanup:check` en verde
