@@ -1,7 +1,8 @@
 # Arquitectura técnica de Economicon
 
-JUP-060 · [Trello](https://trello.com/c/alMIpBOQ) · Corte de código: **11/10/2026,
-develop a0e9a56**. Esta vista sustituye las
+JUP-060 · [Trello](https://trello.com/c/alMIpBOQ) · Corte de código: **22/10/2026,
+develop 03e97ce6** (actualizado en [JUP-138](https://trello.com/c/WvzuP74W/130-jup-138);
+el corte anterior era 11/10/2026, a0e9a56). Esta vista sustituye las
 descripciones históricas de billing fijo, aislamiento pendiente y citas pendientes.
 Describe código integrado; las ejecuciones citadas conservan su fecha, host y SHA.
 No certifica que un servidor esté ejecutando ahora esa versión.
@@ -12,8 +13,14 @@ Economicon es un asistente FinOps para Azure con interfaz web, API, procesamient
 asíncrono y recuperación vectorial. El entorno reproducible es una demo con datos
 públicos/sintéticos; no conecta a una cuenta Azure real. El chat documental recupera
 contexto y devuelve una **plantilla determinista**; las consultas estructuradas
-de ownership agregan costes mediante SQL y generan evidencia determinista. El processor dispone de un
-cliente LLM, pero no compone todavía el vertical conversacional tools/RAG/LLM.
+de ownership, de gasto y de anomalías agregan o leen datos mediante SQL y generan
+evidencia determinista. Hay además un **chat generativo** integrado (JUP-122,
+JUP-123, JUP-132) que el backend delega al processor por una red privada; está
+**desactivado por defecto** (`CHAT_ENABLED=false`) y solo se muestra en la interfaz
+si el backend declara que está activo. Su modelo recibe un contexto acotado: el
+resumen de costes verificado por el servidor y una búsqueda documental del
+servidor. Las consultas de ownership, gasto y anomalías no se le exponen todavía
+como herramientas (§3.4).
 
 En los diagramas de bloques las flechas continuas describen conexiones implementadas;
 las punteadas, capacidades opcionales o propuestas, rotuladas en cada figura.
@@ -30,13 +37,18 @@ técnica, no una copia de sus apartados.
 ```mermaid
 flowchart TB
   U[Usuario] --> UI[Frontend React]
+  U -.->|Sin sesión ni backend| LP[Landing pública estática]
   UI -->|HTTP: JWT y X-Tenant-Id| API[Backend FastAPI]
+  UI -->|PUT con URL firmada| S3[(MinIO: originales temporales)]
+  API -->|URL firmada y verificación| S3
   API --> DB[(CockroachDB)]
   API -->|Publicación confirmada| Q[RabbitMQ]
   Q --> W[Processor: worker y API operativa]
+  W -->|Lee el original| S3
   W --> DB
   W -->|Documentos y embeddings| V[(PostgreSQL y pgvector)]
   API -->|Recuperación por tenant| V
+  API -.->|Chat generativo: red privada, firma HMAC| W
   CLI[CLI ingesta Azure] --> AZ[API Azure simulada]
   CLI -->|Normalización y persistencia| DB
   CSV[CSV público fijado] --> AZ
@@ -51,16 +63,18 @@ flowchart TB
 
 | Componente | Responsabilidad y límite | Implementación |
 | --- | --- | --- |
-| Frontend | Sesión, tenant, conversaciones y dashboard ejecutivo conectado a billing. Panel de anomalías conectado a los episodios guardados. Los paneles operativo, de recortes y de recomendaciones siguen en el código sin ruta ni menú (JUP-116). No accede a DB, cola ni claves del proveedor. | [Cliente HTTP](../apps/frontend/src/services/api.ts), [rutas](../apps/frontend/src/routes.tsx) |
-| Backend | Autenticación, autorización, costes/presupuesto, episodios de anomalías, publicación de jobs, conversaciones, recuperación/citas, ownership SQL, cobertura de etiquetas y salud agregada. | [Rutas](../apps/backend/app/api/routes), [acceso](../apps/backend/app/api/dependencies.py) |
-| Processor | Worker documental y pipeline LangGraph; CLI independiente para costes Azure. API de salud/métricas interna. AgentRuntime es módulo Python, no servicio de red. | [Pipeline](../apps/processor/app/graphs/pipeline.py), [CLI Azure](../apps/processor/app/run_azure_cost_ingestion.py), [agentes](../apps/processor/app/agents/service.py) |
+| Frontend | Sesión, tenant, conversaciones y dashboard ejecutivo conectado a billing. Panel de anomalías conectado a los episodios guardados. Subida de archivos a MinIO con URL firmada desde la página de ingesta, y panel de chat generativo que solo aparece si el backend declara el chat activo. Los paneles operativo, de recortes y de recomendaciones siguen en el código sin ruta ni menú (JUP-116). No accede a DB, cola ni claves del proveedor. | [Cliente HTTP](../apps/frontend/src/services/api.ts), [rutas](../apps/frontend/src/routes.tsx) |
+| Backend | Autenticación, autorización, costes/presupuesto, episodios de anomalías, publicación de jobs, conversaciones, recuperación/citas, ownership SQL, consultas de gasto, cobertura de etiquetas y salud agregada. También reserva y confirma subidas de archivos (JUP-124) y, con el chat activo, orquesta las generaciones y resúmenes del chat generativo y los delega al processor por la red privada. | [Rutas](../apps/backend/app/api/routes), [acceso](../apps/backend/app/api/dependencies.py) |
+| Processor | Worker documental y pipeline LangGraph, con extracción local aislada de los archivos subidos (MD, TXT, PDF, DOCX y DOC, con OCR) y chunking estructural; CLI independiente para costes Azure. API de salud/métricas y, con el chat activo, una superficie privada de chat y resumen en el puerto 8003 de la red interna, solo para el backend y con firma HMAC. AgentRuntime es módulo Python, no servicio de red. | [Pipeline](../apps/processor/app/graphs/pipeline.py), [CLI Azure](../apps/processor/app/run_azure_cost_ingestion.py), [agentes](../apps/processor/app/agents/service.py) |
+| MinIO | Almacén de objetos S3 con un bucket privado dedicado para los originales de las subidas: URL firmadas de vida corta, caducidad de `staging/` y retirada del original tras el procesado. Credenciales de servicio separadas de las de administración. Los textos normalizados y los vectores no viven aquí. | [Dockerfile](../infra/minio/Dockerfile), [inicializador](../infra/minio/init.sh), [ADR-0022](adr/ADR-0022-document-ingestion-artifact-lifecycle.md), [runbook](runbooks/document-ingestion.md) |
 | API Azure simulada | HTTP posicional, bearer local, paginación y errores reproducibles sobre CSV público. No autentica contra Azure ni representa una factura completa. | [README](../apps/azure-cost-api/README.md), [fixture](../fixtures/azure-cost/README.md) |
 | LiteLLM, opcional | Proxy del processor y de embeddings del backend; claves virtuales separadas y DB propia. OpenRouter es el upstream configurado. | [Configuración](../infra/litellm/config.example.yaml), [operación](../infra/litellm/README.md) |
 | Shared config | Configuración reutilizable del workspace; no es servicio de runtime. | [Paquete](../packages/shared-config/README.md) |
+| Landing pública | Aplicación estática independiente de la interfaz autenticada: sin backend, sesión ni claves, con una demo ilustrativa rotulada como tal. No está en Compose ni en el CD, y su dominio y publicación siguen pendientes de decisión humana. | [README](../apps/landing/README.md), [operación](operations/public-landing.md) |
 
 ## 3. Flujos implementados y vertical objetivo
 
-### 3.1 Chat síncrono: recuperación documental, consultas de ownership y explicación de anomalías
+### 3.1 Chat síncrono: recuperación documental, consultas de gasto y ownership y explicación de anomalías
 
 ```mermaid
 sequenceDiagram
@@ -78,6 +92,11 @@ sequenceDiagram
     DB-->>B: Episodio y operandos exactos
     B->>B: Explicación determinista y anomaly_evidence
     B->>DB: Persistir mensaje de usuario tras explicar
+  else cost_query explícito
+    B->>DB: Agregación SQL del gasto Azure por dimensión y periodo
+    DB-->>B: Costes y procedencia
+    B->>B: Respuesta determinista y cost_evidence
+    B->>DB: Persistir mensaje de usuario tras resolver consulta
   else ownership_query explícito
     B->>DB: Agregación SQL por tenant, periodo, moneda y dimensiones
     DB-->>B: Costes y procedencia
@@ -105,13 +124,16 @@ texto determinista y `anomaly_evidence` con las cifras exactas y un identificado
 reproducible. No usa embeddings, recuperación documental ni modelo generativo, y
 solo guarda los dos mensajes cuando la explicación está calculada: un episodio
 inexistente o de otro cliente da el mismo 404 y uno que no se sabe explicar da
-409, sin dejar nada en la conversación. Es excluyente con `ownership_query`.
+409, sin dejar nada en la conversación. Es excluyente con `ownership_query` y `cost_query`.
 Véase [contrato de la explicación](api/anomaly-explanations.md). La explicación
-no es una herramienta del agente todavía: el chat con modelo generativo es
-JUP-035.
+no se expone como herramienta al modelo del chat generativo (§3.4).
 
-La [ruta](../apps/backend/app/api/routes/assistant.py) no llama al processor ni
-a la cola. Cuando recibe `ownership_query`, usa
+La [ruta de mensajes](../apps/backend/app/api/routes/assistant.py)
+(`POST /assistant/conversations/{id}/messages`) no llama al processor ni
+a la cola. Cuando recibe `cost_query` (JUP-036), responde con una agregación SQL
+del gasto Azure por dimensión y periodo y devuelve `cost_evidence`
+([contrato](api/azure-cost-questions.md)); no usa embeddings ni modelo. Cuando
+recibe `ownership_query`, usa
 [OwnershipQuestionService](../apps/backend/app/services/ownership_questions.py):
 agrega costes de ejecuciones completadas por tenant, período y moneda, con
 dimensiones permitidas y procedencia verificable. Devuelve `cost_evidence`,
@@ -122,9 +144,10 @@ formulario explícito; no interpreta libremente lenguaje natural en SQL. Véase
 hasta tres fragmentos o indica falta de contexto. La consulta vectorial filtra
 tenant y proveedor, ordena por distancia coseno e identificador y limita con
 `RETRIEVAL_TOP_K` (1–20, defecto 4). Con LiteLLM el umbral por defecto es 0.6;
-mock no aplica umbral por defecto. Los embeddings reales requieren dimensión
-1536 y el mismo modelo que la ingesta: cambiar de proveedor exige reindexar
-en un almacén compatible, no mezclar vectores.
+mock no aplica umbral por defecto. Con LiteLLM los embeddings requieren
+dimensión 1536 (con el proveedor Bedrock de JUP-131, 256, 512 o 1024) y el
+mismo modelo que la ingesta: cambiar de proveedor exige reindexar en un almacén
+compatible, no mezclar vectores.
 
 [Citas](../apps/backend/app/services/citations.py) valida cada referencia contra
 chunks recuperados y tenant; devuelve documento/chunk, título, sección cuando
@@ -133,6 +156,65 @@ inválidas, 502. Como el mensaje de usuario se guarda antes de recuperar, un
 fallo no implica que la conversación quede sin cambios. Las evidencias de
 [recuperación](evidence/JUP-022-validation.md) y
 [citas](evidence/JUP-025-validation.md) son históricas, no nuevas llamadas de JUP-060.
+
+**Recuperación verificada, contextual e híbrida (JUP-127,
+[ADR-0024](adr/ADR-0024-verified-contextual-retrieval.md)).** Con
+`RAG_VERIFIED_ENABLED=true` (por defecto `false`) la consulta no usa el índice
+heredado sino la generación activa del tenant, que fija el espacio de embeddings
+y su configuración; si no hay una generación verificada, falla en lugar de caer
+al índice heredado. `RAG_CONTEXTUAL_ENABLED` y `RAG_HYBRID_ENABLED` (también
+`false`) añaden contexto determinista al chunk y búsqueda por texto combinada
+con la vectorial, y exigen el flag verificado. Con los tres apagados, que es el
+valor de Compose, el recorrido descrito arriba no cambia.
+
+**Chat generativo (JUP-122, JUP-123, JUP-132).** Es un recorrido distinto del
+anterior y solo existe con `CHAT_ENABLED=true` en backend y processor; con el
+valor por defecto `/assistant/capabilities` informa `chat_enabled=false`, las
+generaciones responden 503 y la interfaz no muestra el panel.
+
+```mermaid
+sequenceDiagram
+  actor U as Usuario
+  participant UI as Frontend
+  participant B as Backend
+  participant DB as CockroachDB
+  participant V as pgvector
+  participant P as Processor (red privada)
+  participant GW as LiteLLM
+  U->>UI: Pregunta
+  UI->>B: GET /assistant/capabilities
+  B-->>UI: chat_enabled
+  UI->>B: POST /assistant/conversations/{id}/generations
+  B->>DB: Abrir la operación y leer el resumen de costes
+  B->>P: Petición firmada con HMAC por la red chat-private
+  P->>DB: Comprobar propietario y reserva vigente
+  P->>GW: Generación con el modelo configurado
+  GW-->>P: Respuesta en flujo
+  opt El modelo pide buscar documentación
+    P-->>B: Petición de búsqueda
+    B->>V: Recuperación del tenant
+    B->>P: Resultado acotado (una búsqueda por intento)
+  end
+  P-->>B: Flujo NDJSON
+  B-->>UI: Eventos SSE
+  UI-->>U: Texto, estado y fuentes
+```
+
+El backend es el único que puede pedir generaciones al processor: la
+superficie privada del puerto 8003 no se publica, exige firma HMAC con nonce y
+comprueba en SQL propietario y reserva antes de llamar al gateway. Cada
+operación se guarda (`chat_operations`) y puede consultarse, detenerse o
+reanudarse (`…/generations/{operation_id}`, `/stop`, `/resume`); el historial
+largo se compacta con un resumen (`…/summary`). El alias de modelo por defecto
+es `economicon-chat`, que [ADR-0026](adr/ADR-0026-default-chat-model.md)
+(Proposed) resuelve a DeepSeek V4.1 Flash por el gateway, sin alternativa de
+reserva. Lo que el modelo recibe y puede usar se limita al resumen de costes
+verificado por el servidor y a la búsqueda documental; no ejecuta SQL ni
+herramientas de ownership, gasto o anomalías. Contexto en
+[chat conversacional](continuidad/chat-conversacional.md) y
+[modelo único](continuidad/modelo-unico-chat.md). Que el recorrido esté
+integrado no acredita calidad generativa extremo a extremo en la demo por
+defecto: esa evidencia sigue siendo la de sus informes de evaluación.
 
 ### 3.2 Ingesta documental asíncrona
 
@@ -157,9 +239,10 @@ sequenceDiagram
   W->>DB: Estado y resultado o fallo
 ```
 
-`text_content` es obligatorio; `artifact_uri` es metadato, no prueba de descarga
-ni extracción de archivos. No hay endpoint `GET /jobs/{id}` en esta base.
-La figura muestra el camino exitoso; publicación rechazada, no enviada o de
+La figura muestra el formulario de texto: `POST /jobs/ingest` exige `text_content`
+y `artifact_uri` es solo metadato, sin descarga ni extracción. No hay endpoint
+`GET /jobs/{id}`; el estado de una subida de archivo sí se consulta (siguiente
+figura). La figura muestra el camino exitoso; publicación rechazada, no enviada o de
 resultado desconocido tiene tratamiento en
 [jobs](../apps/backend/app/api/routes/jobs.py) y
 [ADR-0009](adr/ADR-0009-rabbitmq-publisher-lifecycle.md). No hay transacción
@@ -175,6 +258,56 @@ se reencola sin tope, porque descartarlo dejaría el job sin mensaje. La consecu
 los embeddings fallan el tiempo suficiente para los dos intentos (unos 10 s medidos con pgvector parado), los
 jobs de ese intervalo quedan `failed` y hay que reenviarlos. Tabla completa en el
 [README del processor](../apps/processor/README.md#fallos-reintentos-y-descarte-jup-113).
+
+**Subida de archivos (JUP-124,
+[ADR-0022](adr/ADR-0022-document-ingestion-artifact-lifecycle.md)).** La
+interfaz también admite MD, TXT UTF-8, PDF, DOCX y DOC, de 1 a 20 000 000 bytes,
+un archivo por envío. El binario no viaja por RabbitMQ ni por el backend: el
+navegador lo sube a MinIO con una URL firmada.
+
+```mermaid
+sequenceDiagram
+  participant UI as Frontend
+  participant B as Backend
+  participant S3 as MinIO
+  participant DB as CockroachDB
+  participant Q as RabbitMQ
+  participant W as Worker
+  participant V as pgvector
+  UI->>B: POST /jobs/uploads con nombre, tamaño y SHA-256
+  B->>DB: Reservar la subida del usuario
+  B-->>UI: 201 con PUT firmado de vida corta
+  UI->>S3: PUT del archivo a staging/
+  UI->>B: POST /jobs/uploads/{id}/confirm
+  B->>S3: Leer, verificar bytes, tamaño y formato
+  B->>S3: Fijar el original en confirmed/
+  B->>DB: Crear job document-upload
+  B->>Q: Publicar envelope (mismo publicador)
+  B-->>UI: 202 con estado y job
+  Q->>W: Entregar job
+  W->>S3: Leer el original
+  W->>W: Extracción aislada, sin credenciales heredadas
+  W->>DB: Texto normalizado y partes (checkpoint durable)
+  W->>W: Chunking estructural, embeddings y resumen
+  W->>V: Documento, chunks y vectores
+  W->>S3: Retirar el original tras el éxito durable
+  UI->>B: GET /jobs/uploads/{id} y GET /jobs/documents/{job_id}
+```
+
+Solo el servidor decide claves, tenant y autorización. La extracción corre en el
+processor con herramientas locales (LibreOffice, Tesseract con OCR
+`spa+eng`, parsers de PDF y DOCX) y límites de páginas, tiempo y memoria; si el
+aislamiento Linux no está disponible, falla cerrado. El texto normalizado queda
+en CockroachDB antes de seguir, de modo que recuperación y citas no dependen de
+conservar el binario, y los reintentos reutilizan ese punto de control. El
+original se conserva mientras pueda hacer falta recuperarlo y se retira tras un
+éxito durable; la caducidad de MinIO solo afecta a `staging/`. Los chunks se
+generan de forma estructural y reproducible desde el texto normalizado, sin
+llamar a un modelo ([ADR-0023](adr/ADR-0023-deterministic-document-chunking.md),
+[runbook de chunking](runbooks/document-chunking.md)). Límites, formatos,
+variables y licencias (MinIO y `mc` son AGPL-3.0) en el
+[runbook de ingesta](runbooks/document-ingestion.md); los dos ADR siguen en
+estado Proposed.
 
 La fase analyze puede usar AgentRuntime/LiteLLM, schema FinOpsResponse y
 guardrails. Su entrada contiene source, status y metadatos saneados; no recibe
@@ -241,31 +374,37 @@ Es cumplimiento de la política, no calidad demostrada de las etiquetas.
 [JUP-068](validation/JUP-068-business-metrics.md) calcula métricas offline a partir
 de evidencia declarada; no prueba adopción, ahorro realizado ni un piloto real.
 
-### 3.4 Vertical objetivo: contratos pendientes de integración
+### 3.4 Vertical conversacional: lo integrado y lo pendiente
 
 ```mermaid
 flowchart LR
-  U[Usuario] -.-> UI[UI]
-  UI -.-> B[Backend: identidad y tenant]
-  B -.-> O[Orquestación conversacional pendiente]
-  O -.-> T[Tools deterministas de costes, ownership y anomalías]
-  O -.-> R[RAG del mismo tenant]
-  T -.-> G[Contexto y respuesta estructurada]
-  R -.-> G
-  G -.-> L[LLM vía LiteLLM]
-  L -.-> V[Validar cifras, citas, permisos y guardrails]
-  V -.-> UI
+  U[Usuario] --> UI[UI]
+  UI --> B[Backend: identidad y tenant]
+  B --> O[Orquestación del chat generativo]
+  O --> C[Resumen de costes verificado por el servidor]
+  O --> R[Búsqueda documental del mismo tenant]
+  C --> G[Contexto acotado]
+  R --> G
+  T[Tools deterministas de ownership, gasto y anomalías] -.-> G
+  G --> L[LLM vía LiteLLM]
+  L --> V[Validación de cifras, periodo y citas contra la evidencia]
+  V --> UI
 ```
 
-**Todas las conexiones de esta figura son el objetivo de integración, no un
-recorrido implementado.** Los contratos de
+Las flechas continuas son recorridos integrados que se ejecutan solo con
+`CHAT_ENABLED=true` (§3.1); **la única conexión punteada, las tools
+deterministas, es el objetivo de integración y no existe todavía.** Los
+contratos de
 [tools](architecture/finops-agent-tools.md) y
 [respuesta/guardrails](architecture/finops-response-guardrails.md) establecen
 que la aplicación autoriza y ejecuta: el modelo no elige libremente tenant,
-SQL, credenciales o acciones. No existe un registro ejecutor de tools FinOps
-en el processor de esta base. Recuperación, citas, AgentRuntime y gateway
-son piezas implementadas; conectarlas al chat requiere trabajo y validación
-propios. Ni CI verde ni una prueba del proxy certifican ese vertical.
+SQL, credenciales o acciones. Hoy el modelo solo puede pedir una búsqueda
+documental, que ejecuta el backend, y el servidor valida la respuesta contra la
+evidencia autorizada antes de guardarla. Las consultas de ownership, de gasto y
+de anomalías siguen siendo formularios explícitos de la ruta de mensajes (§3.1)
+y no existe un registro ejecutor de tools FinOps que el modelo pueda invocar.
+Ni CI verde ni una prueba del proxy certifican calidad generativa extremo a
+extremo; la evidencia de evaluación está en sus informes.
 
 ## 4. Que papel tienen RabbitMQ, CockroachDB y pgvector
 
@@ -274,6 +413,8 @@ flowchart TB
   B[Backend: dueño del esquema operativo] --> U[users, tenants, user_tenants]
   B --> J[jobs, conversations, messages]
   B --> A[anomaly_episodes, anomaly_detection_state]
+  B --> H[chat_operations]
+  B --> X[document_uploads y reservas, extracted_documents y partes]
   P[Processor: dueño del esquema Azure] --> R[azure_cost_ingestion_runs]
   P --> C[azure_cost_records]
   U -->|Autoridad de acceso| J
@@ -281,6 +422,9 @@ flowchart TB
   P --> D[pgvector: documentos y chunks con tenant]
   D --> E[Embeddings por provider y dimensión]
   J -->|Referencia del job documental| D
+  X -->|Texto normalizado durable| D
+  B -->|URL firmada| M[(MinIO: originales temporales)]
+  P -->|Lee y retira el original| M
   B -->|Lectura autorizada| C
   C -->|Coste diario por servicio| A
   B -->|Recuperación autorizada| D
@@ -289,12 +433,16 @@ flowchart TB
 Es un mapa lógico de responsabilidad/procedencia, **no un ERD de claves
 foráneas entre bases**. CockroachDB guarda estado transaccional; pgvector
 el índice recuperable; RabbitMQ transporta envelopes y conserva la cola
-durable. La DB del gateway es independiente: no almacena costes FinOps.
+durable; MinIO guarda solo los originales de las subidas mientras hacen falta,
+sin textos normalizados ni vectores. La DB del gateway es independiente: no
+almacena costes FinOps.
 
-Según [ADR-0011](adr/ADR-0011-single-owner-per-table.md), backend migra sus ocho
-tablas y processor las dos de Azure; cada servicio tiene su registro de
+Según [ADR-0011](adr/ADR-0011-single-owner-per-table.md), backend migra sus
+quince tablas (usuarios, tenants y membresías, jobs, conversaciones y mensajes,
+episodios de anomalía, operaciones de chat y las de subida y extracción de
+documentos) y processor las dos de Azure; cada servicio tiene su registro de
 migraciones. Processor también actualiza estados de jobs, pero no es dueño de
-su DDL: espera a backend sano después de migrar. El índice vectorial lo migra
+su DDL: espera a backend sano después de migrar. El índice vectorial (incluidas las generaciones de embeddings de JUP-127) lo migra
 processor, con dimensión obtenida de Settings (JUP-102), sin conversión ni
 reindexación automática al cambiarla; backend comprueba la dimensión al iniciar cuando puede consultar la
 tabla, sin garantizar readiness del índice si esa comprobación se omite.

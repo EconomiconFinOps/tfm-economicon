@@ -11,18 +11,18 @@
 
 ## 2. Editar docs/architecture.md: componentes, flujos y datos (§1 a §4)
 
-- [ ] 2.1 Actualizar en `docs/architecture.md` la cabecera (fecha y SHA del corte) y §1, de modo que el resumen distinga el chat
+- [x] 2.1 Actualizar en `docs/architecture.md` la cabecera (fecha y SHA del corte) y §1, de modo que el resumen distinga el chat
   determinista, el chat generativo integrado y lo que sigue siendo objetivo
-- [ ] 2.2 §2: añadir MinIO, la landing pública y la conexión privada backend → processor en el diagrama y la
+- [x] 2.2 §2: añadir MinIO, la landing pública y la conexión privada backend → processor en el diagrama y la
   tabla de componentes, cada uno con su límite y enlace a su fuente
-- [ ] 2.3 §3.1: describir el chat generativo (generaciones, eventos, parada, reanudación y resumen) y la
+- [x] 2.3 §3.1: describir el chat generativo (generaciones, eventos, parada, reanudación y resumen) y la
   recuperación contextual e híbrida, con sus flags y valores por defecto (D3); corregir «no llama al processor»
   y la referencia a JUP-035
-- [ ] 2.4 §3.2: describir la subida por URL firmada a MinIO, la extracción aislada y el chunking estructural, y
+- [x] 2.4 §3.2: describir la subida por URL firmada a MinIO, la extracción aislada y el chunking estructural, y
   corregir lo que se dice de `text_content`, `artifact_uri` y los endpoints de estado
-- [ ] 2.5 §3.4: dejar como objetivo solo lo no integrado y pasar a flecha continua, con rótulo, lo integrado
+- [x] 2.5 §3.4: dejar como objetivo solo lo no integrado y pasar a flecha continua, con rótulo, lo integrado
   bajo flag (D3)
-- [ ] 2.6 §4: recontar tablas y migraciones por servicio y añadir el almacén de objetos al mapa de datos
+- [x] 2.6 §4: recontar tablas y migraciones por servicio y añadir el almacén de objetos al mapa de datos
 
 ## 3. Editar docs/architecture.md: identidad, despliegue y decisiones (§5 a §8)
 

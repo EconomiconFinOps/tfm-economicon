@@ -85,18 +85,18 @@ Sección, afirmación del documento, fuente y cambio previsto. El estado «aplic
 
 | # | Sección | Afirmación actual | Fuente | Cambio | Estado |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Cabecera | Corte `a0e9a56`, 11/10 | `git` | Nuevo corte `03e97ce6`, 22/10 | pendiente |
-| 2 | §1 | El processor «no compone todavía el vertical conversacional» | 1.2, 1.3 | Distinguir chat determinista, chat generativo integrado bajo `CHAT_ENABLED` y objetivo | pendiente |
-| 3 | §2 | Sin MinIO, landing ni red privada del chat | 1.1 | Añadirlos a diagrama y tabla | pendiente |
-| 4 | §2 | Backend: sin subidas, chat generativo ni `cost_query` | 1.2 | Ampliar responsabilidades | pendiente |
-| 5 | §2 | Processor: sin extracción aislada ni superficie privada de chat | 1.2 | Ampliar | pendiente |
-| 6 | §3.1 | `cost_query` (JUP-036) no aparece junto a `ownership_query` y `anomaly_query` | `schemas/assistant.py`, `assistant.py` | Añadir rama a la secuencia | pendiente |
-| 7 | §3.1 | «el chat con modelo generativo es JUP-035» | 1.2 | Describir `/assistant/…/generations` y resumen | pendiente |
-| 8 | §3.1 | Recuperación solo con `top_k` y umbral | `config.py`, `assistant.py` | Plan de recuperación con flags RAG | pendiente |
-| 9 | §3.2 | `text_content` obligatorio; `artifact_uri` sin descarga ni extracción de archivos | 1.2, ADR-0022 | Subida por URL firmada a MinIO y extracción aislada | pendiente |
-| 10 | §3.2 | Sin chunking estructural | ADR-0023 | Añadirlo con enlace | pendiente |
-| 11 | §3.4 | Todo el vertical es objetivo | 1.3 | Integrado: contexto verificado y búsqueda documental. Objetivo: tools de ownership, anomalías y gasto | pendiente |
-| 12 | §4 | «backend migra sus ocho tablas» | 1.2 | 15 tablas; añadir almacén de objetos | pendiente |
+| 1 | Cabecera | Corte `a0e9a56`, 11/10 | `git` | Nuevo corte `03e97ce6`, 22/10 | aplicado |
+| 2 | §1 | El processor «no compone todavía el vertical conversacional» | 1.2, 1.3 | Distinguir chat determinista, chat generativo integrado bajo `CHAT_ENABLED` y objetivo | aplicado |
+| 3 | §2 | Sin MinIO, landing ni red privada del chat | 1.1 | Añadirlos a diagrama y tabla | aplicado |
+| 4 | §2 | Backend: sin subidas, chat generativo ni `cost_query` | 1.2 | Ampliar responsabilidades | aplicado |
+| 5 | §2 | Processor: sin extracción aislada ni superficie privada de chat | 1.2 | Ampliar | aplicado |
+| 6 | §3.1 | `cost_query` (JUP-036) no aparece junto a `ownership_query` y `anomaly_query` | `schemas/assistant.py`, `assistant.py` | Añadir rama a la secuencia | aplicado |
+| 7 | §3.1 | «el chat con modelo generativo es JUP-035» | 1.2 | Describir `/assistant/…/generations` y resumen | aplicado |
+| 8 | §3.1 | Recuperación solo con `top_k` y umbral | `config.py`, `assistant.py` | Plan de recuperación con flags RAG | aplicado |
+| 9 | §3.2 | `text_content` obligatorio; `artifact_uri` sin descarga ni extracción de archivos | 1.2, ADR-0022 | Subida por URL firmada a MinIO y extracción aislada | aplicado |
+| 10 | §3.2 | Sin chunking estructural | ADR-0023 | Añadirlo con enlace | aplicado |
+| 11 | §3.4 | Todo el vertical es objetivo | 1.3 | Integrado: contexto verificado y búsqueda documental. Objetivo: tools de ownership, anomalías y gasto | aplicado |
+| 12 | §4 | «backend migra sus ocho tablas» | 1.2 | 15 tablas; añadir almacén de objetos | aplicado |
 | 13 | §5 | Sin Cognito | JUP-131 | Una frase sobre el modo Cognito para AWS | pendiente |
 | 14 | §6.1 | «9 servicios base y 5 volúmenes»; ai «11 y 6» | 1.1 | 10 + 2 y 6; con ai 12 + 2 y 7; demo +1 y +1 | pendiente |
 | 15 | §6.1 | Figura sin MinIO, redes ni perfil demo | 1.1 | Rehacerla | pendiente |
