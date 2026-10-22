@@ -187,14 +187,12 @@ sequenceDiagram
   UI->>B: POST /assistant/conversations/{id}/generations
   B->>DB: Abrir la operación y leer el resumen de costes
   B->>P: Petición firmada con HMAC por la red chat-private
-  P->>DB: Comprobar propietario y reserva vigente
+  P->>DB: Comprobar propietario y reserva vigente (antes y durante el flujo)
+  P-->>B: Búsqueda documental preparada por el servidor desde la pregunta
+  B->>V: Recuperación del tenant (una búsqueda por intento)
+  B->>P: Resultado acotado
   P->>GW: Generación con el modelo configurado
   GW-->>P: Respuesta en flujo
-  opt El modelo pide buscar documentación
-    P-->>B: Petición de búsqueda
-    B->>V: Recuperación del tenant
-    B->>P: Resultado acotado (una búsqueda por intento)
-  end
   P-->>B: Flujo NDJSON
   B-->>UI: Eventos SSE
   UI-->>U: Texto, estado y fuentes
@@ -208,9 +206,12 @@ reanudarse (`…/generations/{operation_id}`, `/stop`, `/resume`); el historial
 largo se compacta con un resumen (`…/summary`). El alias de modelo por defecto
 es `economicon-chat`, que [ADR-0026](adr/ADR-0026-default-chat-model.md)
 (Proposed) resuelve a DeepSeek V4.1 Flash por el gateway, sin alternativa de
-reserva. Lo que el modelo recibe y puede usar se limita al resumen de costes
-verificado por el servidor y a la búsqueda documental; no ejecuta SQL ni
-herramientas de ownership, gasto o anomalías. Contexto en
+reserva. La búsqueda documental no la decide el modelo: el servidor la deriva de
+la pregunta (hasta 2048 caracteres), el backend la ejecuta y su resultado acotado
+llega al processor **antes** de que se genere el primer borrador; solo hay una
+por intento. Lo que el modelo recibe se limita a ese resultado y al resumen de
+costes verificado por el servidor; no ejecuta SQL ni herramientas de ownership,
+gasto o anomalías. Contexto en
 [chat conversacional](continuidad/chat-conversacional.md) y
 [modelo único](continuidad/modelo-unico-chat.md). Que el recorrido esté
 integrado no acredita calidad generativa extremo a extremo en la demo por
@@ -398,9 +399,10 @@ contratos de
 [tools](architecture/finops-agent-tools.md) y
 [respuesta/guardrails](architecture/finops-response-guardrails.md) establecen
 que la aplicación autoriza y ejecuta: el modelo no elige libremente tenant,
-SQL, credenciales o acciones. Hoy el modelo solo puede pedir una búsqueda
-documental, que ejecuta el backend, y el servidor valida la respuesta contra la
-evidencia autorizada antes de guardarla. Las consultas de ownership, de gasto y
+SQL, credenciales o acciones. Hoy el modelo no decide si se busca ni qué: el
+servidor prepara una única búsqueda documental por intento a partir de la
+pregunta, la ejecuta el backend antes del primer borrador, y el servidor valida
+la respuesta contra la evidencia autorizada antes de guardarla. Las consultas de ownership, de gasto y
 de anomalías siguen siendo formularios explícitos de la ruta de mensajes (§3.1)
 y no existe un registro ejecutor de tools FinOps que el modelo pueda invocar.
 Ni CI verde ni una prueba del proxy certifican calidad generativa extremo a
@@ -567,8 +569,19 @@ Prometheus espera backend/processor y Grafana espera Prometheus.
 Grafana no tiene healthcheck Compose.
 
 [Overlay ai](../infra/litellm/compose.ai.yml) exige gateway sano a ambos
-consumidores. Activar solo el perfil no sustituye overlay, providers,
-dimensiones ni claves. Seguir los recorridos mock/IA/retorno del
+consumidores y monta en el processor un segundo secreto. Activar solo el perfil
+no sustituye overlay, providers, dimensiones ni claves.
+
+Redes y secretos que resuelve Compose (la tabla muestra qué es cada uno y qué
+frontera marca):
+
+| Elemento | Quién lo usa | Función y frontera |
+| --- | --- | --- |
+| Red `default` | Todos los servicios | Comunicación de aplicación; no restringe egress. |
+| Red `chat-private` (interna) | Backend y processor | Único camino del chat generativo, con el puerto 8003 del processor sin publicar; sin salida a internet. |
+| Red `gateway` (solo con el perfil `ai`) | LiteLLM y su PostgreSQL | Mantiene la base del gateway fuera de la red de aplicación: solo `litellm` está también en `default`, para que backend y processor lo alcancen. No es interna: LiteLLM publica su puerto de administración en loopback y necesita salida hacia el proveedor. |
+| Secreto `chat-hmac` | Backend y processor | Clave compartida que firma las peticiones del chat; ambos la leen del archivo montado en `/run/secrets/chat-hmac`, no de una variable de entorno. |
+| Secreto `summary-api-key` (solo con el overlay `ai`) | Solo el processor | Clave virtual propia del resumen de conversaciones, leída de `SUMMARY_API_KEY_FILE` y distinta de las claves de chat y de embeddings; el overlay no arranca sin ese archivo. | Seguir los recorridos mock/IA/retorno del
 [README](../README.md), con proyectos separados para índices mock y reales.
 Frontend sirve con **Vite preview**, no servidor de producción.
 Las cuatro apps usan usuario sin privilegios, raíz de solo lectura y tmpfs;

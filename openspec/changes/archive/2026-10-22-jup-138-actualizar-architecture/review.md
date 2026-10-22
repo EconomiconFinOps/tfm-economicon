@@ -30,7 +30,9 @@ docker compose --env-file <ficticio> config --format json   # redes, secretos, d
 
 - El overlay `compose.ai.yml` no añade servicios: hace que backend y processor esperen a `litellm` sano y monta
   el secreto `summary-api-key` en el processor.
-- Redes: `default` y `chat-private` (interna). Secretos: `chat-hmac` (más `summary-api-key` con el overlay).
+- Redes: `default`, `chat-private` (interna) y `gateway` (solo con el perfil `ai`: `litellm` y `litellm-db`;
+  `litellm` está además en `default`). Secretos: `chat-hmac` (backend y processor) y, con el overlay `ai`,
+  `summary-api-key` (solo el processor). Corregido tras la review de Paris: la lista inicial omitía `gateway`.
 - Dependencias de arranque: backend espera a `backend-migrate`, `minio-init`, cockroachdb, pgvector y rabbitmq;
   processor espera además a `azure-cost-api` y a `backend`; frontend a backend; prometheus a backend y
   processor; grafana a prometheus; `minio-init` a `minio`; `backend-migrate` a cockroachdb.
@@ -75,9 +77,12 @@ docker compose --env-file <ficticio> config --format json   # redes, secretos, d
   documentación de JUP-131 declara que no hay despliegue.
 - `DOCUMENT_UPLOADS_ENABLED=true` fijado en Compose para backend y processor.
 - `SUMMARY_ENABLED` por defecto `true`.
-- El chat generativo recibe el resumen de costes verificado por el servidor como evidencia y tiene una única
-  herramienta, la búsqueda documental del servidor (`server-documentation-v4`). Las consultas de
-  ownership, anomalías y gasto **no** se exponen al modelo como herramientas.
+- El chat generativo recibe el resumen de costes verificado por el servidor como evidencia. El servidor
+  prepara una única búsqueda documental por intento (`server-documentation-v4`) a partir de la pregunta
+  (`retrieval_control`, hasta 2048 caracteres): el processor emite el `tool_call`, el backend la ejecuta y el
+  resultado llega **antes** del primer borrador. El modelo no decide si se busca ni qué. Las consultas de
+  ownership, anomalías y gasto **no** se exponen al modelo como herramientas. Corregido tras la review de
+  Paris: la primera redacción atribuía la petición de búsqueda al modelo.
 
 ## 2. Tabla de desfases
 
@@ -134,7 +139,7 @@ Contraste con los escenarios del requisito añadido a `technical-architecture-de
 
 | Escenario | Evidencia |
 | --- | --- |
-| Un servicio de Compose aparece en la topología | Los 12 servicios por defecto, los 2 del perfil `demo` y los 2 de `ai` figuran en la figura de §6.1 o en la tabla de §2; los recuentos del texto coinciden con el inventario 1.1 |
+| Un servicio de Compose aparece en la topología | Los 12 servicios por defecto, los 2 del perfil `demo` y los 2 de `ai` figuran en la figura de §6.1 o en la tabla de §2; las tres redes y los dos secretos, en la tabla de §6.1; los recuentos del texto coinciden con el inventario 1.1 |
 | Capacidad integrada y desactivada por defecto | §1, §3.1 y §3.4 dan `CHAT_ENABLED=false` y los tres flags `RAG_*` en `false`, y rotulan como objetivo solo las tools de ownership, gasto y anomalías |
 | Código cloud sin despliegue | §5 y §6.3 separan los modos `cognito`, `bedrock` y PostgreSQL del despliegue y remiten el estado al runbook y a la nota de continuidad |
 | El corte declara la SHA | Cabecera: `develop 03e97ce6`, 22/10/2026, con el corte anterior |
@@ -148,6 +153,12 @@ Comprobaciones ejecutadas:
   ha comparado la maquetación visual con la vista previa de GitHub.
 - `develop` al cierre sigue en `03e97ce6`: el corte no se ha movido (tarea 4.4).
 - `corepack pnpm openspec:validate`, `jup:check` y `jup:cleanup:check`: ver el cierre de la tarea 4.6.
+- CI de GitHub: el job «AWS demo offline» (paso «Test CI/CD controller without AWS», error `Release evidence
+  application tree differs`) falla **también en `develop`**: estaba en verde en `f224226d` (#153) y falla desde
+  el merge de JUP-131 (`7f6c8d56`) y en `03e97ce6`, antes de abrir esta PR. Esta PR no toca `apps/`, `tools/`,
+  `infra/` ni `.github/` (0 archivos), así que el resultado es el mismo por construcción. Reproducido en local
+  (69 pruebas, 1 error, 1 omitida). El digest cubre todo `apps/`; no se ha identificado la causa y no se
+  corrige aquí: la receta `infra/aws-cicd/release.json` es evidencia de JUP-131.
 
 No verificado:
 
