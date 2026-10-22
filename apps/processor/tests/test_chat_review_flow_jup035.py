@@ -173,3 +173,9 @@ def test_cancel_interrupts_active_leg_even_if_observational_logging_fails(monkey
     asyncio.run(run())
     assert released.is_set() and all(flag.is_set() for flag in cancel_flags)
     assert calls==(['draft'] if phase=='draft' else ['draft','final'])
+
+
+def test_retry_attempts_leave_deterministic_decoding_so_a_degenerate_output_is_not_replayed():
+    from app.clients.chat_gateway import retry_temperature
+    assert [retry_temperature(n) for n in (1,2,3,4)]==pytest.approx([0,.2,.4,.6])
+    assert retry_temperature(9)==.6 and retry_temperature(None)==0 and retry_temperature(0)==0

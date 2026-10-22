@@ -47,6 +47,9 @@ def canonical(value):
 SCHEMA_PATH = Path(__file__).with_name('finops_response_v1.json')
 
 
+UNVERIFIED_METRIC_LIMITATION = 'Se omitió una cifra financiera que no pudo verificarse con la consulta de costes.'
+
+
 class ResponseValidationError(ValueError):
     """Internal closed rule identifier; no rejected values in diagnostics."""
     def __init__(self, rule_code):
@@ -224,13 +227,17 @@ def validate_response(value, authorized_evidence, *, expected_period=..., expect
         raise ResponseValidationError('actionable_requires_evidence')
     if value['status'] in ['no_data','insufficient_data','unsupported','refused','error'] and (value['metrics'] or value['recommendations']):
         raise ResponseValidationError('non_actionable_payload')
+    verified_metrics = []
     for metric in value['metrics']:
         if set(metric['evidence_ids'])-returned.keys():
             raise ResponseValidationError('metric_reference')
         # Financial numbers must match values in the authorized server record.
+        # An unmatched figure is omitted, never shown, and the answer is kept with a limitation.
         eligible = [known[x] for x in metric['evidence_ids'] if known[x]['kind']=='cost_query']
-        if not any({'name':metric['name'],'value':metric['value'],'unit':metric['unit']} in e.get('metrics',[]) for e in eligible):
-            raise ResponseValidationError('financial_metric_unverified')
+        if any({'name':metric['name'],'value':metric['value'],'unit':metric['unit']} in e.get('metrics',[]) for e in eligible):
+            verified_metrics.append(metric)
+    if len(verified_metrics) != len(value['metrics']):
+        value = {**value, 'metrics': verified_metrics, 'limitations': [*value['limitations'][:9], UNVERIFIED_METRIC_LIMITATION]}
     for recommendation in value['recommendations']:
         if set(recommendation['evidence_ids'])-returned.keys():
             raise ResponseValidationError('recommendation_reference')

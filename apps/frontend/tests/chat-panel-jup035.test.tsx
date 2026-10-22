@@ -273,7 +273,7 @@ describe("Panel conversacional propio JUP-035", () => {
 
   it.each([false, true])("reintento junto a fila failed, parcial=%s, respeta bloqueo y no duplica envio", async partial => {
     const previous = globalThis.fetch;
-    let blocked = true;
+    let blocked = false;
     vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, options: RequestInit = {}) => {
       const path = new URL(String(input), "http://test").pathname;
       if (path === "/assistant/conversations" && (!options.method || options.method === "GET"))
@@ -301,6 +301,7 @@ describe("Panel conversacional propio JUP-035", () => {
     if (partial) {
       expect(screen.getByText("Texto incompleto").closest(".chat-message-assistant")).toHaveTextContent("Asistente · provisional");
     }
+    blocked = true;
     fireEvent.click(screen.getByRole("button", { name: "Historial" }));
     fireEvent.click(await screen.findByRole("button", { name: "Solicitud fallida" }));
     await screen.findByText("Comprimiendo contexto");
@@ -362,6 +363,27 @@ describe("Panel conversacional propio JUP-035", () => {
     await act(async () => {});
     expect(screen.queryByText("Privado tardío")).toBeNull();
     expect(calls.some(call => call.path.endsWith("/stop"))).toBe(false);
+  });
+
+  it("tras fallar la primera pregunta carga la memoria y permite volver a preguntar", async () => {
+    const previous = globalThis.fetch;
+    let summaryRequests = 0;
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, options: RequestInit = {}) => {
+      const path = new URL(String(input), "http://test").pathname;
+      if (path.endsWith("/summary")) { summaryRequests++; return json({ v: 2, scope: { tenant_id: "t", user_id: "alice", conversation_id: "new" },
+        available: false, reason: null, artifact_id: null, limitations: [], coverage: { processed_pairs: 0, pending_pairs: 0, recent_reserved: 0 },
+        queue: { reason: "cold", active: false, pending: false, blocked: false, state: "idle", retryable: false } }); }
+      return previous(input, options);
+    }));
+    await startQuestion();
+    await act(async () => {
+      event("terminal", { operation: { ...operation, state: "failed" } });
+      controller?.close();
+    });
+    await screen.findByRole("button", { name: "Reintentar respuesta" });
+    expect(summaryRequests).toBeGreaterThan(0);
+    fireEvent.change(screen.getByRole("textbox", { name: "Pregunta" }), { target: { value: "Otra pregunta" } });
+    await waitFor(() => expect(screen.getByRole("button", { name: "Enviar" })).toBeEnabled());
   });
 
   it("un cierre sin final válido anuncia interrupción y conserva la pregunta recuperable", async () => {
