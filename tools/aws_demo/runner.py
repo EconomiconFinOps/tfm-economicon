@@ -18,12 +18,30 @@ import zipfile
 
 from control import (require, validate_config, validate_recipe, validate_recipe_files, state_key, lock_key,
                      bind_plan, verify_binding, cleanup_inventory, check_destroy_plan, check_unlock_plan,
-                     application_digest, source_files, source_sha256, resources)
+                     application_digest, source_files, source_sha256, resources,
+                     check_applications_plan, check_reviewed_source)
 from bedrock_contract import expected_profile, validate_profile
 
 ROOT = Path(__file__).resolve().parents[2]
 WORK = ROOT / ".work/aws-demo"
 APPLICATIONS = ("backend", "processor", "azure-cost-api")
+
+
+def public_process_env():
+    """Build/test children receive no inherited secrets or credential providers.
+
+    Keep their HOME separate from AWS and Docker login state. Source still must
+    be reviewed: an environment filter is not an arbitrary-code sandbox.
+    """
+    home = WORK / "public-home"
+    home.mkdir(parents=True, exist_ok=True)
+    empty = home / "empty-credentials"
+    empty.write_bytes(b"")
+    env = {key: os.environ[key] for key in ("PATH", "SystemRoot", "SYSTEMROOT", "COMSPEC", "PATHEXT", "TEMP", "TMP", "LANG", "LC_ALL")
+           if key in os.environ}
+    env.update(HOME=str(home), USERPROFILE=str(home), AWS_EC2_METADATA_DISABLED="true",
+               AWS_CONFIG_FILE=str(empty), AWS_SHARED_CREDENTIALS_FILE=str(empty), BOTO_CONFIG=str(empty))
+    return env
 
 
 def run(args, env=None, data=None):
@@ -123,7 +141,7 @@ class Runner:
     def upload(self, name):
         self.aws("s3", "cp", str(WORK / name), f"s3://{self.bucket}/{self.prefix}/{name}", raw=True)
 
-    def lease(self, status=None, acquire=False):
+    def lease(self, status=None, acquire=False, expected=None):
         key = {"domain": {"S": lock_key(self.config)}}
         if acquire:
             self.aws("dynamodb", "put-item", payload={"TableName": self.table,
@@ -133,9 +151,16 @@ class Runner:
         item = self.aws("dynamodb", "get-item", payload={"TableName": self.table, "Key": key, "ConsistentRead": True}).get("Item", {})
         require(item.get("cycle", {}).get("S") == self.config["cycle_id"] and item.get("sha", {}).get("S") == self.config["source_sha"] and item.get("config_key", {}).get("S") == self.config_key, "Domain leased by another cycle/config/SHA")
         if status:
+            phase = item["phase"]["S"]
+            # Teardown may supersede any phase, but only the phase actually read.
+            require(expected is not None or status == "TEARDOWN", "Expected lease phase required")
+            expected = phase if expected is None else expected
+            require(phase == expected, "Lease phase changed; stale writer rejected")
             self.aws("dynamodb", "update-item", payload={"TableName": self.table, "Key": key,
-                "UpdateExpression": "SET phase = :phase", "ConditionExpression": "cycle = :cycle AND sha = :sha",
-                "ExpressionAttributeValues": {":phase": {"S": status}, ":cycle": {"S": self.config["cycle_id"]}, ":sha": {"S": self.config["source_sha"]}}})
+                "UpdateExpression": "SET phase = :phase",
+                "ConditionExpression": "cycle = :cycle AND sha = :sha AND config_key = :config AND phase = :expected",
+                "ExpressionAttributeValues": {":phase": {"S": status}, ":expected": {"S": expected},
+                    ":config": {"S": self.config_key}, ":cycle": {"S": self.config["cycle_id"]}, ":sha": {"S": self.config["source_sha"]}}})
         return item["phase"]["S"]
 
     def recipe(self):
@@ -173,7 +198,12 @@ class Runner:
             headers={"Authorization": "Bearer " + token, "Accept": "application/vnd.github+json"})
         with urllib.request.urlopen(request, timeout=30) as response:
             ci = json.load(response)
-        require(ci["head_sha"] == self.config["source_sha"] and ci["conclusion"] == "success" and ci["path"] == ".github/workflows/ci.yml", "CI for exact source SHA must pass")
+        request = urllib.request.Request(
+            f'https://api.github.com/repos/EconomiconFinOps/tfm-economicon/compare/{self.config["source_sha"]}...develop',
+            headers={"Authorization": "Bearer " + token, "Accept": "application/vnd.github+json"})
+        with urllib.request.urlopen(request, timeout=30) as response:
+            comparison = json.load(response)
+        check_reviewed_source(ci, comparison, self.config["source_sha"])
         self.validate_quotas()
         self.validate_bedrock_profile(recipe)
         regions = self.aws("ec2", "describe-regions", "--all-regions", "--region", "eu-west-1", deploy=True)["Regions"]
@@ -183,7 +213,7 @@ class Runner:
         for domain in (self.config["frontend_domain"], self.config["origin_domain"]):
             records = self.aws("route53", "list-resource-record-sets", "--hosted-zone-id", self.config["route53_zone_id"], deploy=True)["ResourceRecordSets"]
             require(not any(r["Name"].rstrip(".") == domain and r["Type"] in ("A", "AAAA", "CNAME") for r in records), "Existing DNS record must not be overwritten: " + domain)
-        run(["python", "-m", "unittest", "discover", "-s", "tools/aws_demo", "-p", "test_*.py"], self.control_env)
+        run(["python", "-m", "unittest", "discover", "-s", "tools/aws_demo", "-p", "test_*.py"], public_process_env())
         self.tf("init", "-backend=false", "-input=false", "-lockfile=readonly")
         self.tf("validate")
         self.tf("test")
@@ -192,8 +222,8 @@ class Runner:
         for name in APPLICATIONS:
             context = "." if name == "backend" else "apps/" + name
             image = f'economicon-local/{name}:{self.config["source_sha"]}'
-            run(["docker", "build", "--platform", "linux/amd64", "-f", f"apps/{name}/Dockerfile", "-t", image, context], self.control_env)
-            run(["docker", "save", "-o", str(WORK / (name + ".tar")), image], self.control_env)
+            run(["docker", "build", "--platform", "linux/amd64", "-f", f"apps/{name}/Dockerfile", "-t", image, context], public_process_env())
+            run(["docker", "save", "-o", str(WORK / (name + ".tar")), image], public_process_env())
             self.upload(name + ".tar")
         bundle = WORK / "source.zip"
         with zipfile.ZipFile(bundle, "w", zipfile.ZIP_DEFLATED) as archive:
@@ -216,23 +246,32 @@ class Runner:
         self.tf(*args)
         if destroy:
             check_destroy_plan(json.loads(self.tf("show", "-json", str(path))), self.config["cycle_id"])
-        (WORK / (name + ".binding.json")).write_text(json.dumps(bind_plan(path, self.config)))
+        if name == "applications":
+            check_applications_plan(json.loads(self.tf("show", "-json", str(path))))
+        binding = bind_plan(path, self.config, name)
+        (WORK / (name + ".binding.json")).write_text(json.dumps(binding))
         self.upload(name + ".tfplan")
         self.upload(name + ".binding.json")
+        if name in ("infra", "destroy"):
+            # Only public metadata is exported to the manual approval action.
+            receipt = dict(binding, binding_uri=f"s3://{self.bucket}/{self.prefix}/{name}.binding.json")
+            (WORK / "approval.json").write_text(json.dumps(receipt))
 
     def apply_saved(self, name):
         plan = self.download(name + ".tfplan")
         binding = json.loads(self.download(name + ".binding.json").read_text())
-        verify_binding(plan, binding, self.config)
+        verify_binding(plan, binding, self.config, name)
+        if name == "applications":
+            check_applications_plan(json.loads(self.tf("show", "-json", str(plan))))
         self.tf("apply", "-input=false", "-lock-timeout=120s", str(plan))
 
     def apply(self):
         require(datetime.now(timezone.utc) < datetime.fromisoformat(self.config["expires_at"].replace("Z", "+00:00")), "Cycle expired before approval/apply")
         require(self.lease() == "PLANNED", "Up plan has been superseded or torn down")
-        self.lease("APPLYING")
+        self.lease("APPLYING", expected="PLANNED")
         self.init()
         self.apply_saved("infra")
-        self.lease("INFRA_READY")
+        self.lease("INFRA_READY", expected="APPLYING")
 
     def outputs(self):
         return {k: v["value"] for k, v in json.loads(self.tf("output", "-json")).items()}
@@ -240,6 +279,7 @@ class Runner:
     def release(self):
         require(datetime.now(timezone.utc) < datetime.fromisoformat(self.config["expires_at"].replace("Z", "+00:00")), "Cycle expired before release")
         require(self.lease() == "INFRA_READY", "Infrastructure not ready")
+        self.lease("RELEASING", expected="INFRA_READY")
         self.init()
         outputs = self.outputs()
         (WORK / "outputs.json").write_text(json.dumps(outputs))
@@ -250,14 +290,16 @@ class Runner:
         with self.resource_credentials():
             registry = f'{self.config["account_id"]}.dkr.ecr.eu-west-1.amazonaws.com'
             password = self.aws("ecr", "get-login-password", "--region", "eu-west-1", deploy=True, raw=True)
-            run(["docker", "login", "--username", "AWS", "--password-stdin", registry], self.deploy_env, password)
+            docker_env = public_process_env()
+            docker_env["DOCKER_CONFIG"] = str(WORK / "docker-auth.private")
+            run(["docker", "login", "--username", "AWS", "--password-stdin", registry], docker_env, password)
             for name in APPLICATIONS:
                 archive = self.download(name + ".tar")
-                run(["docker", "load", "-i", str(archive)], self.deploy_env)
+                run(["docker", "load", "-i", str(archive)], docker_env)
                 local_image = f'economicon-local/{name}:{self.config["source_sha"]}'
                 tagged = outputs["ecr_repositories"][name] + ":" + self.config["source_sha"]
-                run(["docker", "tag", local_image, tagged], self.deploy_env)
-                run(["docker", "push", tagged], self.deploy_env)
+                run(["docker", "tag", local_image, tagged], docker_env)
+                run(["docker", "push", tagged], docker_env)
                 detail = self.aws("ecr", "describe-images", "--repository-name", outputs["ecr_repositories"][name].split("/", 1)[1], "--image-ids", "imageTag=" + self.config["source_sha"], deploy=True)
                 images[name] = outputs["ecr_repositories"][name] + "@" + detail["imageDetails"][0]["imageDigest"]
             (WORK / "images.json").write_text(json.dumps(images))
@@ -279,8 +321,8 @@ class Runner:
         # accidentally or replans from different inputs.
         self.upload("cycle.tfvars.json")
         self.upload("images.json")
-        run(["corepack", "pnpm", "install", "--frozen-lockfile"], self.control_env)
-        run(["corepack", "pnpm", "--filter", "@finops/frontend", "build"], dict(self.control_env,
+        run(["corepack", "pnpm", "install", "--frozen-lockfile"], public_process_env())
+        run(["corepack", "pnpm", "--filter", "@finops/frontend", "build"], dict(public_process_env(),
             VITE_API_BASE_URL="/api", VITE_AUTH_PROVIDER="cognito",
             VITE_COGNITO_CLIENT_ID=outputs["cognito"]["client_id"], VITE_COGNITO_DOMAIN=outputs["cognito"]["login_domain"]))
         with self.resource_credentials():
@@ -293,7 +335,7 @@ class Runner:
                         self.upload("acceptance.json")
         (WORK / "ready.json").write_text(json.dumps({"source_sha": self.config["source_sha"], "url": outputs["frontend_url"], "ready_at": datetime.now(timezone.utc).isoformat()}))
         self.upload("ready.json")
-        self.lease("READY")
+        self.lease("READY", expected="RELEASING")
 
     @contextlib.contextmanager
     def resource_credentials(self):
@@ -366,7 +408,7 @@ class Runner:
         require(self.lease() == "TEARDOWN", "Down plan required")
         self.init()
         saved = self.download("destroy.tfplan")
-        verify_binding(saved, json.loads(self.download("destroy.binding.json").read_text()), self.config)
+        verify_binding(saved, json.loads(self.download("destroy.binding.json").read_text()), self.config, "destroy")
         plan = json.loads(self.tf("show", "-json", str(saved)))
         check_destroy_plan(plan, self.config["cycle_id"])
         state = json.loads(self.tf("show", "-json"))
@@ -409,7 +451,9 @@ class Runner:
             if not diagnostic.exists() or "ResourceNotFoundException" not in diagnostic.read_text():
                 raise
         self.aws("dynamodb", "delete-item", payload={"TableName": self.table, "Key": {"domain": {"S": lock_key(self.config)}},
-            "ConditionExpression": "cycle = :cycle AND sha = :sha", "ExpressionAttributeValues": {":cycle": {"S": self.config["cycle_id"]}, ":sha": {"S": self.config["source_sha"]}}})
+            "ConditionExpression": "cycle = :cycle AND sha = :sha AND config_key = :config AND phase = :expected",
+            "ExpressionAttributeValues": {":cycle": {"S": self.config["cycle_id"]}, ":sha": {"S": self.config["source_sha"]},
+                ":config": {"S": self.config_key}, ":expected": {"S": "TEARDOWN"}}})
 
     def schedule_expiry(self):
         target = {"ProjectName": os.environ["RUNNER_NAME"], "SourceTypeOverride": "S3",

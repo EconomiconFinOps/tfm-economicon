@@ -29,6 +29,14 @@ variables {
 run "manual_serialized_pipelines_and_private_state" {
   command = plan
   assert {
+    condition = alltrue([for p in aws_codepipeline.demo : alltrue([
+      for stage in p.stage : alltrue([for action in stage.action :
+        action.category != "Approval" || strcontains(lookup(action.configuration, "CustomData", ""), "#{PlanVariables.PLAN_SHA256}")
+      ])
+    ])])
+    error_message = "Manual approvals must display the hash exported by the corresponding plan action."
+  }
+  assert {
     condition     = toset(jsondecode(aws_iam_role_policy.deploy.policy).Statement[0].Condition.StringEquals["aws:RequestedRegion"]) == toset(["eu-west-1", "us-east-1"])
     error_message = "Application creation stays in Ireland with Virginia edge; Spain is not allowed."
   }

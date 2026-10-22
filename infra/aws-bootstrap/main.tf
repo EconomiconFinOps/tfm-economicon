@@ -340,8 +340,9 @@ resource "aws_codepipeline" "demo" {
         provider        = stage.value == "APPROVAL" ? "Manual" : "CodeBuild"
         version         = "1"
         input_artifacts = stage.value == "APPROVAL" ? null : ["Source"]
+        namespace       = contains(["plan", "plan-down"], stage.value) ? "PlanVariables" : null
         configuration = stage.value == "APPROVAL" ? {
-          CustomData = "Review saved plan/binding in control S3 for #{variables.ConfigKey}, SHA #{SourceVariables.CommitId}. No pipeline success attests runtime."
+          CustomData = "Plan SHA256 #{PlanVariables.PLAN_SHA256}; review saved plan/binding in control S3 for #{variables.ConfigKey}, source #{SourceVariables.CommitId}. No pipeline success attests runtime."
           } : {
           ProjectName = aws_codebuild_project.runner.name
           EnvironmentVariables = jsonencode([

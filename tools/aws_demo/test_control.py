@@ -139,11 +139,8 @@ class ReleaseTests(unittest.TestCase):
         control.validate_recipe_files(recipe, root)
 
     def test_recipe_rejects_unreviewed_models_and_inline_task_keys(self):
-        recipe = dict(application_sha256="a" * 64,
-                      evidence={name: {"path": "docs/evidence/synthetic.md", "sha256": "b" * 64}
-                                for name in ("postgresql", "cognito", "bedrock", "demo_data")},
-                      bootstrap=[["python", "tools/aws_demo/bootstrap.py"]],
-                      checks=[["python", "tools/aws_demo/checks.py"]])
+        recipe = json.loads((Path(__file__).parents[2] / "infra/aws-cicd/release.json").read_text())
+        control.validate_recipe(recipe)
         for field, value in [
             ("bedrock_model_arns", ["arn:aws:bedrock:eu-west-1::foundation-model/*"]),
             ("bedrock_model_arns", ["arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0"]),

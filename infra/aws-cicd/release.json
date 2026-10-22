@@ -1,5 +1,5 @@
 {
-  "application_sha256": "2935d99c142d8cacd9b8f3bb694ff24e22747d87b10876416a796baecba5282b",
+  "application_sha256": "8a47bf3d8f88fbc45652bdcbe5ecb7f71c036c3e9d3bfc0b51bb556d36cd633d",
   "evidence": {
     "postgresql": {
       "path": "docs/evidence/JUP-131-postgresql.md",
@@ -7,7 +7,7 @@
     },
     "cognito": {
       "path": "docs/evidence/JUP-131-cognito.md",
-      "sha256": "5eb2c104ce9fe8580ae0ea39245670145724b5a5f48083612b66b49ea44fbcdd"
+      "sha256": "82512566d08fb0e2df33c620ddf38b6a8c87a9322193e58c67be263a7aab831d"
     },
     "bedrock": {
       "path": "docs/evidence/JUP-131-bedrock.md",

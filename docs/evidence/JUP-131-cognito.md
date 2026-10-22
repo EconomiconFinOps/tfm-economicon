@@ -1,5 +1,13 @@
 # JUP-131 — adaptación Cognito, verificación local
 
+## Corrección de revisión — 22/10/2026
+
+JWKS limita a un intento HTTP cada30s, incluidos errores, con memoria constante
+ante kids desconocidos y consultas concurrentes serializadas. Rotación admisible
+tras el intervalo y TTL300s conservado.34 pruebas Cognito PASS locales; ver
+[recibo PR146](JUP-131-review-fixes.md). No acredita login contra Cognito real.
+Los resultados31PASS y regionales de las secciones siguientes son históricos.
+
 21/10/2026. El usuario autoriza adaptar la aplicación; no se llama a AWS ni se
 crean identidades reales. Esta evidencia describe el código y pruebas locales,
 sin acreditar un login contra el pool AWS ni disponibilidad de DNS/TLS.

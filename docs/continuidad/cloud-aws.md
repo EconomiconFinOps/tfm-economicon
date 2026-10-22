@@ -1,5 +1,63 @@
 # Cloud AWS — arquitectura documental
 
+## Correcciones PR146 implementadas — 22/10/2026
+
+Usuario autoriza corregir revisión y dejar CI verde, sin desplegar. Leídas todas
+las reviews/conversación/inline: lmatsan41cace sigue CHANGES_REQUESTED, sin
+comentarios generales/inline nuevos. Las8solicitudes y menores están atendidas;
+recibo y límites en [JUP-131-review-fixes](../evidence/JUP-131-review-fixes.md),
+plan [aws-pr146-review-fixes](../planning/aws-pr146-review-fixes.md).
+
+Guardia applications antes de subir/aplicar, CI pushdevelop exacta+ancestry,
+CAS fase/config, entorno público de hijos, manifiesto/stop de tareas propias
+anómalas, filtros recursivos de credenciales, receta nativa coherente y JWKS
+1intento/30s incluidos fallos/concurrencia. Binding incluye plan_kind y aprobación
+muestra SHA256 exportado. No se cambian reglas de reviews ni protecciones.
+
+Windows: controlador69casos68PASS/1SKIP, focalbackend142PASS (Cognito34),
+Terraform referencia12/control1PASS mock, OpenSpec89PASS, gobernanza15PASS y
+localdoctor/smoke80PASS; trazabilidad/higiene conformes. Node/Git EPERM del
+sandbox se resuelve repitiendo con permiso de proceso, sin cambiar tests.
+Review técnica independiente APPROVE, sin nuevos P1/P2/P3; no sustituye humana.
+Imagenbackend reconstruida a9fa0549a2d8; Linux sin red/raízRO/uid10001/tmp0700
+repite controlador68PASS/1SKIP y backend142PASS. CI final por SHA pendiente de
+publicación. Receta/evidencia renovada y validada offline:
+apphash8a47bf3d8f88fbc45652bdcbe5ecb7f71c036c3e9d3bfc0b51bb556d36cd633d.
+
+Prerrequisitos del ensayo intactos: cuotas efectivas, roles/boundary, zona y
+Cloudflare, CodeConnections/secretos París, coste/ventana60EUR y aceptación
+humana con integración develop+CIpush antes de elegir SHA de despliegue.
+No se ha consultado ni escrito AWS durante estas correcciones; no lanzar ensayo.
+
+## Candidato Irlanda publicado y casos AWS abiertos — 22/10/2026
+
+Commit bee31eca11a3c0ffe4fda4a77e8c89b8165b30d3 en PR146, borrador.
+Cuotas consultadas tras envío: ambas CASE_OPENED, aún no aprobadas; Fargate
+caso179267775500075 y CodeBuild caso179267775900317. No nuevos aumentos ni
+recursos AWS. La única escritura en AWS son las dos solicitudes autorizadas.
+
+Controlador55casos54PASS/1SKIP; backend135PASS/1SKIP y processor61PASS/6SKIP
+en Windows/Linux. Terraform referencia12/control1PASS, OpenSpec89PASS y
+gobernanza33PASS. Trazabilidad/higiene conformes; Node EPERM del sandbox
+resuelto repitiendo con permiso de proceso, sin modificar producto/tests.
+Review técnica regional APPROVE, sin nuevos P1/P2. Review humana41cace sigue
+CHANGES_REQUESTED por8puntos previos; no hay validación ni merge autorizados.
+
+ZIP limpio de bee31eca valida receta/evidencias y CA irlandesa. Hash de apps
+2935d99c142d8cacd9b8f3bb694ff24e22747d87b10876416a796baecba5282b.
+.work/ensayo1 apunta a Irlanda, cuenta/motores contrastados y nuevo SHA;
+aws_deployable=false, preflight completo false; DNS/roles/conexión/secretos,
+coste60EUR/ventana y reviews aún pendientes. Valores presupuesto restante y
+estimación0 deliberados; caducidad del ejemplo provisional, no ventana aprobada.
+
+Cierre verificado: [CI push39794617196](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39794617196)
+SUCCESS y [CI PR39794797380](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39794797380)
+SUCCESS para bee31eca11a3c0ffe4fda4a77e8c89b8165b30d3. SQL chat
+39794624145 SUCCESS. Los ocho jobs técnicos pasan, y JUP policy pasa en PR.
+El control separado JUP reviews sigue pendiente de resolver CHANGES_REQUESTED
+y validación humana; no atribuir aceptación del conjunto ni merge. Registro de Trello actualizado por integración
+DockerServer con readback conforme, sin mover/cerrar tarjeta ni publicar Discord.
+
 ## Irlanda autorizada y cuotas solicitadas — 22/10/2026
 
 Usuario autoriza dos solicitudes y adaptación de configuración, sin despliegue.

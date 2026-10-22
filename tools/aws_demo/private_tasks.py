@@ -7,6 +7,11 @@ import json
 import re
 from uuid import uuid4
 
+try:
+    from .public_values import validate_public_values
+except ImportError:
+    from public_values import validate_public_values
+
 
 class PrivateTaskError(RuntimeError):
     pass
@@ -18,6 +23,10 @@ def _require(value):
 
 
 def _public(value):
+    try:
+        validate_public_values(value)
+    except ValueError:
+        raise PrivateTaskError('Credential-like value in public bootstrap inputs.') from None
     if isinstance(value, dict):
         for name, child in value.items():
             if name.endswith(('_secret_arn', '_secret_arns')):
@@ -94,6 +103,7 @@ class PrivateTasks:
             raise PrivateTaskError('Private bootstrap task configuration is invalid.') from None
         state = {'component': component, 'phase': phase, 'status': 'REGISTERING'}
         task = None
+        cleanup_tasks = []
         arn = None
         stopped = False
         success = False
@@ -114,6 +124,16 @@ class PrivateTasks:
                     'subnets': self.outputs['bootstrap_network']['subnets'],
                     'securityGroups': [self.outputs['bootstrap_network']['security_group_id']],
                     'assignPublicIp': 'DISABLED'}})
+            # Launch may partially succeed or return an unexpected task ID.
+            # Persist and clean up own-cluster candidates BEFORE rejecting the
+            # response. Never use a foreign account/cluster as a cleanup target.
+            own_prefix = f"arn:aws:ecs:eu-west-1:{self.config['account_id']}:task/{cluster}/"
+            for result in response.get('tasks', []):
+                candidate = result.get('taskArn', '')
+                if isinstance(candidate, str) and re.fullmatch(re.escape(own_prefix) + r'[A-Za-z0-9_-]{1,128}', candidate):
+                    cleanup_tasks.append(candidate)
+            state.update(task_arns=list(dict.fromkeys(cleanup_tasks)), status='LAUNCH_RETURNED')
+            self.record(dict(state))
             _require(not response.get('failures') and len(response.get('tasks', [])) == 1)
             candidate = response['tasks'][0]['taskArn']
             _require(re.fullmatch(f"arn:aws:ecs:eu-west-1:{self.config['account_id']}:task/{cluster}/[a-f0-9]{{32}}", candidate))
@@ -134,10 +154,12 @@ class PrivateTasks:
         except Exception:
             success = False
         finally:
-            if task and not stopped:
+            for candidate in dict.fromkeys(cleanup_tasks):
+                if candidate == task and stopped:
+                    continue
                 try:
-                    self.ecs.stop_task(cluster=cluster, task=task, reason='Disposable bootstrap failed or timed out')
-                    self.ecs.get_waiter('tasks_stopped').wait(cluster=cluster, tasks=[task],
+                    self.ecs.stop_task(cluster=cluster, task=candidate, reason='Disposable bootstrap failed or timed out')
+                    self.ecs.get_waiter('tasks_stopped').wait(cluster=cluster, tasks=[candidate],
                         WaiterConfig={'Delay': 5, 'MaxAttempts': 12})
                 except Exception:
                     cleanup_failed = True

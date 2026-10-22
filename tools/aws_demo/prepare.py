@@ -21,8 +21,10 @@ def prepare(config, output, actual_sha):
     for key, value in config.items():
         if isinstance(value, str) and value.startswith("REPLACE"):
             blockers.append("Provide verified " + key)
-    recipe_path = ROOT / config["release_recipe"]
-    if not recipe_path.is_file():
+    recipe_name = config.get("release_recipe")
+    recipe_path = ROOT / recipe_name if isinstance(recipe_name, str) else ROOT
+    if (not recipe_path.resolve().is_relative_to(ROOT.resolve())
+            or not isinstance(recipe_name, str) or not recipe_path.is_file()):
         blockers.append("Application adaptation evidence and release recipe not supplied")
     else:
         try:
@@ -40,10 +42,11 @@ def prepare(config, output, actual_sha):
         (output / ("start-" + direction + ".json")).write_text(json.dumps(request, indent=2) + "\n")
     report = {"local_preparation": "COMPLETE", "aws_deployable": not blockers,
               "aws_preflight_executed": False, "aws_resources_created": False,
-              "config_key": key, "state_key": state_key(config), "blockers": sorted(set(blockers)),
+              "config_key": key, "state_key": state_key(config) if isinstance(config.get("cycle_id"), str) else None,
+              "blockers": sorted(set(blockers)),
               "application_sha256": application_digest(ROOT),
               "required_cloud_checks": ["account/IAM", "remaining project budget and regional estimate", "Ireland AZs and quotas",
-                "RDS/MQ versions/classes", "DNS ownership and delegation", "model access", "exact-SHA CI"]}
+                "RDS/MQ versions/classes", "DNS ownership and delegation", "model access", "exact-SHA develop push CI and ancestry"]}
     (output / "readiness.json").write_text(json.dumps(report, indent=2) + "\n")
     return report
 

@@ -1,7 +1,11 @@
 """Real RSA signatures and untrusted claims; no AWS or network calls."""
 from datetime import datetime, timezone
+from concurrent.futures import ThreadPoolExecutor
+import io
+import json
 from types import SimpleNamespace
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
+from urllib.error import URLError
 
 from cryptography.hazmat.primitives.asymmetric import rsa
 import jwt
@@ -80,6 +84,58 @@ def test_real_jwks_selects_rotated_key_and_ignores_untrusted_discovery_url(key):
     assert v.verify(signed)["sub"] == "subject-123"
     assert v.keys.uri == f"{ISSUER}/.well-known/jwks.json"
     v.keys.fetch_data.assert_called_once()
+
+
+def test_unknown_kid_burst_bounds_network_and_allows_rotation_after_cooldown(key):
+    public = jwt.algorithms.RSAAlgorithm.to_jwk(key.public_key(), as_dict=True)
+    initial = {'keys': [{**public, 'kid': 'test-key', 'use': 'sig', 'alg': 'RS256'}]}
+    rotated = {'keys': initial['keys'] + [{**public, 'kid': 'rotated', 'use': 'sig', 'alg': 'RS256'}]}
+    # Exercise the real PyJWT parser/cache; replace only its HTTP transport.
+    transport = Mock(open=Mock(side_effect=[io.StringIO(json.dumps(initial)), io.StringIO(json.dumps(rotated))]))
+    with patch('app.core.cognito.monotonic', return_value=100) as clock, \
+            patch('jwt.jwks_client.urllib.request.build_opener', return_value=transport):
+        v = CognitoVerifier(ISSUER, CLIENT)
+        for n in range(20):
+            signed = jwt.encode(claims(), key, algorithm='RS256', headers={'kid': f'unknown-{n}'})
+            with pytest.raises(jwt.InvalidTokenError):
+                v.verify(signed)
+        assert transport.open.call_count == 1
+        assert v.verify(token(key, claims()))['sub'] == 'subject-123'
+        clock.return_value = 131
+        signed = jwt.encode(claims(), key, algorithm='RS256', headers={'kid': 'rotated'})
+        assert v.verify(signed)['sub'] == 'subject-123'
+        assert transport.open.call_count == 2
+
+
+def test_jwks_failure_burst_is_throttled_and_later_retry_succeeds(key):
+    public = jwt.algorithms.RSAAlgorithm.to_jwk(key.public_key(), as_dict=True)
+    data = {'keys': [{**public, 'kid': 'test-key', 'use': 'sig', 'alg': 'RS256'}]}
+    transport = Mock(open=Mock(side_effect=[URLError('offline'), io.StringIO(json.dumps(data))]))
+    with patch('app.core.cognito.monotonic', return_value=100) as clock, \
+            patch('jwt.jwks_client.urllib.request.build_opener', return_value=transport):
+        v = CognitoVerifier(ISSUER, CLIENT)
+        for _ in range(20):
+            with pytest.raises(jwt.InvalidTokenError):
+                v.verify(token(key, claims()))
+        assert transport.open.call_count == 1
+        clock.return_value = 131
+        assert v.verify(token(key, claims()))['sub'] == 'subject-123'
+        assert transport.open.call_count == 2
+
+
+def test_concurrent_unknown_kids_share_one_http_attempt(key):
+    public = jwt.algorithms.RSAAlgorithm.to_jwk(key.public_key(), as_dict=True)
+    data = {'keys': [{**public, 'kid': 'test-key', 'use': 'sig', 'alg': 'RS256'}]}
+    transport = Mock(open=Mock(side_effect=lambda *args, **kwargs: io.StringIO(json.dumps(data))))
+    with patch('jwt.jwks_client.urllib.request.build_opener', return_value=transport):
+        v = CognitoVerifier(ISSUER, CLIENT)
+        def invalid(n):
+            signed = jwt.encode(claims(), key, algorithm='RS256', headers={'kid': f'unknown-{n}'})
+            with pytest.raises(jwt.InvalidTokenError):
+                v.verify(signed)
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            list(pool.map(invalid, range(40)))
+        assert transport.open.call_count == 1
 
 
 @pytest.mark.parametrize("issuer", ["http://localhost/pool", "https://attacker.example.invalid/pool",

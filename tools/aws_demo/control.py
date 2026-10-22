@@ -8,6 +8,12 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 import re
+import math
+
+try:
+    from .public_values import validate_public_values
+except ImportError:
+    from public_values import validate_public_values
 
 
 def require(condition, message):
@@ -16,6 +22,10 @@ def require(condition, message):
 
 
 def validate_config(config, actual_sha):
+    require(isinstance(config, dict), "Configuration must be an object")
+    for key in ("cycle_id", "account_id", "source_sha", "route53_zone_id", "postgres_version",
+                "rabbitmq_version", "expires_at", "ci_run_id", "release_recipe"):
+        require(isinstance(config.get(key), str), "Set string " + key)
     require(re.fullmatch(r"(?:ensayo[0-9][a-z0-9]{0,3}|defensa[0-9]{0,2})", config.get("cycle_id", "")), "Invalid cycle_id")
     require(re.fullmatch(r"[0-9]{12}", config.get("account_id", "")), "Set the real account_id")
     require(re.fullmatch(r"[a-f0-9]{40}", config.get("source_sha", "")), "Set the reviewed full SHA")
@@ -23,48 +33,67 @@ def validate_config(config, actual_sha):
     require(config.get("region") == "eu-west-1", "Demo must use Ireland")
     require(config.get("control_region") == "eu-west-3", "Control must use Paris")
     zones = config.get("availability_zones", [])
-    require(len(zones) == 3 and len(set(zones)) == 3 and all(re.fullmatch(r"eu-west-1[a-z]", z) for z in zones), "Three Ireland AZs required")
+    require(isinstance(zones, list) and len(zones) == 3 and all(isinstance(z, str) for z in zones)
+            and len(set(zones)) == 3 and all(re.fullmatch(r"eu-west-1[a-z]", z) for z in zones), "Three Ireland AZs required")
     require(config.get("frontend_domain") == "economicon.danteinferno.es", "Unexpected frontend domain")
     require(config.get("origin_domain") == "origin.economicon.danteinferno.es", "Unexpected origin domain")
     require(re.fullmatch(r"Z[A-Z0-9]{5,}", config.get("route53_zone_id", "")), "Set verified public zone ID")
     for key in ("postgres_version", "rabbitmq_version"):
-        require(re.fullmatch(r"\d+\.\d+(?:\.\d+)?", config.get(key, "")), "Set verified " + key)
-    require(re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", config.get("expires_at", "")), "Use UTC expiry YYYY-MM-DDTHH:MM:SSZ")
+        require(re.fullmatch(r"[0-9]+\.[0-9]+(?:\.[0-9]+)?", config.get(key, "")), "Set verified " + key)
+    require(re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z", config.get("expires_at", "")), "Use UTC expiry YYYY-MM-DDTHH:MM:SSZ")
     stamp = datetime.fromisoformat(config["expires_at"].replace("Z", "+00:00"))
     require(stamp.tzinfo is not None and stamp.utcoffset().total_seconds() == 0, "expires_at must be UTC")
     for key in ("budget_eur", "estimated_cycle_eur", "available_credit_eur"):
-        require(type(config.get(key)) in (int, float) and config[key] > 0, "Set verified " + key)
+        require(type(config.get(key)) in (int, float) and math.isfinite(config[key]) and config[key] > 0, "Set verified " + key)
     require(config["estimated_cycle_eur"] <= min(config["budget_eur"], config["available_credit_eur"]) <= 60, "Cycle exceeds available budget")
-    require(re.fullmatch(r"\d+", config.get("ci_run_id", "")), "CI run required")
+    require(re.fullmatch(r"[0-9]+", config.get("ci_run_id", "")), "CI run required")
     recipe = PurePosixPath(config.get("release_recipe", ""))
     require(not recipe.is_absolute() and ".." not in recipe.parts and str(recipe).startswith("infra/aws-cicd/"), "Recipe must be versioned under infra/aws-cicd")
     return config
 
 
 def validate_recipe(recipe):
+    require(isinstance(recipe, dict), "Recipe must be an object")
+    validate_public_values(recipe)
+    require(isinstance(recipe.get("application_sha256"), str), "Accepted application tree hash required")
     require(re.fullmatch(r"[a-f0-9]{64}", recipe.get("application_sha256", "")), "Accepted application tree hash required")
     evidence = recipe.get("evidence", {})
+    require(isinstance(evidence, dict), "Evidence must be an object")
     for key in ("postgresql", "cognito", "bedrock", "demo_data"):
+        require(isinstance(evidence.get(key), dict) and isinstance(evidence[key].get("sha256"), str)
+                and isinstance(evidence[key].get("path"), str), "Acceptance evidence missing: " + key)
         require(bool(re.fullmatch(r"[a-f0-9]{64}", evidence.get(key, {}).get("sha256", ""))), "Acceptance evidence missing: " + key)
         path = PurePosixPath(evidence[key].get("path", ""))
         require(not path.is_absolute() and ".." not in path.parts and str(path).startswith("docs/evidence/"), "Evidence must be versioned")
     for phase in ("bootstrap", "checks"):
         commands = recipe.get(phase, [])
-        require(bool(commands), "Recipe needs " + phase)
+        require(isinstance(commands, list) and bool(commands), "Recipe needs " + phase)
         for command in commands:
-            require(isinstance(command, list) and len(command) >= 2 and command[0] == "python", "Recipe commands must be Python argument arrays")
+            require(isinstance(command, list) and len(command) >= 2 and all(isinstance(arg, str) for arg in command)
+                    and command[0] == "python", "Recipe commands must be Python argument arrays")
             path = PurePosixPath(command[1])
             require(str(path).startswith("tools/aws_demo/") and ".." not in path.parts and path.suffix == ".py", "Recipe script must be versioned in tools/aws_demo")
-    for environment in recipe.get("application_environment", {}).values():
+    environments = recipe.get("application_environment")
+    require(isinstance(environments, dict) and set(environments) == {"backend", "processor", "azure-cost-api"},
+            "Complete application environments required")
+    for environment in environments.values():
+        require(isinstance(environment, dict) and all(isinstance(v, str) for v in environment.values()),
+                "Application environment must contain string values")
         for key in environment:
             require(not re.search(r"PASSWORD|SECRET|TOKEN|DATABASE_URL|RABBITMQ_URL|API_KEY|ACCESS_KEY|HMAC|PRIVATE_KEY|CREDENTIAL", key, re.I), "Secret-like field in public application_environment")
     models = recipe.get("bedrock_model_arns", [])
-    require(isinstance(models, list) and all(
-        model == "arn:aws:bedrock:eu-west-1::foundation-model/amazon.titan-embed-text-v2:0" for model in models
-    ), "Only the reviewed regional Titan embedding model may enter this release")
+    require(models == ["arn:aws:bedrock:eu-west-1::foundation-model/amazon.titan-embed-text-v2:0"],
+            "The reviewed regional Titan embedding model is required")
     profile = recipe.get("bedrock_chat_profile_id")
-    require(profile is None or profile in ("eu.amazon.nova-micro-v1:0", "eu.amazon.nova-lite-v1:0"),
+    require(profile in ("eu.amazon.nova-micro-v1:0", "eu.amazon.nova-lite-v1:0"),
             "Unreviewed Bedrock chat profile")
+    native = {"EMBEDDING_PROVIDER": "bedrock", "EMBEDDING_MODEL": "amazon.titan-embed-text-v2:0",
+              "EMBEDDING_DIMENSION": "1024", "BEDROCK_REGION": "eu-west-1"}
+    for app in ("backend", "processor"):
+        require(all(environments[app].get(k) == v for k, v in native.items()), "Native embedding contract required: " + app)
+    require(environments["processor"].get("LLM_PROVIDER") == "bedrock"
+            and environments["processor"].get("BEDROCK_CHAT_MODEL_ID") == profile,
+            "Native chat provider/model must match reviewed profile")
     return recipe
 
 
@@ -147,14 +176,43 @@ def lock_key(config):
     return config["frontend_domain"]
 
 
-def bind_plan(path, config):
+def bind_plan(path, config, plan_kind="infra"):
+    require(plan_kind in ("infra", "applications", "destroy"), "Unknown plan class")
     return {"sha256": hashlib.sha256(Path(path).read_bytes()).hexdigest(),
+            "plan_kind": plan_kind,
             "config_sha256": hashlib.sha256(__import__("json").dumps(config, sort_keys=True).encode()).hexdigest(),
             "source_sha": config["source_sha"], "cycle_id": config["cycle_id"], "state_key": state_key(config)}
 
 
-def verify_binding(path, binding, config):
-    require(binding == bind_plan(path, config), "Saved plan/config/source binding mismatch")
+def verify_binding(path, binding, config, plan_kind="infra"):
+    require(binding == bind_plan(path, config, plan_kind), "Saved plan/config/source binding mismatch")
+
+
+def check_reviewed_source(ci, comparison, sha):
+    require(ci.get("head_sha") == sha and ci.get("conclusion") == "success" and ci.get("status") == "completed"
+            and ci.get("path") == ".github/workflows/ci.yml" and ci.get("event") == "push"
+            and ci.get("head_branch") == "develop"
+            and ci.get("repository", {}).get("full_name") == "EconomiconFinOps/tfm-economicon",
+            "Exact source requires successful push CI on develop in the project repository")
+    require(comparison.get("status") in ("ahead", "identical")
+            and comparison.get("merge_base_commit", {}).get("sha") == sha,
+            "Source SHA must be reachable from current develop")
+
+
+def check_applications_plan(plan):
+    # All IAM permissions are already provisioned by infra. Only these reviewed
+    # model policies may be reconciled; no broad IAM/resource-type allowlist.
+    allowed = {f'{kind}.application["{app}"]'
+               for kind in ("aws_ecs_task_definition", "aws_ecs_service")
+               for app in ("backend", "processor", "azure-cost-api")}
+    allowed |= {'aws_iam_role_policy.bedrock["backend"]', 'aws_iam_role_policy.bedrock["processor"]',
+                'aws_iam_role_policy.bedrock_chat[0]'}
+    for resource in plan.get("resource_changes", []):
+        actions = resource["change"]["actions"]
+        if actions == ["no-op"] or resource.get("mode") == "data" and actions == ["read"]:
+            continue
+        require(resource["address"] in allowed and actions in (["create"], ["update"]),
+                "Applications plan contains an unapproved change: " + resource["address"])
 
 
 def resources(state):

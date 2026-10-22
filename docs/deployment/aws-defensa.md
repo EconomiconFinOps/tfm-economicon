@@ -1,5 +1,21 @@
 # CI/CD AWS y primer ensayo — JUP-131
 
+## Correcciones de revisión — 22/10/2026
+
+Las ocho solicitudes PR146 están implementadas con regresiones en
+[el recibo de revisión](../evidence/JUP-131-review-fixes.md). Pendientes CI final
+publicada y nueva aceptación humana; CHANGES_REQUESTED no se elimina con tests.
+No hay autorización para desplegar.
+
+Antes del ensayo, seleccionar un SHA integrado en develop y su run CI de push
+completed/success del mismo SHA. Un run de PR, rama de trabajo o ejecución manual
+no es válido. El runner comprueba ancestry con develop antes de provisionar.
+Cada binding distingue infra/applications/destroy; planes anteriores deben
+regenerarse. La aprobación muestra SHA256 del plan exportado por la acción que
+lo generó. Revisar su binding privado en S3, la configuración y el contenido.
+El plan applications vuelve a validarse antes de aplicar y no puede alterar
+RDS/MQ/Cognito ni reemplazar/borrar recursos.
+
 ## Región vigente — 22/10/2026
 
 Usuario autoriza Irlanda eu-west-1 para aplicación, París eu-west-3 para control

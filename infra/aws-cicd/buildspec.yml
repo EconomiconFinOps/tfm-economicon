@@ -1,4 +1,7 @@
 version: 0.2
+env:
+  exported-variables:
+    - PLAN_SHA256
 phases:
   install:
     runtime-versions:
@@ -11,5 +14,7 @@ phases:
   build:
     commands:
       - python tools/aws_demo/runner.py
+      - >-
+        export PLAN_SHA256="$(python -c 'import json,pathlib; p=pathlib.Path(".work/aws-demo/approval.json"); print(json.loads(p.read_text())["sha256"] if p.is_file() else "")')"
 # Plan/state/passwords never go to CodePipeline output artifacts or console.
 # Restricted cycle artifacts are uploaded explicitly by the runner.

@@ -31,6 +31,24 @@ def fixture():
 
 
 class PrivateTaskTests(unittest.TestCase):
+    def test_malformed_owned_task_is_recorded_and_stopped_before_definition_retirement(self):
+        item, ecs, events = fixture()
+        candidate = PREFIX + 'task/economicon-ensayo1/UNEXPECTED-ID'
+        ecs.run_task.return_value['tasks'][0]['taskArn'] = candidate
+        with self.assertRaises(PrivateTaskError):
+            item.run('backend', 'database', {})
+        ecs.stop_task.assert_called_once_with(cluster='economicon-ensayo1', task=candidate,
+                                              reason='Disposable bootstrap failed or timed out')
+        self.assertIn(candidate, events[-1]['task_arns'])
+
+    def test_partial_launch_failure_still_records_and_stops_owned_task(self):
+        item, ecs, events = fixture()
+        ecs.run_task.return_value['failures'] = [{'reason': 'partial failure'}]
+        with self.assertRaises(PrivateTaskError):
+            item.run('backend', 'database', {})
+        ecs.stop_task.assert_called_once()
+        self.assertTrue(events[-1]['task_arns'])
+
     def test_rds_service_managed_secret_reference_is_public_metadata(self):
         item, ecs, events = fixture()
         item.run('backend', 'database', {'database_admin_secret_arns': {
