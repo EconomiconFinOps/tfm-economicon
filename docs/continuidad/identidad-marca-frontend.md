@@ -1,6 +1,6 @@
 # Identidad de marca del frontend — JUP-112
 
-Última actualización documental: 2026-10-11. Esta nota no repite el alcance de la tarjeta, que vive en [Trello](https://trello.com/c/XTZU3vj3).
+Última actualización documental: 2026-10-22 (texto del conmutador de tema, JUP-134). Esta nota no repite el alcance de la tarjeta, que vive en [Trello](https://trello.com/c/XTZU3vj3).
 
 ## Estado
 
@@ -20,6 +20,7 @@
 - Un color: `apps/frontend/src/styles/theme.css`, siempre en las dos paletas, y ejecutar `theme-contrast.test.ts` y `theme-palette.test.ts`.
 - Un color de estado nuevo: debe llevar icono o texto y cumplir el contraste del test (relleno suave como máximo al 30 % de opacidad).
 - El orden de arranque del tema vive en dos sitios que deben coincidir: el script de `index.html` y `src/hooks/useTheme.ts`.
+- El texto del conmutador de tema (`src/components/ThemeToggle.tsx`) nombra el tema activo: «Tema claro» con el claro y «Tema oscuro» con el oscuro, con el icono del sol o de la luna (JUP-134, delta de `frontend-brand-identity`). Ya no es un botón de alternancia con `aria-pressed`: su nombre accesible es su texto visible y el `title` describe la acción al pulsar («Cambiar a tema oscuro» o «Cambiar a tema claro»). Si cambia el texto hay que actualizar `ThemeToggle.test.tsx`, `useTheme.test.tsx` y `brand-spec.guard.test.tsx`.
 
 ## Pendiente
 

@@ -396,24 +396,25 @@ def test_explained_at_con_otra_zona_se_convierte_a_utc():
 # --------------------------------------------------------------------------------------------------
 
 def test_limitaciones_en_espanol_una_por_cada_limitacion_del_episodio():
-    # Si alguien añade o quita una limitación en el episodio, esta prueba obliga a traducirla.
-    from app.services.anomaly_episodes import LIMITATIONS as english
+    # JUP-134 (design.md D2/D3): ya no hay una traducción aparte. La explicación usa la MISMA lista que el
+    # episodio, y esa lista (`LIMITATIONS`) está escrita en español con la redacción esperada, así que una
+    # limitación nueva o cambiada se ve igual en el panel y en el asistente.
     module = load()
-    assert isinstance(module.LIMITATIONS_ES, tuple)
-    assert len(module.LIMITATIONS_ES) == len(english)
-    assert list(module.LIMITATIONS_ES) == LIMITATIONS_ES_LITERAL
-    assert all(spanish != original for spanish, original in zip(module.LIMITATIONS_ES, english))
+    assert isinstance(LIMITATIONS, (list, tuple))
+    assert len(LIMITATIONS) == 5
+    assert list(LIMITATIONS) == LIMITATIONS_ES_LITERAL
+    # Fuente única: el módulo de la explicación no conserva su propia lista traducida.
+    assert not hasattr(module, "LIMITATIONS_ES")
 
 
 def test_el_texto_lista_las_limitaciones_exactas_y_en_orden():
     result = explain(make_snapshot())
-    module = load()
     lines = result["content"].split("\n")
     start = lines.index("Limitaciones:")
     bullets = [line for line in lines if line.startswith("- ")]
-    assert bullets == [f"- {text}" for text in module.LIMITATIONS_ES]
+    assert bullets == [f"- {text}" for text in LIMITATIONS]
     assert lines[start + 1:start + 1 + len(bullets)] == bullets
-    assert result["anomaly_evidence"]["limitations"] == list(module.LIMITATIONS_ES)
+    assert result["anomaly_evidence"]["limitations"] == list(LIMITATIONS)
     assert result["anomaly_evidence"]["cause_status"] == "not_established"
     assert result["anomaly_evidence"]["assumptions"] == []
     assert CAUSE_LINE in lines
