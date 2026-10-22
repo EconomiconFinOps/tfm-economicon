@@ -64,3 +64,21 @@ Ninguna.
 - Sin cambios de runtime, datos, dependencias ni CI. Sin `docs/evidence/JUP-138-validation.md`: al ser solo
   documentación basta `review.md` (precedente JUP-083).
 - ADR: no aplica. Es una consolidación documental de decisiones ya registradas.
+
+## Human Approval
+
+- Change: jup-138-actualizar-architecture
+- Approval type: pre-code
+- Decision: approved
+- Approver: Victor
+- Date: 2026-10-22
+- Carril: standard
+- Scope reviewed: proposal, design, specs, tasks
+- Decisions approved: el corte es la SHA base de la rama, con nueva verificación del diff entre cortes si develop
+  se mueve antes del PR (D1); inventario de fuentes en `review.md` antes de editar, con Compose resuelto mediante
+  un archivo de entorno ficticio fuera del repositorio (D2); lo integrado pero desactivado se describe con su flag
+  y su valor por defecto (D3); JUP-131 en versión mínima en §5 y §6.3, sin el estado del ensayo (D4); la landing
+  pública entra en §2; ADR citados por archivo, sin renumerar ni cambiar estados (D5); se conservan las anclas
+  que usa `docs/adr/README.md` (D6).
+- Pendiente fuera de este gate: edición de `docs/architecture.md` (grupos 2 y 3 de tasks), review, gate
+  post-review, archivo, PR y las reviews `Revision JUP-138` y `Validacion JUP-138`.
