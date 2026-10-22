@@ -335,13 +335,15 @@ class PgVectorQueryStore:
                 separators=(',', ':'), allow_nan=False).encode()).hexdigest()
             fields = {'provider', 'model_id', 'mapping_sha256', 'tokenizer_id', 'preparation', 'dimension', 'distance',
                       'config_version', 'query_preparation', 'context_tokens', 'max_input_tokens', 'max_input_bytes', 'storage_format'}
-            if (set(descriptor) != fields or fingerprint != plan['space_id'] or type(descriptor.get('dimension')) is not int or descriptor.get('dimension') != 1536
+            dimensions = {256,512,1024} if descriptor.get('provider') == 'bedrock' else {1536}
+            if (set(descriptor) != fields or fingerprint != plan['space_id'] or type(descriptor.get('dimension')) is not int or descriptor.get('dimension') not in dimensions
                     or descriptor.get('distance') != 'cosine' or descriptor.get('query_preparation') != 'plain_query_v1'
                     or descriptor.get('storage_format') != 'decimal6_v1'
                     or descriptor.get('preparation') not in {'plain_v1', 'contextual_embedding_v1'}
                     or descriptor.get('config_version') != 'embedding_config_v1'):
                 raise ValueError('Unsupported index identity')
-            expected_model = {'mock': 'mock/sha256_v1', 'litellm': 'openai/text-embedding-3-small'}.get(descriptor['provider'])
+            expected_model = {'mock': 'mock/sha256_v1', 'litellm': 'openai/text-embedding-3-small',
+                              'bedrock': 'amazon.titan-embed-text-v2:0'}.get(descriptor['provider'])
             tokenizer = 'tiktoken/0.14.0:cl100k_base:223921b76ee99bde995b7ff738513eef100fb51d18c93597a113bcffe865b2a7'
             if (expected_model is None or descriptor['model_id'] != expected_model or descriptor['tokenizer_id'] != tokenizer
                     or not isinstance(descriptor['mapping_sha256'], str) or not re.fullmatch(r'[0-9a-f]{64}', descriptor['mapping_sha256'])
@@ -366,7 +368,7 @@ class PgVectorQueryStore:
         descriptor = plan['descriptor']
         if (plan['tenant_id'] != tenant_id or provider.name != descriptor.get('provider')
                 or provider.dimension != descriptor.get('dimension')
-                or (provider.name == 'litellm' and getattr(provider, 'mapping_sha256', None) != descriptor.get('mapping_sha256'))):
+                or (provider.name in {'litellm','bedrock'} and getattr(provider, 'mapping_sha256', None) != descriptor.get('mapping_sha256'))):
             raise ValueError('Question provider and index space are incompatible')
         if (not isinstance(question, str) or not question.strip() or len(question.encode('utf-8')) > 8192):
             # UTF-8 bytes conservatively bound cl100k tokens, without approximating
@@ -385,7 +387,7 @@ class PgVectorQueryStore:
             nonlocal cached
             value = connection.execute(statement, params).scalar()
             if value is not None:
-                cached = self._verified_vector(json.loads(value))
+                cached = self._verified_vector(json.loads(value), dimension=provider.dimension)
                 # A busy maintenance row must not delay a valid immutable hit.
                 connection.execute(text('''UPDATE embedding_cache SET last_used_at=clock_timestamp()
                     WHERE ctid IN (SELECT ctid FROM embedding_cache
@@ -406,14 +408,14 @@ class PgVectorQueryStore:
             return cached
         verified = copy.copy(provider)
         verified.expected_model = descriptor['model_id']
-        vector = self._verified_vector(verified.embed(question))
+        vector = self._verified_vector(verified.embed(question), dimension=provider.dimension)
         def insert(connection):
             connection.execute(text('''INSERT INTO embedding_cache(tenant_id,space_id,text_hash,embedding,token_count)
                 VALUES(:tenant,:space,:hash,CAST(:vector AS vector),NULL) ON CONFLICT DO NOTHING'''),
                 {**params, 'vector': '[' + ','.join(f'{value:.6f}' for value in vector) + ']'})
             value = connection.execute(statement, params).scalar_one()
             connection.commit()
-            return self._verified_vector(json.loads(value))
+            return self._verified_vector(json.loads(value), dimension=provider.dimension)
         # Retry only the SQL transaction, retaining this one inference result.
         # A concurrent winner is read in a fresh snapshot and remains canonical.
         for attempt in range(3):
@@ -425,8 +427,9 @@ class PgVectorQueryStore:
                     raise
 
     @staticmethod
-    def _verified_vector(vector):
-        if (not isinstance(vector, list) or len(vector) != 1536
+    def _verified_vector(vector, dimension=1536):
+        if (type(dimension) is not int or dimension not in {256,512,1024,1536}
+                or not isinstance(vector, list) or len(vector) != dimension
                 or not all(type(value) in {int, float} and math.isfinite(value) for value in vector)
                 or not any(float(f'{value:.6f}') != 0 for value in vector)):
             raise ValueError('Invalid verified query vector')
@@ -483,7 +486,7 @@ class PgVectorQueryStore:
     def _search_generation(self, tenant, vector, limit, threshold, provider, plan, question, deadline, cancelled,
                            neighbor_seed_count=0, policy_section=None):
         from app.services.retrieval_policy import fuse, lexical_eligible, query_policy
-        self._verified_vector(vector)
+        self._verified_vector(vector, dimension=plan['descriptor']['dimension'])
         if plan['tenant_id'] != tenant or provider != plan['descriptor']['provider']:
             raise ValueError('Retrieval plan scope mismatch')
         policy = query_policy(question or '')

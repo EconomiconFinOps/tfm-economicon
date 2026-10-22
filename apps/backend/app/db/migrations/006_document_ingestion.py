@@ -4,29 +4,29 @@ from sqlalchemy import inspect, text
 
 TABLES = {
     'document_uploads': '''CREATE TABLE IF NOT EXISTS document_uploads (
-        id STRING PRIMARY KEY, tenant_id STRING NOT NULL, user_id STRING NOT NULL,
-        filename STRING NOT NULL, format STRING NOT NULL, expected_size INT8 NOT NULL,
-        content_hash STRING NOT NULL, source STRING NOT NULL, staging_key STRING NOT NULL,
-        final_key STRING NOT NULL, status STRING NOT NULL, job_id STRING,
+        id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, user_id TEXT NOT NULL,
+        filename TEXT NOT NULL, format TEXT NOT NULL, expected_size INT8 NOT NULL,
+        content_hash TEXT NOT NULL, source TEXT NOT NULL, staging_key TEXT NOT NULL,
+        final_key TEXT NOT NULL, status TEXT NOT NULL, job_id TEXT,
         force_reprocess BOOL NOT NULL DEFAULT false,
         created_at TIMESTAMPTZ NOT NULL, expires_at TIMESTAMPTZ NOT NULL,
         outbox_sent BOOL NOT NULL DEFAULT false, outbox_next TIMESTAMPTZ NOT NULL,
         cleanup_done BOOL NOT NULL DEFAULT false,
         terminal_failure BOOL NOT NULL DEFAULT false)''',
     'document_upload_slots': '''CREATE TABLE IF NOT EXISTS document_upload_slots (
-        user_id STRING PRIMARY KEY, upload_id STRING NOT NULL, expires_at TIMESTAMPTZ NOT NULL)''',
+        user_id TEXT PRIMARY KEY, upload_id TEXT NOT NULL, expires_at TIMESTAMPTZ NOT NULL)''',
     'document_content_claims': '''CREATE TABLE IF NOT EXISTS document_content_claims (
-        tenant_id STRING NOT NULL, content_hash STRING NOT NULL, job_id STRING NOT NULL,
+        tenant_id TEXT NOT NULL, content_hash TEXT NOT NULL, job_id TEXT NOT NULL,
         PRIMARY KEY (tenant_id, content_hash))''',
     'extracted_documents': '''CREATE TABLE IF NOT EXISTS extracted_documents (
-        job_id STRING PRIMARY KEY, tenant_id STRING NOT NULL, document JSONB NOT NULL,
+        job_id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, document JSONB NOT NULL,
         created_at TIMESTAMPTZ NOT NULL)''',
     'extracted_document_parts': '''CREATE TABLE IF NOT EXISTS extracted_document_parts (
-        job_id STRING NOT NULL, tenant_id STRING NOT NULL, generation STRING NOT NULL,
-        part_index INT8 NOT NULL, content STRING NOT NULL,
+        job_id TEXT NOT NULL, tenant_id TEXT NOT NULL, generation TEXT NOT NULL,
+        part_index INT8 NOT NULL, content TEXT NOT NULL,
         PRIMARY KEY (job_id, generation, part_index))''',
     'document_execution_claims': '''CREATE TABLE IF NOT EXISTS document_execution_claims (
-        job_id STRING PRIMARY KEY, tenant_id STRING NOT NULL, owner STRING NOT NULL,
+        job_id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, owner TEXT NOT NULL,
         expires_at TIMESTAMPTZ NOT NULL)''',
 }
 

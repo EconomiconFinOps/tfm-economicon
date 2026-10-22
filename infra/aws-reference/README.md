@@ -1,5 +1,12 @@
 # Plantilla Terraform de Economicon para AWS
 
+> **Ampliación JUP-131, 21/10/2026:** CI/CD y ensayo local implementados sin
+> desplegar AWS. Ver [runbook](../../docs/deployment/aws-defensa.md). El backend
+> S3 parcial está activado; `init -backend=false` mantiene la validación offline.
+> La opción explícita `rehearsal_teardown` permite retirar únicamente una demo
+> desechable. Los defaults protegidos y la topología de esta referencia se conservan.
+> La aceptación de aplicaciones sigue pendiente; el pipeline la exige antes de crear recursos.
+
 Complemento técnico de [JUP-060 — Documentar arquitectura técnica](https://trello.com/c/alMIpBOQ) y del [esquema de arquitectura](../../docs/architecture-aws.md). Preparado el 10/10/2026 por petición del usuario. **Se entrega el código de infraestructura, sin ejecutar despliegue.** La petición de plantilla amplía el entregable documental; no reactiva el plan de desplegar AWS.
 
 Terraform define una arquitectura de referencia con frontend público y servicios privados. No convierte el checkout actual en una aplicación compatible con PostgreSQL, Cognito o Bedrock. Los servicios ECS de aplicación están desactivados por defecto hasta que existan imágenes adaptadas. `deploy_applications = false` no es un modo gratuito: un `apply` crearía el resto de la infraestructura y generaría costes. No se ha ejecutado `apply` ni un plan contra AWS.
@@ -18,7 +25,7 @@ Terraform define una arquitectura de referencia con frontend público y servicio
 | `observability.tf` | Alarmas básicas de errores API y espacio RDS; SNS sin suscriptores. |
 | `outputs.tf` | Referencias a endpoints, buckets, ECR, Cognito y ARN de secretos; no muestra contraseñas. |
 | `terraform.tfvars.example` | Parámetros ficticios, sin credenciales. Las versiones de motor son ilustrativas. |
-| `backend.s3.hcl.example` | Ejemplo de estado remoto con bloqueo S3; necesita un bucket preexistente y no está activado. |
+| `backend.s3.hcl.example` | Configuración parcial de backend S3 con bloqueo; requiere bootstrap independiente. |
 | `bootstrap/vector.sql` | Instalación de extensión vector para una hipotética fase de bootstrap, nunca ejecutada por Terraform. |
 | `tests/` | Pruebas con proveedores simulados y pruebas locales de las funciones de rutas. |
 
@@ -85,7 +92,10 @@ AUTH_SECRET_KEY se conserva como requisito del arranque actual hasta que una ada
 
 El proveedor guarda `mq_admin_password` en el estado aunque la variable sea `sensitive`; ese atributo oculta la salida, no cifra el state. Si se utilizara, aportar el valor por un canal seguro como `TF_VAR_mq_admin_password`, proteger state/planes con cifrado, acceso restringido y exclusión de Git. RDS genera y administra su propia contraseña en Secrets Manager: Terraform referencia el ARN, no lee el valor. Los secretos de aplicación se crean vacíos, sin versiones ni valores almacenados por Terraform.
 
-El backend local existe solo para esta referencia sin ejecución. Para un uso real, preparar un bucket de estado privado con versionado, cifrado y mínimo privilegio, activar `backend "s3" {}` y usar `backend.s3.hcl.example` sin credenciales. Ese bucket se administra fuera de este stack para no destruir su propio estado. No se incluye un provisioner ni un script que ejecute comandos al aplicar.
+El backend S3 parcial se activa por JUP-131; su bucket privado/versionado/cifrado
+pertenece al bootstrap independiente. Usar `init -backend=false` para comprobar
+esta raíz sin cuenta y `backend.s3.hcl.example` para configuración real fuera de
+Git. El bucket de state no se destruye con esta raíz. No se incluye provisioner.
 
 RDS, ALB y Cognito tienen protección de borrado. S3 y ECR no permiten vaciado forzado. La eliminación futura requeriría una decisión explícita y tratamiento de datos, snapshots, objetos y versiones; no se entrega un `destroy` automático. El sufijo de snapshots finales debe ser único para evitar colisiones con snapshots existentes. El estado, claves y backups sobrevivientes siguen teniendo coste si se conservaran.
 

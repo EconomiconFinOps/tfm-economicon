@@ -185,7 +185,7 @@ def test_real_adaptive_migration_snapshot_cache_and_atomic_rollback(setup):
     head = generations.rollback('a', expected_head=second, expected_version=head['version'])
     assert head['generation_id'] == first and legacy_rows(store) == before
     with store.engine.connect() as connection:
-        assert list(connection.execute(text('SELECT version FROM vector_schema_migrations ORDER BY version')).scalars()) == ['001', '002', '003', '004']
+        assert list(connection.execute(text('SELECT version FROM vector_schema_migrations ORDER BY version')).scalars()) == ['001', '002', '003', '004', '005']
         assert connection.execute(text('SELECT count(*) FROM embedding_cache')).scalar_one() == 1
 
 

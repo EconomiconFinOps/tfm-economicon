@@ -13,3 +13,4 @@ tokenizers==0.22.1
 uvicorn>=0.30.1
 -r requirements-documents.txt
 -r requirements-chunking.txt
+-r requirements-aws.txt

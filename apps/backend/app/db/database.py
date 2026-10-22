@@ -224,7 +224,7 @@ class Database:
         }
         dimension = dimensions[group_by]
         subscription = (present("r.subscription_id") if group_by in {"subscription", "resource_group"}
-                        else "CAST(NULL AS STRING)")
+                        else "CAST(NULL AS TEXT)")
         group_value = "lower(value)" if group_by == "resource_group" else "value"
         display_value = "min(value)" if group_by == "resource_group" else "value"
         # Only enum-selected expressions enter SQL; all request values are bound.
@@ -239,7 +239,7 @@ class Database:
                  AND i.subscription_id = r.subscription_id
                 WHERE r.tenant_id = :tenant_id AND i.tenant_id = :tenant_id
                   AND i.status = 'completed'
-                  AND (CAST(:selected_subscription AS STRING) IS NULL OR r.subscription_id = :selected_subscription)
+                  AND (CAST(:selected_subscription AS TEXT) IS NULL OR r.subscription_id = :selected_subscription)
             ), period_records AS (
                 SELECT * FROM completed
                 WHERE usage_date >= :start_date AND usage_date < :end_date
@@ -248,7 +248,7 @@ class Database:
                 GROUP BY subscription_id, usage_date
                 HAVING count(DISTINCT ingestion_id) > 1
             ), selected_records AS (
-                SELECT * FROM period_records WHERE CAST(:selected_value AS STRING) IS NULL OR value = :selected_value
+                SELECT * FROM period_records WHERE CAST(:selected_value AS TEXT) IS NULL OR value = :selected_value
             ), metadata AS (
                 SELECT (SELECT count(*) FROM completed WHERE usage_date IS NULL) AS undated,
                        (SELECT count(*) FROM selected_records WHERE value IS NULL) AS missing,
@@ -258,8 +258,8 @@ class Database:
                        (SELECT max(usage_date) FROM selected_records) AS last_date,
                        (SELECT count(DISTINCT usage_date) FROM selected_records) AS observed_days
             ), aggregates AS (
-                SELECT 'total' AS kind, currency, CAST(NULL AS STRING) AS subscription_id,
-                       CAST(NULL AS STRING) AS value, sum(pretax_cost) AS cost,
+                SELECT 'total' AS kind, currency, CAST(NULL AS TEXT) AS subscription_id,
+                       CAST(NULL AS TEXT) AS value, sum(pretax_cost) AS cost,
                        count(*) AS record_count
                 FROM selected_records WHERE NOT EXISTS (SELECT 1 FROM conflicts)
                 GROUP BY currency

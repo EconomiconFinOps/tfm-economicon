@@ -5,6 +5,15 @@ import re
 
 from app.clients.litellm import LiteLLMClient, ProviderError
 from app.core.config import Settings
+from app.core.bedrock import TitanEmbeddingProvider, BedrockError
+
+
+class BedrockEmbeddingProvider(TitanEmbeddingProvider):
+    def embed(self, text):
+        try:
+            return super().embed(text)
+        except BedrockError as failure:
+            raise ProviderError(failure.category) from None
 
 
 class MockEmbeddingProvider:
@@ -131,6 +140,10 @@ class LiteLLMEmbeddingProvider:
 
 
 def get_embedding_provider(provider_name: str, dimension: int, settings: Settings | None = None):
+    if provider_name == 'bedrock':
+        if settings is None or dimension != settings.embedding_dimension:
+            raise ValueError('Bedrock requires explicit matching settings')
+        return BedrockEmbeddingProvider(settings)
     if provider_name == "mock":
         return MockEmbeddingProvider(dimension)
     if provider_name == "litellm":

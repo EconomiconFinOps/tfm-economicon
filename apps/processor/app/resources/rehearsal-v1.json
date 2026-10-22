@@ -1,0 +1,23 @@
+{
+  "version": "aws-defense-v1",
+  "synthetic": true,
+  "period": {"start_date": "2026-10-01", "end_date": "2026-10-31"},
+  "tenants": [
+    {
+      "tenant_id": "tenant-core",
+      "document_id": "jup131-aws-v1-core",
+      "subscription_id": "synthetic-aws-core",
+      "cost_eur": "12.50",
+      "service_name": "Compute",
+      "text": "Guía sintética de ahorro de Core Finance para el ensayo AWS. El coste de Compute de octubre de 2026 es 12,50 EUR. Antes de reducir una instancia, medir CPU, memoria y latencia durante una ventana representativa y acordar el cambio con su responsable. Este documento y sus importes son datos de demostración, no una factura real."
+    },
+    {
+      "tenant_id": "tenant-growth",
+      "document_id": "jup131-aws-v1-growth",
+      "subscription_id": "synthetic-aws-growth",
+      "cost_eur": "999.99",
+      "service_name": "Storage",
+      "text": "COSTE_GROWTH_PRIVADO: documento sintético de Growth Ops para comprobar aislamiento. El coste de Storage de octubre de 2026 es 999,99 EUR. Este contenido pertenece exclusivamente al tenant de Growth y no debe aparecer en respuestas de Core. Todos los importes son datos sintéticos de demostración."
+    }
+  ]
+}

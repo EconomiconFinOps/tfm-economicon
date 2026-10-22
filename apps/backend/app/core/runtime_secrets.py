@@ -66,7 +66,8 @@ def validate_connections(settings):
                     raise ValueError()
                 valid = parsed.host and parsed.port != 0 and parsed.database
                 valid = valid and parsed.drivername in (
-                    {"cockroachdb", "cockroachdb+psycopg", "cockroachdb+psycopg2"}
+                    {"cockroachdb", "cockroachdb+psycopg", "cockroachdb+psycopg2",
+                     "postgresql", "postgresql+psycopg", "postgresql+psycopg2"}
                     if name == "database_url" else {"postgresql", "postgresql+psycopg", "postgresql+psycopg2"}
                 )
                 username, password = parsed.username or "", parsed.password or ""

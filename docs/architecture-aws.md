@@ -1,5 +1,10 @@
 # Arquitectura de Economicon en AWS
 
+> **Ampliación operativa autorizada21/10/2026 — JUP-131:** se implementa el
+> [CI/CD para ensayos/defensa](deployment/aws-defensa.md), sin despliegue AWS
+> todavía. El alcance exclusivamente documental de JUP-060 que sigue es histórico;
+> la topología se mantiene. Terraform es el aprovisionador del nuevo pipeline.
+
 Arquitectura de referencia con servicios gestionados de AWS para el entregable documental de [JUP-060 — Documentar arquitectura técnica](https://trello.com/c/alMIpBOQ). Actualizada el 10 de octubre de 2026.
 
 **Alcance confirmado por el usuario: exclusivamente documentación. No se realizará ningún despliegue AWS.** Los componentes, alternativas y controles que siguen describen un diseño conceptual. No se crearán recursos, cuentas, dominios, pipelines ni tareas de implementación o migración como parte de este trabajo. No es necesario disponer de credenciales ni presupuesto cloud para completar el documento.

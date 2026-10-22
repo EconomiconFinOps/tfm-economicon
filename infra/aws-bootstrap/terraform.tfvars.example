@@ -1,0 +1,7 @@
+# No credentials or secret values. Bootstrap is NOT applied by local preparation.
+account_id                = "REPLACE_ACCOUNT_ID"
+route53_zone_id            = "REPLACE_APPROVED_PUBLIC_ZONE_ID"
+connection_arn            = "arn:aws:codeconnections:eu-west-3:REPLACE_ACCOUNT_ID:connection/REPLACE_AVAILABLE_CONNECTION"
+permissions_boundary_arn  = "arn:aws:iam::REPLACE_ACCOUNT_ID:policy/REPLACE_REVIEWED_DEMO_BOUNDARY"
+github_token_secret_arn   = "arn:aws:secretsmanager:eu-west-3:REPLACE_ACCOUNT_ID:secret:REPLACE_GITHUB_CHECKS_SECRET"
+mq_password_secret_arn    = "arn:aws:secretsmanager:eu-west-3:REPLACE_ACCOUNT_ID:secret:REPLACE_MQ_PASSWORD_SECRET"

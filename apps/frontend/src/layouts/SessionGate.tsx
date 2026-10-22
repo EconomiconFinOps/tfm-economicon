@@ -10,6 +10,7 @@ import {
 import type { SessionInvalidationReason } from "../services/api";
 import { isNonemptyString, isUserProfile } from "../services/contracts";
 import type { TenantRecord, UserProfile } from "../services/contracts";
+import { usesCognito, cognitoLogoutUrl } from "../services/cognito";
 
 // Exportada porque `LoginPage.tsx` necesita la misma clave para persistir la
 // sesion tras el login (App.jsx.handleLogin:74-81 trasladado alli): centraliza
@@ -25,13 +26,16 @@ const TENANT_KEY = "finops.activeTenant";
 interface Session {
   accessToken: string;
   user: UserProfile;
+  expiresAt?: number;
 }
 
 // Storage uses the same profile guard as HTTP, plus a nonempty token.
 function isSession(value: unknown): value is Session {
   return typeof value === "object" && value !== null && !Array.isArray(value)
     && "accessToken" in value && isNonemptyString(value.accessToken)
-    && "user" in value && isUserProfile(value.user);
+    && "user" in value && isUserProfile(value.user)
+    && (!("expiresAt" in value) || (typeof value.expiresAt === "number"
+      && Number.isFinite(value.expiresAt) && value.expiresAt > Date.now()));
 }
 
 // Reconciliacion con develop (JUP-087): `services/api` ya no es `api.js` sin
@@ -98,6 +102,13 @@ export function SessionGate() {
     if (!session) invalidateSession(generation);
     return unsubscribe;
   }, [queryClient, session, generation]);
+
+  useEffect(() => {
+    if (!session?.expiresAt) return;
+    const timer = window.setTimeout(() => invalidateSession(generation, "expired"),
+      Math.max(0, Math.min(session.expiresAt - Date.now(), 2147483647)));
+    return () => window.clearTimeout(timer);
+  }, [session?.expiresAt, generation]);
 
   // Bootstrap de tenants: mismo queryKey/queryFn/enabled que App.jsx:43-47.
   // `enabled: Boolean(session?.accessToken)` es lo que garantiza que, sin
@@ -290,7 +301,10 @@ export function SessionGate() {
     // se expone como `() => void` y `Layout.tsx` lo usa como `onClick`
     // nativo, que le pasaria el `MouseEvent` como `reason` si se reenviara
     // `handleLogout` directo. La lambda fuerza el motivo neutro por defecto.
-    onLogout: () => handleLogout()
+    onLogout: () => {
+      handleLogout();
+      if (usesCognito()) window.location.assign(cognitoLogoutUrl());
+    }
   };
 
   return <Outlet context={context} />;

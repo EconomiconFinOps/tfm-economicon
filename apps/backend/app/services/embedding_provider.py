@@ -9,6 +9,7 @@ import time
 from functools import partial
 from http.client import HTTPConnection, HTTPException, HTTPResponse, HTTPSConnection, RemoteDisconnected
 from urllib import error, request
+from app.core.bedrock import TitanEmbeddingProvider, BedrockError
 
 PROVIDER_ERROR_CATEGORIES = frozenset({
     "timeout", "connection", "transport", "authentication", "request",
@@ -23,6 +24,14 @@ class ProviderError(RuntimeError):
     def __init__(self, category: str):
         self.category = category if category in PROVIDER_ERROR_CATEGORIES else "transport"
         super().__init__(f"Embedding provider failed: {self.category}")
+
+
+class BedrockEmbeddingProvider(TitanEmbeddingProvider):
+    def embed(self, text):
+        try:
+            return super().embed(text)
+        except BedrockError as failure:
+            raise ProviderError(failure.category) from None
 
 
 class _RejectRedirectHandler(request.HTTPRedirectHandler):

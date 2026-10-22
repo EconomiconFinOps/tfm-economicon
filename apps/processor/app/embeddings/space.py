@@ -29,10 +29,12 @@ class EmbeddingSpace:
     storage_format: str = 'decimal6_v1'
 
     def __post_init__(self):
-        if self.provider not in {'litellm', 'mock'}:
+        if self.provider not in {'litellm', 'mock', 'bedrock'}:
             raise ValueError('Unsupported embedding provider identity')
-        expected = 'openai/text-embedding-3-small' if self.provider == 'litellm' else 'mock/sha256_v1'
-        if self.model_id != expected or type(self.dimension) is not int or self.dimension != 1536:
+        expected = {'litellm': 'openai/text-embedding-3-small', 'mock': 'mock/sha256_v1',
+                    'bedrock': 'amazon.titan-embed-text-v2:0'}[self.provider]
+        dimensions = {256,512,1024} if self.provider == 'bedrock' else {1536}
+        if self.model_id != expected or type(self.dimension) is not int or self.dimension not in dimensions:
             raise ValueError('Unsupported embedding model or dimension')
         if (not isinstance(self.mapping_sha256, str) or len(self.mapping_sha256) != 64 or any(c not in '0123456789abcdef' for c in self.mapping_sha256)
                 or not isinstance(self.tokenizer_id, str) or not self.tokenizer_id):

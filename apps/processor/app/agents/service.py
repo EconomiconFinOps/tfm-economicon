@@ -44,7 +44,7 @@ class AgentRuntime:
         try:
             response = parse_and_validate_response(raw_response)
         except AgentResponseError:
-            if self.settings.llm_provider != "litellm":
+            if self.settings.llm_provider not in {"litellm", "bedrock"}:
                 raise
         else:
             return self._result(response)

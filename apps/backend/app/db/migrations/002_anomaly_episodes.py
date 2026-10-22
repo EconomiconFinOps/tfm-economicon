@@ -10,30 +10,30 @@ def upgrade(connection) -> None:
 def schema_steps():
     return (
         """CREATE TABLE IF NOT EXISTS anomaly_episodes (
-                id STRING PRIMARY KEY,
-                tenant_id STRING NOT NULL,
-                currency STRING NOT NULL,
-                service STRING,
-                service_key STRING NOT NULL,
+                id TEXT PRIMARY KEY,
+                tenant_id TEXT NOT NULL,
+                currency TEXT NOT NULL,
+                service TEXT,
+                service_key TEXT NOT NULL,
                 start_date DATE NOT NULL,
                 last_seen_date DATE NOT NULL,
-                observation STRING NOT NULL CHECK (observation IN ('observed', 'no_longer_observed')),
+                observation TEXT NOT NULL CHECK (observation IN ('observed', 'no_longer_observed')),
                 no_longer_observed_on DATE,
                 reference_week_cost DECIMAL NOT NULL,
                 opening_observed_cost DECIMAL NOT NULL,
                 impact_numerator DECIMAL NOT NULL,
                 impact_day_count INT NOT NULL,
                 impact_through_date DATE NOT NULL,
-                severity STRING NOT NULL CHECK (severity IN ('P1', 'P2', 'P3')),
-                status STRING NOT NULL CHECK (status IN ('new', 'investigating', 'resolved', 'false_positive')),
-                status_changed_by STRING,
+                severity TEXT NOT NULL CHECK (severity IN ('P1', 'P2', 'P3')),
+                status TEXT NOT NULL CHECK (status IN ('new', 'investigating', 'resolved', 'false_positive')),
+                status_changed_by TEXT,
                 status_changed_at TIMESTAMPTZ,
                 first_reviewed_at TIMESTAMPTZ,
-                first_reviewed_by STRING,
+                first_reviewed_by TEXT,
                 closed_at TIMESTAMPTZ,
-                closure_reason STRING,
-                previous_episode_id STRING,
-                rules_version STRING NOT NULL,
+                closure_reason TEXT,
+                previous_episode_id TEXT,
+                rules_version TEXT NOT NULL,
                 rules JSONB NOT NULL,
                 created_at TIMESTAMPTZ NOT NULL,
                 updated_at TIMESTAMPTZ NOT NULL
@@ -43,9 +43,9 @@ def schema_steps():
             WHERE observation = 'observed' AND status IN ('new', 'investigating')""",
         """CREATE INDEX IF NOT EXISTS anomaly_episodes_tenant_start ON anomaly_episodes (tenant_id, start_date)""",
         """CREATE TABLE IF NOT EXISTS anomaly_detection_state (
-                tenant_id STRING PRIMARY KEY,
+                tenant_id TEXT PRIMARY KEY,
                 last_evaluated_date DATE NOT NULL,
-                rules_version STRING NOT NULL,
+                rules_version TEXT NOT NULL,
                 updated_at TIMESTAMPTZ NOT NULL
             )""",
     )
@@ -66,7 +66,7 @@ def step_applied(connection, index):
         import re
         expected = {}
         for line in definition.splitlines():
-            match = re.match(r'\s*(\w+)\s+(STRING|DATE|DECIMAL|INT|TIMESTAMPTZ|JSONB)\b(.*)', line)
+            match = re.match(r'\s*(\w+)\s+(STRING|TEXT|DATE|DECIMAL|INT|TIMESTAMPTZ|JSONB)\b(.*)', line)
             if match:
                 name, kind, suffix = match.groups()
                 expected[name] = (kind, 'NOT NULL' not in suffix and 'PRIMARY KEY' not in suffix)
@@ -76,7 +76,7 @@ def step_applied(connection, index):
         declared = {}
         if connection.dialect.name == 'sqlite':
             declared = {row['name']: row['type'] for row in connection.execute(text('PRAGMA table_info('+table+')')).mappings()}
-        aliases = {'STRING': {'STRING','VARCHAR','TEXT'}, 'INT': {'INT','INTEGER','BIGINT'},
+        aliases = {'STRING': {'STRING','VARCHAR','TEXT'}, 'TEXT': {'STRING','VARCHAR','TEXT'}, 'INT': {'INT','INTEGER','BIGINT'},
                    'DECIMAL': {'DECIMAL','NUMERIC'}, 'TIMESTAMPTZ': {'TIMESTAMPTZ','TIMESTAMP'}}
         for name, (kind, nullable) in expected.items():
             column = columns[name]

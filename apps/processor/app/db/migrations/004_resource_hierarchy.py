@@ -9,8 +9,8 @@ def upgrade(connection) -> None:
         text(
             """
             ALTER TABLE azure_cost_records
-                ADD COLUMN IF NOT EXISTS resource_id STRING,
-                ADD COLUMN IF NOT EXISTS resource_name STRING,
+                ADD COLUMN IF NOT EXISTS resource_id TEXT,
+                ADD COLUMN IF NOT EXISTS resource_name TEXT,
                 ADD COLUMN IF NOT EXISTS resource_group_conflicts JSONB
             """
         )
