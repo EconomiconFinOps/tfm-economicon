@@ -4,7 +4,7 @@
 - Trello: https://trello.com/c/zg2LSCjb/126-jup-134
 - Rama: `fix/JUP-134-tema-y-limitaciones-es`, desde `origin/develop` en `4567e8e7`.
 - OpenSpec: `openspec/changes/jup-134-tema-y-limitaciones-es/` (propuesta, deltas de `frontend-brand-identity` y `cost-anomaly-episodes`, diseño, tareas y `review.md`).
-- Estado: evidencia técnica de esta sesión. No sustituye la revisión ni la validación funcional de quienes tengan esos roles en Trello. Falta la comprobación en navegador (ver «Sin comprobar»).
+- Estado: evidencia técnica de esta sesión. No sustituye la revisión ni la validación funcional de quienes tengan esos roles en Trello. Incluye comprobación en navegador real.
 
 ## Qué cambia
 
@@ -27,6 +27,7 @@
 | `typecheck` del frontend | sin errores |
 | `corepack pnpm openspec:validate` | 89 de 89 |
 | `jup:check` del change, `jup:check:test`, `jup:cleanup:check`, `jup:cleanup:test` | correctos (7 y 6 pruebas) |
+| Navegador real (Chromium, stack aislado construido desde la rama) | 22 de 22 comprobaciones PASS (ver abajo) |
 | QA independiente | Grupo 1: accept. Grupo 2: changes-requested en la primera pasada (mutante superviviente) y accept en la segunda |
 
 ## Evidencia por requisito de la spec
@@ -39,9 +40,24 @@
 | Mismas limitaciones en el panel y en el asistente | `test_anomaly_episode_limitations_es.py`, `test_anomaly_explanations.py` |
 | La evidencia no comparte la lista global | `test_anomaly_evidence_limitations_copy.py` |
 
-## Sin comprobar
+## Comprobación en navegador
 
-- **Comprobación en navegador real** (tarea 4.1 de `tasks.md`): no se hizo. El stack completo exige secretos (`DOCUMENT_S3_*`, `MINIO_*`) que no están en el repositorio y las imágenes locales son de código anterior. Se cubre en jsdom con pruebas de comportamiento, pero no el aspecto visual real ni el ancho de la cabecera.
+Stack aislado y desechable: `docker compose --env-file <fichero temporal fuera del repo> -p jup134-check --profile demo up -d --build --wait`, volúmenes nuevos, imágenes construidas desde esta rama, `RUNTIME_ENVIRONMENT=development`, `COST_REFERENCE_DATE=2026-10-30` y credenciales aleatorias locales. Chromium con Playwright (fuera del repositorio), ventana de 1280 px, tema del sistema claro, cuenta de demostración `operator@example.com` y cliente Core Finance. Sin interceptar peticiones.
+
+| Comprobación | Resultado |
+| --- | --- |
+| Tema claro: el botón dice «Tema claro», con el sol, `title` «Cambiar a tema oscuro», sin `aria-pressed` ni `aria-label`, accesible por ese nombre y sin botón «Tema oscuro» | PASS (6) |
+| Tema claro: sin atributo `data-theme` | PASS |
+| Al pulsar: pasa a «Tema oscuro» sin recargar, con la luna, `title` «Cambiar a tema claro», `data-theme="dark"` y sin `aria-pressed` | PASS (4) |
+| Recargar en oscuro conserva «Tema oscuro»; volver a claro y recargar conserva «Tema claro» | PASS (3) |
+| Detalle de la anomalía de Compute (5851,57 EUR, Alta P1) tras «Detectar ahora»: cinco limitaciones, la primera «Es un candidato para investigar…» | PASS (2) |
+| Ninguna limitación tiene palabras funcionales inglesas ni la redacción anterior | PASS (2) |
+| Sin desplazamiento horizontal de la página a 1280 y a 390 px | PASS (2) |
+| Sin errores de página durante el recorrido | PASS |
+
+El primer intento del guion falló por defectos del propio guion (dos elementos `header` y una bandeja vacía a la que había que pedir «Detectar ahora»); se corrigió y se repitió el recorrido completo. Las capturas y el resultado del guion no se versionan.
+
+## Sin comprobar
 - **Backend y procesador completos**: no son ejecutables en local (falta `tokenizer.json` en el backend y el módulo `markdown_it` en el procesador). El diff no toca el procesador; lo ejecuta la CI.
 - **Pruebas contra CockroachDB real**: omitidas por no haber URL de pruebas.
 
