@@ -9,6 +9,8 @@ from app.core.runtime_secrets import startup_boundary
 
 @startup_boundary
 def main() -> None:
+    from app.aws_runtime import prepare_runtime
+    prepare_runtime('backend')
     settings = get_settings()
     configure_logging()
     uvicorn.run(

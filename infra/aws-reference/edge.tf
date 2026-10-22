@@ -43,7 +43,7 @@ resource "aws_lb" "api" {
   subnets                    = [for subnet in aws_subnet.app : subnet.id]
   security_groups            = [aws_security_group.component["alb"].id]
   drop_invalid_header_fields = true
-  enable_deletion_protection = true
+  enable_deletion_protection = !var.rehearsal_teardown
   idle_timeout               = 60
 }
 resource "aws_lb_target_group" "api" {

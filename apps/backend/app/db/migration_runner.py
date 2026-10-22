@@ -41,7 +41,7 @@ class MigrationRunner:
                 raise RuntimeError('Duplicate migration identifier.')
         with self.engine.begin() as connection:
             connection.execute(text("""CREATE TABLE IF NOT EXISTS schema_migrations (
-                version STRING PRIMARY KEY,
+                version TEXT PRIMARY KEY,
                 applied_at TIMESTAMPTZ NOT NULL DEFAULT now())"""))
             applied={row.version for row in connection.execute(text("SELECT version FROM schema_migrations"))}
         for migration_file in files:

@@ -3,6 +3,8 @@
   "private": true,
   "packageManager": "pnpm@9.0.0",
   "scripts": {
+    "aws-demo:test": "python -m unittest discover -s tools/aws_demo -p test_*.py -v",
+    "aws-demo:prepare": "python tools/aws_demo/prepare.py --allow-incomplete",
     "assistant-robustness:validate": "python tools/assistant-robustness.py validate",
     "assistant-robustness:test": "python -m unittest discover -s scripts/tests -p test_assistant_robustness.py -v",
     "contributions:test": "python -m unittest discover -s tools/tests -p test_team_contributions.py -v",
@@ -31,6 +33,8 @@
     "assistant-corpus:validate": "node tools/assistant-corpus.mjs validate",
     "assistant-corpus:test": "node --test tools/assistant-corpus.test.mjs",
     "llm-gateway:test": "node --test tools/llm-gateway-config.test.mjs",
+    "gateway-config-hash": "node tools/gateway-config-hash.mjs",
+    "gateway-config-hash:test": "node --test tools/gateway-config-hash.test.mjs",
     "pr:check": "node tools/pr-policy.mjs",
     "pr:check:test": "node --test tools/pr-policy.test.mjs",
     "ci:check:test": "node --test tools/ci-workflow.test.mjs",

@@ -8,8 +8,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends libreoffice-wri
 
 WORKDIR /app
 
-COPY requirements.txt requirements.lock requirements-chat.lock requirements-documents.lock requirements-documents.txt requirements-chunking.lock requirements-chunking.txt ./
-RUN pip install --no-cache-dir --require-hashes -r requirements.lock -r requirements-chat.lock -r requirements-documents.lock -r requirements-chunking.lock \
+COPY requirements.txt requirements.lock requirements-chat.lock requirements-documents.lock requirements-documents.txt requirements-chunking.lock requirements-chunking.txt requirements-aws.txt requirements-aws.lock ./
+RUN pip install --no-cache-dir --require-hashes -r requirements.lock -r requirements-chat.lock -r requirements-documents.lock -r requirements-chunking.lock -r requirements-aws.lock \
     && pip check \
     && pip install --dry-run --no-index -r requirements.txt
 
@@ -19,7 +19,10 @@ RUN PYTHONPATH=/app python /tmp/build_tokenizer.py --output /app/app/agents/prom
 RUN python -c "from app.core.chat_resources import load_resources; from app.core.summary_resources import load_resources as summary; load_resources(); summary()"
 RUN find /app/app -type d -exec chmod 755 {} +
 
-RUN useradd --create-home --uid 10001 economicon
+RUN useradd --create-home --uid 10001 economicon \
+    && rm -f /tmp/build_tokenizer.py \
+    && chown economicon:economicon /tmp && chmod 0700 /tmp
+VOLUME ["/tmp"]
 
 EXPOSE 8001
 

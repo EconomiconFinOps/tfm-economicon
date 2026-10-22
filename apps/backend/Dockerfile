@@ -5,8 +5,8 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-COPY apps/backend/requirements.txt apps/backend/requirements.lock apps/backend/requirements-chat.lock apps/backend/requirements-documents.lock apps/backend/requirements-documents.txt ./
-RUN pip install --no-cache-dir --require-hashes -r requirements.lock -r requirements-chat.lock -r requirements-documents.lock \
+COPY apps/backend/requirements.txt apps/backend/requirements.lock apps/backend/requirements-chat.lock apps/backend/requirements-documents.lock apps/backend/requirements-documents.txt apps/backend/requirements-aws.txt apps/backend/requirements-aws.lock ./
+RUN pip install --no-cache-dir --require-hashes -r requirements.lock -r requirements-chat.lock -r requirements-documents.lock -r requirements-aws.lock \
     && pip check \
     && pip install --dry-run --no-index -r requirements.txt
 
@@ -19,7 +19,11 @@ COPY apps/processor/app/agents/prompt_resources/jup035/summary /opt/economicon/s
 RUN python -c "from app.core.chat_resources import load_resources; from app.core.summary_resources import load_resources as summary; load_resources(None); summary()"
 RUN find /app/app -type d -exec chmod 755 {} +
 
-RUN useradd --create-home --uid 10001 economicon
+RUN useradd --create-home --uid 10001 economicon \
+    && rm -f /tmp/build_tokenizer.py \
+    && chown economicon:economicon /tmp && chmod 0700 /tmp
+# ECS preserves this path's ownership when populating its task-scoped bind volume.
+VOLUME ["/tmp"]
 
 EXPOSE 8000
 

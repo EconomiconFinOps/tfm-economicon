@@ -139,7 +139,9 @@ Campos de cada episodio: `id`, `kind: cost_anomaly_candidate`, `currency`,
 `closed_at`, `closure_reason`, `previous_episode_id`, `rules_version`, `rules`
 (umbrales con los que se abrio), `cause_status: not_established`,
 `limitations`, `created_at` y `updated_at`. Los importes son cadenas con dos
-decimales (HALF_UP); internamente se guardan exactos.
+decimales (HALF_UP); internamente se guardan exactos. `limitations` son cinco
+frases en español y en un orden fijo (JUP-134): la misma lista que usa la
+explicación del asistente, que ya no mantiene una copia traducida aparte.
 
 ## Estados
 

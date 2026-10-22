@@ -6,6 +6,17 @@ from app.core.config import Settings, get_settings
 from conftest import SYNTHETIC_ENV
 
 
+def test_jup131_operational_postgresql_accepts_authenticated_tls(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "postgresql+psycopg://app:synthetic-db-pass@db.example.invalid:5432/operational?sslmode=require")
+    assert Settings(_env_file=None).database_url.get_secret_value().startswith("postgresql+psycopg://")
+
+
+def test_jup131_postgresql_does_not_bypass_local_insecure_boundary(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "postgresql+psycopg://app:synthetic-db-pass@db.example.invalid:5432/operational?sslmode=disable")
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None)
+
+
 def _effective_driver_kwargs(raw):
     from sqlalchemy.engine import make_url
 

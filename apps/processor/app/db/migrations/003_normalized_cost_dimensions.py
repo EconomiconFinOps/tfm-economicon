@@ -35,13 +35,13 @@ def upgrade(connection) -> None:
         text(
             """
             ALTER TABLE azure_cost_records
-                ADD COLUMN IF NOT EXISTS billing_account_id STRING,
-                ADD COLUMN IF NOT EXISTS subscription_name STRING,
-                ADD COLUMN IF NOT EXISTS resource_group STRING,
-                ADD COLUMN IF NOT EXISTS service_name STRING,
-                ADD COLUMN IF NOT EXISTS project STRING,
+                ADD COLUMN IF NOT EXISTS billing_account_id TEXT,
+                ADD COLUMN IF NOT EXISTS subscription_name TEXT,
+                ADD COLUMN IF NOT EXISTS resource_group TEXT,
+                ADD COLUMN IF NOT EXISTS service_name TEXT,
+                ADD COLUMN IF NOT EXISTS project TEXT,
                 ADD COLUMN IF NOT EXISTS consumed_quantity DECIMAL(38, 12),
-                ADD COLUMN IF NOT EXISTS consumed_unit STRING,
+                ADD COLUMN IF NOT EXISTS consumed_unit TEXT,
                 ADD COLUMN IF NOT EXISTS tags JSONB NOT NULL DEFAULT '{}'::JSONB
             """
         )

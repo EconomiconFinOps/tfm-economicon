@@ -4,7 +4,7 @@ from pathlib import Path
 
 from sqlalchemy import create_engine, text
 
-from app.db.migration_runner import MigrationRunner
+from app.db.migration_runner import MigrationRunner, initialize_schema
 
 
 class Database:
@@ -18,7 +18,13 @@ class Database:
             Path(__file__).with_name("migrations"),
             version_table="processor_schema_migrations",
         )
-        runner.run()
+        initialize_schema(runner, {
+            'jobs': {'id', 'tenant_id', 'created_by', 'payload', 'status'},
+            'users': {'id'}, 'user_tenants': {'user_id', 'tenant_id'},
+            'azure_cost_ingestion_runs': {'id', 'tenant_id', 'status'},
+            'azure_cost_records': {'id', 'tenant_id', 'subscription_id', 'usage_date',
+                                   'pretax_cost', 'currency', 'service_name', 'resource_group', 'resource_id'},
+        })
 
     def ping(self) -> bool:
         try:

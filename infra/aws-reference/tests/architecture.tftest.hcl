@@ -115,3 +115,18 @@ run "reject_database_family_mismatch" {
   }
   expect_failures = [var.postgres_parameter_family]
 }
+
+run "rehearsal_teardown_preserves_topology" {
+  command = plan
+  variables {
+    rehearsal_teardown = true
+  }
+  assert {
+    condition     = !aws_lb.api.enable_deletion_protection && aws_cognito_user_pool.main.deletion_protection == "INACTIVE" && alltrue([for db in aws_db_instance.main : !db.deletion_protection && db.skip_final_snapshot])
+    error_message = "Explicit rehearsal teardown must unlock only demo deletion protections."
+  }
+  assert {
+    condition     = length(aws_nat_gateway.main) == 3 && alltrue([for db in aws_db_instance.main : db.multi_az]) && aws_mq_broker.main.deployment_mode == "CLUSTER_MULTI_AZ"
+    error_message = "Teardown settings must not change architecture or availability."
+  }
+}

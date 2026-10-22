@@ -36,7 +36,7 @@ EXPECTED_FORMATS = (
     "rows-v1",
     "jup-063-paired-v1",
 )
-ENTRY_KEYS = {"path", "format", "milestone", "run_id", "manifest"}
+ENTRY_KEYS = {"path", "format", "milestone", "run_id", "model_identity", "manifest"}
 
 
 class ManifestTestCase(unittest.TestCase):
@@ -113,9 +113,9 @@ class ContractSurfaceTests(unittest.TestCase):
 
 class RealManifestTests(unittest.TestCase):
     def test_manifiesto_versionado_se_lee_completo(self) -> None:
-        # El manifiesto real de hitos: nueve informes existentes, todos de hito, sin run_id declarado.
+        # El manifiesto real de hitos: doce informes existentes, todos de hito, sin run_id declarado.
         entries = tool.read_manifest(REAL_MANIFEST)
-        self.assertEqual(len(entries), 9)
+        self.assertEqual(len(entries), 12)
         self.assertEqual(
             [entry["format"] for entry in entries],
             [
@@ -128,6 +128,9 @@ class RealManifestTests(unittest.TestCase):
                 "rows-v1",
                 "rows-v1",
                 "rows-v1",
+                "rows-v1",
+                "rows-v1",
+                "jup-070-report-v1",
             ],
         )
         for entry in entries:
@@ -470,8 +473,8 @@ class MergeManifestsTests(ManifestTestCase):
             name="local.json.manifest.json",
         )
         merged = tool.merge_manifests([REAL_MANIFEST, local], root=ROOT)
-        self.assertEqual(len(merged), 10)
-        self.assertEqual([entry["milestone"] for entry in merged], [True] * 9 + [False])
+        self.assertEqual(len(merged), 13)
+        self.assertEqual([entry["milestone"] for entry in merged], [True] * 12 + [False])
         self.assertEqual(merged[-1]["path"], local_report)
 
 

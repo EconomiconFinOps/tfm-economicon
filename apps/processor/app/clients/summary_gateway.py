@@ -11,6 +11,9 @@ import socket
 import threading
 import time
 from urllib import request,error
+from types import SimpleNamespace
+from app.core.bedrock import BedrockError
+from app.clients.bedrock import BedrockTransport
 from pydantic import SecretStr
 from app.clients.chat_gateway import _ChatHTTPConnection,_ChatHTTPSConnection,interrupt
 from app.clients.chat_stream_parser import complete_json
@@ -71,11 +74,15 @@ class _HTTPSHandler(_Handler,request.HTTPSHandler):pass
 
 class SummaryGateway:
     def __init__(self,settings):
-        if settings.llm_model!='economicon-chat' or settings.litellm_api_key is None:
+        self.native = getattr(settings,'llm_provider','litellm') == 'bedrock'
+        if settings.llm_model!='economicon-chat' or (not self.native and settings.litellm_api_key is None):
             raise ValueError('Summary configuration.')
         self.settings=settings
-        self.client=LiteLLMClient(settings)
-        self.client.transport=request.build_opener(request.ProxyHandler({}),_RejectRedirectHandler(),_HTTPHandler(),_HTTPSHandler())
+        if self.native:
+            self.client=SimpleNamespace(transport=BedrockTransport(settings))
+        else:
+            self.client=LiteLLMClient(settings)
+            self.client.transport=request.build_opener(request.ProxyHandler({}),_RejectRedirectHandler(),_HTTPHandler(),_HTTPSHandler())
         self.jobs={}
 
     def _post(self,messages,resources,deadline,holder,cancelled):
@@ -87,8 +94,13 @@ class SummaryGateway:
             'num_retries':0,'timeout':remaining,'reasoning':{'enabled':False},
             'provider':{'order':['deepinfra/fp8'],'allow_fallbacks':False,'require_parameters':True},
             'response_format':{'type':'json_schema','json_schema':{'name':'SummaryResponse','strict':True,'schema':resources.provider_response_schema}}}
-        req=request.Request(self.client.base_url+'/chat/completions',data=canonical(payload),
-            headers={'Authorization':'Bearer '+self.settings.litellm_api_key.get_secret_value(),'Content-Type':'application/json'},method='POST')
+        if self.native:
+            payload.pop('provider');payload.pop('reasoning')
+            payload['native_model_id']=self.client.transport.model_id
+            req=SimpleNamespace(data=canonical(payload))
+        else:
+            req=request.Request(self.client.base_url+'/chat/completions',data=canonical(payload),
+                headers={'Authorization':'Bearer '+self.settings.litellm_api_key.get_secret_value(),'Content-Type':'application/json'},method='POST')
         req._attempt_deadline=_AttemptDeadline(max(.001,deadline-time.time()-5))
         req._chat_cancelled=cancelled
         req._summary_holder=holder
@@ -117,6 +129,8 @@ class SummaryGateway:
                 return {'output':output,'usage':usage,'cost':None if usage is None else usage.get('cost_usd'),
                     'observed_model':body.get('model') if isinstance(body.get('model'),str) and len(body['model'])<=256 else None}
         except SummaryGatewayError:raise
+        except BedrockError as failure:
+            raise SummaryGatewayError(504 if failure.category=='timeout' else 502,'summary_native_provider') from None
         except error.HTTPError as failure:
             failure.close()
             raise SummaryGatewayError(503 if failure.code==429 else 502,'summary_provider_rejected') from None
@@ -173,6 +187,7 @@ def configured_gateway():
             from app.clients.mock_chat import MockSummaryGateway,require_local_mock
             require_local_mock(settings)
             return MockSummaryGateway()
+        if settings.llm_provider=='bedrock':return SummaryGateway(settings)
         if settings.llm_provider!='litellm' or settings.llm_model!='economicon-chat':return None
         path=Path(os.environ['SUMMARY_API_KEY_FILE'])
         if path.is_symlink() or not path.is_file() or not 16<=path.stat().st_size<=512:return None

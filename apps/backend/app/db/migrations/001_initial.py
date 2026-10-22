@@ -6,10 +6,10 @@ def upgrade(connection) -> None:
         text(
             """
             CREATE TABLE IF NOT EXISTS tenants (
-                id STRING PRIMARY KEY,
-                name STRING NOT NULL,
-                slug STRING UNIQUE NOT NULL,
-                plan STRING NOT NULL
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                slug TEXT UNIQUE NOT NULL,
+                plan TEXT NOT NULL
             )
             """
         )
@@ -18,11 +18,11 @@ def upgrade(connection) -> None:
         text(
             """
             CREATE TABLE IF NOT EXISTS users (
-                id STRING PRIMARY KEY,
-                email STRING UNIQUE NOT NULL,
-                password_hash STRING NOT NULL,
-                full_name STRING NOT NULL,
-                role STRING NOT NULL,
+                id TEXT PRIMARY KEY,
+                email TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                full_name TEXT NOT NULL,
+                role TEXT NOT NULL,
                 created_at TIMESTAMPTZ NOT NULL
             )
             """
@@ -32,9 +32,9 @@ def upgrade(connection) -> None:
         text(
             """
             CREATE TABLE IF NOT EXISTS user_tenants (
-                user_id STRING NOT NULL,
-                tenant_id STRING NOT NULL,
-                role STRING NOT NULL,
+                user_id TEXT NOT NULL,
+                tenant_id TEXT NOT NULL,
+                role TEXT NOT NULL,
                 created_at TIMESTAMPTZ NOT NULL,
                 PRIMARY KEY (user_id, tenant_id)
             )
@@ -45,13 +45,13 @@ def upgrade(connection) -> None:
         text(
             """
             CREATE TABLE IF NOT EXISTS jobs (
-                id STRING PRIMARY KEY,
-                tenant_id STRING NOT NULL,
-                created_by STRING NOT NULL,
-                source STRING NOT NULL,
-                artifact_uri STRING,
+                id TEXT PRIMARY KEY,
+                tenant_id TEXT NOT NULL,
+                created_by TEXT NOT NULL,
+                source TEXT NOT NULL,
+                artifact_uri TEXT,
                 payload JSONB NOT NULL,
-                status STRING NOT NULL,
+                status TEXT NOT NULL,
                 result JSONB,
                 created_at TIMESTAMPTZ NOT NULL,
                 updated_at TIMESTAMPTZ NOT NULL
@@ -63,10 +63,10 @@ def upgrade(connection) -> None:
         text(
             """
             CREATE TABLE IF NOT EXISTS conversations (
-                id STRING PRIMARY KEY,
-                tenant_id STRING NOT NULL,
-                user_id STRING NOT NULL,
-                title STRING NOT NULL,
+                id TEXT PRIMARY KEY,
+                tenant_id TEXT NOT NULL,
+                user_id TEXT NOT NULL,
+                title TEXT NOT NULL,
                 created_at TIMESTAMPTZ NOT NULL,
                 updated_at TIMESTAMPTZ NOT NULL
             )
@@ -77,12 +77,12 @@ def upgrade(connection) -> None:
         text(
             """
             CREATE TABLE IF NOT EXISTS messages (
-                id STRING PRIMARY KEY,
-                conversation_id STRING NOT NULL,
-                tenant_id STRING NOT NULL,
-                user_id STRING,
-                role STRING NOT NULL,
-                content STRING NOT NULL,
+                id TEXT PRIMARY KEY,
+                conversation_id TEXT NOT NULL,
+                tenant_id TEXT NOT NULL,
+                user_id TEXT,
+                role TEXT NOT NULL,
+                content TEXT NOT NULL,
                 metadata JSONB,
                 created_at TIMESTAMPTZ NOT NULL
             )

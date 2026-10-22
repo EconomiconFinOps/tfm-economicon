@@ -10,16 +10,16 @@ from sqlalchemy import inspect, text
 def schema_steps():
     return (
         """CREATE TABLE IF NOT EXISTS chat_operations (
-            operation_id STRING PRIMARY KEY NOT NULL,
-            tenant_id STRING NOT NULL, user_id STRING NOT NULL,
-            conversation_id STRING NOT NULL REFERENCES conversations(id),
-            client_request_id STRING NOT NULL, question_message_id STRING NOT NULL,
-            question_content STRING NOT NULL, canonical_input JSONB NOT NULL,
-            input_hash STRING NOT NULL, state STRING NOT NULL,
+            operation_id TEXT PRIMARY KEY NOT NULL,
+            tenant_id TEXT NOT NULL, user_id TEXT NOT NULL,
+            conversation_id TEXT NOT NULL REFERENCES conversations(id),
+            client_request_id TEXT NOT NULL, question_message_id TEXT NOT NULL,
+            question_content TEXT NOT NULL, canonical_input JSONB NOT NULL,
+            input_hash TEXT NOT NULL, state TEXT NOT NULL,
             revision INT NOT NULL, attempt_count INT NOT NULL CHECK(attempt_count BETWEEN 0 AND 4),
-            current_attempt_id STRING, attempt_deadline TIMESTAMPTZ, retry_at TIMESTAMPTZ,
+            current_attempt_id TEXT, attempt_deadline TIMESTAMPTZ, retry_at TIMESTAMPTZ,
             attempts JSONB NOT NULL, private_control JSONB NOT NULL,
-            result_message_id STRING, created_at TIMESTAMPTZ NOT NULL, updated_at TIMESTAMPTZ NOT NULL,
+            result_message_id TEXT, created_at TIMESTAMPTZ NOT NULL, updated_at TIMESTAMPTZ NOT NULL,
             UNIQUE(tenant_id,user_id,conversation_id,client_request_id),
             CHECK(state IN ('active','waiting','paused','completed','cancelled','failed'))
         )""",
@@ -36,6 +36,10 @@ def normalize(expression):
     # The Cockroach catalog adds explicit casts; SQLite preserves source SQL.
     # Exact canonical expressions deliberately reject extra OR/AND clauses.
     expression = re.sub(r'::(?:STRING|TEXT|VARCHAR|INT|INT8|INTEGER)\b','',str(expression),flags=re.I)
+    # PostgreSQL deparses literal IN lists as = ANY (ARRAY[...]). Restrict
+    # conversion to a list of quoted literals; keep every surrounding clause.
+    expression = re.sub(r"=\s*ANY\s*\(\s*ARRAY\[\s*('(?:[^']|'')*'(?:\s*,\s*'(?:[^']|'')*')*)\s*\]\s*\)",
+                        r' IN (\1)', expression, flags=re.I)
     return re.sub(r'[\s()]','',expression).lower()
 
 
@@ -84,7 +88,9 @@ def step_applied(connection, index):
         if not any(row['constrained_columns']==['conversation_id'] and row['referred_table']=='conversations' and row['referred_columns']==['id'] for row in catalog.get_foreign_keys('chat_operations')):
             raise RuntimeError('Incompatible chat operation parent constraint.')
         checks = {normalize(row['sqltext']) for row in catalog.get_check_constraints('chat_operations')}
-        expected_checks = {normalize('attempt_count BETWEEN 0 AND 4'), normalize("state IN ('active','waiting','paused','completed','cancelled','failed')")}
+        attempt_check = ('attempt_count >= 0 AND attempt_count <= 4'
+                         if connection.dialect.name == 'postgresql' else 'attempt_count BETWEEN 0 AND 4')
+        expected_checks = {normalize(attempt_check), normalize("state IN ('active','waiting','paused','completed','cancelled','failed')")}
         if checks != expected_checks:
             raise RuntimeError('Incompatible chat operation checks.')
         return True

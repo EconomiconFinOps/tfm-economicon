@@ -86,7 +86,7 @@ resource "aws_vpc_endpoint" "s3" {
 }
 
 resource "aws_security_group" "component" {
-  for_each    = toset(["alb", "backend", "processor", "azure-cost-api", "db", "mq"])
+  for_each    = toset(["alb", "backend", "processor", "azure-cost-api", "db", "mq", "bootstrap"])
   name_prefix = "${local.name}-${each.key}-"
   description = "Economicon ${each.key}: explicit rules only"
   vpc_id      = aws_vpc.main.id
@@ -104,6 +104,9 @@ resource "aws_vpc_security_group_ingress_rule" "edge_alb" {
 locals {
   connections = {
     alb_backend       = { source = "alb", target = "backend", port = 8000 }
+    backend_chat      = { source = "backend", target = "processor", port = 8003 }
+    bootstrap_db      = { source = "bootstrap", target = "db", port = 5432 }
+    bootstrap_mq      = { source = "bootstrap", target = "mq", port = 443 }
     backend_db        = { source = "backend", target = "db", port = 5432 }
     processor_db      = { source = "processor", target = "db", port = 5432 }
     backend_mq        = { source = "backend", target = "mq", port = 5671 }
@@ -128,7 +131,7 @@ resource "aws_vpc_security_group_egress_rule" "internal" {
   to_port                      = each.value.port
 }
 resource "aws_vpc_security_group_egress_rule" "https" {
-  for_each          = toset(["backend", "processor", "azure-cost-api"])
+  for_each          = toset(["backend", "processor", "azure-cost-api", "bootstrap"])
   security_group_id = aws_security_group.component[each.key].id
   cidr_ipv4         = "0.0.0.0/0"
   ip_protocol       = "tcp"

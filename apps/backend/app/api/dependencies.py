@@ -38,7 +38,10 @@ def get_current_user(
     token = parts[1]
     settings = get_settings()
     try:
-        payload = decode_access_token(token, settings.auth_secret_key.get_secret_value())
+        if settings.auth_provider == "cognito":
+            payload = request.app.state.cognito_verifier.verify(token)
+        else:
+            payload = decode_access_token(token, settings.auth_secret_key.get_secret_value())
     except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

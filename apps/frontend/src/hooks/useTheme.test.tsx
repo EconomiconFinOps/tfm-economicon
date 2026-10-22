@@ -2,6 +2,10 @@
 // y persiste, almacenamiento no disponible y alternancia sin recargar (JUP-112,
 // requisitos "El tema oscuro deriva de la marca y es opcional" y "El usuario
 // puede cambiar de tema desde el armazón").
+// JUP-134: el botón ya no tiene el texto fijo «Tema oscuro» ni `aria-pressed`: su
+// texto visible nombra el tema ACTIVO («Tema claro» / «Tema oscuro») y ese texto
+// es su nombre accesible. El estado se comprueba por el texto y por la ausencia
+// del atributo; el resto de casos (arranque, persistencia, degradación) no cambia.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -39,7 +43,10 @@ describe("ThemeToggle", () => {
     render(<ThemeToggle />);
 
     expect(currentTheme()).toBeNull();
-    expect(screen.getByRole("button", { name: "Tema oscuro" }).getAttribute("aria-pressed")).toBe("false");
+    // En claro el texto es «Tema claro» y el estado ya no se expresa con aria-pressed.
+    const button = screen.getByRole("button", { name: "Tema claro" });
+    expect(button.textContent?.trim()).toBe("Tema claro");
+    expect(button.hasAttribute("aria-pressed")).toBe(false);
   });
 
   it("arranca en oscuro cuando el sistema lo prefiere y no hay elección guardada", () => {
@@ -47,7 +54,9 @@ describe("ThemeToggle", () => {
     render(<ThemeToggle />);
 
     expect(currentTheme()).toBe("dark");
-    expect(screen.getByRole("button", { name: "Tema oscuro" }).getAttribute("aria-pressed")).toBe("true");
+    const button = screen.getByRole("button", { name: "Tema oscuro" });
+    expect(button.textContent?.trim()).toBe("Tema oscuro");
+    expect(button.hasAttribute("aria-pressed")).toBe(false);
   });
 
   it("una elección guardada prevalece sobre la preferencia del sistema", () => {
@@ -70,16 +79,21 @@ describe("ThemeToggle", () => {
     mockSystemTheme(false);
     const user = userEvent.setup();
     render(<ThemeToggle />);
-    const button = screen.getByRole("button", { name: "Tema oscuro" });
+    const button = screen.getByRole("button", { name: "Tema claro" });
 
     await user.click(button);
     expect(currentTheme()).toBe("dark");
-    expect(button.getAttribute("aria-pressed")).toBe("true");
+    // La misma referencia al botón sigue viva y su texto pasó a nombrar el tema nuevo.
+    expect(button.textContent?.trim()).toBe("Tema oscuro");
+    expect(screen.getByRole("button", { name: "Tema oscuro" })).toBe(button);
+    expect(button.hasAttribute("aria-pressed")).toBe(false);
     expect(window.localStorage.getItem(STORAGE_KEY)).toBe("dark");
 
     await user.click(button);
     expect(currentTheme()).toBeNull();
-    expect(button.getAttribute("aria-pressed")).toBe("false");
+    expect(button.textContent?.trim()).toBe("Tema claro");
+    expect(screen.getByRole("button", { name: "Tema claro" })).toBe(button);
+    expect(button.hasAttribute("aria-pressed")).toBe(false);
     expect(window.localStorage.getItem(STORAGE_KEY)).toBe("light");
   });
 
@@ -87,12 +101,14 @@ describe("ThemeToggle", () => {
     mockSystemTheme(true);
     const user = userEvent.setup();
     const first = render(<ThemeToggle />);
+    // Con el sistema en oscuro el botón arranca como «Tema oscuro»; pulsarlo elige claro.
     await user.click(screen.getByRole("button", { name: "Tema oscuro" }));
     expect(currentTheme()).toBeNull();
     first.unmount();
 
     render(<ThemeToggle />);
     expect(currentTheme()).toBeNull();
+    expect(screen.getByRole("button", { name: "Tema claro" })).toBeTruthy();
   });
 
   it("sin almacenamiento disponible sigue funcionando con la preferencia del sistema y alterna", async () => {
@@ -109,6 +125,7 @@ describe("ThemeToggle", () => {
     expect(currentTheme()).toBe("dark");
     await user.click(screen.getByRole("button", { name: "Tema oscuro" }));
     expect(currentTheme()).toBeNull();
+    expect(screen.getByRole("button", { name: "Tema claro" })).toBeTruthy();
   });
 
   it("si matchMedia lanza una excepción arranca en claro sin romper", () => {
@@ -117,22 +134,30 @@ describe("ThemeToggle", () => {
     });
     expect(() => render(<ThemeToggle />)).not.toThrow();
     expect(currentTheme()).toBeNull();
+    expect(screen.getByRole("button", { name: "Tema claro" })).toBeTruthy();
   });
 
-  it("el nombre accesible del botón contiene su texto visible (etiqueta en el nombre)", () => {
-    mockSystemTheme(false);
+  it.each([
+    ["claro", false, "Tema claro"],
+    ["oscuro", true, "Tema oscuro"]
+  ])("el nombre accesible del botón con el tema %s contiene su texto visible (etiqueta en el nombre)", (_tema, dark, texto) => {
+    // Se cubren ambos temas: el nombre accesible debe coincidir con el texto visible en los dos estados.
+    mockSystemTheme(dark);
     render(<ThemeToggle />);
-    const button = screen.getByRole("button", { name: /tema oscuro/i });
+    const button = screen.getByRole("button", { name: texto });
 
-    expect(button.textContent?.trim()).toBe("Tema oscuro");
+    expect(button.textContent?.trim()).toBe(texto);
     expect(button.getAttribute("aria-label")).toBeNull();
   });
 
-  it("el botón tiene un indicador de foco propio visible sobre la cabecera índigo", () => {
-    mockSystemTheme(false);
+  it.each([
+    ["claro", false, "Tema claro"],
+    ["oscuro", true, "Tema oscuro"]
+  ])("el botón con el tema %s tiene un indicador de foco propio visible sobre la cabecera índigo", (_tema, dark, texto) => {
+    mockSystemTheme(dark);
     render(<ThemeToggle />);
 
-    expect(screen.getByRole("button", { name: /tema oscuro/i }).className).toContain("focus-visible:outline-brand-foreground");
+    expect(screen.getByRole("button", { name: texto }).className).toContain("focus-visible:outline-brand-foreground");
   });
 
   it("sin matchMedia en el navegador arranca en claro", () => {
@@ -140,5 +165,6 @@ describe("ThemeToggle", () => {
     render(<ThemeToggle />);
 
     expect(currentTheme()).toBeNull();
+    expect(screen.getByRole("button", { name: "Tema claro" })).toBeTruthy();
   });
 });

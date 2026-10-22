@@ -1,5 +1,8 @@
 # Architecture Decision Records
 
+- [ADR-0027: ciclo AWS de defensa](ADR-0027-aws-defense-lifecycle.md) — Proposed,
+  JUP-131, 21/10/2026; bootstrap separado y crear/destruir por ciclo, sin despliegue.
+
 This directory contains the project decision log for durable architecture choices. OpenSpec `design.md` captures the technical design of an individual Trello task; ADRs explain decisions that remain relevant across tasks, modules or project phases.
 
 ## Registro para memoria y tutor — JUP-061

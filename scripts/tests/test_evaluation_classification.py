@@ -77,6 +77,7 @@ CATALOGUE_FILE = ROOT / "docs" / "validation" / "JUP-067-metrics-catalogue.json"
 RUN_KEYS = (
     "run_id", "source", "run_at", "commit", "suite", "suite_version", "suite_sha256", "corpus_sha256",
     "embedding_provider", "embedding_alias", "retrieval", "generation_model", "prompt_sha256", "synthetic",
+    "generation_model_id", "generation_provider", "generation_quantization", "gateway_config_sha256",
 )
 EXPECTED_REASONS = ("plantilla", "doble", "sintetica", "sin_modelo_verificado")
 CLASSIFICATION_KEYS = ("is_real", "non_real_reasons", "comparability_key")

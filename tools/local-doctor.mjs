@@ -100,7 +100,7 @@ export function resolveVariables(fileVars, env) {
 export const BACKEND_RULES = {
   placeholders: new Set(["secret", "password", "changeme", "change-me", "replace-me", "replace-me-auth-secret"]),
   databaseQueryOptions: new Set(["sslmode", "connect_timeout", "application_name"]),
-  databaseSchemes: new Set(["cockroachdb", "cockroachdb+psycopg", "cockroachdb+psycopg2"]),
+  databaseSchemes: new Set(["cockroachdb", "cockroachdb+psycopg", "cockroachdb+psycopg2", "postgresql", "postgresql+psycopg", "postgresql+psycopg2"]),
   vectorSchemes: new Set(["postgresql", "postgresql+psycopg", "postgresql+psycopg2"]),
   brokerSchemes: new Set(["amqp", "amqps"]),
   insecureDatabaseHosts: new Set(["localhost", "127.0.0.1", "::1", "cockroachdb"]),

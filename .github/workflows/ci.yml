@@ -25,6 +25,96 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  aws-postgresql:
+    name: AWS PostgreSQL application
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      AWS_EC2_METADATA_DISABLED: 'true'
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16@sha256:7b822b0aac60967beb1ea5e576b8602c94c300a157d187f385ae3e0da199b90a
+        env:
+          POSTGRES_USER: jup131
+          POSTGRES_PASSWORD: jup131-disposable-synthetic-pass
+          POSTGRES_DB: postgres
+        ports:
+          - 25432:5432
+        options: >-
+          --health-cmd "pg_isready -U jup131 -d postgres"
+          --health-interval 5s --health-timeout 3s --health-retries 12
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Install application dependencies
+        run: python -m pip install -r apps/backend/requirements-dev.txt -r apps/processor/requirements-dev.txt
+      - name: Prepare pinned embedding tokenizer outside the repository
+        run: python apps/processor/build_tokenizer.py --embedding-only --embedding-output /tmp/economicon-aws/cl100k_base.tiktoken
+      - name: Exercise native vector dimensions and preserve existing generations
+        working-directory: apps/processor
+        env:
+          JUP102_VECTOR_TEST_URL: postgresql+psycopg://jup131:jup131-disposable-synthetic-pass@127.0.0.1:25432/postgres
+          EMBEDDING_TOKENIZER_FILE: /tmp/economicon-aws/cl100k_base.tiktoken
+        run: python -m pytest tests/test_bedrock_generations_pgvector_jup131.py tests/test_embedding_generations_pgvector.py tests/test_schema_verify_pgvector_jup131.py tests/test_rehearsal_fixtures_pgvector_jup131.py -q
+      - name: Create the disposable operational test entrypoint
+        run: |
+          python - <<'PY'
+          from sqlalchemy import create_engine, text
+          engine = create_engine('postgresql+psycopg://jup131:jup131-disposable-synthetic-pass@127.0.0.1:25432/postgres', isolation_level='AUTOCOMMIT')
+          with engine.connect() as connection:
+              connection.execute(text('CREATE DATABASE economicon_jup131_test'))
+          engine.dispose()
+          PY
+      - name: Exercise native PostgreSQL migrations, restart and billing isolation
+        env:
+          AWS_POSTGRES_TEST_URL: postgresql+psycopg://jup131:jup131-disposable-synthetic-pass@127.0.0.1:25432/economicon_jup131_test?sslmode=disable
+        run: python -m unittest tools.aws_demo.test_postgresql -v
+
+  aws-demo-offline:
+    name: AWS demo offline
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      AWS_EC2_METADATA_DISABLED: 'true'
+      TF_IN_AUTOMATION: 'true'
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+      - name: Install pinned Terraform
+        run: |
+          python tools/aws_demo/install_terraform.py
+          echo "$GITHUB_WORKSPACE/.work/bin" >> "$GITHUB_PATH"
+      - name: Test CI/CD controller without AWS
+        run: |
+          python -m pip install --require-hashes -r tools/aws_demo/requirements.lock
+          python -m unittest discover -s tools/aws_demo -p 'test_*.py' -v
+          python tools/aws_demo/prepare.py --allow-incomplete
+          node infra/aws-reference/tests/edge-functions.test.cjs
+      - name: Validate both Terraform roots with mock providers
+        run: |
+          terraform fmt -check -recursive infra/aws-bootstrap infra/aws-reference
+          for root in infra/aws-bootstrap infra/aws-reference; do
+            terraform -chdir="$root" init -backend=false -input=false -lockfile=readonly
+            terraform -chdir="$root" validate
+            terraform -chdir="$root" test
+          done
+
   pr-policy:
     name: JUP policy
     if: github.event_name == 'pull_request'
@@ -93,6 +183,7 @@ jobs:
           corepack pnpm demo-dataset:test
           corepack pnpm demo-data:test
           corepack pnpm llm-gateway:test
+          corepack pnpm gateway-config-hash:test
           python -m unittest discover -s tools -p test_litellm_product_keys.py -v
           corepack pnpm docker:validate
           corepack pnpm local:test

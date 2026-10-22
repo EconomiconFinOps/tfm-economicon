@@ -71,7 +71,7 @@ def test_initial_schema_uses_the_effective_settings_dimension(monkeypatch, tmp_p
     store.initialize()
 
     assert engine.dimension == expected
-    assert engine.versions == {"001", "002", "003", "004"}
+    assert engine.versions == {"001", "002", "003", "004", "005"}
     assert sum(sql.startswith("CREATE TABLE chunk_embeddings") for sql in engine.statements) == 1
     assert sum(sql.startswith("CREATE INDEX knowledge_documents_tenant_id_idx") for sql in engine.statements) == 1
     assert dict(os.environ) == environment_before

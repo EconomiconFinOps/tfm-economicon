@@ -1,0 +1,13 @@
+{
+  "application_sha256": "REPLACE_ACCEPTED_APPLICATION_TREE_SHA256",
+  "evidence": {
+    "postgresql": {"path": "docs/evidence/REPLACE-postgresql.md", "sha256": "REPLACE_SHA256"},
+    "cognito": {"path": "docs/evidence/REPLACE-cognito.md", "sha256": "REPLACE_SHA256"},
+    "bedrock": {"path": "docs/evidence/REPLACE-bedrock.md", "sha256": "REPLACE_SHA256"},
+    "demo_data": {"path": "docs/evidence/REPLACE-demo-data.md", "sha256": "REPLACE_SHA256"}
+  },
+  "bootstrap": [["python", "tools/aws_demo/REPLACE_accepted_bootstrap.py"]],
+  "checks": [["python", "tools/aws_demo/REPLACE_accepted_functional_checks.py"]],
+  "application_environment": {},
+  "bedrock_model_arns": []
+}

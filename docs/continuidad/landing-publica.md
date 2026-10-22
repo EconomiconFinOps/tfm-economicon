@@ -1,5 +1,13 @@
 # Landing pública — JUP-089
 
+## Excepcion humana para integrar PR142 - 22/10/2026
+
+Orden directa en HAL9000 (chat 01a1270c-e332-7462-9c90-706d49ade92c): "Mergea tambien la 142, tienes excepcion humana para saltarte las validaciones." Este permiso puntual supera los bloqueos historicos de merge y revalidacion exclusivamente para PR142. Se prepara squash administrativo hacia develop; no equivale a aceptacion publica ni a cierre de Trello.
+
+El candidato parte de e1b8197b27c2078d418fa087686e901735b5fec2 e incorpora develop 7f6c8d56ff72dd874e623b6ffe0109050f7a423a. Unico conflicto manual: este indice, conservando las entradas de landing, AWS, cortes del chat y reevaluacion. La fusion automatica de CI y contrato de scripts conserva los incrementos de landing y develop. Se conserva el contenido de apps/landing; no se repiten suites funcionales ni se atribuye CI previa al candidato reconciliado.
+
+Las tres reviews completas de Lucia (dos COMMENTED y una DISMISSED), los dos comentarios de conversacion y la ausencia de comentarios inline se han leido. No hay CHANGES_REQUESTED activo en ese corte; no se publican aprobaciones sustitutivas ni se alteran roles, protecciones o checks. Validaciones pendientes dispensadas solo para este merge. Dominio/renovacion, hosting/DNS/HTTPS y despliegue/reversion publicos, video aprobado, demo autentica y reduced-motion interactivo mantienen sus limites historicos. Las secciones siguientes conservan su fecha; sus esperas de autorizacion de merge quedan superadas por esta orden.
+
 Actualización documental: 22/10/2026. Los cortes anteriores conservan sus revisiones y límites. [Tarjeta](https://trello.com/c/fD7nJKRl) · [OpenSpec archivado](../../openspec/changes/archive/2026-10-19-jup-089-public-landing/) · [Evidencia](../evidence/JUP-089-validation.md).
 
 
