@@ -15,8 +15,8 @@
 
 ## 3. Documentación
 
-- [ ] 3.1 Actualizar `apps/frontend/README.md` (botón que muestra el tema activo)
-- [ ] 3.2 Actualizar `docs/continuidad/frontend-espanol.md`, `docs/continuidad/identidad-marca-frontend.md` y la fila de `docs/continuidad/README.md`, indicando que las limitaciones de episodios ya no son un valor de la API en inglés y el cambio de identificador de evidencia descrito en design.md
+- [x] 3.1 Actualizar `apps/frontend/README.md` (botón que muestra el tema activo)
+- [x] 3.2 Actualizar `docs/continuidad/frontend-espanol.md`, `docs/continuidad/identidad-marca-frontend.md` y la fila de `docs/continuidad/README.md`, indicando que las limitaciones de episodios ya no son un valor de la API en inglés y el cambio de identificador de evidencia descrito en design.md
 
 ## 4. Comprobación final
 

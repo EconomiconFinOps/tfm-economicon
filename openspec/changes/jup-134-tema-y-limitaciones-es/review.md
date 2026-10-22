@@ -91,3 +91,13 @@ Se comprobó con Grep que `anomaly-explanation:` solo se calcula en `anomaly_exp
 
 - `openspec/specs/cost-anomaly-episodes/spec.md` se actualiza al archivar el change.
 - Los documentos de continuidad y el README del frontend se tratan en el grupo 3.
+
+## Grupo 3: documentación (tareas 3.1 y 3.2)
+
+Tarea doc-only: mutación N/A y sin ciclo Red/Green (no cambia código de producto ni tests).
+
+- `apps/frontend/README.md`: el botón de tema alterna y muestra el tema activo («Tema claro» o «Tema oscuro»).
+- `docs/continuidad/identidad-marca-frontend.md`: nota de «Qué tocar si cambia algo» sobre el texto del conmutador (sin `aria-pressed`, nombre accesible igual al texto, `title` con la acción) y las tres pruebas que hay que actualizar si cambia.
+- `docs/continuidad/frontend-espanol.md`: excepción de JUP-134 en «Límites» (limitaciones de los episodios en español en origen, una sola lista, efecto sobre el identificador de evidencia, y las limitaciones de `app/schemas/anomalies.py` que quedan fuera con su motivo).
+- `docs/continuidad/README.md`: las filas de las dos notas, con la fecha 2026-10-22.
+- `docs/api/anomaly-explanations.md` ya decía que las limitaciones van en español, y ninguna otra documentación describe las limitaciones en inglés (Grep sin resultados), así que no se toca.
