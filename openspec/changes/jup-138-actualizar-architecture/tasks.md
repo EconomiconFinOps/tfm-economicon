@@ -1,12 +1,12 @@
 ## 1. Inventario en la SHA del corte (D1, D2)
 
-- [ ] 1.1 Fijar la SHA de corte (base de la rama) y crear en el scratchpad un archivo de entorno con valores
+- [x] 1.1 Fijar la SHA de corte (base de la rama) y crear en el scratchpad un archivo de entorno con valores
   ficticios para las variables obligatorias de Compose, sin copiarlo al repositorio
-- [ ] 1.2 Listar servicios y volúmenes con `docker compose config` para el perfil por defecto, `demo` y el
+- [x] 1.2 Listar servicios y volúmenes con `docker compose config` para el perfil por defecto, `demo` y el
   overlay `ai`, y redes y secretos del archivo combinado; registrar los comandos y su salida en `review.md`
-- [ ] 1.3 Listar las rutas del backend y del processor, las migraciones y tablas de cada servicio, y los flags
+- [x] 1.3 Listar las rutas del backend y del processor, las migraciones y tablas de cada servicio, y los flags
   de chat, RAG y AWS con su valor por defecto; registrarlo en `review.md`
-- [ ] 1.4 Contrastar cada afirmación de las secciones afectadas con el inventario y abrir en `review.md` la tabla
+- [x] 1.4 Contrastar cada afirmación de las secciones afectadas con el inventario y abrir en `review.md` la tabla
   de desfases (afirmación, fuente, cambio previsto), incluidos los de la tarjeta y los nuevos
 
 ## 2. Editar docs/architecture.md: componentes, flujos y datos (§1 a §4)
