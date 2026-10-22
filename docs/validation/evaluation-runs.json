@@ -10,6 +10,7 @@
     { "path": "docs/evidence/JUP-130/JUP-130-data.rows.json", "format": "rows-v1", "milestone": true },
     { "path": "docs/evidence/JUP-130/JUP-130-ai-cost.rows.json", "format": "rows-v1", "milestone": true },
     { "path": "docs/evidence/JUP-071-live-r1-rows.json", "format": "rows-v1", "milestone": true },
-    { "path": "docs/evidence/JUP-071-fix-r1-rows.json", "format": "rows-v1", "milestone": true }
+    { "path": "docs/evidence/JUP-071-fix-r1-rows.json", "format": "rows-v1", "milestone": true },
+    { "path": "docs/evidence/JUP-069-fix-bank28-report.json", "format": "jup-070-report-v1", "milestone": true }
   ]
 }
