@@ -1,7 +1,7 @@
 # CI/CD AWS y primer ensayo — JUP-131
 
 Implementación preparada el21/10/2026. [Trello](https://trello.com/c/NtiH8R4Z),
-[plan](../planning/aws-cicd-defensa.md), [decisión](../adr/ADR-0026-aws-defense-lifecycle.md).
+[plan](../planning/aws-cicd-defensa.md), [decisión](../adr/ADR-0027-aws-defense-lifecycle.md).
 **No se ha desplegado nada en AWS.** El ensayo1 está preparado localmente, pero
 no es lanzable hasta completar sus entradas y la evidencia funcional pendiente.
 
@@ -13,29 +13,32 @@ técnicos conformes y JUP policy omitido en el evento push. Incluye PostgreSQL
 real, controlador offline, backend/processor, frontend y OpenSpec. No valida los
 cambios locales posteriores de Bedrock ni una ejecución en AWS.
 
-La PR146 permanece en borrador, sin reviews publicadas. Tras fetch, develop
-está en `4567e8e7`; merge-tree detecta un conflicto textual en
-`docs/continuidad/README.md`. Además incorpora JUP-132 (modelo generativo y
-recursos v4), que requiere comprobar compatibilidad con Bedrock antes de publicar
-el conjunto. También coincide el número ADR-0026 de ambas ramas: resolver el
-índice y numeración al integrar, conservando los documentos.
+El candidato local incorpora develop `4567e8e7`, incluidos los recursos v4 de
+JUP-132. El ADR AWS pasa a0027 para conservar el ADR0026 del modelo por defecto.
+La receta real `infra/aws-cicd/release.json` conecta runtime nativo, cinco tareas
+privadas de arranque, datos sintéticos por tenant y checker funcional.
 
-Reejecutado localmente: controlador Python27PASS/1SKIP (PostgreSQL necesita
-opt-in), Terraform referencia10PASS con mocks y `git diff --check` conforme.
-El contrato de perfiles Bedrock ya está conectado al preflight del runner;
-no se ha ejecutado contra la cuenta. El hito posterior de runtime privado
-S3/HMAC/TLS tiene95PASS Linux, controlador30PASS/1SKIP y Terraform13PASS mock;
-ver [evidencia y límites](../evidence/JUP-131-aws-runtime.md). No cubre las tareas
-de bootstrap/checks que siguen pendientes.
-`prepare.py --allow-incomplete` conserva `aws_deployable=false` y
-`aws_preflight_executed=false`. No se llama a AWS.
+Verificación del conjunto: backend Linux2714PASS/369SKIP; processor Linux
+2666PASS/150SKIP y cinco fallos de una expectativa antigua del ledger, corregida
+para incluir005 (sus siete casos focales pasan). Compatibilidad nativa/v4:
+66PASS. Las tres imágenes se construyen y funcionan como uid10001 con raíz de
+solo lectura y volumen ordinario /tmp privado. Terraform referencia12PASS;
+controlador52casos,51PASS/1SKIP (el opt-in SQL se comprobó por separado).
+La revisión técnica independiente encontró un bloqueo de destroy con count;
+regresión reproducida y corregida conservando las guardas de ámbito/acciones.
+
+Estas pruebas no acreditan permisos ni inferencia real de AWS. La CI final debe
+verificarse por su SHA tras publicar el candidato; el run histórico anterior no
+lo cubre. La revisión y validación humanas de CONTRIBUTING siguen pendientes.
+`prepare.py --allow-incomplete` conserva el paquete bloqueado por las entradas
+externas y `aws_preflight_executed=false`; no se llama a AWS.
 
 ### Qué desbloquea el primer ensayo
 
 | Bloque | Trabajo o dato concreto | Criterio para avanzar |
 | --- | --- | --- |
-| Código pendiente | Cerrar Bedrock, tareas privadas de bootstrap, fixtures y checks funcionales; conectar configuración/outputs y permisos runtime | Receta real `infra/aws-cicd/release.json`, scripts existentes, hashes y evidencias verificables; sin comandos REPLACE |
-| Integración y aceptación | Reconciliar develop, probar los recursos de chat actuales, publicar el candidato y obtener revisión/validación según CONTRIBUTING | CI SUCCESS del SHA final; no reutilizar el run de3e543b6f para código posterior |
+| Código preparado | Bedrock, tareas privadas, fixtures y checks conectados a outputs y receta real | Hash del árbol y evidencias verificados offline; aceptación real pendiente del ensayo |
+| Integración y aceptación | Publicar el candidato reconciliado y obtener revisión/validación según CONTRIBUTING | CI SUCCESS del SHA final; no reutilizar el run de3e543b6f para código posterior |
 | Acceso a cuenta | ID12dígitos y acceso mediante identidad/rol autorizado; España habilitada y boundary aprobada | Preflight futuro verifica identidad, cuotas, AZ, versiones RDS/MQ y permisos efectivos |
 | DNS | Zona pública Route53 o delegación de la subzona de `danteinferno.es`, con zone ID | Control de `economicon.danteinferno.es` y `origin.economicon.danteinferno.es` para certificados y registros |
 | Conexión de fuente | ARN CodeConnections AVAILABLE en París para este repositorio | Instalación de GitHub completada; origen manual fijado al SHA revisado |
@@ -96,17 +99,19 @@ Los ejemplos no contienen IDs reales ni secretos y fallan por diseño al validar
    Los60€ comunicados no son una estimación ni saldo comprobado. Definir margen
    para otros ensayos/defensa y costes residuales. Presupuestos no son un corte.
 7. SHA revisado y run CI SUCCESS del mismo SHA. No basta un run de otra rama/SHA.
-8. **Aceptación de aplicación:** completar PostgreSQL/Cognito/Bedrock y datos
-   reproducibles, según las brechas de la guía original. Crear y versionar
-   `infra/aws-cicd/release.json` a partir del ejemplo con hash del árbol `apps/`,
-   evidencias en `docs/evidence/` verificadas por SHA256 y scripts Python reales
-   en `tools/aws_demo/`. No rellenar hashes ficticios ni sustituir checks por true.
+8. **Aceptación de aplicación en AWS:** ejecutar las tareas y checks ya preparados
+   con el SHA/receta revisados. La receta versiona hashes de aplicación y cuatro
+   evidencias; no rellenarlos ficticiamente ni sustituir checks por true.
 
-La entrega inicial de CI/CD no incluía esas adaptaciones. El trabajo posterior
-incorpora [runtime privado](../evidence/JUP-131-aws-runtime.md) y
-[bootstrap de bases](../evidence/JUP-131-aws-bootstrap-db.md). Todavía faltan
-MQ/identidades/fixtures/checks y receta completa; su ausencia bloquea validate
-ANTES de crear infraestructura demo. No hay aceptación funcional AWS.
+La entrega actual incluye [runtime privado](../evidence/JUP-131-aws-runtime.md),
+[bootstrap de bases](../evidence/JUP-131-aws-bootstrap-db.md),
+[adaptadores Bedrock](../evidence/JUP-131-bedrock.md) y
+[fixtures/checker](../evidence/JUP-131-aws-fixtures-checks.md). El siguiente paso
+que necesita la cuenta es preparar/verificar identidad y roles, conexión GitHub,
+referencias de secretos, DNS, modelos, cuotas y crédito. Se avisará al usuario
+antes de esa sesión. No se necesitan claves de acceso pegadas en el chat.
+La preparación de estos prerrequisitos y el despliegue deben mantenerse como
+acciones explícitas; todavía no se ha ejecutado ninguna en AWS.
 
 ## Contrato de la receta de release
 

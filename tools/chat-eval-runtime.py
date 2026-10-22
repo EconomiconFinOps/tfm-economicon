@@ -10,14 +10,23 @@ import re
 import subprocess
 
 TOKENIZER = 'apps/processor/app/agents/prompt_resources/jup035/chat/v2/tokenizer.json'
+FLASH_TOKENIZER = 'apps/processor/app/agents/prompt_resources/jup035/chat/v4/tokenizer.json'
 TOKENIZER_BUILDER = 'apps/processor/build_tokenizer.py'
+PROMPT_ROOT = 'apps/processor/app/agents/prompt_resources/jup035/'
 
 
 def generated_hashes(plan):
     artifacts = plan.get('generated_artifacts', {})
-    if (not isinstance(artifacts, dict) or set(artifacts) - {TOKENIZER}
+    manifests = {PROMPT_ROOT + kind + '/v4/manifest.json' for kind in ('chat', 'summary')}
+    # The frozen plan selects the contract; old plans never acquire v4 implicitly.
+    native = any(name.startswith(PROMPT_ROOT + kind + '/v4/')
+                 for name in plan['file_hashes'] for kind in ('chat', 'summary'))
+    required = {TOKENIZER, FLASH_TOKENIZER} if native else {TOKENIZER}
+    if (not isinstance(artifacts, dict) or set(artifacts) - required
             or artifacts and TOKENIZER_BUILDER not in plan['file_hashes']
-            or TOKENIZER_BUILDER in plan['file_hashes'] and TOKENIZER not in artifacts):
+            or TOKENIZER_BUILDER in plan['file_hashes'] and set(artifacts) != required
+            or native and (TOKENIZER_BUILDER not in plan['file_hashes']
+                           or not manifests.issubset(plan['file_hashes']))):
         raise ValueError('Missing or unknown generated runtime artifact')
     for name, pin in artifacts.items():
         if (name in plan['file_hashes'] or not isinstance(pin, dict)
@@ -55,14 +64,16 @@ def container_paths(plan, service):
     prefix = f'apps/{service}/' + ('src/' if service == 'frontend' else 'app/')
     target = '/workspace/apps/frontend/src/' if service == 'frontend' else '/app/app/'
     paths = {name: target + name[len(prefix):] for name in plan['file_hashes'] if name.startswith(prefix)}
-    if generated_hashes(plan) and service in ('backend', 'processor'):
-        paths[TOKENIZER] = ('/opt/economicon/chat/v3/tokenizer.json' if service == 'backend'
-                            else '/app/app/agents/prompt_resources/jup035/chat/v2/tokenizer.json')
+    generated = generated_hashes(plan)
+    if service in ('backend', 'processor'):
+        for name in generated:
+            paths[name] = ('/opt/economicon/chat/v4/tokenizer.json' if name == FLASH_TOKENIZER
+                           else '/opt/economicon/chat/v3/tokenizer.json') if service == 'backend' else '/app/app/' + name[len('apps/processor/app/'):]
     if service == 'backend':
         prompt = 'apps/processor/app/agents/prompt_resources/jup035/'
         for name in plan['file_hashes']:
-            if name.startswith(prompt + 'chat/v3/'):
-                paths[name] = '/opt/economicon/chat/v3/' + name[len(prompt + 'chat/v3/'):]
+            if any(name.startswith(prompt + bundle + '/') for bundle in ('chat/v3', 'chat/v4')):
+                paths[name] = '/opt/economicon/' + name[len(prompt):]
             elif name == prompt + 'chat/v2/tokenizer.json':
                 paths[name] = '/opt/economicon/chat/v3/tokenizer.json'
             elif name.startswith(prompt + 'summary/'):

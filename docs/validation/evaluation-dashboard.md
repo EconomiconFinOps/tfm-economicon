@@ -1,8 +1,43 @@
 # Dashboard de resultados de evaluación del asistente (JUP-121)
 
+## Entrada narrativa de evaluación — 21/10/2026 (JUP-129)
+
+Abrir **Asistente y evidencia**, ruta `/d/economicon-assistant-evidence/`. Su definición versionada es [assistant-evidence.json](../../apps/monitoring/grafana/dashboards/assistant-evidence.json). Es la entrada principal para explicar resultados; `economicon-assistant-evaluation` y `economicon-technical-metrics` conservan sus UID, consultas y contratos como superficies de auditoría y operación. Los apartados posteriores describen ese contrato previo y no se presentan como un nuevo ensayo.
+
+La composición aprobada se adapta a los datos realmente cargados. El manifiesto incorporado al reconciliar `develop` `b7c8b708`, y conservado al integrar `ee84f791` y `c00063db`, contiene **9 ejecuciones y 444 filas**, incluida la campaña experimental de robustez ya integrada. El suplemento histórico de modelos sigue siendo opcional y no forma parte de esa carga. Las cifras anteriores de 8/308 se conservan como evidencia histórica de la base `bc94a4da`. El selector no inventa ejecuciones ausentes. Los contadores no se fijan a los números del prototipo: una ejecución de plantilla se identifica como tal; una ausencia sigue siendo «No medido» o sin series («Sin datos»). El cero sólo se muestra si el informe trae un cero medido.
+
+### Hilo de lectura y cuatro familias
+
+| Familia | Señales seleccionadas | Límite útil |
+| --- | --- | --- |
+| Calidad del core | Estado completo de los casos, comprobaciones objetivas y puntos requeridos | Rúbrica/proxies existentes; no se acredita relevancia, fidelidad o aceptación independiente por el porcentaje de citas |
+| Recuperación | Documento/sección del instrumento histórico y matriz de calibración | Fechas, corpus y baterías distintos; cuatro candidatos a distancia 0,6, sin ganador único ni causalidad entre ensayos |
+| Rendimiento del sistema | Coste de fases y p95 de generación en una misma cohorte; salud Prometheus aparte | Coste no implica calidad; una campaña no es tráfico real; el coste facturado de pruebas tiene otra ventana y denominador |
+| Conversación y usuario | Perturbaciones y proxy de petición de rúbrica mixta | Las perturbaciones son un subconjunto; el proxy no es un detector puro y no hay evaluación de usuarios reales |
+
+La portada muestra una campaña, con sus casos favorables, fallidos y sin medir; el anillo usa exactamente ese denominador. El diagnóstico explica límites antes de la recuperación histórica. Modelos conserva barras provisionales y un XY de sólo dos puntos de la **misma** comparación del 16/10 (84 respuestas por modelo, contexto congelado, sin aceptación ni adjudicación independiente). Si no se cargó ese informe, sus gráficos quedan sin datos: el título del XY indica «Sin datos» y no representa puntos. Con ambos pares de coordenadas medidos indica «Dos observaciones»; si sólo hay un par completo, «Datos parciales». Es disponibilidad del mismo informe, no una métrica de calidad. No se sustituye por el benchmark de otra cohorte.
+
+Coste de pruebas, detector sintético, conciliación por inquilino/divisa, salud y detalle quedan plegados. Coste confirmado: ventana 09–21/10 UTC, 100 consultas; errores 429 del gateway **3/924** separados de errores 5xx del proveedor **6/924**. Detector: recall total **5/7** y detectables **5/5**, no sólo el segundo; retraso cero por construcción. Datos: referencia sintética 30/10, no puntualidad de una ingesta real; EUR y USD no se suman. Cada agregado histórico está fijado a una identidad de informe; no toma máximos entre distintas ejecuciones de la misma fuente. La tabla de detalle conserva las filas de todas las fuentes y sus valores nulos, con alias funcionales y metadatos internos ocultos.
+
+La campaña experimental de robustez ahora incluida en el manifiesto conserva **7/29**, **17/29**, cinco sin medir y 24 puntuables con cobertura reducida; una repetición/persona evaluadora y modelo sin verificar. Al abrir la composición sin selección previa, se elige esa campaña por ser la más reciente con fecha. Ni las citas válidas ni las literales convierten esos resultados en éxito. El suplemento histórico de modelos continúa separado: cargarlo añade una ejecución y 18 filas (10/462); al volver al manifiesto normal se recupera 9/444 y modelos vuelve a «Sin datos».
+
+### Comparar dos ejecuciones
+
+Elegir **Campaña** y **Referencia**. La referencia debe ser distinta y anterior, con fecha registrada, misma fuente y misma `comparability_key` del contrato existente: batería, corpus, modelo, prompt, recuperación y motivos de no realidad. Los valores internos se conservan y las etiquetas son funcionales. La interpolación usa [`sqlstring` de Grafana](https://grafana.com/docs/grafana/latest/visualizations/dashboards/variables/variable-syntax/), escapando comillas; no se usa interpolación raw.
+
+El bloque de comparación indica «Sin datos», «Sin referencia», «Misma ejecución», «Sin orden temporal», «No comparable» o «Comparación disponible». Una pareja incompatible no se presenta como mejora. En una pareja compatible, el detalle muestra los valores existentes y ambos denominadores de las mismas medidas, variantes, estados y unidades; igualdad exacta (tolerancia cero), aumento o disminución **observados**. Aumentar no equivale siempre a mejorar: la unidad y orientación se interpretan por métrica. No hay score global, significación estadística, tendencia o causalidad implícita. La comparación descriptiva de dos modelos del informe histórico sigue separada de esta comparación entre ejecuciones.
+
+### Provisioning, pruebas y evidencia
+
+El proveedor de archivos ya existente carga el nuevo JSON junto a los dos originales, con UID distinto y estable. [Grafana documenta la actualización por UID](https://grafana.com/docs/grafana/latest/administration/provisioning/). No cambian servicios, puertos, datasource, rol lector, contraseñas o comandos de carga de producto. PostgreSQL usa `evaluation-postgres`; salud usa sólo `prometheus` y las expresiones previas, sin inventar tráfico en ausencia de series.
+
+Pruebas focales: `python -m unittest discover -s scripts/tests -p test_evaluation_composition.py -v`. Por defecto reutilizan el PostgreSQL Docker desechable existente. Alternativa local explícita: definir `EVALUATION_COMPOSITION_PSQL` (ejecutable psql), `EVALUATION_COMPOSITION_PGHOST`, `EVALUATION_COMPOSITION_PGPORT`, `EVALUATION_COMPOSITION_PGDATABASE`, `EVALUATION_COMPOSITION_PGUSER` y `PGPASSWORD` para una base **desechable ya cargada**. En ese modo no se regenera el dataset; los escenarios se ejecutan con `SET LOCAL ROLE grafana_evaluation_reader` y terminan en `ROLLBACK`. No apuntar a una base compartida o producción. La suite comprueba nulos, ceros medidos, aislamiento, escape del selector y comparación compatible/incompatible.
+
+La [matriz y capturas de JUP-129](../evidence/JUP-129-validation.md) distinguen base real y proyección experimental, comprobación técnica y prueba humana. La [continuidad de la composición](../continuidad/dashboard-evaluacion-composicion.md) recoge implementación, decisiones y límites. La prueba de lectura exige una persona que no conocía los dashboards y respuestas registradas; ni los agentes ni una CI verde la sustituyen.
+
 Contrato de datos y guía de uso del dashboard de Grafana que reúne los resultados de evaluación del asistente. Tarjeta: [JUP-121](https://trello.com/c/aIdxwsXR). Decisión: [ADR-0022](../adr/ADR-0022-assistant-evaluation-results-in-grafana.md). Requisitos: [spec](../../openspec/changes/archive/2026-10-15-jup-121-assistant-evaluation-dashboard/specs/assistant-evaluation-dashboard/spec.md).
 
-> **Estado:** implementado. Este documento fija el contrato de datos y describe el dashboard (`apps/monitoring/grafana/dashboards/assistant-evaluation.json`, uid `economicon-assistant-evaluation`). La herramienta `tools/evaluation-dashboard.py` y los comandos de abajo funcionan; la sección de robustez espera el informe de JUP-071.
+> **Estado:** implementado. Este documento fija el contrato de datos y describe el dashboard (`apps/monitoring/grafana/dashboards/assistant-evaluation.json`, uid `economicon-assistant-evaluation`). La herramienta `tools/evaluation-dashboard.py` y los comandos de abajo funcionan; el manifiesto reconciliado ya incluye el informe provisional de robustez de JUP-071.
 
 ## Qué muestra y qué no demuestra
 
@@ -22,7 +57,7 @@ Las definiciones y fórmulas de las métricas de A están en el [catálogo de JU
 
 Cada sección empieza con un panel de texto («Cómo leer la sección…») y sus paneles llevan en la descripción lo que miden y lo que no demuestran.
 
-- **A. Calidad con rúbrica.** De arriba abajo: el **resumen de la última campaña** de JUP-070 (fecha, tipo de ejecución, casos aprobados sobre el total y si todavía no hay una evaluación con modelo real); las ejecuciones cargadas y el estado de sus casos; la tabla **«Resultados por métrica y ejecución»** (una fila por métrica y variante, con su nombre del catálogo, y una columna por ejecución); justo debajo, tres gráficas de evolución (proporciones automáticas, **latencia de la campaña** y juicio humano, solo hitos); la calibración de la recuperación, el benchmark de modelos y la robustez; y, al final, las dos tablas por fila de exactitud, relevancia y fundamento y de latencia, formato y disponibilidad de la campaña, que se conservan como **«(detalle)»** para auditar y conciliar con los informes. Las tablas por fila muestran con cada fila la fecha, la versión de la batería, el commit (abreviado a 8 caracteres; entero en la tabla de ejecuciones) y el modelo de su ejecución; la matriz no los repite, porque su cabecera ya identifica cada ejecución por fecha (`AAAA-MM-DD hh:mm`, en UTC como todo el dashboard) y tipo.
+- **A. Calidad con rúbrica.** De arriba abajo: el **resumen de la última campaña** de JUP-070 (fecha, tipo de ejecución, casos aprobados sobre el total y si todavía no hay una evaluación con modelo real); las ejecuciones cargadas y el estado de sus casos; la tabla **«Resultados por métrica y ejecución»** (una fila por métrica y variante, con su nombre del catálogo, y una columna por ejecución); justo debajo, tres gráficas de evolución (proporciones automáticas, **latencia de la campaña** y juicio humano, solo hitos); la calibración de la recuperación, el benchmark de modelos, los **indicadores de robustez** (los valores calculados de la última campaña, por las cuatro familias de evaluación de un RAG) y la robustez por fila; y, al final, las dos tablas por fila de exactitud, relevancia y fundamento y de latencia, formato y disponibilidad de la campaña, que se conservan como **«(detalle)»** para auditar y conciliar con los informes. Las tablas por fila muestran con cada fila la fecha, la versión de la batería, el commit (abreviado a 8 caracteres; entero en la tabla de ejecuciones) y el modelo de su ejecución; la matriz no los repite, porque su cabecera ya identifica cada ejecución por fecha (`AAAA-MM-DD hh:mm`, en UTC como todo el dashboard) y tipo.
 - **B. Métricas de negocio.** Una tabla con las 23 filas de JUP-068: tiempo, asignación de gasto y ahorro, con los mismos metadatos. El numerador y el denominador salen con la unidad del valor: minutos para el tiempo y euros para los importes (el informe los emite en milisegundos y céntimos y la consulta los convierte); un denominador de parejas es un recuento y se queda como número.
 - **C. Señales en vivo.** Cinco gráficas de Prometheus (consultas por minuto, latencia p95, tasa de error y las dos proporciones de búsquedas sin contexto y de fallos de recuperación) que miran siempre la última hora.
 
@@ -246,9 +281,11 @@ La proporción de búsquedas vacías es un límite inferior: el denominador incl
 
 ## Robustez (JUP-071)
 
-No existe todavía un informe de robustez. La sección está en el dashboard y muestra «Sin datos» hasta que haya filas. Cuando JUP-071 tenga su informe, puede emitir un fichero `rows-v1` con `source: JUP-071` (por categoría y tipo de perturbación, comparada con su caso base en `behavior`) o aportar su propio adaptador, y añadirlo al manifiesto; el dashboard no cambia.
+El manifiesto versionado incluye, como hito, las filas de la primera campaña con el chat real de JUP-071 (`docs/evidence/JUP-071-live-r1-rows.json`, ejecución no real y provisional); sin ellas la sección mostraría «Sin datos». JUP-071 emite un fichero `rows-v1` con `source: JUP-071` (por categoría y tipo de perturbación, comparada con su caso base en `behavior`) y, cuando se le dan el crudo y los recibos de una recogida en vivo, 19 filas de indicadores en los grupos propios `rob_core`, `rob_retrieval`, `rob_system` y `rob_conversation` (ver `docs/validation/JUP-071-robustness.md`). Otra campaña que no sea un hito se carga con un manifiesto local.
 
-La lectura del panel «Robustez (JUP-071)» (nombres, traducciones y categorías) no está cerrada: se hará con el informe real de JUP-071, cuando exista.
+El panel «Indicadores de robustez (JUP-071)» enseña solo esos indicadores de la última ejecución que los tiene, con su familia, su nombre en lenguaje llano, el valor con su unidad, la base y quién decide (juicio humano o regla). Lo no medido se lee «No medido». «Robustez (JUP-071)» queda como el detalle por fila, para auditar.
+
+La lectura del panel «Robustez (JUP-071)» (nombres, traducciones y categorías) no está cerrada: se hace con el informe de la primera campaña real de JUP-071, que es provisional.
 
 ### Contrato de clasificación para nuevas fuentes
 

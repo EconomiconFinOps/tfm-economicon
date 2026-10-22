@@ -153,8 +153,8 @@ def test_compose_summary_is_server_only_same_strict_optional_flag_and_separate_k
             key,value=line.strip().split(':',1);services[current][key]=value.strip()
     assert services['backend'].get('SUMMARY_ENABLED')=='${SUMMARY_ENABLED:-true}'
     assert services['processor'].get('SUMMARY_ENABLED')==services['backend']['SUMMARY_ENABLED']
-    assert services['backend'].get('SUMMARY_RESOURCE_DIRECTORY')=='/opt/economicon/summary/v3'
-    assert services['processor'].get('SUMMARY_RESOURCE_DIRECTORY')=='/app/app/agents/prompt_resources/jup035/summary/v3'
+    assert services['backend'].get('SUMMARY_RESOURCE_DIRECTORY')=='/opt/economicon/summary/v4'
+    assert services['processor'].get('SUMMARY_RESOURCE_DIRECTORY')=='/app/app/agents/prompt_resources/jup035/summary/v4'
     assert 'SUMMARY_API_KEY_FILE' not in source
     assert 'SUMMARY_API_KEY_FILE: /run/secrets/summary-api-key' in ai
     assert '- summary-api-key' in ai

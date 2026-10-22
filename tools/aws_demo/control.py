@@ -103,11 +103,20 @@ def source_sha256(path):
 
 
 def source_files(root):
-    excluded = {".git", ".work", ".terraform", "node_modules", "__pycache__", ".venv", ".pytest_cache", ".turbo", "dist", "build", ".secrets"}
+    root = Path(root)
+    excluded = {".git", ".work", ".superpowers", ".codex", ".agents", ".terraform", "node_modules", "__pycache__", ".venv", ".pytest_cache", ".turbo", "dist", "build", ".secrets"}
+    generated_tokenizers = {
+        f"apps/processor/app/agents/prompt_resources/jup035/chat/{version}/tokenizer.json"
+        for version in ("v2", "v4")
+    }
     for directory, dirs, names in os.walk(root, followlinks=False):
         dirs[:] = sorted(name for name in dirs if name not in excluded and not (Path(directory) / name).is_symlink() and not getattr(Path(directory) / name, "is_junction", lambda: False)())
         for name in sorted(names):
             path = Path(directory) / name
+            # Hash the versioned builder/manifests, not ignored build outputs.
+            # CodePipeline's source archive contains neither generated tokenizer.
+            if path.relative_to(root).as_posix() in generated_tokenizers:
+                continue
             if name in excluded or path.is_symlink() or name.startswith(".env"):
                 continue
             if name.endswith((".tfstate", ".tfstate.backup", ".tfplan", ".tfvars", ".tfvars.json", ".pyc", ".private.txt", "_override.tf.json")):
@@ -180,7 +189,7 @@ def check_destroy_plan(plan, cycle):
         if resource.get("mode") == "data" or resource["change"]["actions"] == ["no-op"]:
             continue
         address = resource["address"]
-        match = re.fullmatch(r'(aws_[a-z0-9_]+)\.([a-z0-9_]+)(?:\["[^"\n]+"\])?', address)
+        match = re.fullmatch(r'(aws_[a-z0-9_]+)\.([a-z0-9_]+)(?:\[(?:"[^"\n]+"|0|[1-9][0-9]*)\])?', address)
         require(match is not None and match.groups() in allowed, "Destroy outside application template: " + address)
         require(resource["change"]["actions"] == ["delete"], "Destroy plan contains a non-delete action")
         before = resource["change"].get("before") or {}

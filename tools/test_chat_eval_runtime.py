@@ -89,6 +89,57 @@ class RuntimeTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'generated runtime artifact'):
             r.container_paths(plan,'backend')
 
+    def flash_plan(self):
+        plan = self.generated_plan()
+        prompt = 'apps/processor/app/agents/prompt_resources/jup035/'
+        for bundle in ('chat/v4', 'summary/v4'):
+            plan['file_hashes'][prompt + bundle + '/manifest.json'] = 'manifest'
+            plan['file_hashes'][prompt + bundle + '/system.md'] = 'prompt'
+        plan['generated_artifacts'][prompt + 'chat/v4/tokenizer.json'] = {
+            'sha256': 'd' * 64, 'revision': 'e' * 40, 'bytes': 23}
+        return plan
+
+    def test_flash_verification_covers_active_backend_prompts_and_both_tokenizers(self):
+        plan = self.flash_plan()
+        flash = 'apps/processor/app/agents/prompt_resources/jup035/chat/v4/tokenizer.json'
+        for service in ('backend', 'processor'):
+            paths = r.container_paths(plan, service)
+            self.assertIn(flash, paths)
+            self.assertIn(r.TOKENIZER, paths)
+            self.assertTrue(paths[flash].endswith('/chat/v4/tokenizer.json'))
+            if service == 'backend':
+                for bundle in ('chat/v4', 'summary/v4'):
+                    name = 'apps/processor/app/agents/prompt_resources/jup035/' + bundle + '/manifest.json'
+                    self.assertEqual(paths[name], '/opt/economicon/' + bundle + '/manifest.json')
+            expected = {**plan['file_hashes'], **r.generated_hashes(plan)}
+            def transport(args, data=None):
+                if args[1] == 'inspect':
+                    return self.identity
+                return {name: expected[name] for name in json.loads(data)}
+            r.verify_container(plan, service, 'container', 'isolated-b', transport)
+            for altered in (flash, 'apps/processor/app/agents/prompt_resources/jup035/chat/v4/manifest.json'):
+                def changed(args, data=None):
+                    result = transport(args, data)
+                    if args[1] != 'inspect':
+                        result[altered] = 'wrong'
+                    return result
+                with self.assertRaisesRegex(ValueError, 'differs'):
+                    r.verify_container(plan, service, 'container', 'isolated-b', changed)
+
+    def test_flash_plan_cannot_omit_active_or_legacy_asset_or_active_manifest(self):
+        plan = self.flash_plan()
+        flash = 'apps/processor/app/agents/prompt_resources/jup035/chat/v4/tokenizer.json'
+        for name in (flash, r.TOKENIZER):
+            invalid = copy.deepcopy(plan)
+            invalid['generated_artifacts'].pop(name)
+            with self.assertRaisesRegex(ValueError, 'generated runtime artifact'):
+                r.container_paths(invalid, 'backend')
+        for bundle in ('chat/v4', 'summary/v4'):
+            invalid = copy.deepcopy(plan)
+            invalid['file_hashes'].pop('apps/processor/app/agents/prompt_resources/jup035/' + bundle + '/manifest.json')
+            with self.assertRaisesRegex(ValueError, 'generated runtime artifact'):
+                r.container_paths(invalid, 'backend')
+
     def test_generated_metadata_never_admits_arbitrary_paths_or_ambiguous_identity(self):
         for patch in ('unknown','duplicate','no-builder','bad-hash','bad-revision','bad-size'):
             with self.subTest(patch=patch):

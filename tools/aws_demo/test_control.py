@@ -26,6 +26,21 @@ def config():
 
 
 class ConfigTests(unittest.TestCase):
+    def test_application_digest_is_portable_across_generated_chat_tokenizers(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            app = root / 'apps/processor/app'
+            app.mkdir(parents=True)
+            (app / 'main.py').write_text('print("synthetic")\n')
+            expected = control.application_digest(root)
+            for version in ('v2', 'v4'):
+                asset = app / 'agents/prompt_resources/jup035/chat' / version / 'tokenizer.json'
+                asset.parent.mkdir(parents=True, exist_ok=True)
+                asset.write_text('{"generated":"asset"}')
+            self.assertEqual(control.application_digest(root), expected)
+            (asset.parent / 'manifest.json').write_text('{"policy":"changed"}')
+            self.assertNotEqual(control.application_digest(root), expected)
+
     def test_valid_config_uses_selected_regions_and_cycle_state(self):
         result = control.validate_config(config(), "a" * 40)
         self.assertEqual(control.state_key(result), "economicon/defensa/ensayo1/terraform.tfstate")
@@ -84,6 +99,22 @@ class PlanTests(unittest.TestCase):
                 "type": "aws_organizations_account", "mode": "managed",
                 "change": {"actions": ["delete"], "before": {}}}]}, "ensayo1")
 
+    def test_destroy_accepts_bedrock_count_instance_and_preserves_scope(self):
+        resource = {"address": "aws_iam_role_policy.bedrock_chat[0]", "mode": "managed",
+                    "change": {"actions": ["delete"], "before": {}}}
+        self.assertEqual(control.check_destroy_plan({"resource_changes": [resource]}, "ensayo1"),
+                         [resource["address"]])
+        for address in ("aws_iam_role_policy.bedrock_chat[-1]",
+                        "aws_iam_role_policy.bedrock_chat[01]",
+                        "aws_iam_role_policy.bedrock_chat[1.0]",
+                        "module.other.aws_iam_role_policy.bedrock_chat[0]",
+                        "aws_iam_role_policy.foreign[0]"):
+            with self.subTest(address=address), self.assertRaises(ValueError):
+                control.check_destroy_plan({"resource_changes": [dict(resource, address=address)]}, "ensayo1")
+        with self.assertRaises(ValueError):
+            control.check_destroy_plan({"resource_changes": [dict(resource,
+                change={"actions": ["create", "delete"], "before": {}})]}, "ensayo1")
+
     def test_inventory_only_selects_exact_state_addresses(self):
         state = {"values": {"root_module": {"resources": [
             {"address": 'aws_s3_bucket.main["frontend"]', "type": "aws_s3_bucket", "values": {"id": "demo-bucket"}},
@@ -102,6 +133,11 @@ class PlanTests(unittest.TestCase):
 
 
 class ReleaseTests(unittest.TestCase):
+    def test_versioned_release_matches_application_and_acceptance_evidence(self):
+        root = Path(__file__).parents[2]
+        recipe = control.validate_recipe(json.loads((root / "infra/aws-cicd/release.json").read_text()))
+        control.validate_recipe_files(recipe, root)
+
     def test_recipe_rejects_unreviewed_models_and_inline_task_keys(self):
         recipe = dict(application_sha256="a" * 64,
                       evidence={name: {"path": "docs/evidence/synthetic.md", "sha256": "b" * 64}

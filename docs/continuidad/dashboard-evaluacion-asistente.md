@@ -1,5 +1,9 @@
 # Dashboard de resultados de evaluación del asistente — JUP-121
 
+## Composición narrativa — 21/10/2026
+
+JUP-129 añade la entrada «Asistente y evidencia», conservando los dos UID y contratos previos para auditoría y operación. La implementación y sus límites están en [la continuidad de composición](dashboard-evaluacion-composicion.md), con [guía](../validation/evaluation-dashboard.md#entrada-narrativa-de-evaluación--21102026-jup-129) y [matriz de evidencia](../evidence/JUP-129-validation.md). Los apartados siguientes mantienen su corte histórico; no acreditan una ejecución o revisión nueva.
+
 Última actualización documental: 2026-10-16. Esta nota no repite el alcance de la tarjeta, que vive en [Trello](https://trello.com/c/aIdxwsXR).
 
 ## Comparativa GLM/DeepSeek: soporte preparado — 18/10/2026

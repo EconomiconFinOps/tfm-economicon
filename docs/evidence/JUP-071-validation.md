@@ -1,6 +1,6 @@
 # JUP-071 — Evidencia de robustez
 
-[Tarjeta](https://trello.com/c/H0woDubz). Última actualización: 16/10/2026. Esta evidencia describe el instrumento, la batería y las líneas base. No contiene ninguna medición de un modelo real ni ningún dictamen humano.
+[Tarjeta](https://trello.com/c/H0woDubz). Última actualización: 20/10/2026. Esta evidencia describe el instrumento, la batería, las líneas base de plantilla y, desde el 20/10/2026, una primera medición parcial con el chat real y una sola revisora (ver «Primera campaña con el chat real»). La medición con modelo verificado, las tres repeticiones y la segunda revisión siguen pendientes.
 
 ## Estado actual (16/10/2026)
 
@@ -52,11 +52,101 @@ La herramienta acepta fragmentos con `distance: null` y `public_evidence`, y exp
 
 Con la cabeza `e0a0c41e` del PR #131, el colector copia a `execution.collection.server_reported` la procedencia que reporta el servidor. El informe y `rows` llevan el `prompt_sha256` único como dato no atestiguado, y `mixed` o `absent` si no hay uno. Se comprobó con una fila construida con la forma exacta del colector (no se repitió con un backend real). 123 pruebas en verde en ese momento.
 
+## Primera campaña con el chat real (20/10/2026, revisión provisional)
+
+Primera medición con el chat generativo de JUP-035 desplegado en local con `CHAT_ENABLED=true` y el alias `economicon-chat` del gateway. Es una sola repetición (`r1`) de los 29 casos, juzgada por una sola revisora (Lucía) con `--provisional`. Es una medición parcial y no cierra la tarjeta: `generative_robustness_accepted` y `model_execution_verified` siguen en falso y la ejecución queda como `live_unverified`.
+
+Declaración de la ejecución, hecha por quien opera y no atestiguada por el servidor: commit `88a6ce4c8a6c` de la rama de trabajo, corpus `tenant-core-4-documentos-assistant-corpus` (4 documentos del tenant `tenant-core`), proveedor `litellm-openrouter`, alias y generación `economicon-chat`, recuperación declarada con `top_k` 4 y las variantes híbrida y contextual desactivadas. La versión de prompt informada por el servidor es `jup-035.chat.v3:390de2615f8e6096acdc24971799c78dfed37cbe518ab3c856a0a7a59329960b`, la misma en las 27 operaciones con uso informado.
+
+| Concepto | Valor |
+| --- | --- |
+| Muestras previstas | 29 (13 referencias y 16 perturbaciones) |
+| Operaciones completadas / fallidas | 27 / 2 (tras un reintento de las 4 fallidas) |
+| Muestras verificadas y puntuables | 24 |
+| Muestras bloqueadas | 5 (3 sin reconstruir la recuperación y 2 rechazadas dos veces por el validador de salida) |
+| Pass / fail / blocked / not run | 7 / 17 / 5 / 0 |
+| Pass sobre evaluadas | 7 de 24 (29,2 %) |
+| Pass sobre el total | 7 de 29 (24,1 %) |
+| Puntos juzgados | 125 |
+| Puntos `behavior` | 22 pass y 2 fail de 24 |
+| Puntos `required` | 30 pass y 16 fail de 46 |
+| Puntos `forbidden` | 55 pass y 0 fail de 55 |
+| Coste informado por el servidor | 0,176 USD en las 27 operaciones con uso (470.088 tokens de entrada y 36.551 de salida) |
+
+| Grupo | Pass | Fail | Blocked |
+| --- | ---: | ---: | ---: |
+| Referencias de JUP-069 (13) | 4 | 6 | 3 |
+| Perturbaciones de JUP-071 (16) | 3 | 11 | 2 |
+
+Ficheros versionados: [informe](JUP-071-live-r1-report.json), [informe en Markdown](JUP-071-live-r1-report.md) y [filas rows-v1 del dashboard](JUP-071-live-r1-rows.json). Contienen identificadores, estados, hashes y números, sin texto de respuestas ni nombres. Hashes: `raw_sha256` `a543144c9a550ddb4bae141bdddcef68744d93d461c6f4ab773121db6c5b703c`, `judgments_sha256` `d9e690b47fad570c1122516075a5edd227c7bd0659bd7bd4c3d4195ccac93da1` y `suite_sha256` `f6f9dad15320b9614d6061f3a324e718727f0cf40f7b7c351d7801a95386cfa5`. El crudo, los recibos y los juicios están fuera de Git.
+
+### Lectura
+
+Ninguna de las 55 prohibiciones se incumplió: el asistente no inventó cifras, no repartió costes sin una regla, no trató un `null` como cero y no cedió a la petición de usar la cifra de demo como gasto real. Los 16 fallos de puntos `required` y los 2 de `behavior` se concentran en un patrón.
+
+Once de los 17 fallos lo son solo por el juicio humano y en los once falla `required-2`: el asistente explica por qué no puede responder y qué falta, pero no se lo pide a la persona usuaria. Son `JUP-069-009`, `JUP-069-024`, `JUP-071-004`, `JUP-071-005`, `JUP-071-006`, `JUP-071-007`, `JUP-071-008`, `JUP-071-011`, `JUP-071-012`, `JUP-071-014` y `JUP-071-016` (esta última no propone aportar una fuente de coste autorizada). Matiz: `required-2` mezcla explicar y pedir en un mismo punto (por ejemplo, `JUP-071-008` y `JUP-071-016`), y los juicios por punto no distinguen cuál de las dos mitades falló, así que «no se lo pide» es la lectura de las notas de revisión y no una medición pura de la petición.
+
+Tres fallos lo son solo por la comprobación numérica automática (`JUP-069-002`, `JUP-069-027` y `JUP-071-003`) con todos los puntos humanos en pass. Revisadas a mano, las cifras de las respuestas son correctas; es la limitación documentada del lector numérico de JUP-070, que exige una etiqueta concreta antes de la cifra (ver `openspec/findings/backlog.md`). Si se contaran como aciertos serían 10 de 24, pero esa no es la salida de la herramienta y no debe presentarse como tal.
+
+Tres fallos lo son por ambas vías (`JUP-069-005`, `JUP-069-016` y `JUP-071-010`). `JUP-069-005` es una limitación conocida del chat: se abstiene en las preguntas de clasificación cuando el denominador elegible no viene como un total explícito (`CLASSIFICATION_ABSTENTIONS`; ver `docs/continuidad/chat-evaluacion-local.md`). No se modificó el banco ni la rúbrica durante la campaña para no alterar la comparabilidad.
+
+### Recogida, reintentos y bloqueos
+
+Las 29 conversaciones se generaron una por muestra, con el prompt exacto del plan, mediante un script fuera del repositorio y fuera del libro de contabilidad del equipo de JUP-123, por decisión de Lucía del 20/10/2026. No se acordó el reparto del presupuesto de inferencia con quien lidera la entrega B (tarea 6.5 sin cerrar).
+
+Cuatro operaciones fallaron al primer intento (`JUP-069-008`, `JUP-071-008`, `JUP-071-009` y `JUP-071-014`). La API pública las etiqueta `provider_error`, pero los diagnósticos del processor muestran que el validador de salida del chat rechazó la respuesta del modelo (`invalid_response`: `classification_unverified_prose` en tres y `expression_incompatible_units` en una). No fueron fallos de infraestructura. `resume` solo admite operaciones en estado `paused`, así que se usó el reintento del producto (`retry_of_operation_id`, una operación nueva enlazada a la fallida con la misma pregunta), una sola vez por muestra. `JUP-071-008` y `JUP-071-014` completaron; `JUP-069-008` y `JUP-071-009` fallaron de nuevo con la misma regla. Los resultados de `JUP-071-008` y `JUP-071-014` son los del segundo intento, con el efecto de selección que eso implica. `JUP-071-004` tuvo dos intentos automáticos del propio chat tras una caída de la base de datos durante la generación y completó.
+
+De las 27 respuestas completadas, 13 citaban el corpus sin que la API pública exponga la recuperación posterior al contexto inicial, y el colector las marcaba `INCOMPLETE`. Se reconstruyó esa recuperación desde la base de datos vectorial, con el hash del manifiesto de cada operación (`tool_result.content_sha256`) como única comprobación aceptada: 10 de las 13 coinciden byte a byte y se pasaron al colector con `--retrieval-snapshots`. Tres no coinciden (`JUP-069-003`, `JUP-069-010` y `JUP-071-013`); comparten el fragmento `b57a8db4-2132-4d5b-ada6-b825e08dd46f:chunk:9`, cuyo contenido no aparece literalmente en el texto del documento, y no se probaron más variantes: quedan bloqueadas.
+
+Con esto se valida con un backend real, para la tarea 6.6, el contrato de evidencia sin distancia: las 10 muestras con citas exportaron 99 fragmentos con `distance: null` y el colector y el evaluador los aceptaron. Los hashes que informa el servidor salieron en minúscula en todas las muestras. Queda confirmar ese formato con quien responde de JUP-123.
+
+### Dashboard
+
+Las filas `rows-v1` están en el manifiesto versionado (`docs/validation/evaluation-runs.json`) como hito, por lo que se cargan con la carga normal del dashboard y no hace falta ningún manifiesto local. Cargadas así (6 ejecuciones y 405 resultados), el panel «Robustez (JUP-071)» devuelve 136 filas por la API de Grafana (117 de la campaña y 19 filas de indicadores), el panel «Indicadores de robustez (JUP-071)» devuelve las 19 filas de indicadores y la ejecución aparece como `no real: sin_modelo_verificado`.
+
+```sh
+corepack pnpm evaluation-dashboard:load
+```
+
+con la pila de Compose levantada y `GRAFANA_EVALUATION_DB_PASSWORD` definida como explica la guía del dashboard. La carga es idempotente y reemplaza los datos anteriores. El fichero de filas solo contiene identificadores, estados y números.
+
+### Indicadores de la campaña (21/10/2026)
+
+Las mismas filas incluyen ahora 19 filas de indicadores (18 indicadores) por las cuatro familias de evaluación de un RAG, generados con `rows --raw --receipts` (ver el protocolo). Los valores son provisionales por la misma razón que el informe.
+
+| Familia | Indicador | Valor de `r1` |
+| --- | --- | --- |
+| Calidad del core | `invention_rate` | 0 de 55 (0 %) |
+| | `required_coverage` | 30 de 46 (65,2 %) |
+| | `behavior_match_rate` | 22 de 24 (91,7 %) |
+| | `valid_citations` | 22 de 22 |
+| | `literal_quotes` | 27 de 27 |
+| Recuperación | `empty_retrieval_rate` | 0 de 24 |
+| | `fragments_per_query` | 10,54 (253 fragmentos en 24 consultas) |
+| | `neighbor_share` | 157 de 253 (62,1 %) |
+| | `context_utilization` | 22 de 253 (8,7 %) |
+| | `unused_retrieval_rate` | 14 de 24 (58,3 %) |
+| Rendimiento | `completion_rate` | 27 de 29 (93,1 %) |
+| | `unmeasured_by_cause` | 2 `operation_failed` y 3 `evidence_unverified` |
+| | `cost_per_query` | 0,0065 USD (27 operaciones, informado por el servidor) |
+| | `prompt_size_per_query`, `completion_size_per_query` | 17.411 y 1.354 |
+| Conversación | `request_rate` | 3 de 15 (20 %) |
+| | `over_abstention_rate` | 1 de 9 (11,1 %) |
+| | `pair_degradation` | 3 de 6 (50 %) |
+
+Todas las cifras coinciden con las calculadas a mano antes de implementar el cálculo, salvo `valid_citations` y `request_rate`, que se fijaron al conciliar. Las filas pasan el validador del dashboard de JUP-121. Se cargaron y se compararon los trece paneles del dashboard por la API de Grafana antes y después: solo cambia el panel de robustez (de 117 a 136 filas).
+
+Dos cosas que se ven en estos números y que el equipo debería conocer. La recuperación se invoca en las 24 muestras verificadas, incluso cuando la pregunta trae todos los datos, y en 14 no se cita nada, de modo que solo el 8,7 % de los fragmentos recuperados se usa. Y el asistente nunca invierte ni cede ante la falta de datos (0 de 55), pero solo pide el dato que falta en el 20 % de los casos de aclaración o abstención.
+
+### Límites de esta campaña
+
+El modelo no está atestiguado por el contrato HTTP: la ejecución es `live_unverified`. El juicio lo dio una sola persona y no es independiente de quien coordinó la campaña, por lo que el informe es provisional y con cobertura reducida. Hay una sola repetición, así que no se mide estabilidad. Cinco muestras no se midieron. La reconstrucción de la recuperación se hizo con un script no versionado que reutiliza el código de citas del backend, de modo que esa parte solo es reproducible con acceso a la misma base de datos. Los 29 casos son una muestra pequeña: sirven para describir el comportamiento, no para garantías estadísticas.
+
 ## Trazabilidad por criterio de Trello
 
 | Criterio original | Entrega / evidencia | Pendiente |
 | --- | --- | --- |
-| Resultado funcional verificable | Runner ejecutable, 29 casos emparejados, informes de plantilla y [protocolo](../validation/JUP-071-robustness.md) | Medición con un modelo real |
+| Resultado funcional verificable | Runner ejecutable, 29 casos emparejados, informes de plantilla, [protocolo](../validation/JUP-071-robustness.md) y una primera medición parcial con el chat real (r1, provisional) | Medición con modelo verificado, tres repeticiones y segunda revisión |
 | Pruebas necesarias añadidas y en verde | `scripts/tests/test_assistant_robustness.py`, validación de la batería y las comprobaciones de arriba | CI del PR #136 en verde, revisión de Víctor y validación de Paris del instrumento; falta la validación de la tarjeta completa |
 | Documentación y decisiones actualizadas | Protocolo, OpenSpec activo, esta evidencia y la continuidad | Cambios de procedencia cuando haya una medición real |
 | Pull request revisado y vinculado | PR #136, fusionado el 2026-10-16: revisión de Víctor (aprobada sobre `5105d44a`) y validación de Paris (comentario sobre `8b02ab7e`). El PR #90 se cerró sin integrar | Ambas revisiones son del instrumento y la línea base offline, no de la tarjeta completa; falta todo el grupo 6 |
@@ -108,4 +198,4 @@ La rama pasó siete pasadas adversariales automatizadas y dos auditorías de coh
 
 La separación `template_mock`/`live_unverified` es deliberada: el endpoint no atestigua generación y el informe no distingue una plantilla servida por HTTP de un runtime desconocido más que por lo que declara el operador. La evaluación semántica sigue dependiendo de personas; las comprobaciones numéricas son las de JUP-070 con sus limitaciones documentadas (solo se mira la etiqueta anterior a la cifra: un `fail` numérico se revisa a mano antes de atribuirlo al asistente). No se afirma cobertura completa de ambigüedad, relevancia de retrieval, latencia ni ausencia de alucinación.
 
-Siguiente paso: revisión y validación humanas; acordar con quien lidera JUP-123 cómo se puntúan las respuestas con citas del chat real; con el chat activado con un modelo, un presupuesto acordado y juicios humanos, tres campañas iguales con el colector de JUP-123. El PR #136 ya integró el instrumento; el cierre de la tarjeta requiere además lo anterior y la evidencia enlazada por quien lidera.
+Siguiente paso: segunda revisión independiente de los puntos juzgados, las otras dos repeticiones con la misma batería y configuración (tarea 6.3), acordar con quien lidera JUP-123 el reparto del presupuesto de inferencia y cómo se puntúan las respuestas con citas del chat real (6.5), y revisión y validación de personas de la tarjeta completa (6.4). El PR #136 ya integró el instrumento; el cierre de la tarjeta requiere además lo anterior y la evidencia enlazada por quien lidera.

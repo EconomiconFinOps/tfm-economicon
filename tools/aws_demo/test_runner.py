@@ -116,8 +116,9 @@ class RunnerTests(unittest.TestCase):
 
     def test_import_and_local_preparation_never_invoke_aws(self):
         with tempfile.TemporaryDirectory() as directory, patch("subprocess.run", side_effect=AssertionError("Network/process forbidden")):
-            result = prepare.prepare(config(), directory, "a" * 40)
+            result = prepare.prepare(dict(config(), account_id="REPLACE_ACCOUNT_ID"), directory, "a" * 40)
             self.assertFalse(result["aws_deployable"])
+            self.assertFalse(result["aws_preflight_executed"])
             self.assertFalse(result["aws_resources_created"])
             up = json.loads((Path(directory) / "start-up.json").read_text())
             self.assertEqual(up["sourceRevisions"][0]["revisionValue"], "a" * 40)

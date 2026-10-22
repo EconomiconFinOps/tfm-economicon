@@ -11,6 +11,7 @@
 .secrets
 **/.secrets
 **/chat/v2/tokenizer.json
+**/chat/v4/tokenizer.json
 .env
 .env.*
 **/.env

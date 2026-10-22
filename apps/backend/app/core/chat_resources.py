@@ -13,6 +13,12 @@ from app.schemas.chat import canonical, response_schema, provider_wire_response_
 
 TOKENIZER_SHA = '19e773648cb4e65de8660ea6365e10acca112d42a854923df93db4a6f333a82d'
 TOKENIZER_REVISION = 'a66456a59f21345d1e5e586345c448a9106d29d7'
+FLASH_TOKENIZER = {
+    'library_version': '0.22.1', 'revision': '314113f8a7dadb388215396ba5fbee2c610a04d6',
+    'sha256': 'c90dfa01249db1be4245780a052ede752e1361c612ac6d08e2bdada7d599476b',
+    'bytes': 6367257,
+}
+FLASH_ASSEMBLER_SHA = '7753307328062189ad041fb17ac23dd4b983dba8e19b74d511c3f858d6b04106'
 BASE_SHA = '8e3197acc5cc50b4368d547fbde9ea198cad3364414cec489cd9050f922e6edf'
 INPUT_SHA = 'a69db50801cfc42eb5b633fc724bbc7e4b3b590326f6713cd6b8616bf0ccfb42'
 ASSEMBLER_SHA = 'ec88b7bfcc19ee34f2505b240f21855977fc3fc423ed3854d2135d1c5c289f78'
@@ -74,15 +80,15 @@ class BackendChatResources:
 
     def metadata(self, counted, messages):
         manifest = json.loads(self.manifest_bytes)
-        return {'prompt_version':self.prompt_version, 'tokenizer_sha256':TOKENIZER_SHA,
+        return {'prompt_version':self.prompt_version, 'tokenizer_sha256':manifest['tokenizer']['sha256'],
                 'response_schema_sha256':manifest['response_schema_sha256'],
-                'input_contract_sha256':INPUT_SHA, 'assembler_sha256':ASSEMBLER_SHA,
+                'input_contract_sha256':INPUT_SHA, 'assembler_sha256':manifest['assembler_sha256'],
                 'decision_schema_sha256':sha(canonical(decision_schema({'messages':messages})).encode()),
                 'variable_tokens':counted, 'context_budget':dict(self.context_budget)}
 
     def verify_descriptor(self, descriptor):
         if any(descriptor.get(key) != value for key, value in {
-                'prompt_version':self.prompt_version, 'tokenizer_sha256':TOKENIZER_SHA,
+                'prompt_version':self.prompt_version, 'tokenizer_sha256':json.loads(self.manifest_bytes)['tokenizer']['sha256'],
                 'response_schema_sha256':self.schema_sha256,
                 'context_budget':self.context_budget}.items()):
             from app.db.chat_repository import ChatError
@@ -91,7 +97,7 @@ class BackendChatResources:
 
 def load_resources(directory, tokenizer_file=None):
     import tokenizers
-    root = Path(directory or '/opt/economicon/chat/v3')
+    root = Path(directory or '/opt/economicon/chat/v4')
     names = {item.name for item in root.iterdir()}
     if (root.is_symlink() or not {'system.md','input.md','manifest.json'}.issubset(names)
             or names - {'system.md','input.md','manifest.json','tokenizer.json'}):
@@ -103,10 +109,16 @@ def load_resources(directory, tokenizer_file=None):
         if (root/name).is_symlink() or not 0 < (root/name).stat().st_size <= limit:
             raise ValueError('Invalid resource.')
     manifest = json.loads((root/'manifest.json').read_bytes())
+    version = manifest.get('v')
+    if type(version) is not int or version not in (3, 4):
+        raise ValueError('Unsupported chat bundle.')
+    tokenizer = FLASH_TOKENIZER if version == 4 else {
+        'library_version':'0.22.1','revision':TOKENIZER_REVISION,'sha256':TOKENIZER_SHA,'bytes':20217442}
+    assembler_sha = FLASH_ASSEMBLER_SHA if version == 4 else ASSEMBLER_SHA
     schema, schema_sha256 = response_schema()
     system = (root/'system.md').read_bytes()
     input_text = (root/'input.md').read_bytes()
-    if (manifest.get('v') != 3 or manifest.get('kind') != 'jup-035.chat.v3'
+    if (manifest.get('kind') != f'jup-035.chat.v{version}'
             or tokenizers.__version__ != '0.22.1'
             or manifest.get('system_sha256') != sha(system)
             or manifest.get('input_sha256') != sha(input_text)
@@ -117,24 +129,24 @@ def load_resources(directory, tokenizer_file=None):
             or manifest.get('response_period_policy') != 'server-verified-unique-utc-v1'
             or manifest.get('response_subscriptions_policy') != 'server-canonical-selection-v1'
             or manifest.get('input_contract_sha256') != INPUT_SHA
-            or manifest.get('assembler_sha256') != ASSEMBLER_SHA
+            or manifest.get('assembler_sha256') != assembler_sha
             or sha(canonical(manifest['input_contract']).encode()) != INPUT_SHA
-            or sha(canonical(manifest['assembler_contract']).encode()) != ASSEMBLER_SHA
+            or sha(canonical(manifest['assembler_contract']).encode()) != assembler_sha
             or manifest['assembler_contract'].get('generation_schema',{}).get('module_sha256') != sha(Path(__file__).with_name('chat_generation_schema.py').read_text(encoding='utf-8').encode())
-            or manifest.get('tokenizer') != {'library_version':'0.22.1','revision':TOKENIZER_REVISION,'sha256':TOKENIZER_SHA,'bytes':20217442}
+            or manifest.get('tokenizer') != tokenizer
             or manifest.get('budgets') != {'variable_tokens':8192,'wrapper_margin_tokens':1024,'output_tokens':3200,'model_context_tokens':1048576}):
         raise ValueError('Bundle contract mismatch.')
     inherited = system.decode('utf-8').partition('\n\nContrato de chat JUP-035 v3:')[0]
     if sha(inherited.encode('utf-8')) != BASE_SHA:
         raise ValueError('Inherited rules mismatch.')
     asset = Path(tokenizer_file) if tokenizer_file else (root/'tokenizer.json' if 'tokenizer.json' in names else root.parent/'v2/tokenizer.json')
-    if asset.is_symlink() or asset.stat().st_size != 20217442 or sha(asset.read_bytes()) != TOKENIZER_SHA:
+    if asset.is_symlink() or asset.stat().st_size != tokenizer['bytes'] or sha(asset.read_bytes()) != tokenizer['sha256']:
         raise ValueError('Tokenizer mismatch.')
     counter = tokenizers.Tokenizer.from_file(str(asset))
-    if sha(asset.read_bytes()) != TOKENIZER_SHA:
+    if sha(asset.read_bytes()) != tokenizer['sha256']:
         raise ValueError('Tokenizer changed.')
     counter.no_truncation()
     counter.no_padding()
     raw = canonical(manifest).encode('utf-8')
-    return BackendChatResources(system.decode('utf-8'),'jup-035.chat.v3:'+sha(raw),raw,
+    return BackendChatResources(system.decode('utf-8'),f'jup-035.chat.v{version}:'+sha(raw),raw,
                                 canonical(provider_response_schema(financial_metrics_allowed=True)),schema_sha256,counter)

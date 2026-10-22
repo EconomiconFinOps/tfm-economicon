@@ -1,5 +1,24 @@
 # Cloud AWS — arquitectura documental
 
+## Candidato integrado y revisión técnica — 22/10/2026
+
+Desarrollo local ee934326 más develop4567e8e7, recursos JUP132 v4 conservados y
+ADR AWS renumerado0027. Receta real release.json, fixtures y checker completos.
+Backend Linux2714PASS/369SKIP; processor2666PASS/150SKIP más5fallos de esperado
+ledger, corregido a005 y7focalesPASS. Nativo/v4 66PASS;3imágenes construidas y
+/tmp privado como uid10001 comprobado con volumen ordinario/raízRO. TF12PASS.
+Controlador53casos,52PASS/1SKIP; SQL opt-in previamente comprobado.
+
+Revisión técnica independiente encontró P1: destroy rechazaba política Bedrock
+con count[0]. Reproducido RED y corregido con regresión/guardas de ámbito.
+Dictamen incremental APPROVE tras comprobar la corrección; las reviews humanas siguen siendo requisito
+separado. Publicación y CI del SHA final todavía pendientes en este corte.
+No se ha accedido a AWS. Avisar al usuario al estar listo para preparar/verificar
+roles, identidad, DNS, CodeConnections/secretos, modelos/cuotas y crédito.
+No pedir secretos en chat. Runbook actualizado con entradas externas concretas.
+Los pendientes de Nova/develop/receta/imágenes anteriores quedan superados por
+este hito; aceptación real en AWS permanece pendiente.
+
 ## Fixtures y checker implementados; integración pendiente — 22/10/2026
 
 Turno previo y actual clasificados como progreso: cambios verificables en código

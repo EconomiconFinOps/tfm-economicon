@@ -23,7 +23,7 @@ aquí y se comparan con lo esperado calculado a partir del conjunto de datos, no
 Decisiones donde el contrato admite más de una lectura (fijadas aquí; el coder debe respetarlas):
 
 * Los bloques de resultados se parten sobre la lista GLOBAL de filas (todas las ejecuciones, en orden), no por
-  ejecución: con 5 ejecuciones y 269 filas hay un único `INSERT` de resultados.
+  ejecución: con 6 ejecuciones y 405 filas hay un único `INSERT` de resultados.
 * Una ejecución sin filas es válida para `build_sql` (solo la inserta en `evaluation.runs`) y si NINGUNA ejecución
   trae filas no se emite ningún `INSERT` de resultados (un `INSERT ... VALUES` sin tuplas no es SQL válido).
 * Las columnas que `validate_rows` no cubre (`report_path`, `format`, `comparability_key`, `report_sha256`...) se
@@ -102,8 +102,9 @@ REAL_RUN_IDS = [
     "jup-070-20261008T201354Z-37175957", "jup-070-20261008T210144Z-b64cca76", "jup-078-undated-7ea00edf",
     JUP_022_RUN_ID, "JUP-068-synthetic-example-v1",
     "jup130-anomalies-2026-10-30", "jup130-data-2026-10-30", "jup130-ai-cost-2026-10-09-to-2026-10-21",
+    "JUP-071-a543144c9a55",
 ]
-REAL_ROW_COUNTS = [48, 48, 10, 140, 23, 16, 10, 13]
+REAL_ROW_COUNTS = [48, 48, 10, 140, 23, 16, 10, 13, 136]
 
 # Documento `rows-v1` mínimo y válido para las pruebas de la línea de comandos.
 ROWS_DOCUMENT = {
@@ -758,12 +759,12 @@ class BuildSqlStructureTest(unittest.TestCase):
 
     def test_numero_de_tuplas_y_un_unico_bloque_de_resultados(self) -> None:
         script = Script(real_script())
-        self.assertEqual(len(script.rows("runs")), 8)
-        self.assertEqual(len(script.rows("results")), 308)
-        self.assertEqual(sum(REAL_ROW_COUNTS), 308)
+        self.assertEqual(len(script.rows("runs")), 9)
+        self.assertEqual(len(script.rows("results")), 444)
+        self.assertEqual(sum(REAL_ROW_COUNTS), 444)
         self.assertEqual(len(script.inserts("runs")), 1)
-        # Con 308 filas (< 500) hay un único bloque, aunque haya ocho ejecuciones: el corte es sobre la lista global.
-        self.assertEqual(chunk_sizes(script), [308])
+        # Con 444 filas (< 500) hay un único bloque, aunque haya nueve ejecuciones: el corte es sobre la lista global.
+        self.assertEqual(chunk_sizes(script), [444])
         self.assertTrue(all(size <= 500 for size in chunk_sizes(script)))
 
     def test_cada_insert_lleva_una_tupla_por_linea_separadas_por_coma_y_acaba_en_punto_y_coma(self) -> None:
@@ -772,7 +773,7 @@ class BuildSqlStructureTest(unittest.TestCase):
             r"^INSERT INTO evaluation\.(runs|results)\s*\([^)]*\)\s*VALUES\n((?:  \(.*\),\n)*  \(.*\);\n)", re.MULTILINE)
         matches = list(pattern.finditer(text))
         self.assertEqual([match.group(1) for match in matches], ["runs", "results"])
-        self.assertEqual([match.group(2).count("\n") for match in matches], [8, 308])
+        self.assertEqual([match.group(2).count("\n") for match in matches], [9, 444])
         # Todas las sentencias INSERT del script están cubiertas por el patrón (ninguna con otra forma).
         self.assertEqual(len(re.findall(r"^INSERT INTO", text, re.MULTILINE)), 2)
 
@@ -852,28 +853,30 @@ class BuildSqlValuesTest(unittest.TestCase):
         # Actualizado tras integrar develop: la fecha de la calibración es la `generated_at` del informe regenerado
         # (antes el literal 2026-10-03T07:15:32.826486+00:00), escrita tal cual con su cast.
         self.assertIn(f"'{JUP_022_RUN_AT}'::timestamptz", text)
-        self.assertEqual(text.count("::timestamptz"), 6)
+        self.assertEqual(text.count("::timestamptz"), 7)
         rows = Script(real_script()).rows("runs")
-        self.assertEqual([cells[2] is None for cells in rows], [False, False, True, False, True, False, False, False])
+        self.assertEqual([cells[2] is None for cells in rows], [False, False, True, False, True, False, False, False, False])
 
     def test_non_real_reasons_como_array_de_texto(self) -> None:
         text = real_script()
         self.assertIn("ARRAY['plantilla','doble']::text[]", text)
         self.assertEqual(text.count("ARRAY['plantilla']::text[]"), 1)
         self.assertEqual(text.count("ARRAY['sintetica']::text[]"), 3)
+        self.assertEqual(text.count("ARRAY['sin_modelo_verificado']::text[]"), 1)
         # JUP-078, JUP-022 y el coste de IA de JUP-130 son reales: array vacío con su cast (no NULL, la columna es NOT NULL).
         self.assertEqual(text.count("ARRAY[]::text[]"), 3)
         rows = Script(real_script()).rows("runs")
         self.assertEqual([cells[15] for cells in rows], [
             ("array", ["plantilla", "doble"]), ("array", ["plantilla"]), ("array", []), ("array", []),
-            ("array", ["sintetica"]), ("array", ["sintetica"]), ("array", ["sintetica"]), ("array", [])])
+            ("array", ["sintetica"]), ("array", ["sintetica"]), ("array", ["sintetica"]), ("array", []),
+            ("array", ["sin_modelo_verificado"])])
 
     def test_booleanos_en_mayusculas(self) -> None:
         rows = Script(real_script()).rows("runs")
         # synthetic (13), is_real (14) y milestone (18).
-        self.assertEqual([cells[13] for cells in rows], [False, False, False, False, True, True, True, False])
-        self.assertEqual([cells[14] for cells in rows], [False, False, True, True, False, False, False, True])
-        self.assertEqual([cells[18] for cells in rows], [True] * 8)
+        self.assertEqual([cells[13] for cells in rows], [False, False, False, False, True, True, True, False, False])
+        self.assertEqual([cells[14] for cells in rows], [False, False, True, True, False, False, False, True, False])
+        self.assertEqual([cells[18] for cells in rows], [True] * 9)
         selected = [cells[14] for cells in Script(real_script()).rows("results")]
         self.assertIn(True, selected)
         self.assertIn(False, selected)

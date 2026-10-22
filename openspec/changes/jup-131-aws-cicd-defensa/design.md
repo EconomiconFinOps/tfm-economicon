@@ -4,7 +4,7 @@ JUP: JUP-131
 Trello: https://trello.com/c/NtiH8R4Z
 
 Aplicar [plan](../../../docs/planning/aws-cicd-defensa.md) y
-[ADR-0026](../../../docs/adr/ADR-0026-aws-defense-lifecycle.md).
+[ADR-0027](../../../docs/adr/ADR-0027-aws-defense-lifecycle.md).
 Bootstrap separado; dos pipelines manuales sin trigger de cambios, un runner
 serializado y lease de dominio sin TTL. Terraform mantiene la arquitectura de
 JUP-060 y exige una boundary de roles ECS al ejecutar por CI/CD.

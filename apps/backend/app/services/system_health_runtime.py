@@ -118,7 +118,7 @@ def _provider_request(base_url, key, payload, timeout, certified_route, check_id
             model = None
         # Routing is certified out of band for the dedicated gateway/alias.
         # A body model name alone is never sufficient to certify the route.
-        return {"model": model, "provider": certified_route, "route_verified": certified_route == "deepinfra/fp4",
+        return {"model": model, "provider": certified_route, "route_verified": certified_route == "deepinfra/fp8",
                 "result_valid": valid, "usage": body.get("usage", {}),
                 "cost_usd": response.getheader("x-litellm-response-cost"), "check_id": check_id}
     finally:
@@ -280,8 +280,8 @@ def _read_policy(settings):
             or policy.get("gateway_base_url") != settings.litellm_base_url
             or not re.fullmatch(digest_pattern, str(policy.get("routing_config_sha256", "")))
             or policy.get("routing_alias") != "economicon-chat"
-            or policy.get("routing_model") != "openrouter/z-ai/glm-5.2"
-            or policy.get("routing_provider") != "deepinfra/fp4"
+            or policy.get("routing_model") != "openrouter/deepseek/deepseek-v4.1-flash"
+            or policy.get("routing_provider") != "deepinfra/fp8"
             or policy.get("input_envelope_certified") is not True
             or policy.get("gateway_retries") != 0 or type(policy.get("gateway_retries")) is not int
             or policy.get("router_retries") != 0 or type(policy.get("router_retries")) is not int

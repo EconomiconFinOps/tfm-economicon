@@ -176,6 +176,91 @@ Revisión adversarial automatizada sobre `1f0cdb36` (base `ee4e8031`). Veredicto
 
 Validación: 130 pruebas de robustez, `assistant-robustness:validate`, `openspec:validate` (75/75), `jup:check` y `jup:cleanup:check` en verde, y 11 mutantes propios sobre una copia, todos detectados, con el control sin mutar en verde. No hay stack, backend ni modelo reales en este PR, que no toca código de producción. Los arreglos posteriores a esta revisión no se sometieron a otra. No sustituye a la `Revision JUP-071` ni a la `Validacion JUP-071` de una persona.
 
+## Primera campaña con el chat real (2026-10-20)
+
+Se hizo una primera medición parcial con el chat generativo de JUP-035 activado en local: una repetición de los 29 casos y el juicio de una sola revisora (Lucia) sobre las 24 muestras verificadas, con `--provisional`. Los resultados, las cifras y los límites están en `docs/evidence/JUP-071-validation.md` (apartado «Primera campaña con el chat real»): 7 pass, 17 fail y 5 blocked; 0 de 55 prohibiciones incumplidas; 16 de 46 puntos `required` fallidos, en su mayoría por no pedir el dato que falta. La ejecución sigue `live_unverified` y `generative_robustness_accepted` sigue en falso. No cierra el grupo 6 de `tasks.md`.
+
+Decisiones tomadas por Lucia durante la campaña:
+
+- Primera medición ligera: una sola repetición y una sola revisora, con el informe provisional. Quedan abiertas la segunda revisión y las otras dos repeticiones (6.1 y 6.3).
+- Generar las 29 conversaciones con un script fuera del repositorio y fuera del libro de contabilidad del equipo de JUP-123. No se acordó el reparto del presupuesto con quien lidera la entrega B (6.5 sigue abierta).
+- Reconstruir la recuperación que la API pública no expone desde la base de datos vectorial, aceptando solo lo que reproduce el hash del manifiesto, y dejar bloqueadas las tres muestras que no lo reproducen.
+- No modificar el banco ni las rúbricas durante la campaña. `JUP-069-005` se juzgó contra la rúbrica vigente aunque el chat se abstiene a propósito en ese tipo de pregunta (limitación conocida registrada en el backlog).
+- Cargar la ejecución en el dashboard con un manifiesto local (`milestone: false`) y no en el versionado. Revisado el 2026-10-21: la campaña `r1` se añadió al manifiesto versionado como hito (`milestone: true`) y se ajustaron las pruebas que fijaban cinco ejecuciones y 269 filas.
+
+Desviaciones y cosas que no se hicieron: el reintento de las cuatro operaciones fallidas usó `retry_of_operation_id` porque `resume` solo vale para operaciones en pausa; los resultados de `JUP-071-008` y `JUP-071-014` son los del segundo intento. La reconstrucción de la recuperación se hizo con un script no versionado, de modo que esa parte solo se reproduce con acceso a la misma base de datos. No se hizo revisión adversarial de este cambio documental ni se rellena ningún bloque de aprobación humana.
+
+Validación del 2026-10-20 (Windows, Python 3.14):
+
+- `python tools/assistant-robustness.py validate`: 16 variantes, 29 casos, hashes válidos.
+- `python tools/assistant-robustness.py score ... --provisional`: 29 total, 7 pass, 17 fail, 5 blocked, 0 not run; `assessment_complete` falso.
+- `python tools/assistant-robustness.py rows`: 117 filas `rows-v1`; `python tools/evaluation-dashboard.py rows` construye el conjunto con las seis ejecuciones.
+- `python tools/evaluation-dashboard.py load --manifest <local>`: 6 ejecuciones y 386 resultados; el panel «Robustez (JUP-071)» devuelve 117 filas por la API de Grafana y el origen de datos responde `OK`.
+- `python -m unittest discover -s scripts/tests -p test_evaluation_manifest.py`: 44 pruebas OK con el manifiesto versionado sin cambios.
+- `corepack pnpm openspec:validate` (82 de 82), `corepack pnpm jup:check -- --change jup-071-incomplete-data-robustness` y `corepack pnpm jup:cleanup:check`: OK.
+- Grupo 7 (indicadores, 2026-10-21): `corepack pnpm assistant-robustness:test` 151 pruebas OK (21 nuevas, vistas fallar antes del código y comprobadas con 12 mutaciones que se detectan todas); `test_evaluation_manifest.py` 44 OK, `test_evaluation_rows_command.py` 114 OK y `tools/test_chat_eval_collect_jup071.py` 33 OK; las 19 filas de indicadores de `r1` pasan `validate_rows` y reproducen las cifras calculadas a mano.
+- No se repitió la batería completa de pruebas de las aplicaciones porque no se tocó código de producción de las aplicaciones.
+
+Riesgos aceptados por Lucia en esta sesión: los nombres de grupo `rob_*` se asumen adoptados por JUP-129 sin acuerdo previo (si cambian, se renombran); el juicio de una sola persona (informe provisional), la generación fuera del libro de contabilidad y una sola repetición. Quedan sin aceptar y sin resolver: la falta de segunda revisión independiente, la ausencia de atestación del modelo y el reparto del presupuesto de inferencia con la entrega B.
+
+Hallazgos registrados en `openspec/findings/backlog.md` (apartado «JUP-071 — Hallazgos de la primera campaña con el chat real» y ampliación de la entrada del lector numérico): recuperación no expuesta por la API, etiqueta `provider_error` engañosa, falta de petición del dato, abstención de clasificación sin suma de componentes y citas cortadas.
+
+## Adversarial Review (pass 8, grupo 7: indicadores)
+
+Revisión automatizada e independiente de `adf1a702..7849abe6` (herramienta y pruebas), con acceso de solo lectura y sin ver el razonamiento de quien implementó. Veredicto: `changes-required` con 2 HIGH, 4 MEDIUM y 2 LOW, todos reproducidos. No es la `Revision JUP-071` de una persona.
+
+| ID | Sev. | Hallazgo | Resolución |
+| --- | --- | --- | --- |
+| ADV-1 | HIGH | `request_rate` y `over_abstention_rate` contaban como evaluados los casos con juicios pendientes (`not_run`); sin juicios daban 1/19 o un cero medido 0/10. | Solo cuentan los casos con todos los puntos de petición juzgados (pass o fail) y los casos de respuesta con el punto de conducta juzgado. Sin ninguno sale `not_measured`. Prueba nueva. |
+| ADV-2 | HIGH | `literal_quotes` buscaba la cita en toda la evidencia autorizada con el mismo título y no en un fragmento citado. | Se cruza con los identificadores citados del recibo. Prueba nueva con un fragmento no citado que contiene la frase. |
+| ADV-3 | MEDIUM | Formas malformadas en recibos o crudo (metadatos en lista, entradas de recuperación en texto, operación en lista...) terminaban en `AttributeError` sin capturar. | Comprobación de forma de cada recibo al leerlo (`check_receipt`, `part`) con error que nombra la muestra, y `AttributeError` añadido a la red de `main` para que nunca acabe en traceback. Prueba nueva con ocho formas hostiles por el CLI. |
+| ADV-4 | MEDIUM | Una cita vacía o de solo espacios contaba como literal. | Cuenta en el denominador y nunca en el numerador. |
+| ADV-5 | MEDIUM | El patrón de citas tenía coste polinómico: con 16.000 repeticiones de `Fuente: ` no terminaba en 120 s. | Título acotado a 200 caracteres y cita a 4.000. La prueba con 20.000 repeticiones termina en menos de 5 s (8 s toda la suite). |
+| ADV-6 | MEDIUM | Tokens negativos aceptados, aunque el coste negativo se rechaza. | Los tokens se rechazan con error si no son enteros no negativos. |
+| ADV-7 | LOW | Una cita con otro separador que la raya larga no entra en el denominador. | Aceptado y documentado: el formato del backend usa siempre la raya larga. Si todas las citas de una campaña usaran otro, `literal_quotes` saldría no medido. |
+| ADV-8 | LOW | Identificadores duplicados en `evidence_ids` inflaban los fragmentos listados. | Un manifiesto con identificadores repetidos es malformado y se rechaza nombrando la muestra. |
+
+Ataques que resistieron: informe de otro crudo, recibo ausente, duplicado o con otra respuesta, recibo verificado para un caso sin respuesta, una sola de las dos entradas opcionales, carpeta inexistente, salida bajo `docs/evidence`, salida sin las entradas opcionales idéntica a la anterior, grupo de otra fuente, validación del dashboard, manifiesto ausente, operación sin causa, bloqueados fuera de los indicadores de juicio, ceros medidos, coste con `Decimal`, comparación de títulos y citas sin mayúsculas ni espacios repetidos, y crudo atado por hash.
+
+Barrido del patrón: «evaluado es solo lo no bloqueado» (`request_rate` y `over_abstention_rate`; los indicadores de `rob_core` y `pair_degradation` ya filtraban por juzgado), `public_evidence` como sustituto de «citado» (solo `literal_quotes`; la hoja de revisión lo muestra completo a propósito), estructuras sin comprobar en recibos y crudo (`read_receipts`, `indicator_rows`, `execution_usage`), expresiones regulares sin cota (solo la de citas en el diff) y contadores sin cota inferior (tokens). Tras corregir, las filas de la campaña `r1` salen idénticas a las ya cargadas, porque todos sus juicios estaban completos y sus citas venían de fragmentos citados: no cambia ninguna cifra publicada.
+
+La pasada 8 no cierra el grupo: hace falta una segunda pasada sobre las correcciones, y los hallazgos de las dos son de una revisión automatizada, no de una persona.
+
+## Adversarial Review (pass 9, grupo 7: segunda pasada)
+
+Segunda revisión automatizada e independiente de todo el grupo 7 (`adf1a702..c573eac6`), de nuevo sin ver el razonamiento de quien implementó. Veredicto: `changes-required` con 2 HIGH, 3 MEDIUM y 3 LOW, todos reproducidos. No es la `Revision JUP-071` de una persona.
+
+| ID | Sev. | Hallazgo | Resolución |
+| --- | --- | --- | --- |
+| ADV-1 | HIGH | `--output` podía sobrescribir un recibo público o escribirse dentro de la carpeta de recibos y envenenarla (los recibos no estaban entre las entradas protegidas). | `protect_outputs` recibe la carpeta de recibos como entrada protegida: la salida no puede ser ni estar dentro de ella. Prueba nueva por el CLI con las dos formas. |
+| ADV-2 | HIGH | `literal_quotes` descartaba en silencio las citas de más de 4.000 caracteres o con título de más de 200 (la cota de la pasada 8): no entraban en el denominador y una cita larga inventada hacía que el indicador pasara a no medido o saliera inflado. | Se sustituye la expresión regular por `quotations()`, sin cotas de longitud y en tiempo lineal (recuerda el siguiente separador y el siguiente salto de línea). Pruebas nuevas con una cita de 6.000 caracteres, un título de 300 y tres disposiciones hostiles. |
+| ADV-3 | MEDIUM | `squash` usaba `lower()` y no la normalización del código vecino (acentos, `casefold`, espacios): «STRASSE» no coincidía con «straße» y una `é` compuesta no coincidía con la descompuesta. | `squash` usa `evaluation.normalize`. Prueba nueva con ß, composición y descomposición Unicode y título entre asteriscos. |
+| ADV-4 | MEDIUM | Un coste de `1e400` pasaba como finito y `float()` lo convertía en `inf`, que acababa como `Infinity` (JSON inválido) en un fichero versionable. | `mean` exige un valor finito y falla con error controlado. Prueba nueva por la API y por el CLI. |
+| ADV-5 | MEDIUM | Estructuras malformadas escapaban como excepciones: un `id` de recibo que es una lista, un directorio llamado `x.json`, un informe sin `pairs` y un `usage` que no es objeto se descartaba como «sin uso». | Solo se leen ficheros; el `id` y la repetición deben ser texto y entero; `pairs` es obligatorio; un `usage` malformado es un error con el nombre de la muestra. Pruebas nuevas. |
+| ADV-6 | LOW | `Fuente:` solo se reconoce con la raya larga y esa `F` exacta. | Aceptado y documentado (el formato del backend es único); una prueba fija el formato reconocido y que otro separador deja la métrica sin medir. |
+| ADV-7 | LOW | El informe solo se liga al crudo por `raw_sha256`; un informe con un `checks` alterado y el mismo hash se acepta. | Aceptado: la spec exige solo el hash y el informe no lleva firma. No se corrige. |
+| ADV-8 | LOW | La repetición del recibo se comparaba por igualdad de tupla (`True` valía 1) y un identificador con dígitos Unicode pasaba `isdigit`. | La repetición debe ser un entero y el número de repetición se valida con `[0-9]+`. Pruebas nuevas. |
+
+Ataques que resistieron: informe de otro crudo, recibos ausentes o duplicados o con otra respuesta, una sola de las dos entradas opcionales, carpeta inexistente, salida bajo `docs/evidence`, caso bloqueado con recibo verificado, operación sin causa, manifiesto ausente, casos bloqueados fuera de los indicadores de juicio, denominadores cero, coste y tokens inválidos, duplicados en el manifiesto, ausencia de distancia y de latencia, heurística de petición sin formas verbales escapadas, cita presente solo en un fragmento no citado, campos nulos en la evidencia y estados de colección en minúsculas.
+
+Barrido del patrón: el hueco de `protect_outputs` era que ninguna carpeta de entrada estaba reservada (no hay otro comando con carpeta de entrada); las cotas de la expresión regular solo existían en `QUOTATION`, que desaparece; `lower()` solo estaba en `squash`; `float(total) / denominator` solo en `mean`; y los accesos encadenados sin comprobar tipo estaban en `read_receipts`, `indicator_rows` y `execution_usage`, ahora cubiertos por `part` y `check_receipt`. Tras corregir, las filas de la campaña `r1` salen idénticas a las ya cargadas.
+
+Las dos pasadas son de una revisión automatizada. Para cerrar 7.7 hace falta una tercera pasada con veredicto `accept`.
+
+## Adversarial Review (pass 10, grupo 7: tercera pasada)
+
+Tercera revisión automatizada e independiente del grupo 7 con el árbol de trabajo (manifiesto versionado con la campaña, unidad `unidades`, pruebas ajustadas). Veredicto: `accept`, sin BLOCKING ni HIGH, con 4 MEDIUM y 1 LOW. No es la `Revision JUP-071` de una persona.
+
+| ID | Sev. | Hallazgo | Resolución |
+| --- | --- | --- | --- |
+| ADV-1 | MEDIUM | El texto «Cómo leer la sección A» seguía diciendo «robustez de JUP-071 (todavía sin informe)» con el panel de indicadores debajo. | Corregido: «primera campaña con el chat real, provisional». |
+| ADV-2 | MEDIUM | La descripción del panel de indicadores afirmaba de forma fija que la revisión es provisional aunque el panel enseña la última campaña con indicadores, sea cual sea. | Se mantiene, pero redactada como referida a «esa campaña» y remitiendo al informe de cada campaña. Pendiente (JUP-129): llevar `provisional` a las filas para que el rótulo no sea fijo. |
+| ADV-3 | MEDIUM | Indicadores de aspecto favorable (0 invenciones de 55, 91,7 % de conducta) sin el contexto de que solo 7 de 29 casos pasan la rúbrica completa. | La descripción del panel lo dice expresamente (7 de 29 y 5 sin medir) y que un cero o un porcentaje alto no significa robustez. No se añade indicador nuevo. |
+| ADV-4 | MEDIUM | `literal_quotes` compara tras normalizar (mayúsculas, acentos, marcado, espacios) y sin longitud mínima. | Aceptado y documentado como «literal tras normalizar» en `JUP-071-robustness.md`; es la misma normalización del corrector de JUP-070. |
+| ADV-5 | LOW | Incoherencias de documentación: «cuando exista», 19 indicadores frente a 18 más una medida de dos filas, escenario de la spec inalcanzable con el manifiesto versionado, `unidades` frente a tokens. | Corregidas en la guía, el protocolo, la spec y `tasks.md`; la razón de la unidad `unidades` (el filtro de secretos rechaza la palabra) queda escrita en el protocolo. |
+
+La consulta SQL del panel no se ejecutó contra una base propia del revisor, pero sí contra la base real: Grafana devuelve los 19 indicadores y las 136 filas de detalle con el manifiesto versionado solo.
+
 ## Pattern sweep
 
 - Cifras sin alias y cifras no pedidas: las variantes de cumplimiento eran las únicas con dos cifras o sin alias; JUP-071-010 tiene una cifra y se resuelve por la etiqueta «julio».

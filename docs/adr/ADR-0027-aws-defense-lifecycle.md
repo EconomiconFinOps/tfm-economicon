@@ -1,4 +1,4 @@
-# ADR-0026: ciclo AWS desechable y control separado para la defensa
+# ADR-0027: ciclo AWS desechable y control separado para la defensa
 
 Estado: Proposed. Fecha:21/10/2026. JUP-131 — https://trello.com/c/NtiH8R4Z.
 

@@ -105,15 +105,15 @@ def test_valid_litellm_evaluation_configuration_hides_secret():
     assert "gateway-secret" not in repr(settings)
 
 
-def test_explicit_deepseek_alias_is_supported_without_automatic_fallback():
-    settings = Settings(
-        llm_provider="litellm",
-        llm_model="economicon-chat-deepseek",
-        litellm_api_key="internal-gateway-key",
-        _env_file=None,
-    )
-
-    assert settings.llm_model == "economicon-chat-deepseek"
+@pytest.mark.parametrize("alias", ["economicon-chat-deepseek", "economicon-glm", "other-model"])
+def test_retired_or_unknown_generative_alias_is_rejected(alias):
+    with pytest.raises(ValueError, match="only active generative alias"):
+        Settings(
+            llm_provider="litellm",
+            llm_model=alias,
+            litellm_api_key="internal-gateway-key",
+            _env_file=None,
+        )
 
 
 @pytest.mark.parametrize(

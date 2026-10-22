@@ -34,7 +34,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--models",
         nargs="+",
-        default=["economicon-chat", "economicon-chat-deepseek"],
+        default=["economicon-chat"],
     )
     parser.add_argument("--output", type=Path)
     return parser.parse_args()

@@ -86,8 +86,10 @@ def test_native_chat_preserves_private_review_and_only_emits_validated_final_out
 
 def test_native_summary_uses_the_existing_payload_validator_without_a_separate_api_key():
     from app.clients.summary_gateway import SummaryGateway
-    from test_summary_sizes_jup035 import current
-    resources=current()
+    from pathlib import Path
+    from app.core.summary_resources import load_resources
+    root = Path(__file__).resolve().parents[1] / 'app/agents/prompt_resources/jup035'
+    resources=load_resources(root/'summary/v4',root/'chat/v4/tokenizer.json',root/'chat/v2/tokenizer.json')
     output=dict(v=2,topics=[],facts=[],limitations=['Sin datos adicionales.'])
     gateway=SummaryGateway(settings())
     sdk=Mock()

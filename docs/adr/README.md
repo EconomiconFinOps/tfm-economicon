@@ -1,6 +1,6 @@
 # Architecture Decision Records
 
-- [ADR-0026: ciclo AWS de defensa](ADR-0026-aws-defense-lifecycle.md) — Proposed,
+- [ADR-0027: ciclo AWS de defensa](ADR-0027-aws-defense-lifecycle.md) — Proposed,
   JUP-131, 21/10/2026; bootstrap separado y crear/destruir por ciclo, sin despliegue.
 
 This directory contains the project decision log for durable architecture choices. OpenSpec `design.md` captures the technical design of an individual Trello task; ADRs explain decisions that remain relevant across tasks, modules or project phases.
@@ -58,6 +58,7 @@ benchmarks de ADR-0002 conservan su fecha; no son precios actuales.
 | [0023 · Chunks estructurales reproducibles](ADR-0023-deterministic-document-chunking.md) | 16/10 · Proposed, retrospectivo | Normalizado canónico, límites en tokens y metadata reconstruible; conserva legacy y publicación atómica sin decisiones de corte mediante modelos. | JUP-125; [diseño](../../openspec/changes/archive/2026-10-16-jup-125-deterministic-document-chunking/design.md) y [matriz de quince criterios](../evidence/JUP-125-validation.md). Implementación previa y correcciones evaluadas; ratificación documental y reviews humanas separadas. |
 | [0024 · Espacios verificados y recuperación contextual/híbrida](ADR-0024-verified-contextual-retrieval.md) | 17/10 · Proposed | Descriptor/cache aislada, generaciones CAS y receta D con legado recuperable; ratificación humana pendiente. | [JUP-127](https://trello.com/c/AG5fAbl3); evaluación local/publicación separadas. |
 | [0025 · Selección de modelo para B](ADR-0025-chat-model-selection.md) | 18/10 · Accepted, ratificación documental por excepción humana | Registra la configuración histórica y distingue comparación común, N3 y N5; no cambia runtime, gateway ni aceptación funcional. | JUP-063; autorización HAL9000 y [comparativa con procedencia](../evidence/JUP-063/glm-deepseek-20261016/README.md). Alias0023 de modelo conserva enlaces históricos. |
+| [0026 · Modelo generativo único](ADR-0026-default-chat-model.md) | 21/10 · Proposed | `economicon-chat` resuelve a DeepSeek V4.1 Flash por `deepinfra/fp8`, sin fallback; retira GLM y V4 Pro del ejemplo del gateway. | [JUP-132](https://trello.com/c/ERLZlPsT); implementación autorizada, ratificación del equipo pendiente. |
 
 ### Decisiones ya explicadas fuera de un ADR
 
@@ -134,6 +135,11 @@ Local implementation details, small refactors and documentation-only changes wit
 | [ADR-0013: Tagged cost coverage](ADR-0013-tagged-cost-coverage.md) | Accepted for MVP; user-authorized delivery exception and assisted review documented in JUP-017 evidence | 2026-10-10 |
 
 ## Selección del modelo del candidato local B
+
+Configuración actual del repositorio: [ADR-0026 / JUP-132](ADR-0026-default-chat-model.md)
+selecciona Flash por DeepInfra FP8 normal como único generador. Su implementación
+está autorizada por Paris; la ratificación del equipo permanece pendiente.
+ADR-0025 conserva exclusivamente la decisión documental y campaña históricas.
 
 | Registro | Estado | Fecha |
 | --- | --- | --- |

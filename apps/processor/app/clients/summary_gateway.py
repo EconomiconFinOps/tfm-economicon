@@ -86,12 +86,13 @@ class SummaryGateway:
         self.jobs={}
 
     def _post(self,messages,resources,deadline,holder,cancelled):
+        resources.check_generation()
         # Leave time inside the lot deadline for validation and installation.
         remaining=deadline-time.time()-5
         if remaining<=0 or cancelled.is_set():raise SummaryGatewayError(504,'summary_deadline')
         payload={'model':'economicon-chat','messages':messages,'stream':False,'max_tokens':resources.context_budget['output_tokens'],
             'num_retries':0,'timeout':remaining,'reasoning':{'enabled':False},
-            'provider':{'order':['deepinfra/fp4'],'allow_fallbacks':False,'require_parameters':True},
+            'provider':{'order':['deepinfra/fp8'],'allow_fallbacks':False,'require_parameters':True},
             'response_format':{'type':'json_schema','json_schema':{'name':'SummaryResponse','strict':True,'schema':resources.provider_response_schema}}}
         if self.native:
             payload.pop('provider');payload.pop('reasoning')
