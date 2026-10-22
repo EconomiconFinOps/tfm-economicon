@@ -30,7 +30,7 @@ def test_reserve_minimum_and_processor_admission(monkeypatch):
 
 @pytest.mark.parametrize('finish',['stop','length'])
 def test_gateway_uses_independent_generation_ceiling(finish):
-    r=current();seen=[]
+    r=load_resources(ROOT/'summary/v4',ROOT/'chat/v4/tokenizer.json',ROOT/'chat/v2/tokenizer.json');seen=[]
     output=dict(v=2,topics=[dict(text='x '*250,question_refs=['q-'+'1'*64],answer_refs=[]) for _ in range(8)],facts=[],limitations=[])
     assert r.count(json.dumps(output))>800
     class Response:

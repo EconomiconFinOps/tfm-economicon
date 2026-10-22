@@ -1611,5 +1611,601 @@ class ReportingLayerCoverageTests(unittest.TestCase):
                           "fail": ("numeric", "all", "casos", checks.count("fail"), len(checks), "automatic")})
 
 
+DASHBOARD = load("economicon_dashboard_for_indicators", "tools/evaluation-dashboard.py")
+INDICATOR_GROUPS = ("rob_core", "rob_retrieval", "rob_system", "rob_conversation")
+HUMAN_INDICATORS = {"invention_rate", "required_coverage", "behavior_match_rate", "request_rate",
+                    "over_abstention_rate", "pair_degradation"}
+# Frozen on purpose: the heuristic that decides which required points ask to request something.
+REQUEST_POINTS = {
+    "JUP-069-003": [1], "JUP-069-008": [2], "JUP-069-009": [2], "JUP-069-023": [1], "JUP-069-024": [2],
+    "JUP-069-026": [2], **{f"JUP-071-{n:03d}": [2] for n in range(4, 17)},
+}
+
+
+def live_raw(usage=True):
+    raw = raw_fixture()
+    config = {"commit": "abcdef1", "corpus": "fixture-corpus", "provider": "fixture", "alias": "fixture-alias",
+              "retrieval": "fixture-retrieval", "generation": "fixture-model"}
+    raw["execution"].update(kind="live_unverified", configuration=config, configuration_sha256=robustness.digest(config))
+    raw["execution"]["collection"] = {"server_reported": [
+        {"sample_id": f"{c['id']}:r1", "snapshot_verified": True, "attested": False, "prompt_version": "fixture-prompt",
+         **({"usage": {"prompt_tokens": 1000, "completion_tokens": 100, "total_tokens": 1100, "cost_usd": "0.0100"}} if usage else {})}
+        for c in CASES]}
+    return raw
+
+
+def block(raw, case_id):
+    row = next(r for r in raw["cases"] if r["case"] == case_id)
+    row.update(answer="", failure_category="invalid_response")
+
+
+def receipt_for(row, evidence=("d:1", "d:2", "d:3"), neighbors=("d:3",), cited=(), state=None, collection=None,
+                manifest=True, answer=None):
+    blocked = row["failure_category"] is not None
+    state = state or ("failed" if blocked else "completed")
+    collection = collection or ("INCOMPLETE" if blocked else "VERIFIED_PUBLIC_SNAPSHOT")
+    result = {}
+    if state == "completed":
+        generation = {"context_manifest": {
+            "evidence_ids": list(evidence),
+            "retrieval": [{"chunk_id": e, **({"admission": "neighbor"} if e in neighbors else {})} for e in evidence]}} if manifest else {}
+        result = {"content": row["answer"] if answer is None else answer, "id": "fixture-message",
+                  "metadata": {"citations": [], "source_citations": [], "generation": generation,
+                               "response": {"evidence": [{"id": e} for e in cited]}}}
+    return {"version": 1, "results": [{"id": row["case"], "repetition": 1, "state": state,
+                                       "collection_state": collection, "operation": {"state": state}, "result": result}]}
+
+
+def write_receipts(folder, receipts):
+    for receipt in receipts:
+        item = receipt["results"][0]
+        Path(folder, f"{item['id']}-r1.json").write_text(json.dumps(receipt), encoding="utf-8")
+    Path(folder, "plan.json").write_text(json.dumps({"samples": []}), encoding="utf-8")
+    Path(folder, "handles.json").write_text(json.dumps([]), encoding="utf-8")
+
+
+def find(document, metric_id, behavior="all"):
+    rows = [r for r in document["results"] if r["metric_id"] == metric_id and r["behavior"] == behavior]
+    assert len(rows) == 1, (metric_id, behavior, len(rows))
+    return rows[0]
+
+
+class CampaignIndicatorsTests(unittest.TestCase):
+    """Group 7: campaign indicators for the dashboard, from the report, the raw collection and the public receipts."""
+
+    def build(self, mutate_raw=None, mutate_judgments=None, options=None, usage=True, provisional=False):
+        raw = live_raw(usage)
+        if mutate_raw:
+            mutate_raw(raw)
+        judgments = judgments_fixture(raw)
+        if mutate_judgments:
+            mutate_judgments(judgments)
+        report = robustness.score(SUITE, CASES, raw, judgments, provisional)
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        options = options or {}
+        write_receipts(folder.name, [receipt_for(row, **options.get(row["case"], {})) for row in raw["cases"]])
+        return report, raw, folder.name
+
+    def rows(self, **kwargs):
+        report, raw, folder = self.build(**kwargs)
+        return robustness.rows_v1(report, raw, robustness.read_receipts(folder, raw))
+
+    def test_rows_without_the_optional_inputs_are_unchanged(self):
+        report, raw, _ = self.build()
+        document = robustness.rows_v1(report)
+        self.assertEqual(document, robustness.rows_v1(report, None, None))
+        self.assertFalse({r["grp"] for r in document["results"]} & set(INDICATOR_GROUPS))
+
+    def test_groups_marks_and_the_dashboard_validation(self):
+        document = self.rows()
+        groups = {r["grp"] for r in document["results"]}
+        self.assertTrue(set(INDICATOR_GROUPS) <= groups)
+        rows = [r for r in document["results"] if r["grp"] in INDICATOR_GROUPS]
+        for row in rows:
+            expected = "human" if row["metric_id"] in HUMAN_INDICATORS else "automatic"
+            self.assertEqual(row["judgment"], expected, row["metric_id"])
+            self.assertEqual(row["measure_type"], "A")
+        keys = [(r["grp"], r["metric_id"], r["behavior"], r["status"]) for r in document["results"]]
+        self.assertEqual(len(keys), len(set(keys)))
+        DASHBOARD.validate_rows(document["run"], document["results"])
+        self.assertEqual(document["run"]["run_id"], robustness.rows_v1(self.build()[0])["run"]["run_id"])
+
+    def test_no_text_names_distance_or_latency_leak_into_the_indicators(self):
+        text = json.dumps(self.rows(), ensure_ascii=False)
+        for forbidden in ("fixture-person-a", "UNIT TEST ONLY", "Texto sintético", "latency", "distance", "total_ms"):
+            self.assertNotIn(forbidden, text)
+
+    def test_core_judgment_indicators_count_points_of_cases_that_are_not_blocked(self):
+        forbidden = sum(len(c["expected"]["forbidden"]) for c in CASES)
+        required = sum(len(c["expected"]["required"]) for c in CASES)
+        document = self.rows()
+        row = find(document, "invention_rate")
+        self.assertEqual((row["status"], row["numerator"], row["denominator"], row["value"], row["unit"]),
+                         ("measured", 0, forbidden, 0.0, "tasa"))
+        row = find(document, "required_coverage")
+        self.assertEqual((row["numerator"], row["denominator"], row["value"]), (required, required, 1.0))
+        row = find(document, "behavior_match_rate")
+        self.assertEqual((row["numerator"], row["denominator"]), (29, 29))
+
+        def worsen(judgments):
+            judgments["cases"]["JUP-071-001"]["forbidden-1"][0]["result"] = "fail"
+            judgments["cases"]["JUP-071-001"]["required-1"][0]["result"] = "fail"
+        row = find(self.rows(mutate_judgments=worsen), "invention_rate")
+        self.assertEqual((row["numerator"], row["denominator"]), (1, forbidden))
+        row = find(self.rows(mutate_judgments=worsen), "required_coverage")
+        self.assertEqual((row["numerator"], row["denominator"]), (required - 1, required))
+
+        blocked = BY_ID["JUP-071-001"]
+        document = self.rows(mutate_raw=lambda raw: block(raw, "JUP-071-001"), mutate_judgments=worsen)
+        row = find(document, "invention_rate")
+        self.assertEqual((row["numerator"], row["denominator"]), (0, forbidden - len(blocked["expected"]["forbidden"])))
+        row = find(document, "behavior_match_rate")
+        self.assertEqual(row["denominator"], 28)
+
+    def test_a_denominator_of_zero_is_not_measured_and_keeps_the_denominator(self):
+        def everything_blocked(raw):
+            for row in raw["cases"]:
+                row.update(answer="", failure_category="invalid_response")
+        document = self.rows(mutate_raw=everything_blocked, usage=False)
+        for metric in ("invention_rate", "required_coverage", "behavior_match_rate", "valid_citations", "literal_quotes",
+                       "empty_retrieval_rate", "fragments_per_query", "neighbor_share", "context_utilization",
+                       "unused_retrieval_rate", "request_rate", "over_abstention_rate", "pair_degradation",
+                       "cost_per_query", "prompt_size_per_query", "completion_size_per_query"):
+            row = find(document, metric)
+            self.assertEqual((row["status"], row["value"], row["numerator"], row["count"]), ("not_measured", None, None, None), metric)
+            self.assertIsNotNone(row["denominator"] if metric != "literal_quotes" else 0, metric)
+        self.assertEqual(find(document, "invention_rate")["denominator"], 0)
+        DASHBOARD.validate_rows(document["run"], document["results"])
+
+    def test_citations_and_literal_quotations(self):
+        quote = "Coste compartido conocido"
+
+        def cite(raw):
+            row = next(r for r in raw["cases"] if r["case"] == "JUP-069-011")
+            row["answer"] += f"\nFuente: Glosario X — «{quote}»\nFuente: Glosario X — «frase que no está en el fragmento»"
+            row["citations"] = ["d:1"]
+            row["public_evidence"] = [{"id": "d:1", "kind": "corpus", "source": "glossary", "title": "Glosario X",
+                                      "content": "… una definición de COSTE   compartido conocido, como plataforma …"}]
+        document = self.rows(mutate_raw=cite, options={"JUP-069-011": {"cited": ("d:1", "d:99"), "answer": None}})
+        row = find(document, "valid_citations")
+        self.assertEqual((row["status"], row["numerator"], row["denominator"], row["value"]), ("measured", 1, 2, 0.5))
+        row = find(document, "literal_quotes")
+        self.assertEqual((row["status"], row["numerator"], row["denominator"]), ("measured", 1, 2))
+
+    def test_a_quotation_attributed_to_a_source_that_was_not_cited_is_not_found(self):
+        def cite(raw):
+            row = next(r for r in raw["cases"] if r["case"] == "JUP-069-011")
+            row["answer"] += "\nFuente: Otra fuente — «Coste compartido conocido»"
+            row["public_evidence"] = [{"id": "d:1", "kind": "corpus", "source": "glossary", "title": "Glosario X",
+                                      "content": "Coste compartido conocido"}]
+            row["citations"] = ["d:1"]
+        row = find(self.rows(mutate_raw=cite, options={"JUP-069-011": {"cited": ("d:1",)}}), "literal_quotes")
+        self.assertEqual((row["numerator"], row["denominator"]), (0, 1))
+
+    def test_retrieval_indicators_come_from_the_context_manifest(self):
+        options = {
+            "JUP-069-002": {"evidence": (), "neighbors": ()},
+            "JUP-069-011": {"evidence": ("d:1", "d:2", "d:3", "d:4"), "neighbors": ("d:3", "d:4"), "cited": ("d:1", "d:2")},
+        }
+        document = self.rows(options=options)
+        row = find(document, "empty_retrieval_rate")
+        self.assertEqual((row["numerator"], row["denominator"]), (1, 29))
+        row = find(document, "fragments_per_query")
+        self.assertEqual((row["unit"], row["denominator"], row["value"]), ("fragmentos", 28, 85 / 28))
+        row = find(document, "neighbor_share")
+        self.assertEqual((row["numerator"], row["denominator"]), (27 + 2, 85))
+        row = find(document, "context_utilization")
+        self.assertEqual((row["numerator"], row["denominator"]), (2, 85))
+        row = find(document, "unused_retrieval_rate")
+        self.assertEqual((row["numerator"], row["denominator"]), (27, 28))
+
+    def test_a_verified_sample_without_a_manifest_is_an_error_not_an_empty_retrieval(self):
+        report, raw, folder = self.build(options={"JUP-069-011": {"manifest": False}})
+        with self.assertRaisesRegex(robustness.Error, "JUP-069-011"):
+            robustness.rows_v1(report, raw, robustness.read_receipts(folder, raw))
+
+    def test_system_indicators_separate_the_causes_and_skip_missing_usage(self):
+        def two_causes(raw):
+            block(raw, "JUP-071-001")
+            block(raw, "JUP-071-002")
+            next(x for x in raw["execution"]["collection"]["server_reported"] if x["sample_id"].startswith("JUP-071-001")).pop("usage")
+        options = {"JUP-071-002": {"state": "completed", "collection": "INCOMPLETE", "answer": "texto sin verificar"}}
+        document = self.rows(mutate_raw=two_causes, options=options)
+        row = find(document, "completion_rate")
+        self.assertEqual((row["numerator"], row["denominator"], row["unit"]), (28, 29, "tasa"))
+        failed, unverified = find(document, "unmeasured_by_cause", "operation_failed"), find(document, "unmeasured_by_cause", "evidence_unverified")
+        self.assertEqual((failed["value"], failed["unit"], failed["status"]), (1, "casos", "measured"))
+        self.assertEqual(unverified["value"], 1)
+        row = find(document, "cost_per_query")
+        self.assertEqual((row["unit"], row["denominator"]), ("usd", 28))
+        self.assertAlmostEqual(row["value"], 0.01)
+        self.assertEqual((find(document, "prompt_size_per_query")["value"], find(document, "completion_size_per_query")["denominator"]), (1000, 28))
+
+    def test_an_operation_that_is_not_terminal_has_no_cause_and_is_an_error(self):
+        def block_one(raw):
+            block(raw, "JUP-071-001")
+        report, raw, folder = self.build(mutate_raw=block_one, options={"JUP-071-001": {"state": "active"}})
+        with self.assertRaisesRegex(robustness.Error, "JUP-071-001"):
+            robustness.rows_v1(report, raw, robustness.read_receipts(folder, raw))
+
+    def test_request_points_of_the_shipped_suite_are_frozen(self):
+        found = {}
+        for case in CASES:
+            points = robustness.request_points(case)
+            if points:
+                found[case["id"]] = points
+        self.assertEqual({k: v for k, v in found.items() if BY_ID[k]["behavior"] in ("clarify", "abstain")}, REQUEST_POINTS)
+        self.assertEqual(found.get("JUP-069-016"), [2])
+        self.assertEqual(BY_ID["JUP-069-016"]["behavior"], "answer")
+
+    def test_conversation_indicators(self):
+        document = self.rows()
+        row = find(document, "request_rate")
+        self.assertEqual((row["numerator"], row["denominator"], row["judgment"]), (len(REQUEST_POINTS), len(REQUEST_POINTS), "human"))
+
+        def worsen(judgments):
+            judgments["cases"]["JUP-071-005"]["required-2"][0]["result"] = "fail"
+            judgments["cases"]["JUP-069-005"]["behavior"][0]["result"] = "fail"
+            judgments["cases"]["JUP-071-003"]["required-1"][0]["result"] = "fail"
+        document = self.rows(mutate_judgments=worsen)
+        row = find(document, "request_rate")
+        self.assertEqual((row["numerator"], row["denominator"]), (len(REQUEST_POINTS) - 1, len(REQUEST_POINTS)))
+        answers = sum(1 for c in CASES if c["behavior"] == "answer")
+        row = find(document, "over_abstention_rate")
+        self.assertEqual((row["numerator"], row["denominator"]), (1, answers))
+
+    def test_pair_degradation_leaves_out_pairs_with_a_blocked_side(self):
+        def worsen(judgments):
+            judgments["cases"]["JUP-071-003"]["required-1"][0]["result"] = "fail"
+        report, raw, folder = self.build(mutate_judgments=worsen)
+        pairs = report["pairs"]
+        row = find(robustness.rows_v1(report, raw, robustness.read_receipts(folder, raw)), "pair_degradation")
+        self.assertEqual((row["numerator"], row["denominator"]), (1, len(pairs)))
+        document = self.rows(mutate_raw=lambda r: block(r, "JUP-071-002"), mutate_judgments=worsen)
+        row = find(document, "pair_degradation")
+        self.assertEqual((row["numerator"], row["denominator"]), (1, len(pairs) - 1))
+
+    def test_a_request_free_case_is_left_out_of_both_sides(self):
+        report, raw, folder = self.build()
+        cases = copy.deepcopy(CASES)
+        target = next(c for c in cases if c["id"] == "JUP-071-005")
+        target["expected"]["required"] = ["Explicar la ambigüedad.", "Mantener la asignación indeterminada."]
+        document = robustness.rows_v1(report, raw, robustness.read_receipts(folder, raw), cases)
+        row = find(document, "request_rate")
+        self.assertEqual((row["numerator"], row["denominator"]), (len(REQUEST_POINTS) - 1, len(REQUEST_POINTS) - 1))
+
+    def test_inputs_that_do_not_belong_together_are_refused(self):
+        report, raw, folder = self.build()
+        receipts = robustness.read_receipts(folder, raw)
+        other = copy.deepcopy(raw)
+        other["cases"][0]["answer"] += " distinta"
+        with self.assertRaises(robustness.Error):
+            robustness.rows_v1(report, other, receipts)
+        Path(folder, "JUP-069-011-r1.json").unlink()
+        with self.assertRaisesRegex(robustness.Error, "JUP-069-011"):
+            robustness.read_receipts(folder, raw)
+
+    def test_a_receipt_with_another_answer_or_a_duplicate_is_refused(self):
+        report, raw, folder = self.build(options={"JUP-069-011": {"answer": "otra respuesta"}})
+        with self.assertRaisesRegex(robustness.Error, "JUP-069-011"):
+            robustness.read_receipts(folder, raw)
+        report, raw, folder = self.build()
+        duplicate = json.loads(Path(folder, "JUP-069-011-r1.json").read_text(encoding="utf-8"))
+        Path(folder, "JUP-069-011-copy.json").write_text(json.dumps(duplicate), encoding="utf-8")
+        with self.assertRaisesRegex(robustness.Error, "JUP-069-011"):
+            robustness.read_receipts(folder, raw)
+
+    def test_a_blocked_sample_whose_receipt_says_verified_is_refused(self):
+        report, raw, folder = self.build(mutate_raw=lambda r: block(r, "JUP-071-001"),
+                                         options={"JUP-071-001": {"state": "completed", "collection": "VERIFIED_PUBLIC_SNAPSHOT"}})
+        with self.assertRaisesRegex(robustness.Error, "JUP-071-001"):
+            robustness.read_receipts(folder, raw)
+
+    def test_template_collections_have_no_receipts_to_summarise(self):
+        template = scored()
+        with self.assertRaises(robustness.Error):
+            robustness.rows_v1(template, raw_fixture(), {})
+
+    def test_an_indicator_row_cannot_use_a_group_of_another_source(self):
+        with self.assertRaises(robustness.Error):
+            robustness.indicator_row("accuracy", "invention_rate", "all", "tasa", "human", "measured", value=0.0)
+        with self.assertRaises(robustness.Error):
+            robustness.indicator_row("rob_core", "invention_rate", "all", "tasa", "human", "measured", value=0.0, numerator=2, denominator=1)
+
+    def test_cli_appends_the_indicators_only_with_both_inputs_and_refuses_unsafe_paths(self):
+        report, raw, folder = self.build()
+        with tempfile.TemporaryDirectory() as out:
+            base = Path(out)
+            report_path, raw_path, output = base / "report.json", base / "raw.json", base / "rows.json"
+            report_path.write_text(json.dumps(report), encoding="utf-8")
+            raw_path.write_text(json.dumps(raw), encoding="utf-8")
+            status, _, stderr = cli(["rows", "--input", report_path, "--raw", raw_path, "--receipts", folder, "--output", output])
+            self.assertEqual(status, 0, stderr)
+            document = json.loads(output.read_text(encoding="utf-8"))
+            self.assertTrue(set(INDICATOR_GROUPS) <= {r["grp"] for r in document["results"]})
+            plain = base / "plain.json"
+            status, _, _ = cli(["rows", "--input", report_path, "--output", plain])
+            self.assertEqual(status, 0)
+            self.assertFalse({r["grp"] for r in json.loads(plain.read_text(encoding="utf-8"))["results"]} & set(INDICATOR_GROUPS))
+            for extra in (["--raw", raw_path], ["--receipts", folder]):
+                target = base / "partial.json"
+                status, _, _ = cli(["rows", "--input", report_path, *extra, "--output", target])
+                self.assertEqual(status, 2)
+                self.assertFalse(target.exists())
+            status, _, _ = cli(["rows", "--input", report_path, "--raw", raw_path, "--receipts", folder,
+                                "--output", ROOT / "docs/evidence/notes.json"])
+            self.assertEqual(status, 2)
+            status, _, _ = cli(["rows", "--input", report_path, "--raw", raw_path, "--receipts", base / "missing", "--output", base / "x.json"])
+            self.assertEqual(status, 2)
+
+
+    def test_the_cost_mean_only_counts_operations_that_report_a_cost(self):
+        def no_cost(raw):
+            next(x for x in raw["execution"]["collection"]["server_reported"]
+                 if x["sample_id"].startswith("JUP-071-001"))["usage"].pop("cost_usd")
+        document = self.rows(mutate_raw=no_cost)
+        row = find(document, "cost_per_query")
+        self.assertEqual(row["denominator"], 28)
+        self.assertAlmostEqual(row["value"], 0.01)
+        self.assertEqual(find(document, "prompt_size_per_query")["denominator"], 29)
+
+    def test_a_pair_whose_reference_does_not_pass_is_not_a_degradation(self):
+        def break_both(judgments):
+            judgments["cases"]["JUP-069-012"]["required-1"][0]["result"] = "fail"
+            judgments["cases"]["JUP-071-001"]["required-1"][0]["result"] = "fail"
+        report, raw, folder = self.build(mutate_judgments=break_both)
+        pair = next(p for p in report["pairs"] if p["perturbation"] == "JUP-071-001")
+        self.assertEqual((pair["before"], pair["after"]), ("fail", "fail"))
+        left_out = [p for p in report["pairs"] if p["before"] != "pass"]
+        row = find(robustness.rows_v1(report, raw, robustness.read_receipts(folder, raw)), "pair_degradation")
+        self.assertEqual((row["numerator"], row["denominator"]), (0, len(report["pairs"]) - len(left_out)))
+
+    def test_a_citation_outside_the_context_manifest_is_not_used_context(self):
+        document = self.rows(options={"JUP-069-011": {"evidence": ("d:1", "d:2"), "neighbors": (), "cited": ("d:1", "d:9")}})
+        row = find(document, "context_utilization")
+        self.assertEqual(row["numerator"], 1)
+        self.assertEqual(find(document, "valid_citations")["numerator"], 1)
+
+    def test_unmeasured_causes_are_counted_each_on_its_own(self):
+        def two_failed(raw):
+            block(raw, "JUP-071-001")
+            block(raw, "JUP-071-002")
+            block(raw, "JUP-071-003")
+        options = {"JUP-071-003": {"state": "completed", "collection": "INCOMPLETE", "answer": "texto sin verificar"}}
+        document = self.rows(mutate_raw=two_failed, options=options)
+        self.assertEqual(find(document, "unmeasured_by_cause", "operation_failed")["value"], 2)
+        self.assertEqual(find(document, "unmeasured_by_cause", "evidence_unverified")["value"], 1)
+
+    def test_a_case_with_two_request_points_needs_both_to_pass(self):
+        report, raw, folder = self.build()
+        cases = copy.deepcopy(CASES)
+        target = next(c for c in cases if c["id"] == "JUP-071-005")
+        target["expected"]["required"] = ["Pedir resolver la propiedad.", "Solicitar una regla de precedencia."]
+        judgments = judgments_fixture(raw)
+        judgments["cases"]["JUP-071-005"]["required-1"][0]["result"] = "fail"
+        report = robustness.score(SUITE, CASES, raw, judgments, False)
+        document = robustness.rows_v1(report, raw, robustness.read_receipts(folder, raw), cases)
+        row = find(document, "request_rate")
+        self.assertEqual((row["numerator"], row["denominator"]), (len(REQUEST_POINTS) - 1, len(REQUEST_POINTS)))
+
+
 if __name__ == "__main__":
     unittest.main()
+
+
+class CampaignIndicatorsAdversarialTests(CampaignIndicatorsTests.__bases__[0]):
+    """Regressions found by the adversarial review of group 7 (ADV-1 to ADV-8)."""
+
+    build = CampaignIndicatorsTests.build
+    rows = CampaignIndicatorsTests.rows
+
+    def edit_receipt(self, folder, case, change):
+        path = Path(folder, f"{case}-r1.json")
+        document = json.loads(path.read_text(encoding="utf-8"))
+        change(document["results"][0])
+        path.write_text(json.dumps(document), encoding="utf-8")
+
+    def test_pending_judgments_are_not_evaluated_cases(self):
+        def only_one(judgments):
+            for case_id, points in judgments["cases"].items():
+                if case_id != "JUP-071-005":
+                    judgments["cases"][case_id] = {key: [] for key in points}
+        document = self.rows(mutate_judgments=only_one)
+        row = find(document, "request_rate")
+        self.assertEqual((row["status"], row["numerator"], row["denominator"]), ("measured", 1, 1))
+        row = find(document, "over_abstention_rate")
+        self.assertEqual((row["status"], row["value"], row["denominator"]), ("not_measured", None, 0))
+
+    def test_a_quotation_is_checked_only_against_cited_fragments(self):
+        def cite(raw):
+            row = next(r for r in raw["cases"] if r["case"] == "JUP-069-011")
+            row["answer"] += "\nFuente: Glosario X — «frase presente solo en el fragmento no citado»"
+            row["citations"] = ["d:1"]
+            row["public_evidence"] = [
+                {"id": "d:1", "kind": "corpus", "source": "glossary", "title": "Glosario X", "content": "otro contenido"},
+                {"id": "d:2", "kind": "corpus", "source": "glossary", "title": "Glosario X",
+                 "content": "frase presente solo en el fragmento no citado"}]
+        row = find(self.rows(mutate_raw=cite, options={"JUP-069-011": {"cited": ("d:1",)}}), "literal_quotes")
+        self.assertEqual((row["numerator"], row["denominator"]), (0, 1))
+
+    def test_an_empty_quotation_is_never_literal(self):
+        def cite(raw):
+            row = next(r for r in raw["cases"] if r["case"] == "JUP-069-011")
+            row["answer"] += "\nFuente: Glosario X — « »"
+            row["public_evidence"] = [{"id": "d:1", "kind": "corpus", "source": "glossary", "title": "Glosario X", "content": "x"}]
+            row["citations"] = ["d:1"]
+        row = find(self.rows(mutate_raw=cite, options={"JUP-069-011": {"cited": ("d:1",)}}), "literal_quotes")
+        self.assertEqual((row["numerator"], row["denominator"]), (0, 1))
+
+    def test_the_quotation_pattern_is_linear_on_hostile_text(self):
+        import time
+
+        def hostile(raw):
+            next(r for r in raw["cases"] if r["case"] == "JUP-069-011")["answer"] += "\n" + "Fuente: " * 20000
+        started = time.perf_counter()
+        document = self.rows(mutate_raw=hostile)
+        self.assertLess(time.perf_counter() - started, 5)
+        self.assertEqual(find(document, "literal_quotes")["status"], "not_measured")
+
+    def test_negative_tokens_are_rejected_like_a_negative_cost(self):
+        def negative(raw):
+            raw["execution"]["collection"]["server_reported"][0]["usage"]["prompt_tokens"] = -5
+        report, raw, folder = self.build(mutate_raw=negative)
+        with self.assertRaisesRegex(robustness.Error, "tokens"):
+            robustness.rows_v1(report, raw, robustness.read_receipts(folder, raw))
+
+    def test_duplicate_evidence_identifiers_are_a_malformed_manifest(self):
+        report, raw, folder = self.build(options={"JUP-069-011": {"evidence": ("d:1", "d:1")}})
+        with self.assertRaisesRegex(robustness.Error, "JUP-069-011"):
+            robustness.rows_v1(report, raw, robustness.read_receipts(folder, raw))
+
+    def test_a_citation_without_an_identifier_names_the_sample(self):
+        report, raw, folder = self.build()
+        self.edit_receipt(folder, "JUP-069-011", lambda item: item["result"]["metadata"]["response"].update(evidence=[{"title": "x"}]))
+        with self.assertRaisesRegex(robustness.Error, "JUP-069-011"):
+            robustness.rows_v1(report, raw, robustness.read_receipts(folder, raw))
+
+    def test_hostile_shapes_end_with_a_controlled_error_and_write_nothing(self):
+        shapes = {
+            "metadata is a list": lambda item: item["result"].update(metadata=[]),
+            "response is a list": lambda item: item["result"]["metadata"].update(response=[]),
+            "retrieval entry is text": lambda item: item["result"]["metadata"]["generation"]["context_manifest"].update(retrieval=["a"]),
+            "operation is a list": lambda item: item.update(operation=[]),
+            "result is a list": lambda item: item.update(result=[]),
+        }
+        for name, change in shapes.items():
+            with self.subTest(name):
+                report, raw, folder = self.build()
+                self.edit_receipt(folder, "JUP-069-011", change)
+                with tempfile.TemporaryDirectory() as out:
+                    base = Path(out)
+                    report_path, raw_path, target = base / "report.json", base / "raw.json", base / "rows.json"
+                    report_path.write_text(json.dumps(report), encoding="utf-8")
+                    raw_path.write_text(json.dumps(raw), encoding="utf-8")
+                    status, _, stderr = cli(["rows", "--input", report_path, "--raw", raw_path, "--receipts", folder, "--output", target])
+                    self.assertEqual(status, 2, stderr)
+                    self.assertFalse(target.exists())
+        report, raw, folder = self.build()
+        for name, change in {"execution is text": lambda r: r.update(execution="x"),
+                             "reported sample is text": lambda r: r["execution"]["collection"]["server_reported"].__setitem__(0, "x")}.items():
+            with self.subTest(name):
+                broken = copy.deepcopy(raw)
+                change(broken)
+                with tempfile.TemporaryDirectory() as out:
+                    base = Path(out)
+                    report_path, raw_path, target = base / "report.json", base / "raw.json", base / "rows.json"
+                    report_path.write_text(json.dumps(report), encoding="utf-8")
+                    raw_path.write_text(json.dumps(broken), encoding="utf-8")
+                    status, _, _ = cli(["rows", "--input", report_path, "--raw", raw_path, "--receipts", folder, "--output", target])
+                    self.assertEqual(status, 2)
+                    self.assertFalse(target.exists())
+
+
+class CampaignIndicatorsSecondPassTests(unittest.TestCase):
+    """Regressions found by the second adversarial pass (ADV-1 to ADV-8 of pass 9)."""
+
+    build = CampaignIndicatorsTests.build
+    rows = CampaignIndicatorsTests.rows
+    edit_receipt = CampaignIndicatorsAdversarialTests.edit_receipt
+
+    def quote_case(self, quote, title="Glosario X", content="El coste amortizado se reparte"):
+        def cite(raw):
+            row = next(r for r in raw["cases"] if r["case"] == "JUP-069-011")
+            row["answer"] += f"\nFuente: {title} — «{quote}»"
+            row["citations"] = ["d:1"]
+            row["public_evidence"] = [{"id": "d:1", "kind": "corpus", "source": "glossary", "title": title, "content": content}]
+        return find(self.rows(mutate_raw=cite, options={"JUP-069-011": {"cited": ("d:1",)}}), "literal_quotes")
+
+    def run_rows(self, report, raw, folder, output):
+        with tempfile.TemporaryDirectory() as out:
+            base = Path(out)
+            report_path, raw_path = base / "report.json", base / "raw.json"
+            report_path.write_text(json.dumps(report), encoding="utf-8")
+            raw_path.write_text(json.dumps(raw), encoding="utf-8")
+            return cli(["rows", "--input", report_path, "--raw", raw_path, "--receipts", folder, "--output", output(base)])
+
+    def test_the_output_can_never_overwrite_or_enter_the_receipts_folder(self):
+        report, raw, folder = self.build()
+        receipt = Path(folder, "JUP-069-011-r1.json")
+        before = receipt.read_bytes()
+        status, _, stderr = self.run_rows(report, raw, folder, lambda base: receipt)
+        self.assertEqual(status, 2, stderr)
+        self.assertEqual(receipt.read_bytes(), before)
+        inside = Path(folder, "rows.json")
+        status, _, _ = self.run_rows(report, raw, folder, lambda base: inside)
+        self.assertEqual(status, 2)
+        self.assertFalse(inside.exists())
+
+    def test_long_quotations_and_titles_are_never_dropped_from_the_denominator(self):
+        row = self.quote_case("inventado " * 600)
+        self.assertEqual((row["numerator"], row["denominator"]), (0, 1))
+        row = self.quote_case("El coste amortizado", title="T" * 300)
+        self.assertEqual((row["numerator"], row["denominator"]), (1, 1))
+
+    def test_quotations_are_compared_with_the_neighbouring_normalisation(self):
+        row = self.quote_case("STRASSE", content="la straße del informe")
+        self.assertEqual((row["numerator"], row["denominator"]), (1, 1))
+        row = self.quote_case("café", content="un café amargo")
+        self.assertEqual((row["numerator"], row["denominator"]), (1, 1))
+        row = self.quote_case("coste amortizado", title="**Glosario X**", content="El coste amortizado se reparte")
+        self.assertEqual((row["numerator"], row["denominator"]), (1, 1))
+
+    def test_the_recognised_citation_format_is_frozen(self):
+        row = self.quote_case("coste amortizado", title="Glosario X")
+        self.assertEqual(row["denominator"], 1)
+
+        def other_separator(raw):
+            next(r for r in raw["cases"] if r["case"] == "JUP-069-011")["answer"] += "\nFuente: Glosario X - «coste amortizado»"
+        self.assertEqual(find(self.rows(mutate_raw=other_separator), "literal_quotes")["status"], "not_measured")
+
+    def test_a_value_that_overflows_a_float_is_a_controlled_error(self):
+        def huge(raw):
+            raw["execution"]["collection"]["server_reported"][0]["usage"]["cost_usd"] = "1e400"
+        report, raw, folder = self.build(mutate_raw=huge)
+        with self.assertRaisesRegex(robustness.Error, "range|finite"):
+            robustness.rows_v1(report, raw, robustness.read_receipts(folder, raw))
+        status, _, _ = self.run_rows(report, raw, folder, lambda base: base / "rows.json")
+        self.assertEqual(status, 2)
+
+    def test_more_malformed_inputs_are_controlled_errors(self):
+        report, raw, folder = self.build()
+        self.edit_receipt(folder, "JUP-069-011", lambda item: item.update(id=["JUP-069-011"]))
+        with self.assertRaises(robustness.Error):
+            robustness.read_receipts(folder, raw)
+        report, raw, folder = self.build()
+        Path(folder, "dir.json").mkdir()
+        self.assertEqual(len(robustness.read_receipts(folder, raw)), 29)
+        receipts = robustness.read_receipts(folder, raw)
+        broken = copy.deepcopy(report)
+        broken.pop("pairs")
+        with self.assertRaises(robustness.Error):
+            robustness.rows_v1(broken, raw, receipts)
+
+        def bad_usage(raw):
+            raw["execution"]["collection"]["server_reported"][0]["usage"] = "x"
+        report, raw, folder = self.build(mutate_raw=bad_usage)
+        with self.assertRaises(robustness.Error):
+            robustness.rows_v1(report, raw, robustness.read_receipts(folder, raw))
+
+    def test_repetitions_are_plain_integers(self):
+        report, raw, folder = self.build()
+        self.edit_receipt(folder, "JUP-069-011", lambda item: item.update(repetition=True))
+        with self.assertRaisesRegex(robustness.Error, "JUP-069-011"):
+            robustness.read_receipts(folder, raw)
+        report, raw, folder = self.build()
+        raw["execution"]["collection"]["server_reported"][0]["sample_id"] = "JUP-069-002:r١"
+        with self.assertRaises(robustness.Error):
+            robustness.read_receipts(folder, raw)
+
+    def test_a_title_never_spans_lines_and_hostile_line_layouts_stay_linear(self):
+        import time
+        lf = chr(10)
+        self.assertEqual(robustness.quotations("Fuente: A" + lf + "B — «q»"), [])
+        self.assertEqual(robustness.quotations("Fuente: A — «uno»" + lf + "Fuente: B — «dos»"), [("A", "uno"), ("B", "dos")])
+        self.assertEqual(robustness.quotations("sin cita Fuente: A — «sin cierre"), [])
+        started = time.perf_counter()
+        robustness.quotations(("Fuente: " * 20000 + lf) * 5 + " — «a»")
+        robustness.quotations("Fuente: " * 20000 + lf + " — «a»")
+        robustness.quotations("Fuente: A — «" * 20000)
+        self.assertLess(time.perf_counter() - started, 3)

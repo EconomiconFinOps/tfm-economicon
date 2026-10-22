@@ -62,15 +62,16 @@ RUTAS = {
     "jup130-anomalies": "docs/evidence/JUP-130/JUP-130-anomalies.rows.json",
     "jup130-data": "docs/evidence/JUP-130/JUP-130-data.rows.json",
     "jup130-ai-cost": "docs/evidence/JUP-130/JUP-130-ai-cost.rows.json",
+    "jup071": "docs/evidence/JUP-071-live-r1-rows.json",
 }
-JUP130 = ("jup130-anomalies", "jup130-data", "jup130-ai-cost")
-# Resultados que deben existir: lo que se deduce de los informes (2 x 48 + 10 + 140 + 23 + 16 + 10 + 13). Se escribe en el test para
+JUP130 = ("jup130-anomalies", "jup130-data", "jup130-ai-cost", "jup071")
+# Resultados que deben existir: lo que se deduce de los informes (2 x 48 + 10 + 140 + 23 + 16 + 10 + 13 + 136). Se escribe en el test para
 # que un cambio de los datos obligue a mirar este número y no se acepte «lo que haya».
 FILAS_JUP070 = 48
 FILAS_JUP078 = 10
 FILAS_JUP022 = 140
 FILAS_JUP068 = 23
-FILAS_JUP130 = (16, 10, 13)
+FILAS_JUP130 = (16, 10, 13, 136)
 TOTAL_ESPERADO = 2 * FILAS_JUP070 + FILAS_JUP078 + FILAS_JUP022 + FILAS_JUP068 + sum(FILAS_JUP130)
 ESTADOS_DE_CASO = ("pass", "fail", "blocked", "not_run")
 
@@ -396,13 +397,13 @@ def run_de(fuente: str, run_at: str | None = None, run_id: str | None = None) ->
 
 
 class InformesPresentesTests(ConciliacionCase):
-    def test_las_ocho_ejecuciones_estan_cargadas_y_cada_una_corresponde_a_su_informe(self):
+    def test_las_nueve_ejecuciones_estan_cargadas_y_cada_una_corresponde_a_su_informe(self):
         # «Que ningún informe desaparezca»: dos campañas de JUP-070 (halladas por su fecha y su commit originales), el
         # benchmark, la calibración (por su `generated_at`) y la ejecución de negocio (por su `run_id` propio).
         cargadas = ejecuciones()
-        self.assertEqual(len(cargadas), 8, [e["run_id"] for e in cargadas])
+        self.assertEqual(len(cargadas), 9, [e["run_id"] for e in cargadas])
         self.assertEqual(sorted(e["source"] for e in cargadas), [
-            "JUP-022", "JUP-068", "JUP-070", "JUP-070", "JUP-078", "JUP-130-ai-cost", "JUP-130-anomalies", "JUP-130-data"])
+            "JUP-022", "JUP-068", "JUP-070", "JUP-070", "JUP-071", "JUP-078", "JUP-130-ai-cost", "JUP-130-anomalies", "JUP-130-data"])
         for clave in ("jup070-1", "jup070-2"):
             informe = leer(clave)
             run_id = run_de("JUP-070", run_at=informe["run"]["date"])
@@ -441,9 +442,9 @@ class InformesPresentesTests(ConciliacionCase):
             + 5 * len(leer("jup078")["models"]) + 5 * len(leer("jup022")["points"])
             + len(esperado_jup068(informe_de_negocio()))
             + sum(len(leer(clave)["results"]) for clave in JUP130))
-        # El número no se acepta «porque sí»: 96 + 10 + 140 + 23 + 16 + 10 + 13.
+        # El número no se acepta «porque sí»: 96 + 10 + 140 + 23 + 16 + 10 + 13 + 136.
         self.assertEqual(esperado, TOTAL_ESPERADO)
-        self.assertEqual(TOTAL_ESPERADO, 308)
+        self.assertEqual(TOTAL_ESPERADO, 444)
         filas = con_el_rol("SELECT count(*) AS n FROM evaluation.results")
         self.assertEqual(filas[0]["n"], TOTAL_ESPERADO)
         por_ejecucion = {f["run_id"]: f["n"] for f in con_el_rol(
@@ -751,13 +752,13 @@ class LoQueSeVeTests(ConciliacionCase):
             with self.subTest(fila=(f["metric_id"], f["behavior"], f["status"])):
                 self.assertEqual(f["valor_texto"], texto_visible(origen["unit"], origen["value"], origen["count"], minutos=True))
 
-    def test_los_paneles_juntos_muestran_cada_una_de_las_308_filas_de_la_base(self):
-        # Cobertura: si una consulta de panel perdiera filas (un filtro de más, un grupo que falta) la suma no llegaría a 308.
+    def test_los_paneles_juntos_muestran_cada_una_de_las_444_filas_de_la_base(self):
+        # Cobertura: si una consulta de panel perdiera filas (un filtro de más, un grupo que falta) la suma no llegaría a 444.
         # Estados de casos (4 filas de la base por fila del panel) y benchmark (5 por modelo) vienen pivotados.
         visibles = (
             4 * len(del_panel("a2")) + len(del_panel("a3")) + len(del_panel("a4")) + len(del_panel("a7"))
             + 5 * len(del_panel("a8")) + len(de_los_paneles_de_negocio())
-            + len(del_panel("a_anomalias")) + len(filas_de_los_indicadores()))
+            + len(del_panel("a_anomalias")) + len(filas_de_los_indicadores()) + len(del_panel("a9")))
         self.assertEqual(visibles, TOTAL_ESPERADO)
         self.assertEqual(con_el_rol("SELECT count(*) AS n FROM evaluation.results")[0]["n"], visibles)
 

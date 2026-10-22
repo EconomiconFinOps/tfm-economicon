@@ -36,3 +36,10 @@ contraste corregido conservando diseño. Mediciones locales y reversión:
 La evaluación independiente de este delta está pendiente en este corte; no se
 reabre ni se archiva otro change. 4.4 sigue pendiente y los límites públicos
 anteriores no se convierten en PASS por los resultados locales.
+
+
+## Reconciliación posterior — 22/10/2026
+
+PR142 se reconcilia localmente desde c684210275e2788de2c660b52cf3ad8098d7fd32 con develop c00063dbaa83a1237431edef9de6d71d1bfd1ffd sin commit; único conflicto documental conserva ambas filas. Diseño, 20 fuentes de app, contratos y artefacto c684 intactos. 46 pruebas focales, builds raíz y 13 peticiones reales favorables, con registros separados. Se conservan fixes publicados y todo feedback anterior; no se cambia ni rearchiva esta especificación. Véase la [matriz vigente](../../../../docs/evidence/JUP-089-validation.md#estado-vigente-delta-local-c684--c000--22102026).
+
+Revisión y validación independientes del candidato fijo requieren nuevas referencias originales y conservan los límites. La tarea4.4 sigue pendiente: resultados locales y pairing documentado sobre c227 no equivalen a reviews humanas afectadas, CI nueva o aceptación pública. Dominio/renovación, alojamiento/DNS/HTTPS/despliegue/reversión públicos, vídeo y destino auténtico de demo siguen pendientes; reduced-motion interactivo NOT_VALIDATED, límite aceptado y explícito. No se autoriza commit/push/publicación o merge por esta reconciliación. El liderazgo mostrará informe y borrador antes de subir nada.

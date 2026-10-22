@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 from collections import Counter
 from datetime import datetime, timezone
+from decimal import Decimal, InvalidOperation
 import hashlib
 import importlib.util
 import json
@@ -511,12 +512,14 @@ def checked_counts(c, where):
     return c
 
 
-def rows_v1(report):
+def rows_v1(report, raw=None, receipts=None, cases=None):
     """Emit the score report as the dashboard `rows-v1` contract: identifiers and numbers only.
 
     Not-measured values are null, never zero. Answer texts, reviewer names and notes are not in the report.
     The report is validated before anything is emitted, so inconsistent counts cannot become versionable evidence.
+    With the raw collection and its receipts, the campaign indicators are appended to the same run.
     """
+    require((raw is None) == (receipts is None), "the raw collection and the receipts must be given together")
     require(isinstance(report, dict) and isinstance(report.get("run"), dict) and isinstance(report.get("totals"), dict)
             and isinstance(report.get("groups"), dict) and isinstance(report.get("categories"), dict)
             and isinstance(report.get("cases"), list), "report is not a JUP-071 score report")
@@ -591,7 +594,252 @@ def rows_v1(report):
         for state in HUMAN_STATES:
             results.append(row("numeric", "numeric_checks", "all", "casos", "automatic", state,
                                count=checks.count(state), denominator=len(checks)))
+    if raw is not None:
+        results += indicator_rows(report, raw, receipts, cases if cases is not None else campaign(*load_suite()))
     return {"contract_version": 1, "run": out_run, "results": results}
+
+
+INDICATOR_GROUPS = ("rob_core", "rob_retrieval", "rob_system", "rob_conversation")
+HUMAN_INDICATORS = frozenset({"invention_rate", "required_coverage", "behavior_match_rate", "request_rate",
+                              "over_abstention_rate", "pair_degradation"})
+VERIFIED = "VERIFIED_PUBLIC_SNAPSHOT"
+# Which required points ask to request something is a heuristic on the rubric text; a test freezes it for the shipped suite.
+REQUEST_POINT = re.compile(r"\b(pedir|solicitar|proponer aportar)\b", re.IGNORECASE)
+
+
+def quotations(answer):
+    """The `Fuente: <title> — «<text>»` attributions of an answer, with no length limit and in linear time."""
+    found, start, separator, newline = [], 0, -1, -1
+    while True:
+        head = answer.find("Fuente: ", start)
+        if head < 0:
+            return found
+        if separator < head:
+            separator = answer.find(" — «", head)
+            if separator < 0:
+                return found
+        if newline < head:
+            newline = answer.find("\n", head)
+        if 0 <= newline < separator:
+            start = head + 8
+            continue
+        end = answer.find("»", separator + 4)
+        if end < 0:
+            return found
+        found.append((answer[head + 8:separator], answer[separator + 4:end]))
+        start = end + 1
+
+
+def request_points(case):
+    return [n for n, text in enumerate(case["expected"]["required"], 1) if REQUEST_POINT.search(text)]
+
+
+def indicator_row(grp, metric_id, behavior, unit, judgment, status, **fields):
+    require(grp in INDICATOR_GROUPS, f"{metric_id}: indicators use their own groups, not {grp}")
+    base = dict.fromkeys(ROWS_RESULT_KEYS)
+    base.update(measure_type="A", grp=grp, metric_id=metric_id, behavior=behavior, status=status, unit=unit,
+                judgment=judgment, selected=False)
+    base.update(fields)
+    if unit == "tasa" and base["numerator"] is not None and base["denominator"] is not None:
+        require(0 <= base["numerator"] <= base["denominator"], f"{metric_id}: numerator above the denominator")
+    return base
+
+
+def ratio(grp, metric_id, numerator, denominator):
+    judgment = "human" if metric_id in HUMAN_INDICATORS else "automatic"
+    if not denominator:
+        return indicator_row(grp, metric_id, "all", "tasa", judgment, "not_measured", denominator=denominator)
+    return indicator_row(grp, metric_id, "all", "tasa", judgment, "measured", value=numerator / denominator,
+                         numerator=numerator, denominator=denominator)
+
+
+def mean(grp, metric_id, unit, total, denominator):
+    if not denominator:
+        return indicator_row(grp, metric_id, "all", unit, "automatic", "not_measured", denominator=denominator)
+    try:
+        value = float(total) / denominator
+    except OverflowError:
+        value = math.inf
+    require(math.isfinite(value), f"{metric_id}: the value is out of range")
+    return indicator_row(grp, metric_id, "all", unit, "automatic", "measured", value=value, denominator=denominator)
+
+
+def part(value, where):
+    """An optional JSON object; any other shape is a controlled error naming where it was found."""
+    require(value is None or isinstance(value, dict), f"{where}: unexpected structure")
+    return value or {}
+
+
+def check_receipt(case, item):
+    """Shapes the indicators rely on; a verified receipt additionally needs its manifest (checked when it is used)."""
+    part(item.get("operation"), f"{case}: operation")
+    metadata = part(part(item.get("result"), f"{case}: result").get("metadata"), f"{case}: metadata")
+    manifest = part(metadata.get("generation"), f"{case}: generation").get("context_manifest")
+    response = part(metadata.get("response"), f"{case}: response")
+    cited = response.get("evidence", [])
+    require(isinstance(cited, list) and all(isinstance(x, dict) and isinstance(x.get("id"), str) for x in cited),
+            f"{case}: malformed cited evidence")
+    if manifest is not None:
+        part(manifest, f"{case}: context manifest")
+        identifiers, retrieval = manifest.get("evidence_ids"), manifest.get("retrieval", [])
+        require(isinstance(identifiers, list) and all(isinstance(x, str) for x in identifiers) and len(set(identifiers)) == len(identifiers),
+                f"{case}: malformed context manifest: evidence identifiers must be unique text")
+        require(isinstance(retrieval, list) and all(isinstance(x, dict) for x in retrieval),
+                f"{case}: malformed context manifest: retrieval entries")
+
+
+def read_receipts(folder, raw):
+    """Public receipts of one collection by case; they must be the ones the raw collection was exported from."""
+    require(Path(folder).is_dir(), "the receipts folder does not exist")
+    execution = raw["execution"]
+    require(isinstance(execution, dict) and execution.get("kind") == "live_unverified", "indicators need a live collection with receipts")
+    reported = part(execution.get("collection"), "raw collection").get("server_reported")
+    require(isinstance(reported, list) and all(isinstance(x, dict) for x in reported), "the raw collection does not identify its samples")
+    repetition = {}
+    for item in reported:
+        case, _, number = str(item.get("sample_id")).rpartition(":r")
+        require(re.fullmatch("[0-9]+", number) is not None and case not in repetition, "the raw collection does not identify its samples")
+        repetition[case] = int(number)
+    found = {}
+    for path in sorted(p for p in Path(folder).glob("*.json") if p.is_file()):
+        document = json.loads(path.read_text(encoding="utf-8"))
+        results = document.get("results") if isinstance(document, dict) else None
+        if not isinstance(results, list):
+            continue
+        require(len(results) == 1 and isinstance(results[0], dict), f"{path.name}: a receipt holds exactly one result")
+        require(isinstance(results[0].get("id"), str) and type(results[0].get("repetition")) is int,
+                f"{path.name}: a receipt names its case and its repetition")
+        key = (results[0].get("id"), results[0].get("repetition"))
+        require(key not in found, f"{key[0]}: more than one receipt for the same sample")
+        found[key] = results[0]
+    receipts = {}
+    for row in raw["cases"]:
+        case = row["case"]
+        require(case in repetition, f"{case}: the raw collection does not identify the sample")
+        item = found.get((case, repetition[case]))
+        require(item is not None, f"{case}: no receipt for this sample")
+        verified = item.get("collection_state") == VERIFIED
+        if row["answer"]:
+            require(verified and part(item.get("operation"), f"{case}: operation").get("state") == "completed"
+                    and part(item.get("result"), f"{case}: result").get("content") == row["answer"],
+                    f"{case}: the receipt is not the verified one of this answer")
+        else:
+            require(not verified, f"{case}: a verified receipt for a case without an answer")
+        check_receipt(case, item)
+        receipts[case] = item
+    return receipts
+
+
+def squash(text):
+    return evaluation.normalize(text)
+
+
+def indicator_rows(report, raw, receipts, cases):
+    require(report.get("raw_sha256") == digest(raw), "the report was not scored from this raw collection")
+    require(raw["execution"].get("kind") == "live_unverified" and report.get("kind") == "live_unverified",
+            "indicators need a live collection with receipts")
+    require(isinstance(report.get("pairs"), list), "the report has no pairs")
+    by_id = {c["id"]: c for c in cases}
+    raw_by_id = {r["case"]: r for r in raw["cases"]}
+    require(set(receipts) == set(raw_by_id), "the receipts do not cover the raw collection")
+    verified = [case for case, item in receipts.items() if item.get("collection_state") == VERIFIED]
+    out = []
+
+    tally = {"forbidden": [0, 0], "required": [0, 0], "behavior": [0, 0]}
+    for case in report["cases"]:
+        if case["outcome"] == "blocked":
+            continue
+        for key, state in case["checks"].items():
+            kind = key.split("-")[0]
+            if kind in tally and state in HUMAN_STATES:
+                tally[kind][state == "fail"] += 1
+    out.append(ratio("rob_core", "invention_rate", tally["forbidden"][1], sum(tally["forbidden"])))
+    out.append(ratio("rob_core", "required_coverage", tally["required"][0], sum(tally["required"])))
+    out.append(ratio("rob_core", "behavior_match_rate", tally["behavior"][0], sum(tally["behavior"])))
+
+    valid = cited_total = quotes = literal = 0
+    listed = neighbours = cited_listed = with_retrieval = empty = unused = 0
+    for case in verified:
+        metadata = part(part(receipts[case].get("result"), case).get("metadata"), case)
+        manifest = part(metadata.get("generation"), case).get("context_manifest")
+        require(isinstance(manifest, dict) and isinstance(manifest.get("evidence_ids"), list),
+                f"{case}: the receipt has no context manifest")
+        identifiers = manifest["evidence_ids"]
+        cited = [x["id"] for x in part(metadata.get("response"), case).get("evidence", [])]
+        valid += sum(1 for x in cited if x in identifiers)
+        cited_total += len(cited)
+        listed += len(identifiers)
+        neighbours += sum(1 for x in manifest.get("retrieval") or [] if x.get("admission") == "neighbor")
+        used = len(set(cited) & set(identifiers))
+        cited_listed += used
+        empty += not identifiers
+        with_retrieval += bool(identifiers)
+        unused += bool(identifiers) and not used
+        row = raw_by_id[case]
+        cited_ids = set(cited)
+        fragments = [e for e in row.get("public_evidence", []) if e.get("id") in cited_ids]
+        for title, quote in quotations(row["answer"]):
+            quotes += 1
+            literal += bool(squash(quote)) and any(squash(title) == squash(e.get("title", "")) and squash(quote) in squash(e.get("content", ""))
+                                                   for e in fragments)
+    out.append(ratio("rob_core", "valid_citations", valid, cited_total))
+    out.append(ratio("rob_core", "literal_quotes", literal, quotes))
+    out.append(ratio("rob_retrieval", "empty_retrieval_rate", empty, len(verified)))
+    out.append(mean("rob_retrieval", "fragments_per_query", "fragmentos", listed, with_retrieval))
+    out.append(ratio("rob_retrieval", "neighbor_share", neighbours, listed))
+    out.append(ratio("rob_retrieval", "context_utilization", cited_listed, listed))
+    out.append(ratio("rob_retrieval", "unused_retrieval_rate", unused, with_retrieval))
+
+    planned = report["totals"]["total"]
+    out.append(ratio("rob_system", "completion_rate",
+                     sum(1 for x in receipts.values() if part(x.get("operation"), "receipt").get("state") == "completed"), planned))
+    causes = Counter()
+    for case, item in receipts.items():
+        if item.get("collection_state") == VERIFIED:
+            continue
+        state = part(item.get("operation"), case).get("state")
+        require(state in ("failed", "completed"), f"{case}: an operation in state {state} has no cause")
+        causes["operation_failed" if state == "failed" else "evidence_unverified"] += 1
+    for cause in ("operation_failed", "evidence_unverified"):
+        out.append(indicator_row("rob_system", "unmeasured_by_cause", cause, "casos", "automatic", "measured",
+                                 value=causes[cause], denominator=planned))
+    usage = []
+    for entry in execution_usage(raw):
+        reported = entry.get("usage")
+        require(reported is None or isinstance(reported, dict), f"{entry.get('sample_id')}: malformed usage")
+        if reported:
+            usage.append(reported)
+    costs = [exact(x.get("cost_usd")) for x in usage if x.get("cost_usd") is not None]
+    out.append(mean("rob_system", "cost_per_query", "usd", sum(costs, Decimal(0)), len(costs)))
+    for name, field in (("prompt_size_per_query", "prompt_tokens"), ("completion_size_per_query", "completion_tokens")):
+        counts = [x[field] for x in usage if x.get(field) is not None]
+        require(all(type(v) is int and v >= 0 for v in counts), "server-reported tokens are not valid")
+        out.append(mean("rob_system", name, "unidades", sum(counts), len(counts)))
+
+    asks = [(c, request_points(by_id[c["case"]])) for c in report["cases"]
+            if c["behavior"] in ("clarify", "abstain") and c["outcome"] != "blocked"]
+    asks = [(c, points) for c, points in asks if points and all(c["checks"].get(f"required-{n}") in HUMAN_STATES for n in points)]
+    out.append(ratio("rob_conversation", "request_rate",
+                     sum(all(c["checks"].get(f"required-{n}") == "pass" for n in points) for c, points in asks), len(asks)))
+    answers = [c for c in report["cases"] if c["behavior"] == "answer" and c["checks"].get("behavior") in HUMAN_STATES]
+    out.append(ratio("rob_conversation", "over_abstention_rate",
+                     sum(c["checks"].get("behavior") == "fail" for c in answers), len(answers)))
+    pairs = [p for p in report["pairs"] if p["before"] == "pass" and p["after"] in HUMAN_STATES]
+    out.append(ratio("rob_conversation", "pair_degradation", sum(p["after"] == "fail" for p in pairs), len(pairs)))
+    return out
+
+
+def execution_usage(raw):
+    return part(part(raw["execution"], "raw execution").get("collection"), "raw collection").get("server_reported") or []
+
+
+def exact(value):
+    try:
+        number = Decimal(str(value))
+    except InvalidOperation:
+        raise Error("server-reported cost is not a number") from None
+    require(number.is_finite() and number >= 0, "server-reported cost is not a number")
+    return number
 
 
 def compare(reports):
@@ -635,6 +883,8 @@ def parser():
     scoring.add_argument("--report", type=Path, required=True)
     emit = sub.add_parser("rows")
     emit.add_argument("--input", type=Path, required=True, help="score report (JSON) to convert")
+    emit.add_argument("--raw", type=Path, help="raw collection the report was scored from; adds the campaign indicators")
+    emit.add_argument("--receipts", type=Path, help="folder with the public receipts of that collection")
     emit.add_argument("--output", type=Path, required=True)
     comparison = sub.add_parser("compare")
     comparison.add_argument("reports", type=Path, nargs="+")
@@ -664,8 +914,8 @@ def outside(path):
     return not is_unc(path) and evaluation.outside_repository(path) and not normalised(path).is_relative_to(normalised(ROOT))
 
 
-def protect_outputs(outputs, inputs):
-    """Never destroy raw evidence, judgments, code or versioned references."""
+def protect_outputs(outputs, inputs, folders=()):
+    """Never destroy raw evidence, judgments, code, versioned references or the public receipts."""
     require(not any(is_unc(p) for p in outputs), "network share paths are not accepted for outputs")
     outputs = [normalised(p) for p in outputs]
     reserved = {normalised(p) for p in inputs}
@@ -673,6 +923,8 @@ def protect_outputs(outputs, inputs):
     require(all(not p.is_relative_to(normalised(ROOT)) or
                 (p.parent == evidence and re.fullmatch(r"jup-071-[a-z0-9._-]+-(report\.(json|md)|rows\.json)", p.name, re.IGNORECASE)) for p in outputs),
             "outputs inside the repository are limited to generated JUP-071 reports in docs/evidence")
+    guarded = [normalised(p) for p in folders]
+    require(not any(p == f or p.is_relative_to(f) for p in outputs for f in guarded), "output would overwrite or enter an input folder")
     require(len(set(outputs)) == len(outputs), "output paths must be distinct")
     require(not (set(outputs) & reserved), "output would overwrite an input or reference")
     require(all(p.parent.is_dir() for p in outputs), "create output directories before execution")
@@ -687,7 +939,8 @@ def main(argv=None):
         inputs = [getattr(args, key) for key in ("raw", "judgments", "run_info", "input") if getattr(args, key, None)]
         protect_outputs(outputs, [*inputs, SUITE, BASELINE, SERVICE, Path(__file__), evaluation.RULES_PATH,
                                   ROOT / "tools/assistant-eval.py", ROOT / suite["methodology"]["path"],
-                                  *(ROOT / s["path"] for s in suite["sources"].values())])
+                                  *(ROOT / s["path"] for s in suite["sources"].values())],
+                        [args.receipts] if getattr(args, "receipts", None) else [])
         if args.command == "validate":
             print(f"JUP-071: {len(suite['cases'])} perturbations, {len(cases)} cases including baselines; hashes OK")
         elif args.command == "prepare":
@@ -723,11 +976,17 @@ def main(argv=None):
                 evaluation.write_text(args.output, evaluation.dumps(result))
                 evaluation.write_text(args.report, markdown(result))
         elif args.command == "rows":
-            evaluation.write_text(args.output, evaluation.dumps(rows_v1(read(args.input))))
+            require((args.raw is None) == (args.receipts is None), "--raw and --receipts must be given together")
+            if args.raw is None:
+                document = rows_v1(read(args.input))
+            else:
+                collection = read(args.raw)
+                document = rows_v1(read(args.input), collection, read_receipts(args.receipts, collection), cases)
+            evaluation.write_text(args.output, evaluation.dumps(document))
         else:
             print(evaluation.dumps(compare([read(p) for p in args.reports])))
         return 0
-    except (Error, ValueError, KeyError, TypeError, OSError, ArithmeticError, RecursionError) as error:
+    except (Error, ValueError, KeyError, TypeError, AttributeError, OSError, ArithmeticError, RecursionError) as error:
         # Do not echo raw answer/credential-bearing JSON or provider exception text.
         print(f"JUP-071: {error if isinstance(error, Error) else type(error).__name__}", file=sys.stderr)
         return 2

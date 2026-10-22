@@ -2,6 +2,38 @@
 
 Verificación local: 19/10/2026. [Tarjeta](https://trello.com/c/fD7nJKRl) · [OpenSpec archivado](../../openspec/changes/archive/2026-10-19-jup-089-public-landing/). Rama feat/JUP-089-public-landing; base evaluada f444ba11e38203b6cfd645a098fd9946d55955e3 más diff de trabajo. Los archivos nuevos no se atribuyen al SHA base. Pruebas propias del liderazgo y evaluaciones independientes R1 conservadas; reevaluación R2 técnica favorable y funcional local favorable, con criterios completos públicos pendientes. Paris aprueba el cierre local y autoriza el archivado, commit y push el 19/10/2026; la aprobación no acredita despliegue público ni reviews humanas.
 
+## Estado vigente: delta local c684 + c000 — 22/10/2026
+
+PR142 en borrador. Origen `c684210275e2788de2c660b52cf3ad8098d7fd32`, develop fijado `c00063dbaa83a1237431edef9de6d71d1bfd1ffd`, integración preparada sin commit. La única colisión es la fila de continuidad: se conservan landing y modelo único y todos los cambios entrantes ajenos. Los bytes de trabajo no se atribuyen sólo a HEAD. Se actualizaron exclusivamente continuidad/evidencia y notas del archivo existente, sin rearchivo ni cambio de requisitos o producto de landing.
+
+### Conservación y comprobación afectada
+
+Veinte archivos de apps/landing y once contratos de package/lock/Turbo/CI mantienen identidad con c684. Las 98 rutas entrantes incorporan otros trabajos de develop y no alteran estas entradas. Fuentes, marca, composición, demo, enlaces repositorio/docs, pie sin identificador interno, separación integrado/simulado/pendiente, contraste y HSTS de c684 se conservan. El artefacto local actual se reconstruye también desde las fuentes exportadas de c684: manifiesto SHA256 `8a475d9747d6161c3fbe1e2b673f075ef26e916e86ece7404dfaf1932442a502`, 14 entradas públicas/231.052 bytes y todos sus bytes idénticos. La portada mantiene `65bd5a69ef4896099891c0f06e1ee3d24a194b6ecaec71746f6ad55cc432edbf`; las cifras 230.138 de c227 pertenecen al corte anterior.
+
+| Comprobación nueva de la reconciliación | Resultado y alcance |
+| --- | --- |
+| Build/servidor landing | **9 PASS, 0 SKIP**, Node22 privado en Ubuntu WSL2; sin código/expectativas modificados |
+| Contratos existentes Turbo y CI | **21 PASS, 0 SKIP**; planes estrictos, huellas y job de landing conservados |
+| Contrato Python de scripts y bloque CI | **16 PASS, 0 SKIP**, Python3.12 privado; sin ejecutar la suite general de evaluación |
+| Consumidor raíz real | Lint y dos builds favorables, local sin origen y HTTPS sintético, salidas externas propias; sin reproducir caché en otro destino |
+| Reconstrucción c684 y conservación de artefacto | Mismos 14 archivos públicos y manifiesto; igualdad de cada byte, no sólo tamaño |
+| HTTP real sobre salida de la raíz | **13 peticiones correctas**: home200, HEAD200 sin cuerpo, 404 de privada/desconocida/traversal, URI inválida400, POST405, robots200 y ETag304; cabeceras restrictivas y /404.html directa200 según contrato |
+| Retirada de preview | Servidor propio cerrado y ausencia de listener comprobada; sin procesos o puertos compartidos tocados |
+
+Los comandos completos, huellas e informes se custodian fuera del producto. Se usarán comprobaciones nativas de trazabilidad, OpenSpec estricto, higiene y diff del candidato final. Los checks de política/gobernanza de c684 sólo se reutilizan donde sus herramientas/entradas mantengan identidad; no se atribuyen nuevos PASS a las suites de los productos entrantes.
+
+La evidencia de navegador c684 en 1440/390/320, teclado/foco/diálogo y Lighthouse local desktop100/100/92 y móvil97/100/92 conserva fecha y alcance por identidad comprobada de entradas/artefacto. No se presenta como nueva ejecución, rendimiento público o auditoría WCAG completa. No se repiten Lighthouse/UI completos, campañas, modelos, mutación o miles de tests IA/RAG por este conflicto documental. No hay dependencia runtime de la landing con el modelo/gateway/backend integrados en develop.
+
+### Feedback completo, participación y pendientes
+
+Se leyeron las tres reviews de Lucía sobre c227 y el comentario c684; contexto sin inline ni solicitudes activas de cambios. Los fixes de enlaces/pie/alcance/contraste/HSTS ya publicados se conservan; sugerencias no bloqueantes de caché, CSP, metadatos y normalización de ruta no amplían esta reconciliación. /404.html directa200 y caché conservadora se mantienen según operación documentada. La aprobación c227 quedó dismissed por el push y no acredita el candidato nuevo. El comentario publicado de c684 conserva el estado y límites de ese corte.
+
+Roles vigentes Paris líder, Víctor pairing, Alejandro revisión, Lucía validación. Trello registra el contraste posterior/pruebas de Víctor sobre c227, sin coautoría de construcción, sin solicitar cambios y sin atribuirle correcciones posteriores. No se exige pairing nuevo por el merge. Revisión/revalidación humanas afectadas siguen separadas de los agentes y CI. CI PR8/8 y SQL SUCCESS de c684 son antecedentes, no CI de esta composición sin commit.
+
+Dominio/titular/renovación, hosting/DNS/HTTPS, despliegue y reversión públicos, vídeo aprobado y destino auténtico de demo siguen pendientes de decisión y comprobación. **Reduced-motion interactivo NOT_VALIDATED**, límite aceptado expresamente por Paris y no eliminado: se conserva comprobación estática del CSS y la falta de lectura de preferencia efectiva en el intento anterior. Ninguna prueba local acredita esos criterios públicos. No se declara la JUP cerrada o revalidación humana completa.
+
+Se fijará candidato/manifiesto y se solicitarán referencias originales independientes antes de Revisor/Validador distintos. El liderazgo regulariza el índice y conserva Git/publicación; resultados y borrador actualizado se muestran antes de subir nada. No hay autorización en este encargo para commit/push, modificación de la descripción remota, publicación de comentarios, despliegue o merge. Las secciones siguientes conservan sus resultados históricos y no se reescriben.
+
 ## Resultado local y límites
 
 App estática independiente, sin cambios al frontend privado, autenticación o API, ni dependencias de producción nuevas. Siete secciones y recorrido aprobados. Datos, fuente, respuesta y acciones ilustrativas rotulados; no se promete Azure conectado, causa demostrada, previsión, ahorro o vídeo.
@@ -191,3 +223,6 @@ Dominio/titular/renovación, alojamiento, HTTPS/despliegue público y destino re
 de demo siguen pendientes de decisión. Propuesta: aprobar un proyecto estático
 del equipo y su origen antes de publicar; conservar mientras la demo ilustrativa.
 No se declara aceptación pública completa ni autorización de publicación.
+
+
+Comprobaciones nativas de este corte: OpenSpec estricto **88 PASS/0 FAIL**, trazabilidad e higiene conformes (2.305 fuentes). Git diff --check PASS con Git Windows. El primer intento Git WSL no pudo resolver la ruta Windows de objetos alternativos del checkout; error de entorno conservado, sin cambiar objetos/configuración, y sólo ese control se completó con el Git del host. No es un fallo de producto o una guarda fallida. Los 104 controles de política PR y 15 de gobernanza de c684 se reutilizan por identidad comprobada de todas sus herramientas, fixtures, plantillas, proceso y entradas de gobernanza/workflows; no se presentan como ejecutados otra vez. CI remota del candidato sin commit pendiente.

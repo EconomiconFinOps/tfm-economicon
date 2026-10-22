@@ -1,4 +1,4 @@
-"""Offline, fixed-resource loading and the contractual GLM tokenizer.
+"""Offline, versioned counters for active Flash and historical resource readers.
 
 Only server configuration supplies paths. No URL, inference or download occurs.
 The manifest hashes a versioned serialization contract, not mutable source paths.
@@ -25,6 +25,11 @@ TOKENIZER = {
     'library_version': '0.22.1', 'revision': 'a66456a59f21345d1e5e586345c448a9106d29d7',
     'sha256': '19e773648cb4e65de8660ea6365e10acca112d42a854923df93db4a6f333a82d',
     'bytes': 20217442,
+}
+FLASH_TOKENIZER = {
+    'library_version': '0.22.1', 'revision': '314113f8a7dadb388215396ba5fbee2c610a04d6',
+    'sha256': 'c90dfa01249db1be4245780a052ede752e1361c612ac6d08e2bdada7d599476b',
+    'bytes': 6367257,
 }
 BUDGETS = {'variable_tokens':8192, 'wrapper_margin_tokens':1024,
            'output_tokens':3200, 'model_context_tokens':1048576}
@@ -167,6 +172,10 @@ class ChatResources:
     _tokenizer: object
     context_budget: dict = field(default_factory=lambda: budget('chat'))
 
+    def check_generation(self):
+        if json.loads(self.manifest_bytes)['v'] != 4 or self.tokenizer_sha256 != FLASH_TOKENIZER['sha256']:
+            raise ValueError('Historical chat resources are read-only.')
+
     def count(self, text):
         return len(self._tokenizer.encode(text, add_special_tokens=False).ids)
 
@@ -251,7 +260,7 @@ def load_resources(directory=None, tokenizer_file=None):
     import tokenizers
     from app.agents.prompts import CHAT_SYSTEM_PROMPT
     from app.agents.schemas import FinOpsResponse, chat_wire_schema as chat_provider_schema
-    root = Path(directory) if directory else Path(__file__).parents[1] / 'agents/prompt_resources/jup035/chat/v3'
+    root = Path(directory) if directory else Path(__file__).parents[1] / 'agents/prompt_resources/jup035/chat/v4'
     if root.is_symlink() or not root.is_dir():
         raise ValueError('Unavailable resources.')
     required = {'system.md','input.md','manifest.json'}
@@ -269,8 +278,15 @@ def load_resources(directory=None, tokenizer_file=None):
     if not 0 < len(system_raw) <= 65536 or not 0 < len(input_raw) <= 65536 or len(manifest_raw) > 16384:
         raise ValueError('Resource limit.')
     manifest = json.loads(manifest_raw, object_pairs_hook=unique)
+    version = manifest.get('v')
+    if type(version) is not int or version not in (3, 4):
+        raise ValueError('Unsupported chat bundle.')
+    tokenizer = FLASH_TOKENIZER if version == 4 else TOKENIZER
+    assembler = dict(ASSEMBLER_CONTRACT)
+    if version == 4:
+        assembler['reasoning'] = {'enabled': False, 'shared_output_tokens': 3200}
     expected = {
-        'v':3, 'kind':'jup-035.chat.v3',
+        'v':version, 'kind':f'jup-035.chat.v{version}',
         'system_sha256':sha(system_raw), 'input_sha256':sha(input_raw),
         'system_base_sha256':sha(CHAT_SYSTEM_PROMPT.encode('utf-8')),
         'response_schema_sha256':sha(canonical(FinOpsResponse.model_json_schema())),
@@ -279,25 +295,25 @@ def load_resources(directory=None, tokenizer_file=None):
         'response_period_policy':'server-verified-unique-utc-v1',
         'response_subscriptions_policy':'server-canonical-selection-v1',
         'input_contract':INPUT_CONTRACT, 'input_contract_sha256':sha(canonical(INPUT_CONTRACT)),
-        'assembler_contract':ASSEMBLER_CONTRACT, 'assembler_sha256':sha(canonical(ASSEMBLER_CONTRACT)),
-        'tokenizer':TOKENIZER, 'budgets':BUDGETS,
+        'assembler_contract':assembler, 'assembler_sha256':sha(canonical(assembler)),
+        'tokenizer':tokenizer, 'budgets':BUDGETS,
     }
     if manifest != expected or tokenizers.__version__ != '0.22.1':
         raise ValueError('Resource contract mismatch.')
-    asset = Path(tokenizer_file) if tokenizer_file else root.parent/'v2/tokenizer.json'
-    if asset.is_symlink() or asset.stat().st_size != TOKENIZER['bytes']:
+    asset = Path(tokenizer_file) if tokenizer_file else (root/'tokenizer.json' if version == 4 else root.parent/'v2/tokenizer.json')
+    if asset.is_symlink() or asset.stat().st_size != tokenizer['bytes']:
         raise ValueError('Tokenizer limit.')
     raw = asset.read_bytes()
-    if sha(raw) != TOKENIZER['sha256']:
+    if sha(raw) != tokenizer['sha256']:
         raise ValueError('Tokenizer mismatch.')
     counter = tokenizers.Tokenizer.from_file(str(asset))
-    if sha(asset.read_bytes()) != TOKENIZER['sha256']:
+    if sha(asset.read_bytes()) != tokenizer['sha256']:
         raise ValueError('Tokenizer changed during load.')
     counter.no_truncation()
     counter.no_padding()
     counter.encode('Control offline: español, € y 漢字.', add_special_tokens=False)
-    return ChatResources('jup-035.chat.v3:'+sha(canonical(manifest)), system_raw.decode('utf-8'),
-                         input_raw.decode('utf-8'), TOKENIZER['sha256'],
+    return ChatResources(f'jup-035.chat.v{version}:'+sha(canonical(manifest)), system_raw.decode('utf-8'),
+                         input_raw.decode('utf-8'), tokenizer['sha256'],
                          expected['response_schema_sha256'], canonical(manifest), counter)
 
 ASSEMBLER_CONTRACT['documentary_excerpt_module_sha256']=hashlib.sha256(Path(__file__).with_name('chat_claims.py').read_text(encoding='utf-8').encode()).hexdigest()

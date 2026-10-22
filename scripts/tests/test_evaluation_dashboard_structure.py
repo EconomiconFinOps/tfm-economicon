@@ -195,6 +195,8 @@ def clasificar(panel):
         return "a_matriz"
     if tipo == "table" and re.search(r"(?i)\bAS\s+resumen\b", sql):
         return "a_resumen"
+    if tipo == "table" and re.search(r"left\(\s*x\.grp\s*,\s*4\s*\)\s*=\s*'rob_'", sql):
+        return "a_indicadores_robustez"
     if tipo == "table" and re.search(r"grp\s*=\s*'anomaly_detection'", sql):
         return "a_anomalias"
     if (
@@ -233,7 +235,7 @@ def clasificar(panel):
 CLAVES_A = ("a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "a9")
 # Piezas añadidas por `jup-121-lectura-dashboard`: no se mezclan con las nueve originales para que las pruebas que
 # recorren `CLAVES_A` sigan midiendo exactamente lo mismo.
-CLAVES_LECTURA = ("a_matriz", "a_resumen", "a_evolucion_latencia", "a_anomalias")
+CLAVES_LECTURA = ("a_matriz", "a_resumen", "a_evolucion_latencia", "a_indicadores_robustez", "a_anomalias")
 
 
 def buscar(clave) -> list:
@@ -586,7 +588,8 @@ class SeccionATests(unittest.TestCase):
         # El clasificador distingue la matriz, el resumen y la evolución de la latencia del detalle (`a4`) y de las
         # evoluciones `a5`/`a6`, con las que comparten palabras. Si una regla se pierde, el panel se cuela en otra
         # pieza (`a4` pasa a tener dos) o queda sin clasificar: aquí se exige exactamente uno de cada y su tipo.
-        esperados = {"a_matriz": "table", "a_resumen": "table", "a_evolucion_latencia": "timeseries", "a_anomalias": "table"}
+        esperados = {"a_matriz": "table", "a_resumen": "table", "a_evolucion_latencia": "timeseries",
+                     "a_indicadores_robustez": "table", "a_anomalias": "table"}
         self.assertEqual(set(esperados), set(CLAVES_LECTURA))
         for clave, tipo in esperados.items():
             with self.subTest(pieza=clave):

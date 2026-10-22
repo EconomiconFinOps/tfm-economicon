@@ -1,6 +1,20 @@
 # Landing pública — JUP-089
 
-Verificado: 2026-10-19. [Tarjeta](https://trello.com/c/fD7nJKRl) · [OpenSpec archivado](../../openspec/changes/archive/2026-10-19-jup-089-public-landing/) · [Evidencia](../evidence/JUP-089-validation.md).
+Actualización documental: 22/10/2026. Los cortes anteriores conservan sus revisiones y límites. [Tarjeta](https://trello.com/c/fD7nJKRl) · [OpenSpec archivado](../../openspec/changes/archive/2026-10-19-jup-089-public-landing/) · [Evidencia](../evidence/JUP-089-validation.md).
+
+## Estado vigente: reconciliación local de PR142 — 22/10/2026
+
+Paris autoriza reconciliar el HEAD publicado `c684210275e2788de2c660b52cf3ad8098d7fd32` con develop `c00063dbaa83a1237431edef9de6d71d1bfd1ffd`, comprobar el delta con revisión/validación independientes y mostrar resultados antes de subir nada. La integración se prepara sin commit; único conflicto en el índice de continuidad, resuelto conservando una vez las filas de landing y modelo único. Las operaciones Git y los controles originales de evaluación corresponden al liderazgo; esta preparación no autoriza commit/push, publicación, despliegue o merge.
+
+Los 20 archivos de apps/landing y 11 contratos de package/lock/Turbo/CI se conservan frente a c684. La base incorpora 98 rutas entrantes de otros trabajos; producto, Compose, IA y monitoring entrantes se mantienen sin correcciones de landing. Sólo se actualizan esta continuidad/índice, la matriz y las notas del archivo existente. No se cambia diseño, marca, demo ilustrativa, copy corregido, contraste, enlaces reales o HSTS; no se abre ni archiva otro change.
+
+Comprobaciones nuevas: 9 pruebas landing, 21 Turbo/CI y 16 del contrato de scripts, todas PASS y sin omisiones. Build/lint desde la raíz y salidas externas local/HTTPS sintético conformes. El artefacto local se compara con una reconstrucción independiente desde las fuentes c684 exportadas: 14 entradas públicas, 231.052 bytes y manifiesto SHA256 `8a475d9747d6161c3fbe1e2b673f075ef26e916e86ece7404dfaf1932442a502`, idénticos en ambas. La portada mantiene SHA256 `65bd5a69ef4896099891c0f06e1ee3d24a194b6ecaec71746f6ad55cc432edbf`. No son las cifras del artefacto anterior c227; no se reescriben sus registros.
+
+Trece peticiones reales al artefacto construido desde raíz acreditan home/HEAD, desconocidas y privadas, traversal, URI inválida, método no admitido, robots y ETag; preview efímera propia cerrada, sin listener. HTTPS configurado en metadatos no significa HTTPS público. Se reutilizan la evidencia visual c684 1440/390/320 y Lighthouse local desktop100/100/92 y móvil97/100/92 por identidad de fuentes/artefacto, conservando fecha, alcance y limitaciones. No son auditorías nuevas ni se repiten baterías IA/RAG, UI completa o campañas.
+
+Roles vigentes: Paris liderazgo, Víctor pairing, Alejandro revisión, Lucía validación. Se conserva el pairing documentado por Víctor sobre c227 como contraste posterior y pruebas, sin coautoría de construcción ni atribución de estas nuevas correcciones. Las tres reviews de Lucía sobre c227, incluida la aprobación luego dismissed por push, y el comentario de c684 se mantienen como historial; no existen cambios solicitados activos en el contexto suministrado. CI PR8/8 y SQL correctas de c684 no acreditan esta nueva composición. La descripción remota todavía conserva c227 y requiere actualización autorizada posterior.
+
+Lectura/revalidación humana afectada y resultados independientes nuevos conservan sus requisitos. Dominio/renovación, hosting/DNS/HTTPS y despliegue/reversión públicos, vídeo aprobado y destino auténtico de demo siguen pendientes. Reduced-motion interactivo **NOT_VALIDATED**, límite aceptado y preservado; el CSS estático y la evidencia normal no lo convierten en PASS. La evaluación local no cierra la historia ni acredita aceptación pública. La matriz enlazada separa resultados nuevos, reutilizados y pendientes. Las secciones siguientes son históricas.
 
 ## Alcance y decisiones
 
