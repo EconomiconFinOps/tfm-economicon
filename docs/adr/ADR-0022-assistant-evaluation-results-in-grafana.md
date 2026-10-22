@@ -51,3 +51,7 @@ El estado actual de Grafana es ADR-0005: Prometheus como único datasource y un 
 - Seguimiento: JUP-071 cargará la robustez por `rows-v1`. JUP-046 (alertas sobre degradación) y la carga automática tras cada despliegue quedan fuera de este ADR.
 - Pendiente: que la CD de DockerServer (JUP-052) ejecute la carga tras desplegar, si el equipo lo decide.
 - Estado `Proposed` hasta la revisión del pull request; la evidencia de validación se enlazará desde `docs/evidence/JUP-121-validation.md`.
+
+## Amendment — JUP-133 (2026-10-21)
+
+La clave de comparabilidad identificaba el modelo de generación solo por el alias del gateway. Al cambiar el modelo por defecto del chat (JUP-132) sin cambiar el alias, ejecuciones con modelos distintos habrían compartido serie. Se amplía el contrato `rows-v1` y el esquema `evaluation.runs` con `generation_model_id`, `generation_provider`, `generation_quantization` y `gateway_config_sha256`; la clave de comparabilidad los incorpora solo cuando alguno está registrado, de modo que las claves anteriores no cambian, y el manifiesto admite `model_identity` para rotular el historial sin editar los informes. No cambia la decisión de este ADR. Detalle: [design.md](../../openspec/changes/archive/2026-10-22-jup-133-reevaluacion-metricas-modelo/design.md) y [guía](../validation/evaluation-dashboard.md#identidad-del-modelo-de-generación-jup-133).

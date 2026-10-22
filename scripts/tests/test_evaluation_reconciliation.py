@@ -63,16 +63,22 @@ RUTAS = {
     "jup130-data": "docs/evidence/JUP-130/JUP-130-data.rows.json",
     "jup130-ai-cost": "docs/evidence/JUP-130/JUP-130-ai-cost.rows.json",
     "jup071": "docs/evidence/JUP-071-live-r1-rows.json",
+    "jup070-3": "docs/evidence/JUP-133/JUP-133-bank28-report.json",
+    "jup071-flash": "docs/evidence/JUP-071-live-flash-r1-rows.json",
+    "jup133-ai-cost": "docs/evidence/JUP-133/JUP-133-ai-cost.rows.json",
 }
-JUP130 = ("jup130-anomalies", "jup130-data", "jup130-ai-cost", "jup071")
+JUP130 = ("jup130-anomalies", "jup130-data", "jup130-ai-cost", "jup071", "jup071-flash", "jup133-ai-cost")
+# Campañas de JUP-070 (las dos de octubre y la del banco con el modelo nuevo de JUP-133) y las filas de cada una.
+JUP070 = ("jup070-1", "jup070-2", "jup070-3")
+FILAS_DE = {"jup070-1": 48, "jup070-2": 48, "jup070-3": 52}
 # Resultados que deben existir: lo que se deduce de los informes (2 x 48 + 10 + 140 + 23 + 16 + 10 + 13 + 136). Se escribe en el test para
 # que un cambio de los datos obligue a mirar este número y no se acepte «lo que haya».
 FILAS_JUP070 = 48
 FILAS_JUP078 = 10
 FILAS_JUP022 = 140
 FILAS_JUP068 = 23
-FILAS_JUP130 = (16, 10, 13, 136)
-TOTAL_ESPERADO = 2 * FILAS_JUP070 + FILAS_JUP078 + FILAS_JUP022 + FILAS_JUP068 + sum(FILAS_JUP130)
+FILAS_JUP130 = (16, 10, 13, 136, 136, 15)
+TOTAL_ESPERADO = sum(FILAS_DE.values()) + FILAS_JUP078 + FILAS_JUP022 + FILAS_JUP068 + sum(FILAS_JUP130)
 ESTADOS_DE_CASO = ("pass", "fail", "blocked", "not_run")
 
 
@@ -230,6 +236,8 @@ def esperado_jup070(informe: dict) -> dict:
     for clave in ("median", "q1", "q3"):
         esperado[("REL-4", clave, "measured")] = fila(rel4[clave], None, rel4["n"], "similitud")
     esperado[("GRD-2", "all", "measured")] = fila(metricas["GRD-2"]["total"], unit="recuento")
+    for caso, total in metricas["GRD-2"].get("by_case", {}).items():
+        esperado[("GRD-2", caso, "measured")] = fila(total, unit="recuento")
     for metrica in ("LAT-1", "LAT-2", "LAT-3"):
         for etapa, datos in metricas[metrica]["stages"].items():
             esperado[(metrica, etapa, "measured")] = fila(datos["value"], None, datos["n"], "ms")
@@ -397,14 +405,14 @@ def run_de(fuente: str, run_at: str | None = None, run_id: str | None = None) ->
 
 
 class InformesPresentesTests(ConciliacionCase):
-    def test_las_nueve_ejecuciones_estan_cargadas_y_cada_una_corresponde_a_su_informe(self):
+    def test_las_doce_ejecuciones_estan_cargadas_y_cada_una_corresponde_a_su_informe(self):
         # «Que ningún informe desaparezca»: dos campañas de JUP-070 (halladas por su fecha y su commit originales), el
         # benchmark, la calibración (por su `generated_at`) y la ejecución de negocio (por su `run_id` propio).
         cargadas = ejecuciones()
-        self.assertEqual(len(cargadas), 9, [e["run_id"] for e in cargadas])
+        self.assertEqual(len(cargadas), 12, [e["run_id"] for e in cargadas])
         self.assertEqual(sorted(e["source"] for e in cargadas), [
-            "JUP-022", "JUP-068", "JUP-070", "JUP-070", "JUP-071", "JUP-078", "JUP-130-ai-cost", "JUP-130-anomalies", "JUP-130-data"])
-        for clave in ("jup070-1", "jup070-2"):
+            "JUP-022", "JUP-068", "JUP-070", "JUP-070", "JUP-070", "JUP-071", "JUP-071", "JUP-078", "JUP-130-ai-cost", "JUP-130-ai-cost", "JUP-130-anomalies", "JUP-130-data"])
+        for clave in JUP070:
             informe = leer(clave)
             run_id = run_de("JUP-070", run_at=informe["run"]["date"])
             commit = next(e["commit_sha"] for e in cargadas if e["run_id"] == run_id)
@@ -418,7 +426,7 @@ class InformesPresentesTests(ConciliacionCase):
     def test_la_tabla_de_ejecuciones_del_dashboard_las_lista_con_su_fecha_y_commit_originales(self):
         # El panel a1 es lo primero que ve quien abre el dashboard: no puede perder una ejecución ni inventar su fecha.
         filas = {f["run_id"]: f for f in del_panel("a1")}
-        for clave in ("jup070-1", "jup070-2"):
+        for clave in JUP070:
             informe = leer(clave)
             run_id = run_de("JUP-070", run_at=informe["run"]["date"])
             self.assertIn(run_id, filas, f"la tabla de ejecuciones no lista la campaña {clave}")
@@ -438,18 +446,18 @@ class InformesPresentesTests(ConciliacionCase):
 
     def test_el_total_de_resultados_es_la_suma_que_se_deduce_de_los_informes(self):
         esperado = (
-            len(esperado_jup070(leer("jup070-1"))) + len(esperado_jup070(leer("jup070-2")))
+            sum(len(esperado_jup070(leer(clave))) for clave in JUP070)
             + 5 * len(leer("jup078")["models"]) + 5 * len(leer("jup022")["points"])
             + len(esperado_jup068(informe_de_negocio()))
             + sum(len(leer(clave)["results"]) for clave in JUP130))
         # El número no se acepta «porque sí»: 96 + 10 + 140 + 23 + 16 + 10 + 13 + 136.
         self.assertEqual(esperado, TOTAL_ESPERADO)
-        self.assertEqual(TOTAL_ESPERADO, 444)
+        self.assertEqual(TOTAL_ESPERADO, 647)
         filas = con_el_rol("SELECT count(*) AS n FROM evaluation.results")
         self.assertEqual(filas[0]["n"], TOTAL_ESPERADO)
         por_ejecucion = {f["run_id"]: f["n"] for f in con_el_rol(
             "SELECT run_id, count(*) AS n FROM evaluation.results GROUP BY run_id")}
-        self.assertEqual(sorted(por_ejecucion.values()), sorted([FILAS_JUP070, FILAS_JUP070, FILAS_JUP078, FILAS_JUP022, FILAS_JUP068, *FILAS_JUP130]))
+        self.assertEqual(sorted(por_ejecucion.values()), sorted([*FILAS_DE.values(), FILAS_JUP078, FILAS_JUP022, FILAS_JUP068, *FILAS_JUP130]))
 
     def test_ninguna_fila_medida_es_nula_ni_ninguna_no_medida_lleva_valor(self):
         # Regla 1 del contrato comprobada sobre los datos reales cargados: lo no medido es NULL y lo medido tiene valor.
@@ -464,7 +472,7 @@ class InformesPresentesTests(ConciliacionCase):
         # Guarda anti-vacío del punto anterior: hay filas de cada estado y en la cantidad que dicen los informes. La única
         # fila no medida es el ahorro realizado de JUP-068 (el informe lo deja en `null`).
         esperado = {}
-        for informe in (esperado_jup070(leer("jup070-1")), esperado_jup070(leer("jup070-2")), esperado_jup068(informe_de_negocio())):
+        for informe in (*(esperado_jup070(leer(clave)) for clave in JUP070), esperado_jup068(informe_de_negocio())):
             for (_, _, estado) in informe:
                 esperado[estado] = esperado.get(estado, 0) + 1
         for modelo in leer("jup078")["models"]:
@@ -491,8 +499,8 @@ class InformesPresentesTests(ConciliacionCase):
 class Jup070Tests(ConciliacionCase):
     def test_los_recuentos_de_estado_de_cada_ejecucion_son_los_counts_del_informe(self):
         filas = {f["run_id"]: f for f in del_panel("a2")}
-        self.assertEqual(len(filas), 2, "el panel de estados lista una fila por ejecución de JUP-070")
-        for clave in ("jup070-1", "jup070-2"):
+        self.assertEqual(len(filas), 3, "el panel de estados lista una fila por ejecución de JUP-070")
+        for clave in JUP070:
             informe = leer(clave)
             contadores = informe["counts"]
             # Precondición del propio informe: los cuatro estados suman el total de casos.
@@ -518,18 +526,18 @@ class Jup070Tests(ConciliacionCase):
         return obtenidas
 
     def test_cada_metrica_de_calidad_y_de_campana_coincide_con_el_informe(self):
-        for clave in ("jup070-1", "jup070-2"):
+        for clave in JUP070:
             esperado = esperado_jup070(leer(clave))
             # Los 4 estados de casos van en el panel de estados; las otras 44 filas, en las dos tablas de resultados.
             sin_casos = {k: v for k, v in esperado.items() if k[0] != "cases"}
-            self.assertEqual(len(esperado), FILAS_JUP070, clave)
-            self.assertEqual(len(sin_casos), FILAS_JUP070 - 4, clave)
+            self.assertEqual(len(esperado), FILAS_DE[clave], clave)
+            self.assertEqual(len(sin_casos), FILAS_DE[clave] - 4, clave)
             obtenidas = self._filas_de_campana(clave)
             self.comparar_filas(obtenidas, sin_casos, ("value", "numerator", "denominator"), clave)
 
     def test_los_numeradores_denominadores_y_tasas_de_las_proporciones_son_los_k_n_rate_del_informe(self):
         # Foco en las proporciones (ACC-1/2/3, REL-1/2/3, GRD-1/3, STR-1, LAT-4 por etapa, AVL-1): `k`, `n` y `rate`.
-        for clave in ("jup070-1", "jup070-2"):
+        for clave in JUP070:
             informe = leer(clave)
             obtenidas = self._filas_de_campana(clave)
             metricas = informe["metrics"]
@@ -556,7 +564,7 @@ class Jup070Tests(ConciliacionCase):
                     self.assertAlmostEqual(datos["k"] / datos["n"], datos["rate"], places=5)
 
     def test_latencias_similitudes_y_recuentos_de_formato_coinciden_con_el_informe(self):
-        for clave in ("jup070-1", "jup070-2"):
+        for clave in JUP070:
             informe = leer(clave)["metrics"]
             obtenidas = self._filas_de_campana(clave)
             with self.subTest(informe=clave):
@@ -728,7 +736,7 @@ class LoQueSeVeTests(ConciliacionCase):
     def test_el_texto_visible_de_las_tablas_de_calidad_y_campana_se_calcula_del_valor_original(self):
         # `valor_texto` es lo que lee una persona. Se recalcula del valor del informe original con el formato documentado:
         # un porcentaje sin multiplicar por 100, una unidad equivocada o un cero de relleno dejarían de coincidir.
-        for clave in ("jup070-1", "jup070-2"):
+        for clave in JUP070:
             esperado = esperado_jup070(leer(clave))
             run_id = run_de("JUP-070", run_at=leer(clave)["run"]["date"])
             comprobadas = 0
@@ -740,7 +748,7 @@ class LoQueSeVeTests(ConciliacionCase):
                     with self.subTest(informe=clave, fila=(f["metric_id"], f["behavior"])):
                         self.assertEqual(f["valor_texto"], texto_visible(origen["unit"], origen["value"]))
                     comprobadas += 1
-            self.assertEqual(comprobadas, FILAS_JUP070 - 4)
+            self.assertEqual(comprobadas, FILAS_DE[clave] - 4)
 
     def test_el_texto_visible_de_la_tabla_de_negocio_se_calcula_del_valor_original(self):
         esperado = esperado_jup068(informe_de_negocio())
@@ -752,8 +760,8 @@ class LoQueSeVeTests(ConciliacionCase):
             with self.subTest(fila=(f["metric_id"], f["behavior"], f["status"])):
                 self.assertEqual(f["valor_texto"], texto_visible(origen["unit"], origen["value"], origen["count"], minutos=True))
 
-    def test_los_paneles_juntos_muestran_cada_una_de_las_444_filas_de_la_base(self):
-        # Cobertura: si una consulta de panel perdiera filas (un filtro de más, un grupo que falta) la suma no llegaría a 444.
+    def test_los_paneles_juntos_muestran_cada_una_de_las_647_filas_de_la_base(self):
+        # Cobertura: si una consulta de panel perdiera filas (un filtro de más, un grupo que falta) la suma no llegaría a 647.
         # Estados de casos (4 filas de la base por fila del panel) y benchmark (5 por modelo) vienen pivotados.
         visibles = (
             4 * len(del_panel("a2")) + len(del_panel("a3")) + len(del_panel("a4")) + len(del_panel("a7"))

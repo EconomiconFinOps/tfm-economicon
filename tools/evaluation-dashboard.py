@@ -80,7 +80,7 @@ FORMATS = (
 IDENTIFIER_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:=,/+@-]{0,79}$")
 
 ROOT_KEYS = {"manifest_version", "runs"}
-ENTRY_KEYS = {"path", "format", "milestone", "run_id"}
+ENTRY_KEYS = {"path", "format", "milestone", "run_id", "model_identity"}
 
 
 class ManifestError(ValueError):
@@ -157,7 +157,18 @@ def _check_entry(manifest: Path, index: int, item: object) -> dict:
         run_id = item["run_id"]
         if not _is_identifier(run_id):
             raise _fail(manifest, f"{where}.run_id", f"identificador no válido {run_id!r} (alfabeto cerrado, máximo 80 caracteres)")
-    return {"path": raw_path, "format": fmt, "milestone": milestone, "run_id": run_id, "manifest": manifest}
+    model_identity = None
+    if "model_identity" in item:
+        model_identity = item["model_identity"]
+        if not isinstance(model_identity, dict):
+            raise _fail(manifest, f"{where}.model_identity", "debe ser un objeto con la identidad del modelo")
+        for key in model_identity:
+            if key not in IDENTITY_KEYS:
+                raise _fail(manifest, f"{where}.model_identity",
+                            f"clave desconocida {_key_label(str(key))!r}; las válidas son {', '.join(IDENTITY_KEYS)}")
+        model_identity = dict(model_identity)
+    return {"path": raw_path, "format": fmt, "milestone": milestone, "run_id": run_id,
+            "model_identity": model_identity, "manifest": manifest}
 
 
 def read_manifest(path, root=ROOT) -> list[dict]:
@@ -228,10 +239,16 @@ REPORT_VERSION = 1
 
 # Claves del contrato `rows-v1`. Son tuplas, no conjuntos: el orden fija la forma de salida y lo comparten
 # el validador de `rows-v1` y la carga a la base, que deben leerlas desde aquí y no repetirlas.
+# Identidad del modelo que generó las respuestas (JUP-133). `generation_model` es el alias del gateway y no cambia
+# cuando cambia el modelo que hay detrás; estos cuatro campos distinguen el modelo servido, quien lo sirvió, su
+# cuantización y la configuración del gateway que resolvió el alias. Todos son opcionales: nulo es «no registrado».
+IDENTITY_KEYS = ("generation_model_id", "generation_provider", "generation_quantization", "gateway_config_sha256")
 RUN_KEYS = (
     "run_id", "source", "run_at", "commit", "suite", "suite_version", "suite_sha256", "corpus_sha256",
     "embedding_provider", "embedding_alias", "retrieval", "generation_model", "prompt_sha256", "synthetic",
-)
+) + IDENTITY_KEYS
+# Huella de la configuración del gateway: sha256 hexadecimal en minúsculas (`fullmatch` rechaza un salto final).
+GATEWAY_HASH_RE = re.compile(r"[0-9a-f]{64}")
 RESULT_KEYS = (
     "measure_type", "grp", "metric_id", "behavior", "status", "count", "value", "unit",
     "numerator", "denominator", "ci_low", "ci_high", "judgment", "selected",
@@ -380,6 +397,7 @@ def _adapt_run(run: dict, run_id: str) -> dict:
         # Ningún informe de JUP-070 registra el prompt.
         "prompt_sha256": None,
         "synthetic": run["synthetic"],
+        **dict.fromkeys(IDENTITY_KEYS),
     }
 
 
@@ -1372,6 +1390,9 @@ def _validate_run_values(run: dict) -> None:
             _validate_run_retrieval(run)
         elif key == "synthetic":
             _check_bool(run, key, "run")
+        elif key == "gateway_config_sha256":
+            if run[key] is not None and not (isinstance(run[key], str) and GATEWAY_HASH_RE.fullmatch(run[key])):
+                raise _bad(f"run.{key}", "debe ser un sha256 hexadecimal de 64 caracteres en minúsculas")
         elif run[key] is not None:
             # El resto son huellas, versiones y alias: opcionales (None es «no registrado»), pero nunca texto libre.
             _check_identifier_field(run, key, "run")
@@ -1635,6 +1656,10 @@ def comparability_key(run, reasons) -> str:
     """
     _check_reasons(reasons)
     payload = [run[field] for field in COMPARABILITY_FIELDS] + [list(reasons)]
+    # La identidad del modelo entra solo si alguna parte está registrada: una ejecución sin identidad conserva la
+    # clave que ya tenía, y «registrada» frente a «no registrada» son claves distintas por construcción.
+    if any(run[field] is not None for field in IDENTITY_KEYS):
+        payload.append([run[field] for field in IDENTITY_KEYS])
     text = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
@@ -1786,6 +1811,24 @@ def _adapt_entry(entry: dict, document) -> tuple[dict, list[dict]]:
     return adapt_jup022(document, run_id)
 
 
+def _apply_model_identity(run: dict, annotation: dict) -> None:
+    """Rellena en `run` la identidad que anota el manifiesto, solo donde el informe no trae nada.
+
+    El informe es la fuente de verdad: si trae un valor distinto del anotado, es un conflicto y se nombra el
+    campo con los dos valores. `run` ya está validado, así que su valor se puede citar; el anotado todavía no, y
+    solo se cita si es una cadena corta de alfabeto cerrado (si no, lo informa la validación posterior con la
+    ruta del campo y sin volcar el valor).
+    """
+    for key in IDENTITY_KEYS:
+        if key not in annotation:
+            continue
+        declared = annotation[key]
+        if run[key] is not None and run[key] != declared:
+            shown = repr(declared) if _is_identifier(declared) else "(valor no válido)"
+            raise _bad(f"model_identity.{key}", f"el informe declara {run[key]!r} y la anotación del manifiesto {shown}")
+        run[key] = declared
+
+
 def normalize_entry(entry, root=ROOT) -> dict:
     """Convierte una entrada de `read_manifest` en `{"run": {...}, "results": [...]}`.
 
@@ -1807,6 +1850,9 @@ def normalize_entry(entry, root=ROOT) -> dict:
         # los adaptadores copian valores sin comprobar su alfabeto y esta es la barrera que lo hace. Va antes de
         # derivar el `run_id` para que una fecha inadmisible sea un error de `run.run_at` y no un identificador.
         validate_rows(run, results)
+        if entry.get("model_identity"):
+            _apply_model_identity(run, entry["model_identity"])
+            validate_rows(run, results)
         # Un informe sin filas es un error y no un conjunto vacío: lo más probable es un informe truncado o un
         # barrido sin puntos, y cargarlo en silencio dejaría una ejecución sin datos en el dashboard.
         if not results:
@@ -1899,6 +1945,10 @@ CREATE TABLE IF NOT EXISTS {SCHEMA_NAME}.runs (
   generation_model text,
   prompt_sha256 text,
   synthetic boolean NOT NULL,
+  generation_model_id text,
+  generation_provider text,
+  generation_quantization text,
+  gateway_config_sha256 text,
   is_real boolean NOT NULL,
   non_real_reasons text[] NOT NULL,
   comparability_key text NOT NULL,
@@ -1907,6 +1957,11 @@ CREATE TABLE IF NOT EXISTS {SCHEMA_NAME}.runs (
   report_path text,
   report_sha256 text NOT NULL
 );
+
+ALTER TABLE {SCHEMA_NAME}.runs ADD COLUMN IF NOT EXISTS generation_model_id text;
+ALTER TABLE {SCHEMA_NAME}.runs ADD COLUMN IF NOT EXISTS generation_provider text;
+ALTER TABLE {SCHEMA_NAME}.runs ADD COLUMN IF NOT EXISTS generation_quantization text;
+ALTER TABLE {SCHEMA_NAME}.runs ADD COLUMN IF NOT EXISTS gateway_config_sha256 text;
 
 CREATE TABLE IF NOT EXISTS {SCHEMA_NAME}.results (
   run_id text NOT NULL REFERENCES {SCHEMA_NAME}.runs (run_id) ON DELETE CASCADE,
@@ -1988,15 +2043,31 @@ WITH ordered AS (
     suite_version,
     suite_sha256,
     generation_model,
+    generation_model_id,
+    generation_provider,
+    generation_quantization,
+    gateway_config_sha256,
+    identity_registered,
     prompt_sha256,
     corpus_sha256,
     lag(run_id) OVER w AS previous_run_id,
     lag(suite_version) OVER w AS previous_suite_version,
     lag(suite_sha256) OVER w AS previous_suite_sha256,
     lag(generation_model) OVER w AS previous_generation_model,
+    lag(generation_model_id) OVER w AS previous_generation_model_id,
+    lag(generation_provider) OVER w AS previous_generation_provider,
+    lag(generation_quantization) OVER w AS previous_generation_quantization,
+    lag(gateway_config_sha256) OVER w AS previous_gateway_config_sha256,
+    lag(identity_registered) OVER w AS previous_identity_registered,
     lag(prompt_sha256) OVER w AS previous_prompt_sha256,
     lag(corpus_sha256) OVER w AS previous_corpus_sha256
-  FROM {SCHEMA_NAME}.runs
+  FROM (
+    SELECT
+      runs.*,
+      (generation_model_id IS NOT NULL OR generation_provider IS NOT NULL OR generation_quantization IS NOT NULL
+        OR gateway_config_sha256 IS NOT NULL) AS identity_registered
+    FROM {SCHEMA_NAME}.runs
+  ) AS runs
   WHERE run_at IS NOT NULL
   WINDOW w AS (PARTITION BY source ORDER BY run_at, run_id)
 ),
@@ -2010,6 +2081,16 @@ detected AS (
       CASE WHEN suite_version IS DISTINCT FROM previous_suite_version
              OR suite_sha256 IS DISTINCT FROM previous_suite_sha256 THEN 'bateria'::text END,
       CASE WHEN generation_model IS DISTINCT FROM previous_generation_model THEN 'modelo'::text END,
+      CASE WHEN identity_registered <> previous_identity_registered
+             THEN 'identidad del modelo no registrada en una de las dos'::text END,
+      CASE WHEN identity_registered AND previous_identity_registered
+             AND generation_model_id IS DISTINCT FROM previous_generation_model_id THEN 'identificador de modelo'::text END,
+      CASE WHEN identity_registered AND previous_identity_registered
+             AND generation_provider IS DISTINCT FROM previous_generation_provider THEN 'proveedor del modelo'::text END,
+      CASE WHEN identity_registered AND previous_identity_registered
+             AND generation_quantization IS DISTINCT FROM previous_generation_quantization THEN 'cuantizacion'::text END,
+      CASE WHEN identity_registered AND previous_identity_registered
+             AND gateway_config_sha256 IS DISTINCT FROM previous_gateway_config_sha256 THEN 'configuracion del gateway'::text END,
       CASE WHEN prompt_sha256 IS NOT NULL AND previous_prompt_sha256 IS NOT NULL
              AND prompt_sha256 <> previous_prompt_sha256 THEN 'prompt'::text END,
       CASE WHEN corpus_sha256 IS DISTINCT FROM previous_corpus_sha256 THEN 'corpus'::text END

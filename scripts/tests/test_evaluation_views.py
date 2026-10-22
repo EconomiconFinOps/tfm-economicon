@@ -171,8 +171,8 @@ def comparable_rows() -> list[tuple]:
 
 
 def changes_text(changes) -> str:
-    """Forma de texto de un `text[]` de PostgreSQL sin comillas (los cuatro valores no las necesitan)."""
-    return "{" + ",".join(changes) + "}"
+    """Forma de texto de un `text[]` de PostgreSQL: entre comillas los elementos con espacios (los de identidad del modelo)."""
+    return "{" + ",".join(f'"{change}"' if " " in change else change for change in changes) + "}"
 
 
 def annotation_of(changes) -> str:
@@ -295,9 +295,10 @@ class ViewsDdlTest(unittest.TestCase):
         # esquema -> tablas -> vistas -> vaciado: una vista que se crea antes de sus tablas no se puede crear.
         self.assertTrue(max(table_positions) < min(view_positions.values()), (table_positions, view_positions))
         self.assertTrue(max(view_positions.values()) < truncates[0], (view_positions, truncates))
-        # Entre el esquema y el vaciado solo hay DDL `CREATE`: las pruebas de 3.1 siguen permitiéndolo.
+        # Entre el esquema y el vaciado solo hay DDL: `CREATE` y, desde JUP-133, los `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`
+        # que actualizan una tabla creada antes de los campos de identidad del modelo.
         for index in range(3, truncates[0]):
-            self.assertTrue(squashed[index].startswith("CREATE "), squashed[index][:60])
+            self.assertTrue(squashed[index].startswith(("CREATE ", "ALTER TABLE evaluation.runs ADD COLUMN IF NOT EXISTS ")), squashed[index][:60])
         # El bloque entra tal cual y una sola vez (fuente única: `DDL_BLOCKS`).
         self.assertEqual(script.count(tool.VIEWS_DDL), 1)
         self.assertGreater(script.index(tool.VIEWS_DDL), script.index(tool.SCHEMA_DDL) + len(tool.SCHEMA_DDL) - 1)
@@ -659,7 +660,8 @@ class ConfigChangesRealDataTest(ViewsTestCase):
         dataset = tool.build_dataset([tool.DEFAULT_MANIFEST])
         server().load_dataset(dataset, tool)
         absent = "~"  # no pertenece al alfabeto de identificadores: distingue NULL de cualquier valor real
-        columns = ["suite_version", "suite_sha256", "generation_model", "prompt_sha256", "corpus_sha256"]
+        columns = ["suite_version", "suite_sha256", "generation_model", "prompt_sha256", "corpus_sha256",
+                   "generation_model_id", "generation_provider", "generation_quantization", "gateway_config_sha256"]
         select = ", ".join(f"coalesce({column}, '{absent}')" for column in columns)
         rows = server().query(
             "SELECT run_id, source, coalesce(to_char(run_at AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS.US'), ''), "
@@ -668,7 +670,7 @@ class ConfigChangesRealDataTest(ViewsTestCase):
         for run_id, source, moment, provider, *values in rows:
             fields = dict(zip(columns, (None if value == absent else value for value in values)))
             runs.append({"run_id": run_id, "source": source, "run_at": moment or None, "provider": provider, **fields})
-        self.assertEqual(len(runs), 9)
+        self.assertEqual(len(runs), 12)
 
         expected = []
         for source in sorted({run["source"] for run in runs}):
@@ -680,6 +682,16 @@ class ConfigChangesRealDataTest(ViewsTestCase):
                     changes.append("bateria")
                 if previous["generation_model"] != current["generation_model"]:
                     changes.append("modelo")
+                # Identidad del modelo (JUP-133): registrada cuando algún campo no es nulo.
+                identity = ("generation_model_id", "generation_provider", "generation_quantization", "gateway_config_sha256")
+                registered = [any(run[key] is not None for key in identity) for run in (previous, current)]
+                if registered[0] != registered[1]:
+                    changes.append("identidad del modelo no registrada en una de las dos")
+                elif registered[0]:
+                    for key, label in zip(identity, ("identificador de modelo", "proveedor del modelo", "cuantizacion",
+                                                      "configuracion del gateway")):
+                        if previous[key] != current[key]:
+                            changes.append(label)
                 if None not in (previous["prompt_sha256"], current["prompt_sha256"]) \
                         and previous["prompt_sha256"] != current["prompt_sha256"]:
                     changes.append("prompt")
@@ -694,7 +706,7 @@ class ConfigChangesRealDataTest(ViewsTestCase):
         # Guardas de que la prueba mide lo que dice: las dos ejecuciones de JUP-070 son el único par, difieren en el
         # proveedor de embeddings (y en la recuperación) y aun así eso NO es un cambio de batería, modelo, prompt ni corpus.
         jup_070 = [run for run in runs if run["source"] == "JUP-070"]
-        self.assertEqual(len(jup_070), 2)
+        self.assertEqual(len(jup_070), 3)
         self.assertNotEqual(jup_070[0]["provider"], jup_070[1]["provider"])
         self.assertEqual(int(server().scalar("SELECT count(*) FROM evaluation.config_changes")), len(expected))
 
@@ -782,9 +794,9 @@ class ComparableRunsTest(ViewsTestCase):
         # otras cuatro ejecuciones reales son claves únicas o no tienen fecha.
         dataset = tool.build_dataset([tool.DEFAULT_MANIFEST])
         keys = [item["run"]["comparability_key"] for item in dataset["runs"]]
-        self.assertEqual(len(set(keys)), 9)
+        self.assertEqual(len(set(keys)), 12)
         server().load_dataset(dataset, tool)
-        self.assertEqual(server().scalar("SELECT count(*) FROM evaluation.runs"), "9")
+        self.assertEqual(server().scalar("SELECT count(*) FROM evaluation.runs"), "12")
         self.assertEqual(comparable_rows(), [])
 
     def test_is_real_y_milestone_se_propagan_desde_la_ejecucion(self) -> None:
