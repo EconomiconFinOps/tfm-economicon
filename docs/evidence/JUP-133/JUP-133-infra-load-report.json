@@ -1,0 +1,140 @@
+{
+  "report_version": 1,
+  "jup": "JUP-133",
+  "documented_at": "2026-10-23T16:38:24.667856+00:00",
+  "status": "loaded_verified",
+  "target_host": "DockerDevelop",
+  "target_database": "embeddings",
+  "target_schema": "evaluation",
+  "confirmation_required": false,
+  "before": {
+    "runs": 17,
+    "results": 765,
+    "normalized_sha256": "6bb1d77c64f9a6cebc38213dafb3342a291580e146b65628f8c290c713bf92cd"
+  },
+  "prepared_after": {
+    "runs": 23,
+    "results": 1284
+  },
+  "preserved_existing_runs": 17,
+  "preserved_existing_results": 765,
+  "sql_sha256": "0261891f9accc402fb149ed0e693b233b9b8a15cd0f5e12045057cd2810ea842",
+  "method": "Official build_sql, complete atomic replacement, with existing normalized metadata preserved. Recheck baseline before execution; rollback on mismatch.",
+  "old_data_guard": "Transaction aborts if the locked baseline differs from its prepared digest.",
+  "new_run_ids": [
+    "jup133-infra-jup070-a-r1-20261023",
+    "jup133-infra-jup070-a-r2-20261023",
+    "jup133-infra-jup070-a-r3-20261023",
+    "jup133-infra-jup071-r1-20261023",
+    "jup133-infra-jup071-r2-20261023",
+    "jup133-infra-jup071-r3-20261023"
+  ],
+  "new_runs_provisional": true,
+  "human_review_status": "not_run",
+  "human_quality_status": "not_measured",
+  "model_identity_status": "declared_not_verified",
+  "access_or_quota_changes": false,
+  "DockerServer_touched": false,
+  "prepared_dashboard_check": {
+    "queries": 25,
+    "all_success": true,
+    "comparison_query_success": true
+  },
+  "load_verification": {
+    "at": "2026-10-23T16:35:59.513787+00:00",
+    "target_host": "DockerDevelop",
+    "status": "verified_exact_contents",
+    "runs": 23,
+    "results": 1284,
+    "new_runs": 6,
+    "existing_runs_preserved_exact": 17,
+    "existing_results_preserved_exact": 765,
+    "all_prepared_metadata_and_values_match": true,
+    "distinct_actual_run_dates": 6,
+    "new_models_declared_not_verified": true,
+    "measured_human_judgment_rows": 0,
+    "comparability_keys_by_campaign": {
+      "JUP-070": [
+        "913048ff1ff8c9d1378594b0757e9bbb2d89cddcde0724ab06a5f0db6337e079"
+      ],
+      "JUP-071": [
+        "680fd1a02e03fbd98efb897656c8067610da4658fe6cb4ee8a76e1007b487f8c"
+      ]
+    },
+    "normalized_dataset_sha256": "b218b454c3b2cd5db2211769cf01630290163d871225e427d9440bb5a010e4ab",
+    "database_mutations_in_this_check": false,
+    "DockerServer_touched": false
+  },
+  "after_dashboard_check": {
+    "queries": 26,
+    "all_success": true,
+    "comparison_rows": 6,
+    "comparison_query_success": true
+  },
+  "visual_check": {
+    "at": "2026-10-23T16:37:00.120780+00:00",
+    "status": "verified",
+    "browser": "Codex in-app browser",
+    "dashboard_uid": "economicon-assistant-evaluation",
+    "visible_comparison_rows": 6,
+    "model_label": "DeepSeek V4.1 Flash declarado, no verificado",
+    "human_review_label": "Pendiente in all six rows",
+    "date_column_timezone": "Europe/Paris",
+    "visible_panel_errors": false,
+    "scope": "Top comparison table and surrounding historical panels; all 26 queries checked separately by API",
+    "screenshot": "Workspace/materiales/07-evidencias/JUP-133-campanas-infra-20261023/grafana-jup133-final.jpg",
+    "screenshot_dimensions": [
+      799,
+      1221
+    ]
+  },
+  "public_package_verification": {
+    "status": "passed",
+    "versioned_manifest_runs": 18,
+    "new_runs": 6,
+    "repetition_comparability_keys_consistent": true,
+    "human_judgment_rows_measured": 0,
+    "exact_gateway_cost_usd": "0.5291594448",
+    "raw_responses_or_secrets_in_public_json": false,
+    "runtime_commit_unverified_and_null": true,
+    "final_token_limit_observed": 10000,
+    "case_observations_and_rows_consistent": true,
+    "generation_calls_in_this_check": 0
+  },
+  "offline_regression_check": {
+    "tests_run": 12,
+    "failures": [
+      "test_evaluation_rows_command.NormalizeRealReportsTest.test_el_manifiesto_versionado_lista_los_ocho_informes_en_orden",
+      "test_evaluation_rows_command.BuildDatasetTest.test_el_manifiesto_versionado_da_ocho_ejecuciones_distintas_en_orden",
+      "test_evaluation_sql.BuildSqlStructureTest.test_numero_de_tuplas_y_un_unico_bloque_de_resultados"
+    ],
+    "errors": [],
+    "skips": [],
+    "status": "failed",
+    "shared_database_touched": false,
+    "model_calls": 0,
+    "summary": "12 pruebas offline: 9 pasan y 3 fallan por expectativas fijas del manifiesto anterior (12 ejecuciones frente a las 18 actuales). El contrato rows-v1 y la conciliación independiente pasan; no se declara la integración en verde.",
+    "reason": "Three assertions are anchored to the previous 12-run manifest; the new manifest contains 18. Nine credential/SQL determinism checks passed. No scoring or model failure is inferred."
+  },
+  "load_authorized_by": "human_user_in_this_chat",
+  "load_authorization_at": "2026-10-23T16:35:44.678572+00:00",
+  "read_only_guard_check": {
+    "status": "passed",
+    "checks": {
+      "matching_baseline": {
+        "exit_code": 0,
+        "expected_guard_rejection": false
+      },
+      "stale_baseline": {
+        "exit_code": 3,
+        "expected_guard_rejection": true
+      }
+    },
+    "transaction_mode": "READ ONLY",
+    "replacement_executed": false,
+    "database_mutations": false
+  },
+  "dashboard_url": "http://localhost:18762/grafana/d/economicon-assistant-evaluation/economicon-e28094-evaluacion-del-asistente?from=now-1y&to=now&timezone=utc",
+  "private_load_artifacts": "Workspace/materiales/07-evidencias/JUP-133-campanas-infra-20261023/",
+  "acceptance": false
+}

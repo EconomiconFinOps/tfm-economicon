@@ -1,0 +1,694 @@
+{
+  "report_version": 1,
+  "jup": "JUP-133",
+  "status": "provisional",
+  "accepted": false,
+  "planned": 171,
+  "collected": 171,
+  "independent_conversations": 171,
+  "same_runtime_configuration_checks": "Images, gateway configuration and corpus checked per operation; numeric settings checked before and after, final token limit also in all recorded final requests; quota snapshots compared across all operations.",
+  "final_runtime_check": {
+    "at": "2026-10-23T16:32:56.600803+00:00",
+    "recorded_operations": 171,
+    "settled_operations": 171,
+    "ledger_unresolved_reservations": 0,
+    "runtime_images": {
+      "backend": "sha256:25243cf661e408ebfa4193d00416a61bc4a9e5e82d9ed07a511ce73a9d2902c9",
+      "processor": "sha256:5174de6f0f9bb8dc4f7a76dfd11024b3f50a58219ea172814f83acbb8f616494"
+    },
+    "gateway_config_sha256": "9b345f3017a142d5f2db605a8921ec6fc488b2d97977edb069733aeee670c4f8",
+    "corpus_sha256": "204537d33bf0bf972157260c0730daba54356ee61fe8a8878fb7dded865b4ce8",
+    "runtime_provenance": [
+      {
+        "container": "jupiter-demo-20261022-backend-1",
+        "image_id": "sha256:25243cf661e408ebfa4193d00416a61bc4a9e5e82d9ed07a511ce73a9d2902c9",
+        "image_tag": "jupiter-demo-final10000-backend-runtime:20261023",
+        "base_revision_label": "03e97ce670286bb55d2750be7bb466deb24548c6"
+      },
+      {
+        "container": "jupiter-demo-20261022-processor-1",
+        "image_id": "sha256:5174de6f0f9bb8dc4f7a76dfd11024b3f50a58219ea172814f83acbb8f616494",
+        "image_tag": "jupiter-demo-final10000-processor-runtime:20261023",
+        "base_revision_label": "03e97ce670286bb55d2750be7bb466deb24548c6"
+      }
+    ],
+    "exact_product_commit_verified": null,
+    "initial_and_final_numeric_settings_equal": true,
+    "numeric_settings": {
+      "retrieval_top_k": 4,
+      "retrieval_max_distance": 0.6,
+      "draft_max_output": 1000,
+      "final_max_output": 10000
+    },
+    "rag_flags_observed_at_final_check": {
+      "rag_verified_enabled": false,
+      "rag_contextual_enabled": false,
+      "rag_hybrid_enabled": false
+    },
+    "quota_limits_equal_in_all_before_snapshots_and_final": true,
+    "budget_before": [
+      {
+        "key_alias": "jupiter-demo-20261022-backend",
+        "spend": 6.522e-05,
+        "max_budget": 0.5,
+        "budget_duration": null,
+        "rpm_limit": 12,
+        "tpm_limit": 80000,
+        "max_parallel_requests": 1
+      },
+      {
+        "key_alias": "jupiter-demo-20261022-health",
+        "spend": 4.62e-05,
+        "max_budget": 0.01,
+        "budget_duration": null,
+        "rpm_limit": 6,
+        "tpm_limit": 10000,
+        "max_parallel_requests": 1
+      },
+      {
+        "key_alias": "jupiter-demo-20261022-processor",
+        "spend": 0.1214248672,
+        "max_budget": 8.49,
+        "budget_duration": null,
+        "rpm_limit": 12,
+        "tpm_limit": 80000,
+        "max_parallel_requests": 1
+      }
+    ],
+    "budget_after": [
+      {
+        "key_alias": "jupiter-demo-20261022-backend",
+        "spend": 0.0004168999999999999,
+        "max_budget": 0.5,
+        "budget_duration": null,
+        "rpm_limit": 12,
+        "tpm_limit": 80000,
+        "max_parallel_requests": 1
+      },
+      {
+        "key_alias": "jupiter-demo-20261022-health",
+        "spend": 4.62e-05,
+        "max_budget": 0.01,
+        "budget_duration": null,
+        "rpm_limit": 6,
+        "tpm_limit": 10000,
+        "max_parallel_requests": 1
+      },
+      {
+        "key_alias": "jupiter-demo-20261022-processor",
+        "spend": 0.6502326320000004,
+        "max_budget": 8.49,
+        "budget_duration": null,
+        "rpm_limit": 12,
+        "tpm_limit": 80000,
+        "max_parallel_requests": 1
+      }
+    ],
+    "new_cost_usd": "0.5291594448",
+    "demo_global_spend_before": "0.1215362872",
+    "demo_global_spend_after": "0.6506957320",
+    "plan_spend_approx": "0.6061594448",
+    "plan_cap_usd": "10",
+    "demo_global_cap_usd": "10",
+    "collector_python": "3.12.3",
+    "limits_check_scope": "Images, gateway configuration and corpus checked per operation; numeric settings checked before and after, final token limit also in all recorded final requests; quota snapshots compared across all operations.",
+    "model_execution_verified": false,
+    "invoice_verified": false,
+    "access_mutations": false
+  },
+  "model_identity": {
+    "generation_model_id": "openrouter/deepseek/deepseek-v4.1-flash",
+    "generation_provider": "deepinfra",
+    "generation_quantization": "fp8",
+    "gateway_config_sha256": "9b345f3017a142d5f2db605a8921ec6fc488b2d97977edb069733aeee670c4f8",
+    "gateway_alias_declared": "economicon-chat",
+    "execution_verified": false
+  },
+  "evaluation_source_commit": "84b53b74d02ff5831ef9dbdd4f9c7d8c40cd4d24",
+  "product_commit_verified": null,
+  "runtime_commit_status": "not_verified; exact image IDs are in final_runtime_check",
+  "corpus_sha256": "204537d33bf0bf972157260c0730daba54356ee61fe8a8878fb7dded865b4ce8",
+  "runs": [
+    {
+      "campaign": "jup070-a",
+      "repetition": 1,
+      "run_id": "jup133-infra-jup070-a-r1-20261023",
+      "started_at": "2026-10-23T13:41:51.194139+00:00",
+      "ended_at": "2026-10-23T14:08:02.223749+00:00",
+      "observations": {
+        "planned": 28,
+        "collected": 28,
+        "completed": 27,
+        "failed_operations": 1,
+        "verified_captures": 27,
+        "attempts": 41,
+        "total_cost_usd": "0.0895823920",
+        "known_partial_cost_usd": "0.0895823920",
+        "cost_status": "measured",
+        "cost_basis": "settled gateway rows, all attempts and embeddings; upstream invoice not verified",
+        "per_case_attribution_exact": true,
+        "latency_population": "public operation from generation POST to terminal observation; includes internal retries; excludes accounting wait",
+        "latency_observations": 28,
+        "latency_median_ms": 17747.927499999998,
+        "latency_p95_ms": 144176.595,
+        "latency_max_ms": 148451.363,
+        "final_limit_observed": [
+          10000
+        ],
+        "diagnostics": {
+          "invalid_response": 5,
+          "eof": 8,
+          "incomplete": 1
+        }
+      },
+      "instrument_state_counts": {
+        "cases": 28,
+        "pass": 0,
+        "fail": 0,
+        "blocked": 1,
+        "not_run": 27
+      },
+      "instrument_status": "blocked",
+      "instrument_error": "cases[25].latency_ms.embedding: the stages before a failed call ran and have their latency"
+    },
+    {
+      "campaign": "jup070-a",
+      "repetition": 2,
+      "run_id": "jup133-infra-jup070-a-r2-20261023",
+      "started_at": "2026-10-23T14:08:29.889132+00:00",
+      "ended_at": "2026-10-23T14:34:39.555600+00:00",
+      "observations": {
+        "planned": 28,
+        "collected": 28,
+        "completed": 25,
+        "failed_operations": 3,
+        "verified_captures": 25,
+        "attempts": 40,
+        "total_cost_usd": "0.0879410520",
+        "known_partial_cost_usd": "0.0879410520",
+        "cost_status": "measured",
+        "cost_basis": "settled gateway rows, all attempts and embeddings; upstream invoice not verified",
+        "per_case_attribution_exact": true,
+        "latency_population": "public operation from generation POST to terminal observation; includes internal retries; excludes accounting wait",
+        "latency_observations": 28,
+        "latency_median_ms": 19487.3465,
+        "latency_p95_ms": 148796.412,
+        "latency_max_ms": 186755.403,
+        "final_limit_observed": [
+          10000
+        ],
+        "diagnostics": {
+          "invalid_response": 8,
+          "eof": 7
+        }
+      },
+      "instrument_state_counts": {
+        "cases": 28,
+        "pass": 0,
+        "fail": 0,
+        "blocked": 3,
+        "not_run": 25
+      },
+      "instrument_status": "blocked",
+      "instrument_error": "cases[4].latency_ms.embedding: the stages before a failed call ran and have their latency"
+    },
+    {
+      "campaign": "jup070-a",
+      "repetition": 3,
+      "run_id": "jup133-infra-jup070-a-r3-20261023",
+      "started_at": "2026-10-23T14:35:01.887625+00:00",
+      "ended_at": "2026-10-23T15:02:59.947653+00:00",
+      "observations": {
+        "planned": 28,
+        "collected": 28,
+        "completed": 25,
+        "failed_operations": 3,
+        "verified_captures": 25,
+        "attempts": 41,
+        "total_cost_usd": "0.0902780640",
+        "known_partial_cost_usd": "0.0902780640",
+        "cost_status": "measured",
+        "cost_basis": "settled gateway rows, all attempts and embeddings; upstream invoice not verified",
+        "per_case_attribution_exact": true,
+        "latency_population": "public operation from generation POST to terminal observation; includes internal retries; excludes accounting wait",
+        "latency_observations": 28,
+        "latency_median_ms": 19254.915,
+        "latency_p95_ms": 151506.121,
+        "latency_max_ms": 163013.462,
+        "final_limit_observed": [
+          10000
+        ],
+        "diagnostics": {
+          "invalid_response": 8,
+          "incomplete": 2,
+          "eof": 6
+        }
+      },
+      "instrument_state_counts": {
+        "cases": 28,
+        "pass": 0,
+        "fail": 0,
+        "blocked": 3,
+        "not_run": 25
+      },
+      "instrument_status": "blocked",
+      "instrument_error": "cases[5].latency_ms.embedding: the stages before a failed call ran and have their latency"
+    },
+    {
+      "campaign": "jup071",
+      "repetition": 1,
+      "run_id": "jup133-infra-jup071-r1-20261023",
+      "started_at": "2026-10-23T15:03:17.187511+00:00",
+      "ended_at": "2026-10-23T15:30:39.391340+00:00",
+      "observations": {
+        "planned": 29,
+        "collected": 29,
+        "completed": 27,
+        "failed_operations": 2,
+        "verified_captures": 27,
+        "attempts": 43,
+        "total_cost_usd": "0.0868489344",
+        "known_partial_cost_usd": "0.0868489344",
+        "cost_status": "measured",
+        "cost_basis": "settled gateway rows, all attempts and embeddings; upstream invoice not verified",
+        "per_case_attribution_exact": true,
+        "latency_population": "public operation from generation POST to terminal observation; includes internal retries; excludes accounting wait",
+        "latency_observations": 29,
+        "latency_median_ms": 20151.904,
+        "latency_p95_ms": 106865.505,
+        "latency_max_ms": 150924.202,
+        "final_limit_observed": [
+          10000
+        ],
+        "diagnostics": {
+          "invalid_response": 7,
+          "eof": 8,
+          "incomplete": 1
+        }
+      },
+      "instrument_state_counts": {
+        "total": 29,
+        "pass": 0,
+        "fail": 7,
+        "blocked": 2,
+        "not_run": 20
+      },
+      "instrument_status": "computed",
+      "instrument_error": null
+    },
+    {
+      "campaign": "jup071",
+      "repetition": 2,
+      "run_id": "jup133-infra-jup071-r2-20261023",
+      "started_at": "2026-10-23T15:31:03.293538+00:00",
+      "ended_at": "2026-10-23T16:07:09.851955+00:00",
+      "observations": {
+        "planned": 29,
+        "collected": 29,
+        "completed": 26,
+        "failed_operations": 3,
+        "verified_captures": 26,
+        "attempts": 43,
+        "total_cost_usd": "0.1001381312",
+        "known_partial_cost_usd": "0.1001381312",
+        "cost_status": "measured",
+        "cost_basis": "settled gateway rows, all attempts and embeddings; upstream invoice not verified",
+        "per_case_attribution_exact": true,
+        "latency_population": "public operation from generation POST to terminal observation; includes internal retries; excludes accounting wait",
+        "latency_observations": 29,
+        "latency_median_ms": 20009.32,
+        "latency_p95_ms": 238113.623,
+        "latency_max_ms": 314653.18,
+        "final_limit_observed": [
+          10000
+        ],
+        "diagnostics": {
+          "eof": 7,
+          "incomplete": 3,
+          "transport": 2,
+          "invalid_response": 4
+        }
+      },
+      "instrument_state_counts": {
+        "total": 29,
+        "pass": 0,
+        "fail": 7,
+        "blocked": 3,
+        "not_run": 19
+      },
+      "instrument_status": "computed",
+      "instrument_error": null
+    },
+    {
+      "campaign": "jup071",
+      "repetition": 3,
+      "run_id": "jup133-infra-jup071-r3-20261023",
+      "started_at": "2026-10-23T16:07:32.277131+00:00",
+      "ended_at": "2026-10-23T16:32:09.606881+00:00",
+      "observations": {
+        "planned": 29,
+        "collected": 29,
+        "completed": 28,
+        "failed_operations": 1,
+        "verified_captures": 28,
+        "attempts": 40,
+        "total_cost_usd": "0.0743708712",
+        "known_partial_cost_usd": "0.0743708712",
+        "cost_status": "measured",
+        "cost_basis": "settled gateway rows, all attempts and embeddings; upstream invoice not verified",
+        "per_case_attribution_exact": true,
+        "latency_population": "public operation from generation POST to terminal observation; includes internal retries; excludes accounting wait",
+        "latency_observations": 29,
+        "latency_median_ms": 20794.529,
+        "latency_p95_ms": 62960.419,
+        "latency_max_ms": 82975.107,
+        "final_limit_observed": [
+          10000
+        ],
+        "diagnostics": {
+          "eof": 6,
+          "incomplete": 1,
+          "invalid_response": 5
+        }
+      },
+      "instrument_state_counts": {
+        "total": 29,
+        "pass": 0,
+        "fail": 8,
+        "blocked": 1,
+        "not_run": 20
+      },
+      "instrument_status": "computed",
+      "instrument_error": null
+    }
+  ],
+  "within_campaign_spreads": {
+    "jup070-a": {
+      "completed": {
+        "min": 25,
+        "max": 27,
+        "spread": 2
+      },
+      "attempts": {
+        "min": 40,
+        "max": 41,
+        "spread": 1
+      },
+      "latency_median_ms": {
+        "min": 17747.927499999998,
+        "max": 19487.3465,
+        "spread": 1739.4190000000017
+      },
+      "latency_p95_ms": {
+        "min": 144176.595,
+        "max": 151506.121,
+        "spread": 7329.526000000013
+      },
+      "latency_max_ms": {
+        "min": 148451.363,
+        "max": 186755.403,
+        "spread": 38304.03999999998
+      },
+      "cost_usd": {
+        "min": "0.0879410520",
+        "max": "0.0902780640",
+        "spread": "0.0023370120"
+      }
+    },
+    "jup071": {
+      "completed": {
+        "min": 26,
+        "max": 28,
+        "spread": 2
+      },
+      "attempts": {
+        "min": 40,
+        "max": 43,
+        "spread": 3
+      },
+      "latency_median_ms": {
+        "min": 20009.32,
+        "max": 20794.529,
+        "spread": 785.2089999999989
+      },
+      "latency_p95_ms": {
+        "min": 62960.419,
+        "max": 238113.623,
+        "spread": 175153.204
+      },
+      "latency_max_ms": {
+        "min": 82975.107,
+        "max": 314653.18,
+        "spread": 231678.07299999997
+      },
+      "cost_usd": {
+        "min": "0.0743708712",
+        "max": "0.1001381312",
+        "spread": "0.0257672600"
+      }
+    }
+  },
+  "human_quality_comparison": {
+    "status": "not_measured",
+    "reason": "No human judgments or two named reviewers"
+  },
+  "robustness_instrument_comparison": {
+    "executions": 3,
+    "kind": "live_unverified",
+    "generative_robustness_accepted": false,
+    "runs": [
+      {
+        "raw_sha256": "b03c1779cd77c63a8dce34195c471fa1fc02fc801f6d259e369687632713be02",
+        "totals": {
+          "total": 29,
+          "pass": 0,
+          "fail": 7,
+          "blocked": 2,
+          "not_run": 20
+        },
+        "assessment_complete": false,
+        "human_quality_rate": null,
+        "human_quality_status": "not_measured"
+      },
+      {
+        "raw_sha256": "d944e2a6c9ab4624eb7829152e62089a020e22968a4bb61c4f9bd93636f3f5f1",
+        "totals": {
+          "total": 29,
+          "pass": 0,
+          "fail": 7,
+          "blocked": 3,
+          "not_run": 19
+        },
+        "assessment_complete": false,
+        "human_quality_rate": null,
+        "human_quality_status": "not_measured"
+      },
+      {
+        "raw_sha256": "45ecdfc58dd8a660ebd846dbbc5616f63377ddb5b92d177786b03830506fd8ae",
+        "totals": {
+          "total": 29,
+          "pass": 0,
+          "fail": 8,
+          "blocked": 1,
+          "not_run": 20
+        },
+        "assessment_complete": false,
+        "human_quality_rate": null,
+        "human_quality_status": "not_measured"
+      }
+    ]
+  },
+  "total_new_cost_usd": "0.5291594448",
+  "prior_plan_cost_usd_approx": ".077",
+  "total_plan_cost_usd_approx": "0.6061594448",
+  "plan_cap_usd": "10",
+  "global_demo_cap_usd": "10",
+  "caps_are_not_additive": true,
+  "cost_scope": "All settled gateway rows, including retries and embeddings. Provider invoice not verified.",
+  "budget_ledger_sha256": "5fa263fb5997e2cc0e378adcf86016c8aa57eff7c0fc3a7b09c5e9436c4c30ba",
+  "json_digest_basis": "UTF-8 canonical JSON, sorted keys, ensure_ascii=false, compact separators",
+  "operation_failures": [
+    {
+      "campaign": "jup070-a",
+      "repetition": 1,
+      "case_id": "JUP-069-026",
+      "state": "failed",
+      "attempts": 4,
+      "diagnostic_categories": [
+        "eof",
+        "incomplete",
+        "eof",
+        "eof"
+      ]
+    },
+    {
+      "campaign": "jup070-a",
+      "repetition": 2,
+      "case_id": "JUP-069-005",
+      "state": "failed",
+      "attempts": 4,
+      "diagnostic_categories": [
+        "invalid_response",
+        "invalid_response",
+        "invalid_response",
+        "invalid_response"
+      ]
+    },
+    {
+      "campaign": "jup070-a",
+      "repetition": 2,
+      "case_id": "JUP-069-006",
+      "state": "failed",
+      "attempts": 4,
+      "diagnostic_categories": [
+        "invalid_response",
+        "invalid_response",
+        "invalid_response",
+        "invalid_response"
+      ]
+    },
+    {
+      "campaign": "jup070-a",
+      "repetition": 2,
+      "case_id": "JUP-069-026",
+      "state": "failed",
+      "attempts": 4,
+      "diagnostic_categories": [
+        "eof",
+        "eof",
+        "eof",
+        "eof"
+      ]
+    },
+    {
+      "campaign": "jup070-a",
+      "repetition": 3,
+      "case_id": "JUP-069-006",
+      "state": "failed",
+      "attempts": 4,
+      "diagnostic_categories": [
+        "invalid_response",
+        "invalid_response",
+        "invalid_response",
+        "invalid_response"
+      ]
+    },
+    {
+      "campaign": "jup070-a",
+      "repetition": 3,
+      "case_id": "JUP-069-007",
+      "state": "failed",
+      "attempts": 4,
+      "diagnostic_categories": [
+        "invalid_response",
+        "invalid_response",
+        "invalid_response",
+        "invalid_response"
+      ]
+    },
+    {
+      "campaign": "jup070-a",
+      "repetition": 3,
+      "case_id": "JUP-069-025",
+      "state": "failed",
+      "attempts": 4,
+      "diagnostic_categories": [
+        "eof",
+        "eof",
+        "eof",
+        "eof"
+      ]
+    },
+    {
+      "campaign": "jup071",
+      "repetition": 1,
+      "case_id": "JUP-071-014",
+      "state": "failed",
+      "attempts": 4,
+      "diagnostic_categories": [
+        "invalid_response",
+        "invalid_response",
+        "invalid_response",
+        "invalid_response"
+      ]
+    },
+    {
+      "campaign": "jup071",
+      "repetition": 1,
+      "case_id": "JUP-071-015",
+      "state": "failed",
+      "attempts": 4,
+      "diagnostic_categories": [
+        "eof",
+        "eof",
+        "eof",
+        "eof"
+      ]
+    },
+    {
+      "campaign": "jup071",
+      "repetition": 2,
+      "case_id": "JUP-071-006",
+      "state": "failed",
+      "attempts": 4,
+      "diagnostic_categories": [
+        "transport",
+        "eof",
+        "eof",
+        "transport"
+      ]
+    },
+    {
+      "campaign": "jup071",
+      "repetition": 2,
+      "case_id": "JUP-071-014",
+      "state": "failed",
+      "attempts": 4,
+      "diagnostic_categories": [
+        "invalid_response",
+        "invalid_response",
+        "invalid_response",
+        "invalid_response"
+      ]
+    },
+    {
+      "campaign": "jup071",
+      "repetition": 2,
+      "case_id": "JUP-071-015",
+      "state": "failed",
+      "attempts": 4,
+      "diagnostic_categories": [
+        "eof",
+        "eof",
+        "eof",
+        "eof"
+      ]
+    },
+    {
+      "campaign": "jup071",
+      "repetition": 3,
+      "case_id": "JUP-071-014",
+      "state": "failed",
+      "attempts": 4,
+      "diagnostic_categories": [
+        "invalid_response",
+        "invalid_response",
+        "invalid_response",
+        "invalid_response"
+      ]
+    }
+  ],
+  "unmeasured": [
+    "Human semantic quality and acceptance",
+    "Per-stage embedding/retrieval latencies and distances",
+    "Exact deployed product commit; runtime identified by immutable image IDs",
+    "Provider model attestation",
+    "Causal effect relative to historical campaigns with different corpus segmentation"
+  ],
+  "database_load": {
+    "status": "loaded_verified",
+    "report": "JUP-133-infra-load-report.json"
+  },
+  "private_artifacts": "Workspace/materiales/07-evidencias/JUP-133-campanas-infra-20261023/",
+  "public_artifacts": "docs/evidence/JUP-133/"
+}

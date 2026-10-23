@@ -6,49 +6,44 @@ Lucía lidera la tarjeta. Actualización documental: 23/10/2026. PR #150 se inte
 el 22/10 a las 17:24 UTC; la mención anterior a PR abierto y merge pendiente queda
 superada. Sus resultados siguen siendo provisionales.
 
-## Nueva preparación en DockerDevelop — 23/10/2026
+## Tres repeticiones en DockerDevelop — 23/10/2026
 
-Encargo: repetir por separado JUP-070 A (28 preguntas) y JUP-071 (29 casos), tres
-veces cada una, compararlas y preparar su carga. Rama
-`test/JUP-133-campanas-infra-tres-repeticiones`, desde `develop` `84b53b74`.
-[PR #156 en borrador](https://github.com/EconomiconFinOps/tfm-economicon/pull/156)
-contra `develop`, preparación documental publicada; sin merge.
-[Informe y seis lotes previstos](../evidence/JUP-133/JUP-133-infra-preflight-report.md).
+**Recogida completa, resultados provisionales; ninguna campaña aceptada.**
 
-El usuario autorizó expresamente el lanzamiento, sustituyendo la confirmación
-de Lucía, y amplió el tope de 1,50 a **6,50 USD totales**. Se conservan ≈0,077 USD
-del plan anterior y el límite global de la demo de 10 USD. La reserva mínima del
-colector es 6,50 por operación: **6,50 + ≈0,077 > 6,50**, por lo que la admisión
-sigue bloqueada. La propuesta de 7,50 USD está pendiente de respuesta, no
-autorizada. El CLI tampoco conecta aún la liquidación de todos los intentos;
-ese adaptador y la extracción efectiva deben quedar verificados antes de gastar.
+El usuario autorizó expresamente el lanzamiento y respondió «Autorizo 10». Tope total del plan: 10 USD, incluyendo ≈0,077 anteriores; el límite global de la demo también es 10 USD, sin sumar ambos. Reserva nativa de 6,50 USD por operación y subcuotas conservadas. El bloqueo de 1,50/6,50 USD queda superado.
 
-Preparados fuera de Git 28 prompts y un plan de 87 muestras de robustez. Validadas
-entradas e identificadores, sin recoger respuestas. Referencia histórica de cinco
-operaciones en esta infraestructura: 0,0192297384 USD; proyección media para 171
-muestras: 0,65765705328 USD nuevos, sin garantía ni factura upstream. No se usan
-sus juicios. No hay dos personas designadas: futuras campañas provisionales,
-juicios humanos `not_run`. Costes nuevos `not_measured`/`null`.
+Se recogieron 171 operaciones en conversaciones independientes: JUP-070 A, 28 × 3; JUP-071, 29 × 3. Coste nuevo liquidado por el gateway: **0.5291594448 USD**; acumulado aproximado del plan: **0.6061594448 USD**. Incluye embeddings y reintentos internos; no se contrastó con la factura del proveedor.
 
-Lectura de Grafana a las 13:20:02 UTC: 20 consultas SQL sin errores, 17 ejecuciones
-y 765 resultados; no revisión visual ni carga nueva. El manifiesto versionado
-conserva 12 ejecuciones. No reemplazar la base compartida sin preservar las cinco
-incorporaciones locales y sin confirmación específica. No se añadieron entradas
-de ejecución ficticias a `evaluation-runs.json`.
+| Campaña | Rep. | Completadas | Coste USD |
+| --- | ---: | ---: | ---: |
+| jup070-a | 1 | 27/28 | 0.0895823920 |
+| jup070-a | 2 | 25/28 | 0.0879410520 |
+| jup070-a | 3 | 25/28 | 0.0902780640 |
+| jup071 | 1 | 27/29 | 0.0868489344 |
+| jup071 | 2 | 26/29 | 0.1001381312 |
+| jup071 | 3 | 28/29 | 0.0743708712 |
 
-Material privado y scripts: respecto del workspace,
-`materiales/07-evidencias/JUP-133-campanas-infra-20261023/`. Solo informes
-sanitizados bajo `docs/evidence/JUP-133/`; las futuras respuestas, fichas, hojas,
-crudos y juicios seguirán fuera de Git. Modelo declarado por el gateway:
-`openrouter/deepseek/deepseek-v4.1-flash`, `deepinfra/fp8`, huella
-`9b345f3017a142d5f2db605a8921ec6fc488b2d97977edb069733aeee670c4f8`; no atestigua
-qué modelo respondió.
+No se nombraron dos personas revisoras ni se recibieron juicios. Calidad humana `not_measured`, revisión `not_run`. Los estados numéricos de JUP-071 son comprobaciones automáticas del instrumento, no juicio semántico. Las operaciones fallidas se conservan como bloqueadas; no se repitieron para obtener un resultado favorable.
 
-Siguiente paso: resolver reserva más acumulado, preparar la liquidación y
-extracción, ejecutar seis recogidas con la misma configuración, puntuar sin
-inventar juicios y solicitar la carga cuando exista un reemplazo revisable.
-Origen: chat «Levantar Jupiter en dockerDevelop»,
-`01a16421-03a0-7460-b110-24738407ccb1`.
+El agregador JUP-070 exige tiempos por etapa que el chat nativo no expone cuando falla una operación. Quedó `blocked` en las tres repeticiones; se publican aparte los costes, intentos, completadas y latencias totales realmente medidos. No se inventan valores para satisfacer el contrato.
+
+Configuración: `openrouter/deepseek/deepseek-v4.1-flash`, proveedor `deepinfra/fp8`, declarados y no atestiguados. Final 10000 tokens, corpus de cuatro documentos y doce fragmentos, misma configuración comprobada durante las seis recogidas y sellada al terminar. El histórico usaba otra segmentación; las diferencias no prueban un efecto causal del modelo o de la infraestructura.
+
+El commit `84b53b74` corresponde al evaluador. El commit exacto del producto desplegado no está acreditado y queda nulo en los rows-v1; las imágenes efectivas se identifican por SHA-256 en el sello final.
+
+Carga verificada por contenido exacto y consultas de Grafana.
+
+El paquete conserva las 17 ejecuciones y 765 resultados previos y añade seis ejecuciones; resultado preparado: 23 / 1284. El manifiesto de Git contiene 18 ejecuciones. La verificación exacta confirmó la conservación del histórico.
+
+Informes: [comparación](../evidence/JUP-133/JUP-133-infra-comparison-report.md), [carga](../evidence/JUP-133/JUP-133-infra-load-report.md), [preparación histórica, superada](../evidence/JUP-133/JUP-133-infra-preflight-report.md). Los seis informes y rows-v1 están en `docs/evidence/JUP-133/`. Crudos, respuestas, recibos, fichas y hojas vacías de revisión quedan fuera de Git en `materiales/07-evidencias/JUP-133-campanas-infra-20261023/` del workspace.
+
+Rama `test/JUP-133-campanas-infra-tres-repeticiones`, desde `develop` `84b53b74`. [PR #156](https://github.com/EconomiconFinOps/tfm-economicon/pull/156) contra `develop`, sin merge. Los papeles de revisión del PR no designan a las personas que puntuarán las respuestas.
+
+Pendiente: dos personas revisoras deben completar sus juicios por repetición antes de valorar aceptación. La política de revisión del PR sigue pendiente; el check AWS demo offline observado falla por discrepancia del árbol de evidencia, fuera de este cambio documental. No se modifica el producto para ocultar estos bloqueos.
+
+Regresión offline: 12 pruebas offline: 9 pasan y 3 fallan por expectativas fijas del manifiesto anterior (12 ejecuciones frente a las 18 actuales). El contrato rows-v1 y la conciliación independiente pasan; no se declara la integración en verde.
+
+Origen: chat «Levantar Jupiter en dockerDevelop», `01a16421-03a0-7460-b110-24738407ccb1`. Verificación y actualización: 2026-10-23.
 
 ## Qué quedó hecho
 

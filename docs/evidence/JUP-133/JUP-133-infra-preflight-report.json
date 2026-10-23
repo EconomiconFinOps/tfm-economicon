@@ -337,5 +337,12 @@
     "new_campaigns_loaded": false,
     "database_mutations": false,
     "visual_browser_check": "not_run"
+  },
+  "historical_preflight": true,
+  "superseded_by": {
+    "authorization": "User: Autorizo 10, 2026-10-23",
+    "total_plan_cap_usd": "10",
+    "demo_global_cap_usd": "10",
+    "current_status_document": "docs/continuidad/reevaluacion-metricas-modelo.md"
   }
 }

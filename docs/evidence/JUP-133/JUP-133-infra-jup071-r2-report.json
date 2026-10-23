@@ -1,0 +1,581 @@
+{
+  "report_version": 1,
+  "jup": "JUP-133",
+  "campaign": "jup071",
+  "repetition": 2,
+  "run_id": "jup133-infra-jup071-r2-20261023",
+  "started_at": "2026-10-23T15:31:03.293538+00:00",
+  "ended_at": "2026-10-23T16:07:09.851955+00:00",
+  "run_date_basis": "actual terminal observation of the last operation in this repetition, not offline scoring time",
+  "configuration_declared": {
+    "run_id": "jup133-infra-jup071-r2-20261023",
+    "source": "JUP-071",
+    "run_at": "2026-10-23T16:07:09Z",
+    "commit": null,
+    "suite": "JUP-071",
+    "suite_version": "1.0.0",
+    "suite_sha256": "f6f9dad15320b9614d6061f3a324e718727f0cf40f7b7c351d7801a95386cfa5",
+    "corpus_sha256": "204537d33bf0bf972157260c0730daba54356ee61fe8a8878fb7dded865b4ce8",
+    "embedding_provider": "litellm",
+    "embedding_alias": "economicon-embedding",
+    "retrieval": null,
+    "generation_model": null,
+    "prompt_sha256": null,
+    "synthetic": false,
+    "generation_model_id": "openrouter/deepseek/deepseek-v4.1-flash",
+    "generation_provider": "deepinfra",
+    "generation_quantization": "fp8",
+    "gateway_config_sha256": "9b345f3017a142d5f2db605a8921ec6fc488b2d97977edb069733aeee670c4f8"
+  },
+  "gateway_alias_declared": "economicon-chat",
+  "model_execution_verified": false,
+  "evaluation_source_commit": "84b53b74d02ff5831ef9dbdd4f9c7d8c40cd4d24",
+  "runtime_image_ids": {
+    "backend": "sha256:25243cf661e408ebfa4193d00416a61bc4a9e5e82d9ed07a511ce73a9d2902c9",
+    "processor": "sha256:5174de6f0f9bb8dc4f7a76dfd11024b3f50a58219ea172814f83acbb8f616494"
+  },
+  "runtime_commit_status": "not_verified; public rows use null, evaluator checkout is not deployed-code attestation",
+  "retrieval_configuration_detail": null,
+  "provisional": true,
+  "accepted": false,
+  "human_review": {
+    "status": "not_run",
+    "judgments_received": 0,
+    "two_distinct_reviewers_named": false,
+    "quality_rate": null,
+    "quality_status": "not_measured"
+  },
+  "instrument_state_counts": {
+    "total": 29,
+    "pass": 0,
+    "fail": 7,
+    "blocked": 3,
+    "not_run": 19
+  },
+  "instrument_counts_caution": "JUP-070 needs human judgments before quality scoring; JUP-071 fail can be a numeric-rule failure with all human points pending, not a human semantic verdict.",
+  "original_instrument_report_sha256": "412246d18eb67b78ec3dcb065ba948795081349ddbd8a74870485840d31791bf",
+  "observations": {
+    "planned": 29,
+    "collected": 29,
+    "completed": 26,
+    "failed_operations": 3,
+    "verified_captures": 26,
+    "attempts": 43,
+    "total_cost_usd": "0.1001381312",
+    "known_partial_cost_usd": "0.1001381312",
+    "cost_status": "measured",
+    "cost_basis": "settled gateway rows, all attempts and embeddings; upstream invoice not verified",
+    "per_case_attribution_exact": true,
+    "latency_population": "public operation from generation POST to terminal observation; includes internal retries; excludes accounting wait",
+    "latency_observations": 29,
+    "latency_median_ms": 20009.32,
+    "latency_p95_ms": 238113.623,
+    "latency_max_ms": 314653.18,
+    "final_limit_observed": [
+      10000
+    ],
+    "diagnostics": {
+      "eof": 7,
+      "incomplete": 3,
+      "transport": 2,
+      "invalid_response": 4
+    }
+  },
+  "json_digest_basis": "UTF-8 JSON with sorted keys, ensure_ascii=false and compact separators; not pretty-printed file bytes",
+  "instrument_status": "computed",
+  "instrument_error": null,
+  "cases": [
+    {
+      "case_id": "JUP-069-002",
+      "state": "completed",
+      "operation_id": "ea37b9dc-3ce4-4a8f-b744-fe5b6caa1708",
+      "conversation_id": "befeb8c8-f157-4665-bc07-cc84c22106ab",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 13718.69,
+      "cost_usd": "0.0013558864",
+      "attempts": 1,
+      "diagnostic_categories": []
+    },
+    {
+      "case_id": "JUP-069-003",
+      "state": "completed",
+      "operation_id": "fcacd42e-0ab1-47ff-84ca-90f3e1f82f61",
+      "conversation_id": "f2069dc2-4f1a-4c9e-b145-8ed25cd99435",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 22568.202,
+      "cost_usd": "0.0019369720",
+      "attempts": 1,
+      "diagnostic_categories": []
+    },
+    {
+      "case_id": "JUP-069-005",
+      "state": "completed",
+      "operation_id": "129a1307-2db4-4031-9ab9-f85e99498d02",
+      "conversation_id": "baeefb53-8446-43e7-bd32-ae09084da912",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 13406.838,
+      "cost_usd": "0.0013980736",
+      "attempts": 1,
+      "diagnostic_categories": []
+    },
+    {
+      "case_id": "JUP-069-008",
+      "state": "completed",
+      "operation_id": "ea1bd1d9-2e9d-431e-be34-f598ea43f9aa",
+      "conversation_id": "a3b1ae58-1f0b-4a18-93f3-e748eeef5e1a",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 17383.661,
+      "cost_usd": "0.0015455368",
+      "attempts": 1,
+      "diagnostic_categories": []
+    },
+    {
+      "case_id": "JUP-069-009",
+      "state": "completed",
+      "operation_id": "d22a39ad-1f80-4357-9391-a7d4693ba5f5",
+      "conversation_id": "ed1f9475-24c1-4689-8684-b7a1e745b7cf",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 67158.685,
+      "cost_usd": "0.0050240272",
+      "attempts": 2,
+      "diagnostic_categories": [
+        "eof"
+      ]
+    },
+    {
+      "case_id": "JUP-069-010",
+      "state": "completed",
+      "operation_id": "3c2dfa93-cfaa-443e-bb54-3f1d3911827f",
+      "conversation_id": "6fe78cf8-696a-44a5-84f9-dce6080247a3",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 19462.826,
+      "cost_usd": "0.0015633376",
+      "attempts": 1,
+      "diagnostic_categories": []
+    },
+    {
+      "case_id": "JUP-069-011",
+      "state": "completed",
+      "operation_id": "5749ad73-47e5-4507-bdff-e3ce7c750785",
+      "conversation_id": "a9230e9c-e96a-4658-903e-6492e7b0ab50",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 17266.023,
+      "cost_usd": "0.0018124288",
+      "attempts": 1,
+      "diagnostic_categories": []
+    },
+    {
+      "case_id": "JUP-069-012",
+      "state": "completed",
+      "operation_id": "efdb243c-81cb-4850-979e-dd7c28662a5a",
+      "conversation_id": "d0145b06-7c61-486c-9d76-ceb59e5f72e3",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 20855.215,
+      "cost_usd": "0.0017400768",
+      "attempts": 1,
+      "diagnostic_categories": []
+    },
+    {
+      "case_id": "JUP-069-016",
+      "state": "completed",
+      "operation_id": "4bf9b4b1-c257-4873-9fe3-eeb8062fd0a3",
+      "conversation_id": "4fe9989f-8716-4e74-bd37-e14842d4acf1",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 16672.296,
+      "cost_usd": "0.0015251344",
+      "attempts": 1,
+      "diagnostic_categories": []
+    },
+    {
+      "case_id": "JUP-069-023",
+      "state": "completed",
+      "operation_id": "cc360046-3885-44c6-8c33-b3dc6752ca57",
+      "conversation_id": "a6cdc90b-b639-49cb-9c91-e5773078894d",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 238113.623,
+      "cost_usd": "0.0087413816",
+      "attempts": 3,
+      "diagnostic_categories": [
+        "incomplete"
+      ]
+    },
+    {
+      "case_id": "JUP-069-024",
+      "state": "completed",
+      "operation_id": "f907efd4-5146-456d-8710-559319bc63a3",
+      "conversation_id": "a6053e91-6dce-4690-ba78-e909bc901859",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 18605.333,
+      "cost_usd": "0.0015840952",
+      "attempts": 1,
+      "diagnostic_categories": []
+    },
+    {
+      "case_id": "JUP-069-026",
+      "state": "completed",
+      "operation_id": "62a10191-bda5-4335-b4a0-1ed0e90cf81c",
+      "conversation_id": "2c9f7b12-536d-4177-9b47-9091f6ecf70f",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 111707.885,
+      "cost_usd": "0.0059165872",
+      "attempts": 2,
+      "diagnostic_categories": [
+        "incomplete"
+      ]
+    },
+    {
+      "case_id": "JUP-069-027",
+      "state": "completed",
+      "operation_id": "6c6c1b06-7ec8-491c-90b4-fd0854a96e10",
+      "conversation_id": "0aaff765-46c4-46bf-8151-27daf8b7f142",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 19554.681,
+      "cost_usd": "0.0015751944",
+      "attempts": 1,
+      "diagnostic_categories": []
+    },
+    {
+      "case_id": "JUP-071-001",
+      "state": "completed",
+      "operation_id": "410a4d8c-4a33-4505-b8d7-b0231d930879",
+      "conversation_id": "d0dfc1fb-9860-42c6-a50c-87d07d36fe37",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 24750.017,
+      "cost_usd": "0.0017735520",
+      "attempts": 1,
+      "diagnostic_categories": []
+    },
+    {
+      "case_id": "JUP-071-002",
+      "state": "completed",
+      "operation_id": "4cf7de44-4b94-44a3-b3cc-b683e5fae38c",
+      "conversation_id": "44c60519-3900-4afd-b0f8-688727819b35",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 18406.043,
+      "cost_usd": "0.0014758464",
+      "attempts": 1,
+      "diagnostic_categories": []
+    },
+    {
+      "case_id": "JUP-071-003",
+      "state": "completed",
+      "operation_id": "6be9bf55-e5db-45be-818c-e2952306b9e2",
+      "conversation_id": "25236ec1-51db-424c-beee-a6a0dd310c2b",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 21411.119,
+      "cost_usd": "0.0020314888",
+      "attempts": 1,
+      "diagnostic_categories": []
+    },
+    {
+      "case_id": "JUP-071-004",
+      "state": "completed",
+      "operation_id": "b76dd501-e9f0-48d0-8575-a9f1b5a80fca",
+      "conversation_id": "284bd04b-228c-41b7-bda7-4a0f3336e6bb",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 18918.055,
+      "cost_usd": "0.0016119064",
+      "attempts": 1,
+      "diagnostic_categories": []
+    },
+    {
+      "case_id": "JUP-071-005",
+      "state": "completed",
+      "operation_id": "b736e543-e098-438e-8d42-d83514a3a9e2",
+      "conversation_id": "8fa2a165-0326-429d-a256-53451f372fa4",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 22101.833,
+      "cost_usd": "0.0021115888",
+      "attempts": 1,
+      "diagnostic_categories": []
+    },
+    {
+      "case_id": "JUP-071-006",
+      "state": "failed",
+      "operation_id": "9d55c394-560e-4017-974f-ab94f082e42a",
+      "conversation_id": "7f40a963-ee90-43e0-b945-47587361ccd9",
+      "capture_status": "INCOMPLETE",
+      "duration_ms": 314653.18,
+      "cost_usd": "0.0170379568",
+      "attempts": 4,
+      "diagnostic_categories": [
+        "transport",
+        "eof",
+        "eof",
+        "transport"
+      ]
+    },
+    {
+      "case_id": "JUP-071-007",
+      "state": "completed",
+      "operation_id": "dc534198-599b-45db-8b9f-ba5d49f67eea",
+      "conversation_id": "252d0b0b-31e5-421d-b3c4-24755f28d724",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 126684.978,
+      "cost_usd": "0.0064714592",
+      "attempts": 2,
+      "diagnostic_categories": [
+        "incomplete"
+      ]
+    },
+    {
+      "case_id": "JUP-071-008",
+      "state": "completed",
+      "operation_id": "422344e4-0373-4d61-b635-aa69510fc257",
+      "conversation_id": "ecd366ec-6606-4543-8c42-09f916c773a4",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 17726.174,
+      "cost_usd": "0.0016564744",
+      "attempts": 1,
+      "diagnostic_categories": []
+    },
+    {
+      "case_id": "JUP-071-009",
+      "state": "completed",
+      "operation_id": "5f525c99-81da-470f-a483-2080ce70a413",
+      "conversation_id": "cbb1c91e-b75e-4c21-866c-361fd5a1098a",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 18379.558,
+      "cost_usd": "0.0015983944",
+      "attempts": 1,
+      "diagnostic_categories": []
+    },
+    {
+      "case_id": "JUP-071-010",
+      "state": "completed",
+      "operation_id": "0c50ae75-b015-451c-916d-2ef65377f878",
+      "conversation_id": "bb2bb5ff-9b2b-474a-8471-87f9d4c2da3e",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 10241.592,
+      "cost_usd": "0.0004247768",
+      "attempts": 1,
+      "diagnostic_categories": []
+    },
+    {
+      "case_id": "JUP-071-011",
+      "state": "completed",
+      "operation_id": "4b00fd95-68b0-41db-b160-e12deaea0355",
+      "conversation_id": "05aa7240-467e-4b4f-9649-94c33a1c2d9a",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 14869.123,
+      "cost_usd": "0.0010544592",
+      "attempts": 1,
+      "diagnostic_categories": []
+    },
+    {
+      "case_id": "JUP-071-012",
+      "state": "completed",
+      "operation_id": "28193bf4-7446-4869-87e1-be109aa28a5c",
+      "conversation_id": "b1fa5d34-636f-47ba-a878-915a71cd6084",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 20009.32,
+      "cost_usd": "0.0017619328",
+      "attempts": 1,
+      "diagnostic_categories": []
+    },
+    {
+      "case_id": "JUP-071-013",
+      "state": "completed",
+      "operation_id": "1dab7df7-ac6f-415a-9d80-00b55a9d1980",
+      "conversation_id": "7149a22c-6804-43dc-b273-c0e355868d85",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 29466.825,
+      "cost_usd": "0.0016134928",
+      "attempts": 1,
+      "diagnostic_categories": []
+    },
+    {
+      "case_id": "JUP-071-014",
+      "state": "failed",
+      "operation_id": "288addb9-873a-4d31-bcc2-8b4cbbbab007",
+      "conversation_id": "796f529c-bca9-4908-a21d-ef75a56bcfd4",
+      "capture_status": "INCOMPLETE",
+      "duration_ms": 74564.536,
+      "cost_usd": "0.0092832872",
+      "attempts": 4,
+      "diagnostic_categories": [
+        "invalid_response",
+        "invalid_response",
+        "invalid_response",
+        "invalid_response"
+      ]
+    },
+    {
+      "case_id": "JUP-071-015",
+      "state": "failed",
+      "operation_id": "4ea0bab0-812a-41d1-8f2f-58a3e2e620e4",
+      "conversation_id": "e48d4e53-7964-4463-95cf-0d97eea1b09c",
+      "capture_status": "INCOMPLETE",
+      "duration_ms": 174115.711,
+      "cost_usd": "0.0123308488",
+      "attempts": 4,
+      "diagnostic_categories": [
+        "eof",
+        "eof",
+        "eof",
+        "eof"
+      ]
+    },
+    {
+      "case_id": "JUP-071-016",
+      "state": "completed",
+      "operation_id": "ff6e1cf5-12bd-436e-b338-17dda23e042f",
+      "conversation_id": "5bcf2c00-0ebf-40f0-8f69-d1d4f82c8d7f",
+      "capture_status": "VERIFIED_PUBLIC_SNAPSHOT",
+      "duration_ms": 24552.56,
+      "cost_usd": "0.0021819344",
+      "attempts": 1,
+      "diagnostic_categories": []
+    }
+  ],
+  "rows_sha256": "3b03b977b294e581516879adc404aa604f9760c13e1a14514038851b414e6c1b",
+  "score_method": "unchanged versioned case scorer; no human judgments supplied; aggregate calculator errors are disclosed and unavailable metrics remain null",
+  "publication_normalization": "Rates requiring humans stay not_measured; counters of case/coverage states are automatic; separate campaign_system observations copy this report.",
+  "limitations": [
+    "Synthetic questions and corpus; actual model responses.",
+    "All six repeats use the same pinned runtime and tenant.",
+    "Gateway identity declared, not provider-attested.",
+    "Retrieval payload verified by exact content hash; distances not measured.",
+    "Historical corpus segmentation/configuration differs; no causal infrastructure/model claim.",
+    "No shared database load in this step."
+  ],
+  "numeric_rule_checks": [
+    {
+      "case": "JUP-069-002",
+      "checks": {
+        "numbers-1": "pass",
+        "numbers-2": "pass"
+      }
+    },
+    {
+      "case": "JUP-069-003",
+      "checks": {}
+    },
+    {
+      "case": "JUP-069-005",
+      "checks": {
+        "numbers-1": "fail",
+        "numbers-2": "fail"
+      }
+    },
+    {
+      "case": "JUP-069-008",
+      "checks": {}
+    },
+    {
+      "case": "JUP-069-009",
+      "checks": {}
+    },
+    {
+      "case": "JUP-069-010",
+      "checks": {}
+    },
+    {
+      "case": "JUP-069-011",
+      "checks": {
+        "numbers-1": "fail"
+      }
+    },
+    {
+      "case": "JUP-069-012",
+      "checks": {}
+    },
+    {
+      "case": "JUP-069-016",
+      "checks": {
+        "numbers-1": "fail",
+        "numbers-2": "fail"
+      }
+    },
+    {
+      "case": "JUP-069-023",
+      "checks": {}
+    },
+    {
+      "case": "JUP-069-024",
+      "checks": {}
+    },
+    {
+      "case": "JUP-069-026",
+      "checks": {}
+    },
+    {
+      "case": "JUP-069-027",
+      "checks": {
+        "numbers-1": "fail",
+        "numbers-2": "fail",
+        "numbers-3": "fail"
+      }
+    },
+    {
+      "case": "JUP-071-001",
+      "checks": {}
+    },
+    {
+      "case": "JUP-071-002",
+      "checks": {
+        "numbers-1": "fail"
+      }
+    },
+    {
+      "case": "JUP-071-003",
+      "checks": {
+        "numbers-1": "fail"
+      }
+    },
+    {
+      "case": "JUP-071-004",
+      "checks": {}
+    },
+    {
+      "case": "JUP-071-005",
+      "checks": {}
+    },
+    {
+      "case": "JUP-071-006",
+      "checks": {}
+    },
+    {
+      "case": "JUP-071-007",
+      "checks": {}
+    },
+    {
+      "case": "JUP-071-008",
+      "checks": {}
+    },
+    {
+      "case": "JUP-071-009",
+      "checks": {}
+    },
+    {
+      "case": "JUP-071-010",
+      "checks": {
+        "numbers-1": "fail"
+      }
+    },
+    {
+      "case": "JUP-071-011",
+      "checks": {}
+    },
+    {
+      "case": "JUP-071-012",
+      "checks": {}
+    },
+    {
+      "case": "JUP-071-013",
+      "checks": {}
+    },
+    {
+      "case": "JUP-071-014",
+      "checks": {}
+    },
+    {
+      "case": "JUP-071-015",
+      "checks": {}
+    },
+    {
+      "case": "JUP-071-016",
+      "checks": {}
+    }
+  ]
+}

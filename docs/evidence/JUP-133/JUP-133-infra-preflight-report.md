@@ -1,6 +1,11 @@
 # JUP-133 — Preparación de tres repeticiones por campaña
 
-Estado a 23/10/2026: **recogida no iniciada; admisión bloqueada por presupuesto**.
+**Informe histórico de preparación, superado por la autorización posterior
+«Autorizo 10» y el inicio de las recogidas.** El tope actual es 10 USD para el
+plan, dentro del global de 10 USD de la demo. El estado actual se mantiene en
+[continuidad](../../continuidad/reevaluacion-metricas-modelo.md).
+
+Estado de la preparación previa del 23/10/2026: **recogida no iniciada; admisión bloqueada por presupuesto**.
 Este informe registra preparación y comprobaciones previas, no seis ejecuciones
 del asistente. Ninguna campaña está aceptada. [Informe estructurado](JUP-133-infra-preflight-report.json).
 
