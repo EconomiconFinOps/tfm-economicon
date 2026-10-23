@@ -51,7 +51,7 @@ def test_final_schema_contains_only_effective_authenticated_evidence(monkeypatch
     assert records[-1]['type']=='candidate' and len(requests)==2
     assert requests[0]['response_format']['json_schema']['name']=='PrivateAnswerPlan'
     assert requests[-1]['reasoning']=={'enabled':False}
-    assert requests[-1]['max_tokens']==2200 and requests[0]['max_tokens']==1000
+    assert requests[-1]['max_tokens']==10000 and requests[0]['max_tokens']==1000
     assert requests[0]['timeout']<=60 and requests[0]['num_retries']==0
     schema=requests[-1]['response_format']['json_schema']['schema']
     if with_source:

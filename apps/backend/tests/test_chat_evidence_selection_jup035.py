@@ -70,14 +70,14 @@ def test_contextual_schema_hash_and_full_token_accounting_match_both_services():
     assert schema==module.decision_schema(context)
     assert backend.count_messages(messages)==processor.check_messages(messages,final_schema)
     assert backend.metadata(backend.count_messages(messages),messages)['decision_schema_sha256']==module.sha(module.canonical(schema))
-    required=sum(backend.count(canonical(value)) for value in (messages,final_schema))+1024+3200
+    required=sum(backend.count(canonical(value)) for value in (messages,final_schema))+1024+11000
     assert required<backend.context_budget['context_tokens']
     limited={**backend.context_budget,'context_tokens':required-1}
     with pytest.raises(ChatError):replace(backend,context_budget=limited).count_messages(messages)
     with pytest.raises(module.TokenBudgetExceeded):replace(processor,context_budget=limited).check_messages(messages,final_schema)
     quoted=provider_response_schema(authorized_evidence=[SOURCE],quantities=catalog)
     assert backend.count_messages(messages,authorized_evidence=[SOURCE])==processor.check_messages(messages,quoted)
-    required=sum(backend.count(canonical(value)) for value in (messages,quoted))+1024+3200
+    required=sum(backend.count(canonical(value)) for value in (messages,quoted))+1024+11000
     limited={**backend.context_budget,'context_tokens':required-1}
     with pytest.raises(ChatError):replace(backend,context_budget=limited).count_messages(messages,authorized_evidence=[SOURCE])
     with pytest.raises(module.TokenBudgetExceeded):replace(processor,context_budget=limited).check_messages(messages,quoted)

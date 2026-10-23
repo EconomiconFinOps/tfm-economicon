@@ -258,3 +258,22 @@ persistido y fuentes sin apertura se corrigen en una rama y PR independientes:
 [acciones y citas del panel](../demo/JUP-065/correccion-panel.md). Se conservan los roles
 humanos; las excepciones previas no se extienden a esta nueva PR. Ensayo narrado,
 pertinencia de citas y nueva aceptación generativa siguen pendientes.
+
+
+## Integración de la demo congelada — 23/10/2026
+
+Nueva autorización humana: «Haz la pr y mergea como excepcion con aprobacion mia».
+Rama `fix/JUP-065-frozen-demo-final10000`, base develop `03e97ce670286bb55d2750be7bb466deb24548c6`.
+Se reúnen 26 archivos de producto/pruebas idénticos a la fuente final10000
+previamente ensayada: borrador 1000, final 10000, reserva 11000, prompts y lectura
+restringida de registros LibreOffice. [Evidencia y excepción](../evidence/JUP-065-frozen-demo-20261023.md).
+
+Entrega como demo con incidencias; RC integral NO ACEPTADA (003 investigación
+omitida, 004 soporte global no acreditado, 025 truncado/EOF antes de completar).
+La excepción autoriza integración, sin convertir los resultados en aceptación.
+No se atribuyen revisiones humanas ni se repiten campañas de modelos o pruebas
+de la demo. Se mantienen DockerDevelop, accesos y presupuesto de 10 USD.
+Trello continúa en Validación; el merge no equivale al cierre integral de JUP-065.
+La CI automática del repositorio se registra aparte de la evidencia histórica.
+Origen: «Levantar Jupiter en dockerDevelop», `01a16421-03a0-7460-b110-24738407ccb1`.
+PR y merge se confirmarán en el registro GitHub y la continuidad local al concluir.

@@ -454,7 +454,7 @@ def test_large_demo_screen_is_projected_with_omissions_but_full_snapshot_remains
 
 
 def test_essential_question_over_shared_token_budget_is_rejected_before_reservation(prepared,monkeypatch):
-    monkeypatch.setenv('CHAT_CONTEXT_TOKENS','10000')
+    monkeypatch.setenv('CHAT_CONTEXT_TOKENS','17800')
     api,_=prepared
     content='\U0010ffff'*3000
     assert len(content.encode('utf-8'))<=16384

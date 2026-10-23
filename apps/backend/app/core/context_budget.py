@@ -2,7 +2,7 @@
 import os
 
 MODEL_CONTEXT = 1048576
-OUTPUT_TOKENS = 3200
+OUTPUT_TOKENS = 11000
 SUMMARY_OUTPUT_TOKENS = 10000
 MARGIN_TOKENS = 1024
 CHAT_BYTES = 2097152
@@ -14,7 +14,7 @@ def budget(kind):
         raise ValueError('Unknown context budget kind.')
     if kind == 'chat':
         output = os.getenv('CHAT_MAX_OUTPUT_TOKENS', str(OUTPUT_TOKENS))
-        if not output.isascii() or not output.isdecimal() or not 1 <= int(output) <= 3200:
+        if not output.isascii() or not output.isdecimal() or not 1 <= int(output) <= OUTPUT_TOKENS:
             raise ValueError('Invalid chat output token budget.')
         output_tokens = int(output)
     else:

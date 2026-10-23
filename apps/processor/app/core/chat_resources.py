@@ -32,7 +32,7 @@ FLASH_TOKENIZER = {
     'bytes': 6367257,
 }
 BUDGETS = {'variable_tokens':8192, 'wrapper_margin_tokens':1024,
-           'output_tokens':3200, 'model_context_tokens':1048576}
+           'output_tokens':11000, 'model_context_tokens':1048576}
 from app.core.chat_expressions import context_question, context_quantities
 
 # This control is generated locally, never by an LLM. The entire current
@@ -104,9 +104,9 @@ ASSEMBLER_CONTRACT.update(tool_protocol='server-documentation-v4', decision_sche
     documentary_sections='original-markdown-positional-contiguous-ranges-v1',
     interval_rules='explicit-percentage-partition-eligible-total-or-allocation-role-explanation-v4',
     decision_values='server-query-no-model-decision-v1',
-    reasoning={'effort':'high','exclude':True,'shared_output_tokens':3200})
+    reasoning={'effort':'high','exclude':True,'shared_output_tokens':11000})
 from app.core.chat_review import DRAFT_INSTRUCTION,REVIEW_INSTRUCTION,DRAFT_MAX_BYTES,draft_schema
-ASSEMBLER_CONTRACT.update(review={'version':2,'draft_tokens':1000,'final_tokens':2200,
+ASSEMBLER_CONTRACT.update(review={'version':2,'draft_tokens':1000,'final_tokens':10000,
     'draft_schema':draft_schema([]),'draft_instruction':DRAFT_INSTRUCTION,
     'review_instruction':REVIEW_INSTRUCTION,'draft_public':False,
     'usage':'observed-partial-explicit-legs-v1','deadline':'shared-120s',
@@ -284,7 +284,7 @@ def load_resources(directory=None, tokenizer_file=None):
     tokenizer = FLASH_TOKENIZER if version == 4 else TOKENIZER
     assembler = dict(ASSEMBLER_CONTRACT)
     if version == 4:
-        assembler['reasoning'] = {'enabled': False, 'shared_output_tokens': 3200}
+        assembler['reasoning'] = {'enabled': False, 'shared_output_tokens': 11000}
     expected = {
         'v':version, 'kind':f'jup-035.chat.v{version}',
         'system_sha256':sha(system_raw), 'input_sha256':sha(input_raw),

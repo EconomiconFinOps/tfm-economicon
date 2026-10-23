@@ -18,10 +18,10 @@ FLASH_TOKENIZER = {
     'sha256': 'c90dfa01249db1be4245780a052ede752e1361c612ac6d08e2bdada7d599476b',
     'bytes': 6367257,
 }
-FLASH_ASSEMBLER_SHA = '7753307328062189ad041fb17ac23dd4b983dba8e19b74d511c3f858d6b04106'
+FLASH_ASSEMBLER_SHA = '4884835f4e92d80eb725bbe2e54ea63f3e25e5d5aa739531db5d86db2a0fd2f4'
 BASE_SHA = '8e3197acc5cc50b4368d547fbde9ea198cad3364414cec489cd9050f922e6edf'
 INPUT_SHA = 'a69db50801cfc42eb5b633fc724bbc7e4b3b590326f6713cd6b8616bf0ccfb42'
-ASSEMBLER_SHA = 'ec88b7bfcc19ee34f2505b240f21855977fc3fc423ed3854d2135d1c5c289f78'
+ASSEMBLER_SHA = '93f172be16abce78b4a86146daa8331c3efa03b1b0dcfc19ad2b8e07e45c8b65'
 from app.core.chat_expressions import context_question, context_quantities
 
 # This control is generated locally, never by an LLM. The entire current
@@ -134,7 +134,7 @@ def load_resources(directory, tokenizer_file=None):
             or sha(canonical(manifest['assembler_contract']).encode()) != assembler_sha
             or manifest['assembler_contract'].get('generation_schema',{}).get('module_sha256') != sha(Path(__file__).with_name('chat_generation_schema.py').read_text(encoding='utf-8').encode())
             or manifest.get('tokenizer') != tokenizer
-            or manifest.get('budgets') != {'variable_tokens':8192,'wrapper_margin_tokens':1024,'output_tokens':3200,'model_context_tokens':1048576}):
+            or manifest.get('budgets') != {'variable_tokens':8192,'wrapper_margin_tokens':1024,'output_tokens':11000,'model_context_tokens':1048576}):
         raise ValueError('Bundle contract mismatch.')
     inherited = system.decode('utf-8').partition('\n\nContrato de chat JUP-035 v3:')[0]
     if sha(inherited.encode('utf-8')) != BASE_SHA:

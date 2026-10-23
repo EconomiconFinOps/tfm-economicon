@@ -209,7 +209,7 @@ def test_private_gateway_streams_only_answer_with_roles_and_dynamic_deadline(pri
         assert payload['messages'][:-1]==context['messages']
         assert 'UNTRUSTED_DRAFT_PLAN' in payload['messages'][-1]['content']
         assert payload['stream'] is True and payload['model']=='economicon-chat'
-        assert payload['max_tokens']==2200
+        assert payload['max_tokens']==10000
         assert 30<payload['timeout']<=120 and 30<payload['stream_timeout']<=120
         assert payload['num_retries']==0
         assert all(branch['additionalProperties'] is False and branch['properties']['metrics']['maxItems']==0
