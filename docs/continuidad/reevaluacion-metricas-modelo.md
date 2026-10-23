@@ -6,6 +6,39 @@ Lucía lidera la tarjeta. Actualización documental: 23/10/2026. PR #150 se inte
 el 22/10 a las 17:24 UTC; la mención anterior a PR abierto y merge pendiente queda
 superada. Sus resultados siguen siendo provisionales.
 
+## CI posterior al merge de PR156 — 23/10/2026
+
+PR156 confirmado integrado por squash `db8f69ab5e2d4a42931cd6dc7412b99e855f0148`
+el 23/10 a las 19:38:28 París. Quedan superadas las menciones históricas a este
+PR en borrador o sin merge. `develop` seguía en ese SHA al comprobarlo a las 19:47.
+
+CI `39996735445` y CD `39996735531` terminaron con fallo. Backend, processor,
+Azure Cost API, frontend, landing y los dos jobs AWS pasan. El único job fallido
+es OpenSpec, dentro de `evaluation-dashboard:test`: 1960 pruebas, 110 fallos,
+30 errores y 2 omitidas. `openspec:validate` no llegó a ejecutarse. CD reproduce
+el fallo y omite `DockerServer deployment eligible`; no acredita promoción de
+este SHA. JUP policy se omite por ser un push de develop, no es un fallo nuevo.
+
+Los logs y fuentes muestran expectativas antiguas (12 ejecuciones / 647 filas
+frente a 18 / 1670), escenarios que ya no seleccionan la última campaña esperada,
+29 errores en cadena por mensajes de montaje de permisos desactualizados y un
+IndexError de IDs. Además, la prueba de altura de matriz exige 57 unidades para
+51 filas y encuentra 52. No se debe reducir todo a sustituir contadores. El
+resultado anterior de tres fallos focales era un subconjunto, no la suite completa.
+
+[Diagnóstico y bloqueos](../evidence/JUP-133/JUP-133-develop-ci-report.md) y
+[snapshot de jobs](../evidence/JUP-133/JUP-133-develop-ci-report.json).
+Siguiente paso: reconciliar pruebas/fixtures, selección y presentación del
+dashboard; reejecutar la suite afectada y confirmar CI/CD. Se mantienen aparte
+003/004/025, las 13 operaciones bloqueadas y las métricas no medidas que impiden
+aceptación integral. Este encargo sólo diagnostica: sin fixes, ensayos, cargas,
+despliegues, cambios de acceso/cuotas ni gasto del gateway.
+
+Diagnóstico guardado localmente en `docs/JUP-133-ci-tras-pr156`, sin nuevo PR ni
+publicación. Logs y estados completos en el expediente privado `agent-review/`.
+Origen: «Levantar Jupiter en dockerDevelop»,
+`01a16421-03a0-7460-b110-24738407ccb1`. Verificación: 2026-10-23.
+
 ## Tres repeticiones en DockerDevelop — 23/10/2026
 
 **Recogida completa, resultados provisionales; ninguna campaña aceptada.**
