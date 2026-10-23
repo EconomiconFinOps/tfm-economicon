@@ -15,3 +15,5 @@ Calidad humana: `not_measured`; juicios: `not_run`. Las comprobaciones numérica
 Ver [JUP-133-infra-jup071-r1-report.json](JUP-133-infra-jup071-r1-report.json) y [JUP-133-infra-jup071-r1.rows.json](JUP-133-infra-jup071-r1.rows.json).
 
 Los crudos, fichas, recibos y hojas vacías para revisión permanecen fuera de Git.
+
+Ampliación posterior del 23/10: [revisión provisional por un juez IA](JUP-133-agent-review-report.md), con [agregados de esta repetición](JUP-133-infra-jup071-r1-agent-report.json). Conserva las medidas originales y añade filas `agent_`; no aporta juicios humanos.

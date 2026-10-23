@@ -17,3 +17,5 @@ Ver [JUP-133-infra-jup070-a-r2-report.json](JUP-133-infra-jup070-a-r2-report.jso
 Los crudos, fichas, recibos y hojas vacías para revisión permanecen fuera de Git.
 
 El agregador de métricas versionado quedó `blocked`: exige tiempos de etapas previas que el chat nativo no expone para una operación fallida. No se inventan tiempos ni se reclasifica el fallo. Los estados por caso proceden del evaluador; las métricas de catálogo quedan `not_measured` y las observaciones técnicas anteriores se publican aparte.
+
+Ampliación posterior del 23/10: [revisión provisional por un juez IA](JUP-133-agent-review-report.md), con [agregados de esta repetición](JUP-133-infra-jup070-a-r2-agent-report.json). Conserva las medidas originales y añade filas `agent_`; no aporta juicios humanos.

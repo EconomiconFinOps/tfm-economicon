@@ -28,3 +28,7 @@ El calculador de JUP-070 puede quedar bloqueado cuando una operación nativa fal
 Crudos, respuestas, fichas, recibos y hojas vacías de revisión: fuera de Git, en `materiales/07-evidencias/JUP-133-campanas-infra-20261023/private-capture/` y `analysis/` del workspace. La carga fue autorizada expresamente y verificada en DockerDevelop, conservando el histórico; véase el [informe de carga](JUP-133-infra-load-report.md).
 
 Detalles, dispersión entre repeticiones, incidencias y huellas: [informe JSON](JUP-133-infra-comparison-report.json).
+
+## Suplemento posterior: juez IA
+
+El usuario autorizó la revisión automatizada de las 158 respuestas disponibles, sin nuevas generaciones. [Comparación de las seis revisiones](JUP-133-agent-review-report.md): 720 puntos semánticos, 13 operaciones bloqueadas y ninguna respuesta disponible sin revisar. Carga autorizada y verificada: 504 filas adicionales, 23 ejecuciones / 1788 resultados y tres paneles «Juez IA». La revisión humana continúa sin realizarse y no se acepta ninguna campaña.

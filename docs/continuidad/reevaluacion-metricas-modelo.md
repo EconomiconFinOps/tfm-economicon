@@ -23,7 +23,7 @@ Se recogieron 171 operaciones en conversaciones independientes: JUP-070 A, 28 ×
 | jup071 | 2 | 26/29 | 0.1001381312 |
 | jup071 | 3 | 28/29 | 0.0743708712 |
 
-No se nombraron dos personas revisoras ni se recibieron juicios. Calidad humana `not_measured`, revisión `not_run`. Los estados numéricos de JUP-071 son comprobaciones automáticas del instrumento, no juicio semántico. Las operaciones fallidas se conservan como bloqueadas; no se repitieron para obtener un resultado favorable.
+En el corte de recogida no se nombraron dos personas revisoras ni se recibieron juicios humanos. El suplemento posterior con juez IA se documenta abajo. Calidad humana `not_measured`, revisión `not_run`. Los estados numéricos de JUP-071 son comprobaciones automáticas del instrumento, no juicio semántico. Las operaciones fallidas se conservan como bloqueadas; no se repitieron para obtener un resultado favorable.
 
 El agregador JUP-070 exige tiempos por etapa que el chat nativo no expone cuando falla una operación. Quedó `blocked` en las tres repeticiones; se publican aparte los costes, intentos, completadas y latencias totales realmente medidos. No se inventan valores para satisfacer el contrato.
 
@@ -33,13 +33,13 @@ El commit `84b53b74` corresponde al evaluador. El commit exacto del producto des
 
 Carga verificada por contenido exacto y consultas de Grafana.
 
-El paquete conserva las 17 ejecuciones y 765 resultados previos y añade seis ejecuciones; resultado preparado: 23 / 1284. El manifiesto de Git contiene 18 ejecuciones. La verificación exacta confirmó la conservación del histórico.
+El paquete conserva las 17 ejecuciones y 765 resultados previos y añade seis ejecuciones; resultado verificado de esa primera carga: 23 / 1284; el suplemento posterior lo amplía a 1788 resultados. El manifiesto de Git contiene 18 ejecuciones. La verificación exacta confirmó la conservación del histórico.
 
 Informes: [comparación](../evidence/JUP-133/JUP-133-infra-comparison-report.md), [carga](../evidence/JUP-133/JUP-133-infra-load-report.md), [preparación histórica, superada](../evidence/JUP-133/JUP-133-infra-preflight-report.md). Los seis informes y rows-v1 están en `docs/evidence/JUP-133/`. Crudos, respuestas, recibos, fichas y hojas vacías de revisión quedan fuera de Git en `materiales/07-evidencias/JUP-133-campanas-infra-20261023/` del workspace.
 
 Rama `test/JUP-133-campanas-infra-tres-repeticiones`, desde `develop` `84b53b74`. [PR #156](https://github.com/EconomiconFinOps/tfm-economicon/pull/156) contra `develop`, sin merge. Los papeles de revisión del PR no designan a las personas que puntuarán las respuestas.
 
-Pendiente: dos personas revisoras deben completar sus juicios por repetición antes de valorar aceptación. La política de revisión del PR sigue pendiente; el check AWS demo offline observado falla por discrepancia del árbol de evidencia, fuera de este cambio documental. No se modifica el producto para ocultar estos bloqueos.
+La revisión humana por dos personas sigue pendiente; el usuario autorizó cubrir la rúbrica con un único juez IA, presentado como provisional, sin otorgar aceptación. La política de revisión del PR sigue pendiente; el check AWS demo offline observado falla por discrepancia del árbol de evidencia, fuera de este cambio documental. No se modifica el producto para ocultar estos bloqueos.
 
 Regresión offline: 12 pruebas offline: 9 pasan y 3 fallan por expectativas fijas del manifiesto anterior (12 ejecuciones frente a las 18 actuales). El contrato rows-v1 y la conciliación independiente pasan; no se declara la integración en verde.
 
@@ -51,7 +51,40 @@ y [continuidad de datos](fecha-referencia-datos-demo.md), con CSV, procedencia y
 checksum. Extracción de solo lectura y comprobación contra la fuente; no añade
 inferencias, juicios ni cargas de base. Se incorpora al mismo PR #156.
 
-## Qué quedó hecho
+## Suplemento con juez IA — 23/10/2026
+
+Petición expresa: usar un agente como juez para completar cobertura. Se revisaron
+individualmente las **158 respuestas disponibles** y sus **720 puntos semánticos**
+(618 pass / 102 fail); las **13 operaciones sin respuesta verificable** siguen
+blocked. Un agente, cero personas revisoras; ninguna campaña aceptada. Los estados
+de caso combinan rúbrica y reglas numéricas originales, con sus límites conocidos.
+
+Las seis métricas semánticas de robustez tienen ahora resultados para cada una de
+las tres repeticiones. Las mediciones ausentes (distancias, etapas, contrato de
+salida y disponibilidad HTTP) siguen not_measured; no se rellenaron con juicio.
+Ambos campos grp y metric_id llevan `agent_`, con judgment=automatic, para separar
+las series de las humanas. Se conservaron las filas humanas sin medir.
+
+Tras la confirmación «Autorizar carga y paneles en DockerDevelop», carga ejecutada
+a las 17:24 UTC y verificada por contenido exacto: **23 ejecuciones / 1788 filas**,
+**1284 anteriores intactas + 504 nuevas**. Sólo cambiaron seis report_sha256.
+Las **29 consultas de Grafana** responden sin error; revisión visual y captura
+acreditan los tres paneles «Juez IA». No se tocó DockerServer, accesos ni cuotas.
+Sin generaciones nuevas ni gasto adicional del gateway; tope 10 USD conservado.
+El coste de Codex no se midió, no se considera gratuito.
+
+[Informe de revisión](../evidence/JUP-133/JUP-133-agent-review-report.md) y
+[carga verificada](../evidence/JUP-133/JUP-133-agent-load-report.json).
+Juicios, metodología detallada, crudos y captura permanecen fuera de Git en
+`materiales/07-evidencias/JUP-133-campanas-infra-20261023/agent-review/` del workspace.
+Los informes y rows-v1 se incorporan al PR156; sigue en borrador, sin merge.
+La CI de ebe30d4 conserva OpenSpec y JUP reviews fallidos; AWS demo offline falla
+en push y pasa en PR. El nuevo commit tiene sus propios checks pendientes.
+
+Origen: chat «Levantar Jupiter en dockerDevelop»,
+`01a16421-03a0-7460-b110-24738407ccb1`. Verificación: 2026-10-23.
+
+## Qué quedó hecho antes de las seis repeticiones
 
 - Inventario de qué medidas dependen del modelo ([inventario](../validation/model-dependence-inventory.md)) y lista de cifras de la memoria afectadas ([cifras](../validation/model-change-memory-figures.md)). La memoria no se copia al repositorio.
 - Identidad del modelo en cada ejecución del dashboard (`generation_model_id`, proveedor, cuantización y huella de la configuración del gateway): dos ejecuciones con el mismo alias y distinto modelo no comparten serie. `gateway-config-hash` calcula la huella.
@@ -67,6 +100,6 @@ inferencias, juicios ni cargas de base. Se incorpora al mismo PR #156.
 
 ## Pendiente
 
-- Capturas de pantalla de Grafana (hoy verificado por API).
+- Captura actual de los tres paneles JUP-133 guardada en el expediente privado; no revalida visualmente todas las campañas históricas.
 - Histórico superado: PR #150 ya está integrado. Su merge no equivale a dos juicios humanos por respuesta ni autoriza aceptar las nuevas campañas.
 - Cifras de la hoja de hechos sin origen en el repositorio (latencia 22,5/40,8 s, campañas RAG A-D); el coste 0,1806 USD de 28 operaciones sale del informe del 19/10 de Paris (véase la lista de cifras): indicar fuente antes de mantenerlas.

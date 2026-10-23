@@ -419,7 +419,7 @@
       "diagnostic_categories": []
     }
   ],
-  "rows_sha256": "1bb76c5d10064d46919e7e534bb3566443a0ce46c65b7600c2ef589c0cd7c36f",
+  "rows_sha256": "b2282201cc749313ec386c7c8c72dac5eab8ef916117b09aa4670becb2edb06d",
   "score_method": "unchanged versioned case scorer; no human judgments supplied; aggregate calculator errors are disclosed and unavailable metrics remain null",
   "publication_normalization": "Rates requiring humans stay not_measured; counters of case/coverage states are automatic; separate campaign_system observations copy this report.",
   "limitations": [
@@ -436,5 +436,12 @@
     "backend": "sha256:25243cf661e408ebfa4193d00416a61bc4a9e5e82d9ed07a511ce73a9d2902c9",
     "processor": "sha256:5174de6f0f9bb8dc4f7a76dfd11024b3f50a58219ea172814f83acbb8f616494"
   },
-  "runtime_commit_status": "not_verified; public rows use null, evaluator checkout is not deployed-code attestation"
+  "runtime_commit_status": "not_verified; public rows use null, evaluator checkout is not deployed-code attestation",
+  "agent_review_supplement": {
+    "path": "JUP-133-infra-jup070-a-r1-agent-report.json",
+    "sha256": "c233b81415512fe95d4c9cdbcc14416379a6737b405d803a5803c8296b43d9ea",
+    "judgment": "automatic",
+    "human_review_unchanged": true,
+    "source_responses_unchanged": true
+  }
 }

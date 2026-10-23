@@ -430,7 +430,7 @@
       ]
     }
   ],
-  "rows_sha256": "dc76b3ae2690a19b0aaa0e667b4de2a39771f4fea575b2c37685400de2a794f6",
+  "rows_sha256": "d0cddb4c3c4fe04909c1e845846aad00416ed7645d1fb806b62b20d332119464",
   "score_method": "unchanged versioned case scorer; no human judgments supplied; aggregate calculator errors are disclosed and unavailable metrics remain null",
   "publication_normalization": "Rates requiring humans stay not_measured; counters of case/coverage states are automatic; separate campaign_system observations copy this report.",
   "limitations": [
@@ -579,5 +579,12 @@
       "case": "JUP-071-016",
       "checks": {}
     }
-  ]
+  ],
+  "agent_review_supplement": {
+    "path": "JUP-133-infra-jup071-r1-agent-report.json",
+    "sha256": "4e9b33e7b19b1d0b8f0c24ab5790130a311cabb8d3617498917acedad095b67f",
+    "judgment": "automatic",
+    "human_review_unchanged": true,
+    "source_responses_unchanged": true
+  }
 }
