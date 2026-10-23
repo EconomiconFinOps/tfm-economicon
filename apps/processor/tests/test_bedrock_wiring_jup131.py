@@ -74,7 +74,7 @@ def test_native_chat_preserves_private_review_and_only_emits_validated_final_out
     gateway.client.transport.runtime._client=sdk
     result=execute(gateway)
     assert sdk.converse_stream.call_count==2
-    assert [p['inferenceConfig']['maxTokens'] for p in calls]==[1000,2200]
+    assert [p['inferenceConfig']['maxTokens'] for p in calls]==[1000,10000]
     assert ''.join(x['text'] for x in result if x['type']=='delta')=='Hola 😀'
     assert not any(x['type']=='draft' for x in result)
     assert result[-1]['type']=='candidate'

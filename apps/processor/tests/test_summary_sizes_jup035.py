@@ -20,7 +20,7 @@ def contract(r):
     return dict(prompt_version=r.summary_version,schema_sha256=r.response_schema_sha256,tokenizer_sha256=r.tokenizer_sha256,policy_version=m['kind']+':'+m['policy_sha256'])
 
 def test_reserve_minimum_and_processor_admission(monkeypatch):
-    assert budget('summary')['output_tokens']==10000 and budget('chat')['output_tokens']==3200
+    assert budget('summary')['output_tokens']==10000 and budget('chat')['output_tokens']==11000
     monkeypatch.setenv('SUMMARY_CONTEXT_TOKENS','11024')
     with pytest.raises(ValueError):budget('summary')
     monkeypatch.setenv('SUMMARY_CONTEXT_TOKENS','32768')

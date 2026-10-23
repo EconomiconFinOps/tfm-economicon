@@ -70,9 +70,9 @@ ASSEMBLER_CONTRACT.update(tool_protocol='server-documentation-v4', decision_sche
     documentary_sections='original-markdown-positional-contiguous-ranges-v1',
     interval_rules='explicit-percentage-partition-eligible-total-or-allocation-role-explanation-v4',
     decision_values='server-query-no-model-decision-v1',
-    reasoning={'effort':'high','exclude':True,'shared_output_tokens':3200})
+    reasoning={'effort':'high','exclude':True,'shared_output_tokens':11000})
 from app.core.chat_review import DRAFT_INSTRUCTION,REVIEW_INSTRUCTION,draft_schema
-ASSEMBLER_CONTRACT['review']={'version':2,'draft_tokens':1000,'final_tokens':2200,
+ASSEMBLER_CONTRACT['review']={'version':2,'draft_tokens':1000,'final_tokens':10000,
     'draft_schema':draft_schema([]),'draft_instruction':DRAFT_INSTRUCTION,
     'review_instruction':REVIEW_INSTRUCTION,'draft_public':False,
     'usage':'observed-partial-explicit-legs-v1','deadline':'shared-120s',
@@ -134,7 +134,7 @@ def resources(private,tmp_path,monkeypatch):
               'input_contract':copy.deepcopy(INPUT_CONTRACT),'input_contract_sha256':digest(canonical(INPUT_CONTRACT)),
               'assembler_contract':copy.deepcopy(ASSEMBLER_CONTRACT),'assembler_sha256':digest(canonical(ASSEMBLER_CONTRACT)),
               'tokenizer':{'library_version':'0.22.1','revision':'a66456a59f21345d1e5e586345c448a9106d29d7','sha256':TOKENIZER_SHA,'bytes':20217442},
-              'budgets':{'variable_tokens':8192,'wrapper_margin_tokens':1024,'output_tokens':3200,'model_context_tokens':1048576}}
+              'budgets':{'variable_tokens':8192,'wrapper_margin_tokens':1024,'output_tokens':11000,'model_context_tokens':1048576}}
     (root/'manifest.json').write_bytes(canonical(manifest))
     asset=Path(os.getenv('JUP035_APPROVED_TOKENIZER',str(Path(__file__).parents[1]/'app/agents/prompt_resources/jup035/chat/v2/tokenizer.json')))
     assert asset.is_file(),'Approved asset must be mounted for resource execution'

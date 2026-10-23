@@ -66,6 +66,9 @@ class SyntheticSummaryBoundary:
 @pytest.fixture
 def packet(api,summary_resources53,monkeypatch):
     from dataclasses import replace
+    # This synthetic scheduler fixture keeps its original pressure boundary.
+    # The new default output reserve and real gateway request are tested separately.
+    monkeypatch.setenv('CHAT_MAX_OUTPUT_TOKENS','3200')
     monkeypatch.setenv('CHAT_CONTEXT_TOKENS','8192')
     summary_resources53=replace(summary_resources53,
         context_budget={**summary_resources53.context_budget,'context_tokens':14096})

@@ -66,7 +66,7 @@ def test_valid_frozen_context_with_real_counter_is_dispatched_once(resources):
 
 
 def test_actual_tokens_over_configured_budget_never_dispatch_even_with_matching_sql(resources,monkeypatch):
-    monkeypatch.setenv('CHAT_CONTEXT_TOKENS','10000')
+    monkeypatch.setenv('CHAT_CONTEXT_TOKENS','17800')
     response,counted=asyncio.run(exercise(resources,large=True))
     assert response.status_code==413,response.text
     assert resources[0][3]==[]

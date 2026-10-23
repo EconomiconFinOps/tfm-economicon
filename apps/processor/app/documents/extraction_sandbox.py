@@ -43,6 +43,10 @@ def restrict(directory, *, memory_mb, seconds, output_bytes):
         runtime_paths = tuple(sysconfig.get_path(name) for name in ('stdlib', 'platstdlib', 'purelib', 'platlib'))
         for value in ('/usr', '/lib', '/lib64', '/etc/fonts', '/etc/libreoffice', '/etc/ld.so.cache', '/etc/passwd',
                       '/etc/group', '/etc/nsswitch.conf', '/etc/localtime', '/etc/os-release', '/proc/self',
+                      # Debian packages link these runtime registries outside /usr.
+                      # Resolve only these installation paths and keep them read-only.
+                      '/usr/lib/libreoffice/share/prereg/bundled',
+                      '/usr/lib/libreoffice/share/uno_packages/cache',
                       *runtime_paths):
             if Path(value).exists():
                 paths[str(Path(value).resolve())] = readonly
