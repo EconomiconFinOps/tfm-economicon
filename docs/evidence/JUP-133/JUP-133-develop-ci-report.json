@@ -1,0 +1,184 @@
+{
+  "checked_at": "2026-10-23T17:48:03.759921+00:00",
+  "sha": "db8f69ab5e2d4a42931cd6dc7412b99e855f0148",
+  "branch": "develop",
+  "pr": 156,
+  "workflows": [
+    {
+      "workflow": "CI",
+      "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39996735445",
+      "status": "completed",
+      "conclusion": "failure",
+      "jobs": [
+        {
+          "name": "Landing static checks",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39996735445/job/120562094665",
+          "completedAt": "2026-10-23T17:38:41Z"
+        },
+        {
+          "name": "OpenSpec",
+          "status": "completed",
+          "conclusion": "failure",
+          "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39996735445/job/120562094988",
+          "completedAt": "2026-10-23T17:40:33Z"
+        },
+        {
+          "name": "Frontend build",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39996735445/job/120562095090",
+          "completedAt": "2026-10-23T17:40:43Z"
+        },
+        {
+          "name": "Frontend type check",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39996735445/job/120562095093",
+          "completedAt": "2026-10-23T17:39:06Z"
+        },
+        {
+          "name": "AWS PostgreSQL application",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39996735445/job/120562095104",
+          "completedAt": "2026-10-23T17:39:45Z"
+        },
+        {
+          "name": "Python tests (backend)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39996735445/job/120562095105",
+          "completedAt": "2026-10-23T17:45:01Z"
+        },
+        {
+          "name": "Python tests (azure-cost-api)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39996735445/job/120562095168",
+          "completedAt": "2026-10-23T17:39:01Z"
+        },
+        {
+          "name": "AWS demo offline",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39996735445/job/120562095184",
+          "completedAt": "2026-10-23T17:39:31Z"
+        },
+        {
+          "name": "Python tests (processor)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39996735445/job/120562095407",
+          "completedAt": "2026-10-23T17:46:08Z"
+        },
+        {
+          "name": "JUP policy",
+          "status": "completed",
+          "conclusion": "skipped",
+          "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39996735445/job/120562097281",
+          "completedAt": "2026-10-23T17:38:32Z"
+        }
+      ]
+    },
+    {
+      "workflow": "CD DockerServer",
+      "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39996735531",
+      "status": "completed",
+      "conclusion": "failure",
+      "jobs": [
+        {
+          "name": "validate / OpenSpec",
+          "status": "completed",
+          "conclusion": "failure",
+          "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39996735531/job/120562095518",
+          "completedAt": "2026-10-23T17:41:43Z"
+        },
+        {
+          "name": "validate / Frontend build",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39996735531/job/120562095748",
+          "completedAt": "2026-10-23T17:42:18Z"
+        },
+        {
+          "name": "validate / Landing static checks",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39996735531/job/120562095767",
+          "completedAt": "2026-10-23T17:39:14Z"
+        },
+        {
+          "name": "validate / Python tests (azure-cost-api)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39996735531/job/120562095800",
+          "completedAt": "2026-10-23T17:39:53Z"
+        },
+        {
+          "name": "validate / AWS PostgreSQL application",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39996735531/job/120562095835",
+          "completedAt": "2026-10-23T17:40:24Z"
+        },
+        {
+          "name": "validate / Python tests (backend)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39996735531/job/120562095949",
+          "completedAt": "2026-10-23T17:45:16Z"
+        },
+        {
+          "name": "validate / Frontend type check",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39996735531/job/120562095964",
+          "completedAt": "2026-10-23T17:40:16Z"
+        },
+        {
+          "name": "validate / Python tests (processor)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39996735531/job/120562096019",
+          "completedAt": "2026-10-23T17:46:34Z"
+        },
+        {
+          "name": "validate / AWS demo offline",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39996735531/job/120562096032",
+          "completedAt": "2026-10-23T17:40:24Z"
+        },
+        {
+          "name": "validate / JUP policy",
+          "status": "completed",
+          "conclusion": "skipped",
+          "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39996735531/job/120562097939",
+          "completedAt": "2026-10-23T17:38:32Z"
+        },
+        {
+          "name": "DockerServer deployment eligible",
+          "status": "completed",
+          "conclusion": "skipped",
+          "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39996735531/job/120565905138",
+          "completedAt": "2026-10-23T17:46:35Z"
+        }
+      ]
+    }
+  ],
+  "evaluation_dashboard_test_suite": {
+    "tests": 1960,
+    "failures": 110,
+    "errors": 30,
+    "skipped": 2
+  },
+  "diagnosis_only": true,
+  "product_changes": false,
+  "new_model_calls": 0,
+  "log_sha256": {
+    "develop-db8f69a-openspec.log": "7ee33d33268b490d923422cf831feded886dbaf4cbf71ff3cf2d5f1124bc2384",
+    "develop-db8f69a-cd-openspec.log": "ecc87f1c543f4b690a40d9643a935f50bcc49d92064e96fa9b8166baedb315db"
+  }
+}

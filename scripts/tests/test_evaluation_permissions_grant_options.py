@@ -36,6 +36,7 @@ ROOT = Path(__file__).resolve().parents[2]
 # `unittest discover -s scripts/tests` ya pone este directorio en `sys.path`; se añade también para ejecutar el fichero suelto.
 if str(Path(__file__).resolve().parent) not in sys.path:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
+from evaluation_fixture_support import VERSIONED_RUNS, VERSIONED_RESULTS
 import evaluation_pg_helper  # noqa: E402  (contenedor desechable compartido con 3.2, 3.3 y 5.x)
 
 TOOL_PATH = Path(os.environ.get("EVALUATION_DASHBOARD_TOOL") or ROOT / "tools" / "evaluation-dashboard.py")
@@ -141,7 +142,7 @@ def _preparar() -> None:
         raise RuntimeError(f"no se pudieron crear los objetos de prueba: {montaje.stderr.strip()}")
     resultado = cargar(secrets.token_urlsafe(24))
     # Precondición de todo lo demás: la carga fue completa (versionado 9 + local 2 ejecuciones).
-    assert resultado.stdout.startswith("14 ejecuciones y "), resultado.stdout
+    assert resultado.stdout == f"{VERSIONED_RUNS + 2} ejecuciones y {VERSIONED_RESULTS + 2} resultados cargados\n", resultado.stdout
 
 
 def tearDownModule() -> None:

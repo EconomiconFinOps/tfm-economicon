@@ -79,10 +79,14 @@ class UpgradeTests(unittest.TestCase):
 
     def test_two_chat_runs_with_the_same_alias_and_different_model_do_not_share_a_series(self) -> None:
         _server.load_dataset(self.dataset)
-        rows = _server.query("SELECT count(DISTINCT comparability_key), count(*) FROM evaluation.runs WHERE source='JUP-071'")
-        distinct, total = (int(value) for value in rows[0])
-        if total >= 2:
-            self.assertEqual(distinct, total)
+        rows = _server.query("SELECT generation_model_id, comparability_key FROM evaluation.runs WHERE source='JUP-071'")
+        by_model = {}
+        for model, key in rows:
+            by_model.setdefault(model, set()).add(key)
+        self.assertEqual(len(rows), 5)
+        self.assertEqual(len(by_model), 2)
+        keys = list(by_model.values())
+        self.assertFalse(keys[0] & keys[1], "modelos distintos no comparten una serie")
 
 
 if __name__ == "__main__":

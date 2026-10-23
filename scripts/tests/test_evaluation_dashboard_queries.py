@@ -48,6 +48,8 @@ nombres son los de la salida de la consulta (alias), en minúsculas:
 Se crea UN contenedor desechable por módulo, de forma perezosa (la primera consulta); mientras el dashboard no exista
 las pruebas fallan antes de arrancar Docker.
 """
+# Escenarios sobre evaluation-before-infra.json (12 informes históricos).
+# El manifiesto actual completo se concilia en test_evaluation_infra_manifest.py.
 from __future__ import annotations
 
 import importlib.util
@@ -65,6 +67,7 @@ ROOT = Path(__file__).resolve().parents[2]
 # `unittest discover -s scripts/tests` ya pone este directorio en `sys.path`; se añade también para ejecutar el fichero suelto.
 if str(Path(__file__).resolve().parent) not in sys.path:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
+from evaluation_fixture_support import historical_dataset
 import evaluation_pg_helper  # noqa: E402  (ayudante compartido con las pruebas de 3.2, 3.3 y 5.x)
 import test_evaluation_dashboard_structure as S  # noqa: E402  (localizador de paneles del contrato)
 
@@ -137,7 +140,7 @@ class Conjunto:
 
 
 def _construir_real() -> dict:
-    return tool.build_dataset([tool.DEFAULT_MANIFEST])
+    return historical_dataset(tool)
 
 
 BASE_RUN = {

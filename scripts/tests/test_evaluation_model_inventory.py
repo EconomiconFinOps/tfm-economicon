@@ -120,7 +120,7 @@ class InventoryContractTests(unittest.TestCase):
         # debe constar, por su informe, en la entrada que le corresponde (plantilla histórica o banco dependiente).
         entries = load_inventory()["entries"]
         runs = [item["run"] for item in tool.build_dataset([tool.DEFAULT_MANIFEST])["runs"] if item["run"]["source"] == "JUP-070"]
-        self.assertEqual(len(runs), 3, [run["run_id"] for run in runs])
+        self.assertEqual(len(runs), 6, [run["run_id"] for run in runs])
         for run in runs:
             owners = [e for e in entries if run["report_path"] in e["evidence"]]
             self.assertEqual(len(owners), 1, run["run_id"])
