@@ -36,6 +36,12 @@ without contacting AWS or claiming deployability when required inputs are missin
 - **WHEN** the user prepares ensayo1 from the example without real account inputs
 - **THEN** files are generated with explicit blockers and no AWS resources are created
 
+#### Scenario: Application changes after evidence was recorded
+- **WHEN** controller CI runs against application bytes newer than the versioned release evidence
+- **THEN** CI verifies the evidence files and controller behavior without renewing acceptance
+- **AND** preparation reports the application digest mismatch as a deployment blocker
+- **AND** the deployment runner rejects that recipe until matching acceptance is supplied
+
 ### Requirement: Approved regional and quota contract
 The system SHALL deploy the application in Ireland, preserve Paris control and
 Virginia edge, and verify effective Fargate6vCPU/CodeBuild Medium1 quotas before
