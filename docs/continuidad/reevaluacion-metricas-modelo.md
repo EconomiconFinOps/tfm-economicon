@@ -2,7 +2,51 @@
 
 [Tarjeta](https://trello.com/c/Yv1ETc2G) · [Change](../../openspec/changes/archive/2026-10-22-jup-133-reevaluacion-metricas-modelo/) · [Informe antes y después](../validation/model-reevaluation-report.md) · [Evidencia](../evidence/JUP-133-validation.md).
 
-Lucía lidera. Última actualización documental: 22/10/2026, rama feat/JUP-133-reevaluacion-metricas-modelo sobre develop con JUP-132 (ee84f791). PR #150 abierto contra develop; Víctor pidió cambios sobre 3c204724 y están atendidos en el push posterior; faltan la reaprobación de Víctor, la validación de Paris, el merge y el comentario en Trello.
+Lucía lidera la tarjeta. Actualización documental: 23/10/2026. PR #150 se integró
+el 22/10 a las 17:24 UTC; la mención anterior a PR abierto y merge pendiente queda
+superada. Sus resultados siguen siendo provisionales.
+
+## Nueva preparación en DockerDevelop — 23/10/2026
+
+Encargo: repetir por separado JUP-070 A (28 preguntas) y JUP-071 (29 casos), tres
+veces cada una, compararlas y preparar su carga. Rama
+`test/JUP-133-campanas-infra-tres-repeticiones`, desde `develop` `84b53b74`.
+[Informe y seis lotes previstos](../evidence/JUP-133/JUP-133-infra-preflight-report.md).
+
+El usuario autorizó expresamente el lanzamiento, sustituyendo la confirmación
+de Lucía, y amplió el tope de 1,50 a **6,50 USD totales**. Se conservan ≈0,077 USD
+del plan anterior y el límite global de la demo de 10 USD. La reserva mínima del
+colector es 6,50 por operación: **6,50 + ≈0,077 > 6,50**, por lo que la admisión
+sigue bloqueada. La propuesta de 7,50 USD está pendiente de respuesta, no
+autorizada. El CLI tampoco conecta aún la liquidación de todos los intentos;
+ese adaptador y la extracción efectiva deben quedar verificados antes de gastar.
+
+Preparados fuera de Git 28 prompts y un plan de 87 muestras de robustez. Validadas
+entradas e identificadores, sin recoger respuestas. Referencia histórica de cinco
+operaciones en esta infraestructura: 0,0192297384 USD; proyección media para 171
+muestras: 0,65765705328 USD nuevos, sin garantía ni factura upstream. No se usan
+sus juicios. No hay dos personas designadas: futuras campañas provisionales,
+juicios humanos `not_run`. Costes nuevos `not_measured`/`null`.
+
+Lectura de Grafana a las 13:20:02 UTC: 20 consultas SQL sin errores, 17 ejecuciones
+y 765 resultados; no revisión visual ni carga nueva. El manifiesto versionado
+conserva 12 ejecuciones. No reemplazar la base compartida sin preservar las cinco
+incorporaciones locales y sin confirmación específica. No se añadieron entradas
+de ejecución ficticias a `evaluation-runs.json`.
+
+Material privado y scripts: respecto del workspace,
+`materiales/07-evidencias/JUP-133-campanas-infra-20261023/`. Solo informes
+sanitizados bajo `docs/evidence/JUP-133/`; las futuras respuestas, fichas, hojas,
+crudos y juicios seguirán fuera de Git. Modelo declarado por el gateway:
+`openrouter/deepseek/deepseek-v4.1-flash`, `deepinfra/fp8`, huella
+`9b345f3017a142d5f2db605a8921ec6fc488b2d97977edb069733aeee670c4f8`; no atestigua
+qué modelo respondió.
+
+Siguiente paso: resolver reserva más acumulado, preparar la liquidación y
+extracción, ejecutar seis recogidas con la misma configuración, puntuar sin
+inventar juicios y solicitar la carga cuando exista un reemplazo revisable.
+Origen: chat «Levantar Jupiter en dockerDevelop»,
+`01a16421-03a0-7460-b110-24738407ccb1`.
 
 ## Qué quedó hecho
 
@@ -21,5 +65,5 @@ Lucía lidera. Última actualización documental: 22/10/2026, rama feat/JUP-133-
 ## Pendiente
 
 - Capturas de pantalla de Grafana (hoy verificado por API).
-- Reaprobación de Víctor, `Validacion JUP-133` de Paris, merge del PR #150 y comentario en Trello (cuando Lucía lo pida). La revisión adversarial, la aprobación de Lucía y el archivo del change están hechos.
+- Histórico superado: PR #150 ya está integrado. Su merge no equivale a dos juicios humanos por respuesta ni autoriza aceptar las nuevas campañas.
 - Cifras de la hoja de hechos sin origen en el repositorio (latencia 22,5/40,8 s, campañas RAG A-D); el coste 0,1806 USD de 28 operaciones sale del informe del 19/10 de Paris (véase la lista de cifras): indicar fuente antes de mantenerlas.

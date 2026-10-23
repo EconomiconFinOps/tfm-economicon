@@ -6,11 +6,32 @@ Tarjeta: [JUP-133](https://trello.com/c/Yv1ETc2G). Cambio de modelo: [JUP-132](h
 
 | Concepto | Valor |
 | --- | --- |
-| Presupuesto máximo total | **1,5 USD** en OpenRouter, por todas las campañas de este plan |
-| Quién lo fijó | Lucia Mateo, 21/10/2026 |
-| Clave | La única clave de OpenRouter de Lucia; no se guarda ni se escribe en el repositorio |
+| Presupuesto máximo total | **6,50 USD** en OpenRouter, por todas las campañas de este plan, incluido el gasto anterior |
+| Quién lo fijó | El usuario amplía el tope al mínimo del colector el 23/10/2026 en el chat de DockerDevelop; sustituye los 1,50 USD fijados por Lucia Mateo el 21/10/2026 |
+| Clave | Para DockerDevelop, la configuración privada existente del gateway, sin modificar credenciales; el registro histórico del 21–22/10 corresponde a la clave de Lucia. No se guarda ninguna clave en el repositorio |
 | Proveedor y modelo | Los que deje JUP-132 en `economicon-chat`. No se fija otro proveedor para medir |
-| Estado de la autorización | **El tope está fijado; el lanzamiento está sin autorizar** hasta la confirmación de abajo |
+| Estado de la autorización | Lanzamiento autorizado expresamente por el usuario el 23/10/2026; **admisión bloqueada** porque la reserva de 6,50 USD más el gasto acumulado supera el nuevo tope total |
+
+### Actualización para DockerDevelop, 23/10/2026
+
+La autorización expresa del usuario sustituye para las tres repeticiones de
+JUP-070 A y las tres de JUP-071 la confirmación de Lucía requerida abajo. No
+autoriza al agente a escribir juicios humanos ni a reemplazar datos en una base
+compartida. Sin dos personas designadas, los resultados serán provisionales.
+El límite global de la demo permanece en 10 USD; no se cambian sus claves,
+cuotas ni accesos.
+
+El mínimo del colector es una **reserva por operación**, que se añade al consumo
+acumulado. Con ≈0,077 USD anteriores, el primer envío necesita un tope total de
+al menos ≈6,577 USD; los siguientes suman además su consumo. La propuesta de
+7,50 USD totales está pendiente de autorización y **no es el tope vigente**.
+No se han recogido respuestas nuevas. Véanse la estimación medida de referencia,
+los seis lotes `not_run` y los requisitos técnicos pendientes en el
+[informe de preparación](../evidence/JUP-133/JUP-133-infra-preflight-report.md).
+
+Las condiciones siguientes y el registro de gasto conservan el contexto
+histórico del 21–22/10; la excepción de autorización anterior se limita a este
+encargo.
 
 El tope no equivale a una orden de gastar. Antes de lanzar cada campaña con gasto hace falta una confirmación expresa de Lucia en ese momento, con estos tres datos delante:
 

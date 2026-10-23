@@ -1,0 +1,341 @@
+{
+  "report_kind": "campaign_preflight_not_execution",
+  "jup": "JUP-133",
+  "recorded_at": "2026-10-23T13:27:46.055685+00:00",
+  "source_commit": "84b53b74d02ff5831ef9dbdd4f9c7d8c40cd4d24",
+  "branch": "test/JUP-133-campanas-infra-tres-repeticiones",
+  "authorization": {
+    "source": "human_user_this_chat",
+    "date": "2026-10-23",
+    "replaces_lucia_launch_confirmation": true,
+    "scope": "JUP-070 section A three repetitions and JUP-071 three repetitions",
+    "human_judgments_authorized_for_agent": false,
+    "shared_database_load_authorized": false,
+    "budget_update": "User requested the collector minimum on 2026-10-23; total cap set to USD6.50. USD7.50 is pending explicit authorization."
+  },
+  "status": "blocked",
+  "reason": "native_collector_minimum_reservation_exceeds_plan_cap",
+  "budget": {
+    "plan_cap_usd": "6.50",
+    "prior_plan_cost_approx_usd": "0.077",
+    "prior_plan_cost_invoice_verified": false,
+    "remaining_approx_usd": "6.423",
+    "minimum_native_operation_reservation_usd": "6.50",
+    "admission_error": "Campaign budget would be exceeded",
+    "admission_test": "offline original cap; arithmetic check for updated cap",
+    "new_campaign_cost_usd": null,
+    "cost_status": "not_measured",
+    "previous_plan_cap_usd": "1.50",
+    "minimum_total_to_admit_first_approx_usd": "6.577",
+    "proposed_total_usd": "7.50",
+    "proposed_total_authorized": false,
+    "offline_test_cap_usd": "1.50"
+  },
+  "gateway_identity_declared_not_verified": {
+    "generation_model": "economicon-chat",
+    "generation_model_id": "openrouter/deepseek/deepseek-v4.1-flash",
+    "generation_provider": "deepinfra",
+    "generation_quantization": "fp8",
+    "gateway_config_sha256": "9b345f3017a142d5f2db605a8921ec6fc488b2d97977edb069733aeee670c4f8",
+    "embedding_alias": "economicon-embedding",
+    "embedding_model_id": "openrouter/openai/text-embedding-3-small",
+    "embedding_config_sha256": "e146a542f25a08cc81f9984ce09918c945163de7a9b5245040ab2c3622433e02",
+    "router_retries": 0,
+    "zdr_configured": true,
+    "chat_output_reservation_units": 11000,
+    "final_output_limit_units": 10000,
+    "hash_method": "Canonical sorted JSON of model_name and litellm_params excluding api_key; computed on DockerDevelop."
+  },
+  "historical_measured_sample": {
+    "source": "materiales/07-evidencias/cierre-integral-rc-20261023/quality-user/cost-attribution.json",
+    "source_sha256": "6f320200a04760248f3e0071a81e09669fdcd9b06ceced326fa25d9ae330f7ac",
+    "sample_date": "2026-10-23",
+    "operations": 5,
+    "total_usd": "0.0192297384",
+    "mean_usd": "0.00384594768",
+    "maximum_observed_usd": "0.0089488544",
+    "cost_basis": "gateway accounting attributed by disjoint UTC windows and key alias; not upstream invoice attested",
+    "new_pilot": false,
+    "representativeness_verified": false,
+    "projected_171_at_mean_usd": "0.65765705328",
+    "projected_171_at_observed_max_usd": "1.5302541024",
+    "plan_total_at_mean_approx_usd": "0.73465705328",
+    "projection_is_bound": false,
+    "prior_demo_cost_is_not_added_again_to_plan": true
+  },
+  "input_preparation": {
+    "jup070_cases": 28,
+    "jup071_cases": 29,
+    "repetitions_each": 3,
+    "total_planned_samples": 171,
+    "generation_requests_sent": 0,
+    "jup070_inputs_sha256": "4f9526d652b70d607299028a2cedc04769218ef754389c06c37cb98140c16c40",
+    "jup071_plan_sha256": "f2f29443b931dfd83f654a22d96d93b07235b2dc2dff55b90ee2fedbd2f4877a"
+  },
+  "planned_runs": [
+    {
+      "planned_id": "jup133-infra-jup070-a-r1-20261023",
+      "campaign": "jup070-a",
+      "repetition": 1,
+      "planned_cases": 28,
+      "collection_status": "not_run",
+      "admission_status": "blocked",
+      "measured_cost_usd": null,
+      "cost_status": "not_measured",
+      "estimated_at_historical_mean_usd": "0.10768653504",
+      "human_review_status": "not_run",
+      "provisional": true,
+      "accepted": false
+    },
+    {
+      "planned_id": "jup133-infra-jup070-a-r2-20261023",
+      "campaign": "jup070-a",
+      "repetition": 2,
+      "planned_cases": 28,
+      "collection_status": "not_run",
+      "admission_status": "blocked",
+      "measured_cost_usd": null,
+      "cost_status": "not_measured",
+      "estimated_at_historical_mean_usd": "0.10768653504",
+      "human_review_status": "not_run",
+      "provisional": true,
+      "accepted": false
+    },
+    {
+      "planned_id": "jup133-infra-jup070-a-r3-20261023",
+      "campaign": "jup070-a",
+      "repetition": 3,
+      "planned_cases": 28,
+      "collection_status": "not_run",
+      "admission_status": "blocked",
+      "measured_cost_usd": null,
+      "cost_status": "not_measured",
+      "estimated_at_historical_mean_usd": "0.10768653504",
+      "human_review_status": "not_run",
+      "provisional": true,
+      "accepted": false
+    },
+    {
+      "planned_id": "jup133-infra-jup071-r1-20261023",
+      "campaign": "jup071",
+      "repetition": 1,
+      "planned_cases": 29,
+      "collection_status": "not_run",
+      "admission_status": "blocked",
+      "measured_cost_usd": null,
+      "cost_status": "not_measured",
+      "estimated_at_historical_mean_usd": "0.11153248272",
+      "human_review_status": "not_run",
+      "provisional": true,
+      "accepted": false
+    },
+    {
+      "planned_id": "jup133-infra-jup071-r2-20261023",
+      "campaign": "jup071",
+      "repetition": 2,
+      "planned_cases": 29,
+      "collection_status": "not_run",
+      "admission_status": "blocked",
+      "measured_cost_usd": null,
+      "cost_status": "not_measured",
+      "estimated_at_historical_mean_usd": "0.11153248272",
+      "human_review_status": "not_run",
+      "provisional": true,
+      "accepted": false
+    },
+    {
+      "planned_id": "jup133-infra-jup071-r3-20261023",
+      "campaign": "jup071",
+      "repetition": 3,
+      "planned_cases": 29,
+      "collection_status": "not_run",
+      "admission_status": "blocked",
+      "measured_cost_usd": null,
+      "cost_status": "not_measured",
+      "estimated_at_historical_mean_usd": "0.11153248272",
+      "human_review_status": "not_run",
+      "provisional": true,
+      "accepted": false
+    }
+  ],
+  "comparison": {
+    "status": "not_measured",
+    "reason": "no_new_collections"
+  },
+  "load": {
+    "status": "not_run",
+    "reason": "no_measured_runs_and_no_shared_database_load_confirmation",
+    "manifest_modified": false,
+    "shared_database_modified": false
+  },
+  "human_review": {
+    "status": "not_run",
+    "two_distinct_reviewers_named": false,
+    "agent_judgments_created": false
+  },
+  "extra_native_precondition": "CLI does not supply account callback; an all-request reconciler and effective retrieval captures are required before collection.",
+  "dashboard_baseline": {
+    "recorded_at": "2026-10-23T13:20:02.619999+00:00",
+    "kind": "existing_dashboard_read_only_baseline",
+    "uid": "economicon-assistant-evaluation",
+    "version": 5,
+    "variables": {},
+    "viewer": {
+      "canEdit": false,
+      "canSave": false,
+      "canAdmin": false
+    },
+    "database_counts": [
+      {
+        "runs": 17,
+        "results": 765
+      }
+    ],
+    "panel_queries": [
+      {
+        "panel_id": 2001,
+        "target": 0,
+        "status": 200,
+        "error": false,
+        "rows_returned": 12
+      },
+      {
+        "panel_id": 2002,
+        "target": 0,
+        "status": 200,
+        "error": false,
+        "rows_returned": 4
+      },
+      {
+        "panel_id": 23,
+        "target": 0,
+        "status": 200,
+        "error": false,
+        "rows_returned": 1
+      },
+      {
+        "panel_id": 3,
+        "target": 0,
+        "status": 200,
+        "error": false,
+        "rows_returned": 17
+      },
+      {
+        "panel_id": 4,
+        "target": 0,
+        "status": 200,
+        "error": false,
+        "rows_returned": 3
+      },
+      {
+        "panel_id": 22,
+        "target": 0,
+        "status": 200,
+        "error": false,
+        "rows_returned": 144
+      },
+      {
+        "panel_id": 7,
+        "target": 0,
+        "status": 200,
+        "error": false,
+        "rows_returned": 0
+      },
+      {
+        "panel_id": 24,
+        "target": 0,
+        "status": 200,
+        "error": false,
+        "rows_returned": 0
+      },
+      {
+        "panel_id": 8,
+        "target": 0,
+        "status": 200,
+        "error": false,
+        "rows_returned": 0
+      },
+      {
+        "panel_id": 9,
+        "target": 0,
+        "status": 200,
+        "error": false,
+        "rows_returned": 140
+      },
+      {
+        "panel_id": 10,
+        "target": 0,
+        "status": 200,
+        "error": false,
+        "rows_returned": 2
+      },
+      {
+        "panel_id": 25,
+        "target": 0,
+        "status": 200,
+        "error": false,
+        "rows_returned": 2
+      },
+      {
+        "panel_id": 30,
+        "target": 0,
+        "status": 200,
+        "error": false,
+        "rows_returned": 19
+      },
+      {
+        "panel_id": 11,
+        "target": 0,
+        "status": 200,
+        "error": false,
+        "rows_returned": 272
+      },
+      {
+        "panel_id": 26,
+        "target": 0,
+        "status": 200,
+        "error": false,
+        "rows_returned": 16
+      },
+      {
+        "panel_id": 5,
+        "target": 0,
+        "status": 200,
+        "error": false,
+        "rows_returned": 49
+      },
+      {
+        "panel_id": 6,
+        "target": 0,
+        "status": 200,
+        "error": false,
+        "rows_returned": 87
+      },
+      {
+        "panel_id": 14,
+        "target": 0,
+        "status": 200,
+        "error": false,
+        "rows_returned": 23
+      },
+      {
+        "panel_id": 27,
+        "target": 0,
+        "status": 200,
+        "error": false,
+        "rows_returned": 28
+      },
+      {
+        "panel_id": 28,
+        "target": 0,
+        "status": 200,
+        "error": false,
+        "rows_returned": 10
+      }
+    ],
+    "all_queries_successful": true,
+    "new_campaigns_loaded": false,
+    "database_mutations": false,
+    "visual_browser_check": "not_run"
+  }
+}
