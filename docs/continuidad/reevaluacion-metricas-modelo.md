@@ -11,6 +11,8 @@ superada. Sus resultados siguen siendo provisionales.
 Encargo: repetir por separado JUP-070 A (28 preguntas) y JUP-071 (29 casos), tres
 veces cada una, compararlas y preparar su carga. Rama
 `test/JUP-133-campanas-infra-tres-repeticiones`, desde `develop` `84b53b74`.
+[PR #156 en borrador](https://github.com/EconomiconFinOps/tfm-economicon/pull/156)
+contra `develop`, preparación documental publicada; sin merge.
 [Informe y seis lotes previstos](../evidence/JUP-133/JUP-133-infra-preflight-report.md).
 
 El usuario autorizó expresamente el lanzamiento, sustituyendo la confirmación
