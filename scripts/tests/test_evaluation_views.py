@@ -670,7 +670,7 @@ class ConfigChangesRealDataTest(ViewsTestCase):
         for run_id, source, moment, provider, *values in rows:
             fields = dict(zip(columns, (None if value == absent else value for value in values)))
             runs.append({"run_id": run_id, "source": source, "run_at": moment or None, "provider": provider, **fields})
-        self.assertEqual(len(runs), 12)
+        self.assertEqual(len(runs), 18)
 
         expected = []
         for source in sorted({run["source"] for run in runs}):
@@ -703,11 +703,13 @@ class ConfigChangesRealDataTest(ViewsTestCase):
         actual = [(row[0], row[1], row[2], row[4], row[5]) for row in change_rows()]
         self.assertEqual(sorted(actual, key=lambda row: (row[2], row[0])), sorted(expected, key=lambda row: (row[2], row[0])))
 
-        # Guardas de que la prueba mide lo que dice: las dos ejecuciones de JUP-070 son el único par, difieren en el
-        # proveedor de embeddings (y en la recuperación) y aun así eso NO es un cambio de batería, modelo, prompt ni corpus.
+        # El par histórico difiere en embeddings, no en batería, modelo, prompt ni corpus.
+        # Se selecciona por identidad: añadir repeticiones no debe cambiar qué par se contrasta.
         jup_070 = [run for run in runs if run["source"] == "JUP-070"]
-        self.assertEqual(len(jup_070), 3)
-        self.assertNotEqual(jup_070[0]["provider"], jup_070[1]["provider"])
+        self.assertEqual(len(jup_070), 6)
+        historical = {run["run_id"]: run for run in jup_070}
+        self.assertNotEqual(historical["jup-070-20261008T201354Z-37175957"]["provider"],
+                            historical["jup-070-20261008T210144Z-b64cca76"]["provider"])
         self.assertEqual(int(server().scalar("SELECT count(*) FROM evaluation.config_changes")), len(expected))
 
 
@@ -794,10 +796,14 @@ class ComparableRunsTest(ViewsTestCase):
         # otras cuatro ejecuciones reales son claves únicas o no tienen fecha.
         dataset = tool.build_dataset([tool.DEFAULT_MANIFEST])
         keys = [item["run"]["comparability_key"] for item in dataset["runs"]]
-        self.assertEqual(len(set(keys)), 12)
+        self.assertEqual(len(set(keys)), 14)
         server().load_dataset(dataset, tool)
-        self.assertEqual(server().scalar("SELECT count(*) FROM evaluation.runs"), "12")
-        self.assertEqual(comparable_rows(), [])
+        self.assertEqual(server().scalar("SELECT count(*) FROM evaluation.runs"), "18")
+        rows = comparable_rows()
+        from evaluation_fixture_support import INFRA_IDS
+        self.assertEqual({row[1] for row in rows}, set(INFRA_IDS))
+        self.assertTrue(all(row[6] == "3" for row in rows))
+        self.assertTrue(all(row[4:6] == ("false", "false") for row in rows))
 
     def test_is_real_y_milestone_se_propagan_desde_la_ejecucion(self) -> None:
         # Cuatro ejecuciones con la misma clave (misma fuente y configuración) y combinaciones de hito: el valor de cada

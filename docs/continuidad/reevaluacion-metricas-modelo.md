@@ -6,6 +6,29 @@ Lucía lidera la tarjeta. Actualización documental: 23/10/2026. PR #150 se inte
 el 22/10 a las 17:24 UTC; la mención anterior a PR abierto y merge pendiente queda
 superada. Sus resultados siguen siendo provisionales.
 
+## Corrección de la suite tras PR156 — 23/10/2026
+
+Usuario: «Adelante con el siguiente paso». Rama `fix/JUP-133-dashboard-ci` desde
+`develop` `db8f69a`. Corregidas las expectativas del manifiesto 18/1670 y aislados
+los escenarios históricos con un manifiesto explícito de doce informes. Ocho
+pruebas nuevas concilian las seis campañas, sus nulos/juicios, paneles y anotación
+contra PostgreSQL con rol de lectura. Altura de matriz 61 para 55 filas, sin solapes.
+No se cambian resultados, dataset, accesos, cuotas ni presupuesto de 10 USD.
+
+Validación Linux completa: **1998 PASS sin omisiones**, 111.227 s, sobre árbol
+`38c43415042bc1e438a8d7b5f6961fac0982a511`. OpenSpec 92 PASS, contratos CI 19 PASS,
+CD Node 3 PASS y Python 60 PASS/3 omitidas por entorno explícito; higiene conforme.
+Revisión independiente de agente con hallazgos corregidos, sin reviews humanas
+inventadas. [Informe](../evidence/JUP-133/JUP-133-dashboard-ci-fix-report.md).
+
+Corte previo a publicación: CI remota y reviews pendientes. El PR va a develop;
+CD sólo puede validar la promoción después de integrarlo. Ningún despliegue ni
+carga compartida ejecutados. Las incidencias funcionales y las campañas
+provisionales siguen sin aceptación integral. El diagnóstico siguiente conserva
+su fecha y describe el fallo anterior a la corrección.
+
+Origen: «Levantar Jupiter en dockerDevelop», `01a16421-03a0-7460-b110-24738407ccb1`.
+
 ## CI posterior al merge de PR156 — 23/10/2026
 
 PR156 confirmado integrado por squash `db8f69ab5e2d4a42931cd6dc7412b99e855f0148`

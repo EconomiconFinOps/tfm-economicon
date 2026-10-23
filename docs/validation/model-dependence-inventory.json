@@ -13,7 +13,7 @@
         "finding": "El informe es live_unverified con model_execution_verified falso: el modelo que generó las respuestas no está atestiguado, solo declarado como alias."
       },
       "sources": ["JUP-071"],
-      "evidence": ["docs/evidence/JUP-071-live-r1-report.json", "docs/evidence/JUP-071-live-r1-rows.json", "docs/evidence/JUP-071-validation.md"],
+      "evidence": ["docs/evidence/JUP-071-live-r1-report.json", "docs/evidence/JUP-071-live-r1-rows.json", "docs/evidence/JUP-071-validation.md", "docs/evidence/JUP-133/JUP-133-infra-jup071-r1.rows.json", "docs/evidence/JUP-133/JUP-133-infra-jup071-r2.rows.json", "docs/evidence/JUP-133/JUP-133-infra-jup071-r3.rows.json"],
       "rerun": "Campaña ligera de JUP-071: una repetición, una revisora, informe provisional. Tope autorizado de 1,5 USD en total con la clave de OpenRouter de Lucia; el proveedor es el que fije JUP-132."
     },
     {
@@ -28,7 +28,7 @@
         "finding": "La ejecución del 22/10/2026 lleva la identidad completa del modelo en el manifiesto (identificador, proveedor, cuantización y huella del gateway) y 10 de 28 casos aprobados; las dos ejecuciones de plantilla del 08/10/2026 no tienen modelo de generación."
       },
       "sources": [],
-      "evidence": ["docs/evidence/JUP-133/JUP-133-bank28-report.json", "docs/evidence/JUP-133/JUP-133-bank28-report.md"],
+      "evidence": ["docs/evidence/JUP-133/JUP-133-bank28-report.json", "docs/evidence/JUP-133/JUP-133-bank28-report.md", "docs/evidence/JUP-133/JUP-133-infra-jup070-a-r1.rows.json", "docs/evidence/JUP-133/JUP-133-infra-jup070-a-r2.rows.json", "docs/evidence/JUP-133/JUP-133-infra-jup070-a-r3.rows.json"],
       "rerun": "Hecho una vez en JUP-133 (una repetición, una revisora, provisional). Repetir con la infraestructura definitiva antes de usar la latencia en la memoria. La fuente JUP-070 del manifiesto la comparte con la línea base de plantilla (entrada template-baseline-jup070); la clasificación de cada ejecución va por su informe, en la evidencia de cada entrada."
     },
     {

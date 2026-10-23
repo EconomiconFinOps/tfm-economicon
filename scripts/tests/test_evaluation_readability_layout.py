@@ -68,7 +68,7 @@ class AlturaDeLasTablasTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         panel_de(MATRIZ)  # sin el panel falla antes de arrancar Docker
-        cls.datos = R.ejecutar(R.consulta_unica(panel_de(MATRIZ)))
+        cls.datos = R.ejecutar(R.consulta_unica(panel_de(MATRIZ)), completo=True)
 
     def test_la_matriz_muestra_todas_sus_filas_mas_seis_unidades(self):
         # Caso: a Grafana le llegan las filas de la consulta y `groupingToMatrix` las pivota a UNA fila por `metrica`

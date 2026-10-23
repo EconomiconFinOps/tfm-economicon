@@ -36,6 +36,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 if str(Path(__file__).resolve().parent) not in sys.path:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
+from evaluation_fixture_support import historical_dataset
 import evaluation_pg_helper  # noqa: E402  (contenedor desechable compartido con los demás módulos)
 
 DASHBOARD = Path(os.environ.get("EVALUATION_DASHBOARD_JSON")
@@ -168,15 +169,15 @@ def catalogo() -> list:
 
 _PG: dict = {}
 
-# Banco de JUP-069 con el chat real (JUP-133): la única campaña de JUP-070 real del conjunto versionado. Las pruebas de
-# legibilidad describen escenarios sobre las dos campañas de plantilla de octubre (columnas, orden, «no real», resumen),
-# así que su montaje las deja fuera; `test_evaluation_readability_real_campaign.py` repite lo esencial con el conjunto
-# completo (`servidor_completo`).
+# Los escenarios históricos usan un manifiesto explícito de doce informes y excluyen el banco.
+# servidor_completo usa SIEMPRE el manifiesto actual, incluidas las seis repeticiones de infraestructura;
+# lo cubren los tests real_campaign, infra_manifest y la altura de la matriz.
 BANCO_JUP133 = "docs/evidence/JUP-133/JUP-133-bank28-report.json"
 
 
 def conjunto_versionado(herramienta, *, con_banco_jup133: bool) -> dict:
-    dataset = herramienta.build_dataset([herramienta.DEFAULT_MANIFEST])
+    dataset = (herramienta.build_dataset([herramienta.DEFAULT_MANIFEST])
+               if con_banco_jup133 else historical_dataset(herramienta))
     if not con_banco_jup133:
         dataset["runs"] = [item for item in dataset["runs"] if item["run"]["report_path"] != BANCO_JUP133]
     return dataset

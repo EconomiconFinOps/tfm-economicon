@@ -66,6 +66,10 @@ tool = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = tool
 SPEC.loader.exec_module(tool)
 
+if str(Path(__file__).resolve().parent) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+from evaluation_fixture_support import INFRA_IDS, INFRA_PATHS, INFRA_ROW_COUNTS
+
 EVIDENCE = ROOT / "docs" / "evidence"
 MANIFEST_FILE = ROOT / "docs" / "validation" / "evaluation-runs.json"
 JUP_070_RUN_1 = EVIDENCE / "JUP-070-run-1-report.json"
@@ -189,6 +193,11 @@ REAL_CASES = (
         "reasons": [],
     },
 )
+REAL_CASES += tuple({
+    "path": ROOT / path, "format": "rows-v1", "source": "JUP-070" if index < 3 else "JUP-071",
+    "report_path": path, "run_id": run_id, "sha": _canonical_sha(ROOT / path),
+    "rows": count, "reasons": ["sin_modelo_verificado"],
+} for index, (path, run_id, count) in enumerate(zip(INFRA_PATHS, INFRA_IDS, INFRA_ROW_COUNTS)))
 REAL_RUN_IDS = [case["run_id"] for case in REAL_CASES]
 
 # Informe de negocio de JUP-068 (salida de Node real sobre el ejemplo), fijado por `setUpModule`.
@@ -464,7 +473,7 @@ class NormalizeRealReportsTest(unittest.TestCase):
         for case, output in zip(REAL_CASES, self.normalized):
             with self.subTest(source=case["run_id"]):
                 self.assertEqual(output["run"]["format"], case["format"])
-                self.assertIs(output["run"]["milestone"], True)
+                self.assertIs(output["run"]["milestone"], case["run_id"] not in INFRA_IDS)
 
     def test_clasificacion_coherente_con_el_run_crudo(self) -> None:
         for case, output in zip(REAL_CASES, self.normalized):
@@ -492,6 +501,7 @@ class NormalizeRealReportsTest(unittest.TestCase):
             tool.adapt_jup068(REPORT_068, "x"),
             *(tool.adapt_rows_v1(load_json(report), "x") for report in (*JUP_130_REPORTS, JUP_071_ROWS, JUP_071_FLASH_ROWS, JUP_133_AI_COST)),
             tool.adapt_jup070(load_json(JUP_133_BANK), "x"),
+            *(tool.adapt_rows_v1(load_json(ROOT / path), "x") for path in INFRA_PATHS),
         )
         for case, output, entry, (raw_run, raw_results) in zip(REAL_CASES, self.normalized, self.entries, raws):
             with self.subTest(source=case["run_id"]):
@@ -507,11 +517,12 @@ class NormalizeRealReportsTest(unittest.TestCase):
         self.assertEqual([run["run_at"] for run in runs], [
             "2026-10-08T20:13:54Z", "2026-10-08T21:01:44Z", None, JUP_022_RUN_AT, None,
             *(load_json(report)["run"]["run_at"] for report in (*JUP_130_REPORTS, JUP_071_ROWS, JUP_071_FLASH_ROWS, JUP_133_AI_COST)),
-            load_json(JUP_133_BANK)["run"]["date"]])
+            load_json(JUP_133_BANK)["run"]["date"],
+            *(load_json(ROOT / path)["run"]["run_at"] for path in INFRA_PATHS)])
         # Actualizado tras integrar develop: la fecha de la calibración (antes el literal
         # 2026-10-03T07:15:32.826486+00:00) es la `generated_at` del informe regenerado, copiada sin normalizar.
         self.assertEqual([run["generation_model"] for run in runs],
-                         ["plantilla-sin-modelo", "plantilla-sin-modelo", None, None, None, None, None, None, None, None, None, "economicon-chat"])
+                         ["plantilla-sin-modelo", "plantilla-sin-modelo", None, None, None, None, None, None, None, None, None, "economicon-chat"] + [load_json(ROOT / path)["run"].get("generation_model") for path in INFRA_PATHS])
 
     def test_cada_salida_pasa_la_validacion_comun_y_serializa_a_json(self) -> None:
         for case, output in zip(REAL_CASES, self.normalized):
@@ -1035,7 +1046,7 @@ class BuildDatasetTest(TmpCase):
         self.assertEqual(extra["run"]["format"], "rows-v1")
         self.assertIsNone(extra["run"]["report_path"])
         self.assertEqual(extra["results"], EXPECTED_ROWS_RESULTS)
-        self.assertTrue(all(item["run"]["milestone"] is True for item in dataset["runs"][:len(REAL_CASES)]))
+        self.assertEqual([item["run"]["milestone"] for item in dataset["runs"]], [True] * 12 + [False] * 7)
 
     def test_el_orden_es_el_de_los_manifiestos_dados(self) -> None:
         local = self.rows_manifest("local", ROWS_DOCUMENT)

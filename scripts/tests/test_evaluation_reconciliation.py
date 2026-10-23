@@ -28,6 +28,8 @@ formato (`1e-9` relativa: PostgreSQL devuelve el `double precision` en su forma 
 
 La ejecución de estas pruebas tarda unos segundos: un contenedor por módulo y consultas en caché.
 """
+# Escenarios sobre evaluation-before-infra.json (12 informes históricos).
+# El manifiesto actual completo se concilia en test_evaluation_infra_manifest.py.
 from __future__ import annotations
 
 import json
@@ -45,6 +47,7 @@ ROOT = Path(__file__).resolve().parents[2]
 # `unittest discover -s scripts/tests` ya pone este directorio en `sys.path`; se añade también para ejecutar el fichero suelto.
 if str(Path(__file__).resolve().parent) not in sys.path:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
+from evaluation_fixture_support import historical_dataset
 import evaluation_pg_helper  # noqa: E402  (contenedor desechable y herramienta, compartidos con 3.2, 3.3 y 5.x)
 import test_evaluation_dashboard_structure as S  # noqa: E402  (localizador de paneles del contrato)
 from test_evaluation_dashboard_queries import sustituir_macros  # noqa: E402  (macros de Grafana, una sola fuente)
@@ -115,7 +118,7 @@ def server() -> evaluation_pg_helper.PostgresServer:
 def _cargar_versionado(instance) -> None:
     tool = evaluation_pg_helper.load_tool()
     # Conjunto VERSIONADO tal cual lo carga `corepack pnpm evaluation-dashboard:load`: las ocho ejecuciones del manifiesto.
-    dataset = tool.build_dataset([tool.DEFAULT_MANIFEST])
+    dataset = historical_dataset(tool)
     guion = tool.build_sql(dataset) + "\n" + tool.build_role_sql(secrets.token_urlsafe(18))
     resultado = instance.psql(stdin=guion)
     if resultado.returncode != 0:

@@ -38,6 +38,7 @@ ROOT = Path(__file__).resolve().parents[2]
 # `unittest discover -s scripts/tests` ya pone este directorio en `sys.path`; se añade también para ejecutar el fichero suelto.
 if str(Path(__file__).resolve().parent) not in sys.path:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
+from evaluation_fixture_support import VERSIONED_RUNS, VERSIONED_RESULTS
 import evaluation_pg_helper  # noqa: E402  (contenedor desechable compartido con 3.2, 3.3 y 5.x)
 
 TOOL_PATH = Path(os.environ.get("EVALUATION_DASHBOARD_TOOL") or ROOT / "tools" / "evaluation-dashboard.py")
@@ -165,7 +166,7 @@ def _preparar() -> None:
         raise RuntimeError(f"no se pudieron crear las tablas de prueba: {montaje.stderr.strip()}")
     resultado = cargar(secrets.token_urlsafe(24))
     # Precondición de todo lo demás: la carga fue completa (versionado 9 + local 4 ejecuciones) y ninguna tabla quedó vacía.
-    assert resultado.stdout.startswith("16 ejecuciones y "), resultado.stdout
+    assert resultado.stdout == f"{VERSIONED_RUNS + 4} ejecuciones y {VERSIONED_RESULTS + 4} resultados cargados\n", resultado.stdout
 
 
 def tearDownModule() -> None:
@@ -576,7 +577,7 @@ class OperacionesComoElRolTests(unittest.TestCase):
                 self.assertEqual(resultado.stdout.strip(), "", "una sentencia rechazada no debe devolver datos")
 
     def test_los_intentos_no_cambiaron_nada_en_la_base(self):
-        self.assertEqual(uno("SELECT count(*) FROM evaluation.runs"), "16")
+        self.assertEqual(uno("SELECT count(*) FROM evaluation.runs"), str(VERSIONED_RUNS + 4))
         self.assertEqual(uno("SELECT count(*) FROM pg_namespace WHERE nspname = 'intruso'"), "0")
         self.assertEqual(uno("SELECT count(*) FROM information_schema.tables WHERE table_name = 'intruso'"), "0")
         self.assertEqual(uno("SELECT count(*) FROM public.knowledge_embeddings"), "1")
@@ -595,7 +596,7 @@ class OperacionesComoElRolTests(unittest.TestCase):
 class InicioDeSesionTests(unittest.TestCase):
     def test_con_la_contrasena_correcta_entra_y_lee(self):
         self.assertEqual(consulta_del_rol("SELECT current_user"), READER)
-        self.assertEqual(consulta_del_rol("SELECT count(*) FROM evaluation.runs"), "16")
+        self.assertEqual(consulta_del_rol("SELECT count(*) FROM evaluation.runs"), str(VERSIONED_RUNS + 4))
 
     def test_con_una_contrasena_incorrecta_o_sin_contrasena_no_entra(self):
         # Guarda anti-vacío: la conexión es la que comprueba contraseña (la IP del contenedor) y la correcta sí entra.
@@ -629,7 +630,7 @@ class InicioDeSesionTests(unittest.TestCase):
 class VistasTests(unittest.TestCase):
     def test_las_vistas_dan_filas_al_rol_las_mismas_que_al_administrador(self):
         # Los datos locales de la prueba dan dos filas a `config_changes` (cambio de modelo y el de batería respecto a la campaña de JUP-071 versionada) y dos a `comparable_runs`.
-        for vista, esperado in (("config_changes", "5"), ("comparable_runs", "2")):
+        for vista, esperado in (("config_changes", "7"), ("comparable_runs", "8")):
             with self.subTest(vista=vista):
                 self.assertEqual(uno(f"SELECT count(*) FROM evaluation.{vista}"), esperado)
                 self.assertEqual(consulta_del_rol(f"SELECT count(*) FROM evaluation.{vista}"), esperado)
