@@ -10,6 +10,7 @@
 - [x] 1.8 Integrar Cognito con frontend PKCE y verificación de identidad/tenant en backend; pruebas locales sin pool AWS.
 - [x] 1.9 Integrar Bedrock y dimensión/reindexación coherentes en backend/processor.
 - [x] 1.10 Implementar bootstrap privado, datos reproducibles y checks funcionales; completar receta/evidencia local sin simular aceptación AWS.
+- [x] 1.11 Separar integridad de evidencia histórica y aceptación de aplicación en CI; conservar el bloqueo de despliegue por digest y acotar descargas APT del processor.
 - [ ] 2.1 Completar cuenta/DNS/saldo/motores y aceptación de aplicación antes de ensayo real.
 - [ ] 2.2 Obtener revisión/validación oficiales por roles humanos asignados.
 - [ ] 2.3 Tras autorización futura, ejecutar ensayo1 y registrar tiempos/coste/retirada.

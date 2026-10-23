@@ -1,7 +1,8 @@
 # Arquitectura técnica de Economicon
 
-JUP-060 · [Trello](https://trello.com/c/alMIpBOQ) · Corte de código: **11/10/2026,
-develop a0e9a56**. Esta vista sustituye las
+JUP-060 · [Trello](https://trello.com/c/alMIpBOQ) · Corte de código: **22/10/2026,
+develop 03e97ce6** (actualizado en [JUP-138](https://trello.com/c/WvzuP74W/130-jup-138);
+el corte anterior era 11/10/2026, a0e9a56). Esta vista sustituye las
 descripciones históricas de billing fijo, aislamiento pendiente y citas pendientes.
 Describe código integrado; las ejecuciones citadas conservan su fecha, host y SHA.
 No certifica que un servidor esté ejecutando ahora esa versión.
@@ -12,8 +13,14 @@ Economicon es un asistente FinOps para Azure con interfaz web, API, procesamient
 asíncrono y recuperación vectorial. El entorno reproducible es una demo con datos
 públicos/sintéticos; no conecta a una cuenta Azure real. El chat documental recupera
 contexto y devuelve una **plantilla determinista**; las consultas estructuradas
-de ownership agregan costes mediante SQL y generan evidencia determinista. El processor dispone de un
-cliente LLM, pero no compone todavía el vertical conversacional tools/RAG/LLM.
+de ownership, de gasto y de anomalías agregan o leen datos mediante SQL y generan
+evidencia determinista. Hay además un **chat generativo** integrado (JUP-122,
+JUP-123, JUP-132) que el backend delega al processor por una red privada; está
+**desactivado por defecto** (`CHAT_ENABLED=false`) y solo se muestra en la interfaz
+si el backend declara que está activo. Su modelo recibe un contexto acotado: el
+resumen de costes verificado por el servidor y una búsqueda documental del
+servidor. Las consultas de ownership, gasto y anomalías no se le exponen todavía
+como herramientas (§3.4).
 
 En los diagramas de bloques las flechas continuas describen conexiones implementadas;
 las punteadas, capacidades opcionales o propuestas, rotuladas en cada figura.
@@ -30,13 +37,18 @@ técnica, no una copia de sus apartados.
 ```mermaid
 flowchart TB
   U[Usuario] --> UI[Frontend React]
+  U -.->|Sin sesión ni backend| LP[Landing pública estática]
   UI -->|HTTP: JWT y X-Tenant-Id| API[Backend FastAPI]
+  UI -->|PUT con URL firmada| S3[(MinIO: originales temporales)]
+  API -->|URL firmada y verificación| S3
   API --> DB[(CockroachDB)]
   API -->|Publicación confirmada| Q[RabbitMQ]
   Q --> W[Processor: worker y API operativa]
+  W -->|Lee el original| S3
   W --> DB
   W -->|Documentos y embeddings| V[(PostgreSQL y pgvector)]
   API -->|Recuperación por tenant| V
+  API -.->|Chat generativo: red privada, firma HMAC| W
   CLI[CLI ingesta Azure] --> AZ[API Azure simulada]
   CLI -->|Normalización y persistencia| DB
   CSV[CSV público fijado] --> AZ
@@ -51,16 +63,18 @@ flowchart TB
 
 | Componente | Responsabilidad y límite | Implementación |
 | --- | --- | --- |
-| Frontend | Sesión, tenant, conversaciones y dashboard ejecutivo conectado a billing. Panel de anomalías conectado a los episodios guardados. Los paneles operativo, de recortes y de recomendaciones siguen en el código sin ruta ni menú (JUP-116). No accede a DB, cola ni claves del proveedor. | [Cliente HTTP](../apps/frontend/src/services/api.ts), [rutas](../apps/frontend/src/routes.tsx) |
-| Backend | Autenticación, autorización, costes/presupuesto, episodios de anomalías, publicación de jobs, conversaciones, recuperación/citas, ownership SQL, cobertura de etiquetas y salud agregada. | [Rutas](../apps/backend/app/api/routes), [acceso](../apps/backend/app/api/dependencies.py) |
-| Processor | Worker documental y pipeline LangGraph; CLI independiente para costes Azure. API de salud/métricas interna. AgentRuntime es módulo Python, no servicio de red. | [Pipeline](../apps/processor/app/graphs/pipeline.py), [CLI Azure](../apps/processor/app/run_azure_cost_ingestion.py), [agentes](../apps/processor/app/agents/service.py) |
+| Frontend | Sesión, tenant, conversaciones y dashboard ejecutivo conectado a billing. Panel de anomalías conectado a los episodios guardados. Subida de archivos a MinIO con URL firmada desde la página de ingesta, y panel de chat generativo que solo aparece si el backend declara el chat activo. Los paneles operativo, de recortes y de recomendaciones siguen en el código sin ruta ni menú (JUP-116). No accede a DB, cola ni claves del proveedor. | [Cliente HTTP](../apps/frontend/src/services/api.ts), [rutas](../apps/frontend/src/routes.tsx) |
+| Backend | Autenticación, autorización, costes/presupuesto, episodios de anomalías, publicación de jobs, conversaciones, recuperación/citas, ownership SQL, consultas de gasto, cobertura de etiquetas y salud agregada. También reserva y confirma subidas de archivos (JUP-124) y, con el chat activo, orquesta las generaciones y resúmenes del chat generativo y los delega al processor por la red privada. | [Rutas](../apps/backend/app/api/routes), [acceso](../apps/backend/app/api/dependencies.py) |
+| Processor | Worker documental y pipeline LangGraph, con extracción local aislada de los archivos subidos (MD, TXT, PDF, DOCX y DOC, con OCR) y chunking estructural; CLI independiente para costes Azure. API de salud/métricas y, con el chat activo, una superficie privada de chat y resumen en el puerto 8003 de la red interna, solo para el backend y con firma HMAC. AgentRuntime es módulo Python, no servicio de red. | [Pipeline](../apps/processor/app/graphs/pipeline.py), [CLI Azure](../apps/processor/app/run_azure_cost_ingestion.py), [agentes](../apps/processor/app/agents/service.py) |
+| MinIO | Almacén de objetos S3 con un bucket privado dedicado para los originales de las subidas: URL firmadas de vida corta, caducidad de `staging/` y retirada del original tras el procesado. Credenciales de servicio separadas de las de administración. Los textos normalizados y los vectores no viven aquí. | [Dockerfile](../infra/minio/Dockerfile), [inicializador](../infra/minio/init.sh), [ADR-0022](adr/ADR-0022-document-ingestion-artifact-lifecycle.md), [runbook](runbooks/document-ingestion.md) |
 | API Azure simulada | HTTP posicional, bearer local, paginación y errores reproducibles sobre CSV público. No autentica contra Azure ni representa una factura completa. | [README](../apps/azure-cost-api/README.md), [fixture](../fixtures/azure-cost/README.md) |
 | LiteLLM, opcional | Proxy del processor y de embeddings del backend; claves virtuales separadas y DB propia. OpenRouter es el upstream configurado. | [Configuración](../infra/litellm/config.example.yaml), [operación](../infra/litellm/README.md) |
 | Shared config | Configuración reutilizable del workspace; no es servicio de runtime. | [Paquete](../packages/shared-config/README.md) |
+| Landing pública | Aplicación estática independiente de la interfaz autenticada: sin backend, sesión ni claves, con una demo ilustrativa rotulada como tal. No está en Compose ni en el CD, y su dominio y publicación siguen pendientes de decisión humana. | [README](../apps/landing/README.md), [operación](operations/public-landing.md) |
 
 ## 3. Flujos implementados y vertical objetivo
 
-### 3.1 Chat síncrono: recuperación documental, consultas de ownership y explicación de anomalías
+### 3.1 Chat síncrono: recuperación documental, consultas de gasto y ownership y explicación de anomalías
 
 ```mermaid
 sequenceDiagram
@@ -78,6 +92,11 @@ sequenceDiagram
     DB-->>B: Episodio y operandos exactos
     B->>B: Explicación determinista y anomaly_evidence
     B->>DB: Persistir mensaje de usuario tras explicar
+  else cost_query explícito
+    B->>DB: Agregación SQL del gasto Azure por dimensión y periodo
+    DB-->>B: Costes y procedencia
+    B->>B: Respuesta determinista y cost_evidence
+    B->>DB: Persistir mensaje de usuario tras resolver consulta
   else ownership_query explícito
     B->>DB: Agregación SQL por tenant, periodo, moneda y dimensiones
     DB-->>B: Costes y procedencia
@@ -105,13 +124,16 @@ texto determinista y `anomaly_evidence` con las cifras exactas y un identificado
 reproducible. No usa embeddings, recuperación documental ni modelo generativo, y
 solo guarda los dos mensajes cuando la explicación está calculada: un episodio
 inexistente o de otro cliente da el mismo 404 y uno que no se sabe explicar da
-409, sin dejar nada en la conversación. Es excluyente con `ownership_query`.
+409, sin dejar nada en la conversación. Es excluyente con `ownership_query` y `cost_query`.
 Véase [contrato de la explicación](api/anomaly-explanations.md). La explicación
-no es una herramienta del agente todavía: el chat con modelo generativo es
-JUP-035.
+no se expone como herramienta al modelo del chat generativo (§3.4).
 
-La [ruta](../apps/backend/app/api/routes/assistant.py) no llama al processor ni
-a la cola. Cuando recibe `ownership_query`, usa
+La [ruta de mensajes](../apps/backend/app/api/routes/assistant.py)
+(`POST /assistant/conversations/{id}/messages`) no llama al processor ni
+a la cola. Cuando recibe `cost_query` (JUP-036), responde con una agregación SQL
+del gasto Azure por dimensión y periodo y devuelve `cost_evidence`
+([contrato](api/azure-cost-questions.md)); no usa embeddings ni modelo. Cuando
+recibe `ownership_query`, usa
 [OwnershipQuestionService](../apps/backend/app/services/ownership_questions.py):
 agrega costes de ejecuciones completadas por tenant, período y moneda, con
 dimensiones permitidas y procedencia verificable. Devuelve `cost_evidence`,
@@ -122,9 +144,10 @@ formulario explícito; no interpreta libremente lenguaje natural en SQL. Véase
 hasta tres fragmentos o indica falta de contexto. La consulta vectorial filtra
 tenant y proveedor, ordena por distancia coseno e identificador y limita con
 `RETRIEVAL_TOP_K` (1–20, defecto 4). Con LiteLLM el umbral por defecto es 0.6;
-mock no aplica umbral por defecto. Los embeddings reales requieren dimensión
-1536 y el mismo modelo que la ingesta: cambiar de proveedor exige reindexar
-en un almacén compatible, no mezclar vectores.
+mock no aplica umbral por defecto. Con LiteLLM los embeddings requieren
+dimensión 1536 (con el proveedor Bedrock de JUP-131, 256, 512 o 1024) y el
+mismo modelo que la ingesta: cambiar de proveedor exige reindexar en un almacén
+compatible, no mezclar vectores.
 
 [Citas](../apps/backend/app/services/citations.py) valida cada referencia contra
 chunks recuperados y tenant; devuelve documento/chunk, título, sección cuando
@@ -133,6 +156,66 @@ inválidas, 502. Como el mensaje de usuario se guarda antes de recuperar, un
 fallo no implica que la conversación quede sin cambios. Las evidencias de
 [recuperación](evidence/JUP-022-validation.md) y
 [citas](evidence/JUP-025-validation.md) son históricas, no nuevas llamadas de JUP-060.
+
+**Recuperación verificada, contextual e híbrida (JUP-127,
+[ADR-0024](adr/ADR-0024-verified-contextual-retrieval.md)).** Con
+`RAG_VERIFIED_ENABLED=true` (por defecto `false`) la consulta no usa el índice
+heredado sino la generación activa del tenant, que fija el espacio de embeddings
+y su configuración; si no hay una generación verificada, falla en lugar de caer
+al índice heredado. `RAG_CONTEXTUAL_ENABLED` y `RAG_HYBRID_ENABLED` (también
+`false`) añaden contexto determinista al chunk y búsqueda por texto combinada
+con la vectorial, y exigen el flag verificado. Con los tres apagados, que es el
+valor de Compose, el recorrido descrito arriba no cambia.
+
+**Chat generativo (JUP-122, JUP-123, JUP-132).** Es un recorrido distinto del
+anterior y solo existe con `CHAT_ENABLED=true` en backend y processor; con el
+valor por defecto `/assistant/capabilities` informa `chat_enabled=false`, las
+generaciones responden 503 y la interfaz no muestra el panel.
+
+```mermaid
+sequenceDiagram
+  actor U as Usuario
+  participant UI as Frontend
+  participant B as Backend
+  participant DB as CockroachDB
+  participant V as pgvector
+  participant P as Processor (red privada)
+  participant GW as LiteLLM
+  U->>UI: Pregunta
+  UI->>B: GET /assistant/capabilities
+  B-->>UI: chat_enabled
+  UI->>B: POST /assistant/conversations/{id}/generations
+  B->>DB: Abrir la operación y leer el resumen de costes
+  B->>P: Petición firmada con HMAC por la red chat-private
+  P->>DB: Comprobar propietario y reserva vigente (antes y durante el flujo)
+  P-->>B: Búsqueda documental preparada por el servidor desde la pregunta
+  B->>V: Recuperación del tenant (una búsqueda por intento)
+  B->>P: Resultado acotado
+  P->>GW: Generación con el modelo configurado
+  GW-->>P: Respuesta en flujo
+  P-->>B: Flujo NDJSON
+  B-->>UI: Eventos SSE
+  UI-->>U: Texto, estado y fuentes
+```
+
+El backend es el único que puede pedir generaciones al processor: la
+superficie privada del puerto 8003 no se publica, exige firma HMAC con nonce y
+comprueba en SQL propietario y reserva antes de llamar al gateway. Cada
+operación se guarda (`chat_operations`) y puede consultarse, detenerse o
+reanudarse (`…/generations/{operation_id}`, `/stop`, `/resume`); el historial
+largo se compacta con un resumen (`…/summary`). El alias de modelo por defecto
+es `economicon-chat`, que [ADR-0026](adr/ADR-0026-default-chat-model.md)
+(Proposed) resuelve a DeepSeek V4.1 Flash por el gateway, sin alternativa de
+reserva. La búsqueda documental no la decide el modelo: el servidor la deriva de
+la pregunta (hasta 2048 caracteres), el backend la ejecuta y su resultado acotado
+llega al processor **antes** de que se genere el primer borrador; solo hay una
+por intento. Lo que el modelo recibe se limita a ese resultado y al resumen de
+costes verificado por el servidor; no ejecuta SQL ni herramientas de ownership,
+gasto o anomalías. Contexto en
+[chat conversacional](continuidad/chat-conversacional.md) y
+[modelo único](continuidad/modelo-unico-chat.md). Que el recorrido esté
+integrado no acredita calidad generativa extremo a extremo en la demo por
+defecto: esa evidencia sigue siendo la de sus informes de evaluación.
 
 ### 3.2 Ingesta documental asíncrona
 
@@ -157,9 +240,10 @@ sequenceDiagram
   W->>DB: Estado y resultado o fallo
 ```
 
-`text_content` es obligatorio; `artifact_uri` es metadato, no prueba de descarga
-ni extracción de archivos. No hay endpoint `GET /jobs/{id}` en esta base.
-La figura muestra el camino exitoso; publicación rechazada, no enviada o de
+La figura muestra el formulario de texto: `POST /jobs/ingest` exige `text_content`
+y `artifact_uri` es solo metadato, sin descarga ni extracción. No hay endpoint
+`GET /jobs/{id}`; el estado de una subida de archivo sí se consulta (siguiente
+figura). La figura muestra el camino exitoso; publicación rechazada, no enviada o de
 resultado desconocido tiene tratamiento en
 [jobs](../apps/backend/app/api/routes/jobs.py) y
 [ADR-0009](adr/ADR-0009-rabbitmq-publisher-lifecycle.md). No hay transacción
@@ -175,6 +259,56 @@ se reencola sin tope, porque descartarlo dejaría el job sin mensaje. La consecu
 los embeddings fallan el tiempo suficiente para los dos intentos (unos 10 s medidos con pgvector parado), los
 jobs de ese intervalo quedan `failed` y hay que reenviarlos. Tabla completa en el
 [README del processor](../apps/processor/README.md#fallos-reintentos-y-descarte-jup-113).
+
+**Subida de archivos (JUP-124,
+[ADR-0022](adr/ADR-0022-document-ingestion-artifact-lifecycle.md)).** La
+interfaz también admite MD, TXT UTF-8, PDF, DOCX y DOC, de 1 a 20 000 000 bytes,
+un archivo por envío. El binario no viaja por RabbitMQ ni por el backend: el
+navegador lo sube a MinIO con una URL firmada.
+
+```mermaid
+sequenceDiagram
+  participant UI as Frontend
+  participant B as Backend
+  participant S3 as MinIO
+  participant DB as CockroachDB
+  participant Q as RabbitMQ
+  participant W as Worker
+  participant V as pgvector
+  UI->>B: POST /jobs/uploads con nombre, tamaño y SHA-256
+  B->>DB: Reservar la subida del usuario
+  B-->>UI: 201 con PUT firmado de vida corta
+  UI->>S3: PUT del archivo a staging/
+  UI->>B: POST /jobs/uploads/{id}/confirm
+  B->>S3: Leer, verificar bytes, tamaño y formato
+  B->>S3: Fijar el original en confirmed/
+  B->>DB: Crear job document-upload
+  B->>Q: Publicar envelope (mismo publicador)
+  B-->>UI: 202 con estado y job
+  Q->>W: Entregar job
+  W->>S3: Leer el original
+  W->>W: Extracción aislada, sin credenciales heredadas
+  W->>DB: Texto normalizado y partes (checkpoint durable)
+  W->>W: Chunking estructural, embeddings y resumen
+  W->>V: Documento, chunks y vectores
+  W->>S3: Retirar el original tras el éxito durable
+  UI->>B: GET /jobs/uploads/{id} y GET /jobs/documents/{job_id}
+```
+
+Solo el servidor decide claves, tenant y autorización. La extracción corre en el
+processor con herramientas locales (LibreOffice, Tesseract con OCR
+`spa+eng`, parsers de PDF y DOCX) y límites de páginas, tiempo y memoria; si el
+aislamiento Linux no está disponible, falla cerrado. El texto normalizado queda
+en CockroachDB antes de seguir, de modo que recuperación y citas no dependen de
+conservar el binario, y los reintentos reutilizan ese punto de control. El
+original se conserva mientras pueda hacer falta recuperarlo y se retira tras un
+éxito durable; la caducidad de MinIO solo afecta a `staging/`. Los chunks se
+generan de forma estructural y reproducible desde el texto normalizado, sin
+llamar a un modelo ([ADR-0023](adr/ADR-0023-deterministic-document-chunking.md),
+[runbook de chunking](runbooks/document-chunking.md)). Límites, formatos,
+variables y licencias (MinIO y `mc` son AGPL-3.0) en el
+[runbook de ingesta](runbooks/document-ingestion.md); los dos ADR siguen en
+estado Proposed.
 
 La fase analyze puede usar AgentRuntime/LiteLLM, schema FinOpsResponse y
 guardrails. Su entrada contiene source, status y metadatos saneados; no recibe
@@ -241,31 +375,38 @@ Es cumplimiento de la política, no calidad demostrada de las etiquetas.
 [JUP-068](validation/JUP-068-business-metrics.md) calcula métricas offline a partir
 de evidencia declarada; no prueba adopción, ahorro realizado ni un piloto real.
 
-### 3.4 Vertical objetivo: contratos pendientes de integración
+### 3.4 Vertical conversacional: lo integrado y lo pendiente
 
 ```mermaid
 flowchart LR
-  U[Usuario] -.-> UI[UI]
-  UI -.-> B[Backend: identidad y tenant]
-  B -.-> O[Orquestación conversacional pendiente]
-  O -.-> T[Tools deterministas de costes, ownership y anomalías]
-  O -.-> R[RAG del mismo tenant]
-  T -.-> G[Contexto y respuesta estructurada]
-  R -.-> G
-  G -.-> L[LLM vía LiteLLM]
-  L -.-> V[Validar cifras, citas, permisos y guardrails]
-  V -.-> UI
+  U[Usuario] --> UI[UI]
+  UI --> B[Backend: identidad y tenant]
+  B --> O[Orquestación del chat generativo]
+  O --> C[Resumen de costes verificado por el servidor]
+  O --> R[Búsqueda documental del mismo tenant]
+  C --> G[Contexto acotado]
+  R --> G
+  T[Tools deterministas de ownership, gasto y anomalías] -.-> G
+  G --> L[LLM vía LiteLLM]
+  L --> V[Validación de cifras, periodo y citas contra la evidencia]
+  V --> UI
 ```
 
-**Todas las conexiones de esta figura son el objetivo de integración, no un
-recorrido implementado.** Los contratos de
+Las flechas continuas son recorridos integrados que se ejecutan solo con
+`CHAT_ENABLED=true` (§3.1); **la única conexión punteada, las tools
+deterministas, es el objetivo de integración y no existe todavía.** Los
+contratos de
 [tools](architecture/finops-agent-tools.md) y
 [respuesta/guardrails](architecture/finops-response-guardrails.md) establecen
 que la aplicación autoriza y ejecuta: el modelo no elige libremente tenant,
-SQL, credenciales o acciones. No existe un registro ejecutor de tools FinOps
-en el processor de esta base. Recuperación, citas, AgentRuntime y gateway
-son piezas implementadas; conectarlas al chat requiere trabajo y validación
-propios. Ni CI verde ni una prueba del proxy certifican ese vertical.
+SQL, credenciales o acciones. Hoy el modelo no decide si se busca ni qué: el
+servidor prepara una única búsqueda documental por intento a partir de la
+pregunta, la ejecuta el backend antes del primer borrador, y el servidor valida
+la respuesta contra la evidencia autorizada antes de guardarla. Las consultas de ownership, de gasto y
+de anomalías siguen siendo formularios explícitos de la ruta de mensajes (§3.1)
+y no existe un registro ejecutor de tools FinOps que el modelo pueda invocar.
+Ni CI verde ni una prueba del proxy certifican calidad generativa extremo a
+extremo; la evidencia de evaluación está en sus informes.
 
 ## 4. Que papel tienen RabbitMQ, CockroachDB y pgvector
 
@@ -274,6 +415,8 @@ flowchart TB
   B[Backend: dueño del esquema operativo] --> U[users, tenants, user_tenants]
   B --> J[jobs, conversations, messages]
   B --> A[anomaly_episodes, anomaly_detection_state]
+  B --> H[chat_operations]
+  B --> X[document_uploads y reservas, extracted_documents y partes]
   P[Processor: dueño del esquema Azure] --> R[azure_cost_ingestion_runs]
   P --> C[azure_cost_records]
   U -->|Autoridad de acceso| J
@@ -281,6 +424,9 @@ flowchart TB
   P --> D[pgvector: documentos y chunks con tenant]
   D --> E[Embeddings por provider y dimensión]
   J -->|Referencia del job documental| D
+  X -->|Texto normalizado durable| D
+  B -->|URL firmada| M[(MinIO: originales temporales)]
+  P -->|Lee y retira el original| M
   B -->|Lectura autorizada| C
   C -->|Coste diario por servicio| A
   B -->|Recuperación autorizada| D
@@ -289,12 +435,16 @@ flowchart TB
 Es un mapa lógico de responsabilidad/procedencia, **no un ERD de claves
 foráneas entre bases**. CockroachDB guarda estado transaccional; pgvector
 el índice recuperable; RabbitMQ transporta envelopes y conserva la cola
-durable. La DB del gateway es independiente: no almacena costes FinOps.
+durable; MinIO guarda solo los originales de las subidas mientras hacen falta,
+sin textos normalizados ni vectores. La DB del gateway es independiente: no
+almacena costes FinOps.
 
-Según [ADR-0011](adr/ADR-0011-single-owner-per-table.md), backend migra sus ocho
-tablas y processor las dos de Azure; cada servicio tiene su registro de
+Según [ADR-0011](adr/ADR-0011-single-owner-per-table.md), backend migra sus
+quince tablas (usuarios, tenants y membresías, jobs, conversaciones y mensajes,
+episodios de anomalía, operaciones de chat y las de subida y extracción de
+documentos) y processor las dos de Azure; cada servicio tiene su registro de
 migraciones. Processor también actualiza estados de jobs, pero no es dueño de
-su DDL: espera a backend sano después de migrar. El índice vectorial lo migra
+su DDL: espera a backend sano después de migrar. El índice vectorial (incluidas las generaciones de embeddings de JUP-127) lo migra
 processor, con dimensión obtenida de Settings (JUP-102), sin conversión ni
 reindexación automática al cambiarla; backend comprueba la dimensión al iniciar cuando puede consultar la
 tabla, sin garantizar readiness del índice si esa comprobación se omite.
@@ -319,6 +469,13 @@ expiración/cambio de sesión. CORS usa orígenes explícitos
 La auth demo [ADR-0014](adr/ADR-0014-demo-auth-boundary.md) no acredita IdP,
 MFA, revocación ni seguridad de una aplicación pública.
 
+JUP-131 añade un segundo modo, `AUTH_PROVIDER=cognito` (por defecto `local`): el
+backend verifica el token de acceso de Cognito (RS256 contra el JWKS, con emisor
+y cliente exactos), vincula su `sub` a un usuario local y sigue resolviendo
+tenant y membresía en la base de datos; el login local responde 403. Es el modo
+del entorno AWS de referencia (§6.3): ningún Compose lo activa y no sustituye la
+frontera de la auth demo descrita arriba.
+
 Las credenciales operativas se suministran en runtime, fuera de Git e imágenes;
 el simulador Azure conserva valores locales de prueba explícitos. Variables VITE_*
 son públicas. Clave upstream OpenRouter y clave maestra quedan en gateway;
@@ -336,6 +493,7 @@ trasladar el host a cloud no amplía esa excepción.
 flowchart TB
   Browser[Navegador: acceso privado previsto] --> F[Frontend: host 5173]
   Browser --> B[Backend: host 8000]
+  Browser -->|PUT con URL firmada| S3
   subgraph Compose[Compose local: red de aplicación]
     F
     B
@@ -344,31 +502,51 @@ flowchart TB
     CR[CockroachDB: host 26257 y 8080]
     Q[RabbitMQ: host 5672 y 15672]
     V[pgvector: host 5433]
+    S3[MinIO: host 9000]
     P[Prometheus: host 9090]
     G[Grafana: host 3000]
+    MIG[backend-migrate: un solo uso]
+    INI[minio-init: un solo uso]
+  end
+  subgraph DEMO[Perfil demo opcional]
+    AZD[Azure simulada con datos de demo]
+    DD[demo-data: un solo uso]
   end
   subgraph AI[Perfil ai opcional]
     L[LiteLLM: host 44000]
     PG[PostgreSQL gateway: sin puerto host]
     L --> PG
   end
+  B -.->|Chat: red chat-private, puerto 8003, HMAC| W
   B -.-> L
   W -.-> L
+  MIG --> CR
+  INI --> S3
+  DD --> AZD
   CR --> CV[(cockroach-data)]
   Q --> QV[(rabbitmq-data)]
   V --> VV[(pgvector-data)]
   P --> PV[(prometheus-data)]
   G --> GV[(grafana-data)]
+  S3 --> SV[(document-artifacts)]
   PG --> LV[(gateway-data)]
 ```
 
-Valores por defecto de [docker-compose.yml](../docker-compose.yml): **9 servicios
-base y 5 volúmenes**; ai añade LiteLLM/PostgreSQL/gateway-data (**11 y 6**).
+Valores por defecto de [docker-compose.yml](../docker-compose.yml): **10 servicios
+de larga ejecución, 2 de un solo uso (`backend-migrate` y `minio-init`) y 6
+volúmenes**. El perfil `demo` añade la API Azure con los datos de demostración y
+`demo-data` (de un solo uso, **11 y 3**); el perfil `ai` añade LiteLLM, su
+PostgreSQL y `gateway-data` (**12 y 2**, y 7 volúmenes). Los recuentos se
+reproducen con `docker compose config --services` y `--volumes`, con las
+variables obligatorias definidas y, para `ai`, el overlay de abajo.
 Las cuatro apps publican puerto **sin dirección loopback por defecto**;
-las publicaciones de infraestructura sí usan 127.0.0.1. El objetivo privado
+las publicaciones de infraestructura, MinIO incluido, sí usan 127.0.0.1 (la URL
+firmada de una subida se firma para ese host y puerto). El puerto 8003 del
+processor solo existe en la red interna `chat-private`: no se publica.
+El objetivo privado
 requiere configurar bindings/red/firewall del host: Compose por sí solo no
 demuestra privacidad. /metrics tampoco exige auth al publicar la API.
-La red base no restringe egress. No hay HA: host, bases single-node y cola
+La red base no restringe egress; `chat-private` es interna. No hay HA: host, bases single-node y cola
 son puntos de fallo.
 
 | Dependencia | Referencia fijada en código |
@@ -377,23 +555,39 @@ son puntos de fallo.
 | RabbitMQ / pgvector | 3-management / pg17 por digest; esos tags no identifican patch por sí solos |
 | Prometheus / Grafana | v2.55.1 / 11.3.0 por tag, sin digest |
 | LiteLLM / DB gateway | 1.103.2 / postgres:17-alpine por digest |
+| MinIO / mc | RELEASE.2025-10-15T17-29-55Z / RELEASE.2025-08-13T08-35-41Z, compilados desde fuentes con checksum sobre golang:1.24.8 por digest; imagen final python:3.12-slim por digest |
 | Apps Python | python:3.12-slim por digest; requirements usan rangos, no resolución pip completamente fijada |
 | Frontend | node:20-alpine por digest; pnpm 9.0.0 y lockfile. CI usa Node 22 |
 
 Los digests completos están en los Dockerfiles de las aplicaciones, Compose y
 [Compose gateway](../infra/litellm/docker-compose.yml); no se mantiene otra
 lista que pueda divergir. Son versiones del proyecto, no recomendaciones
-de versiones actuales. Orden: DB/cola/vector sanos → backend migrado →
-processor; processor espera además Azure. Frontend espera backend;
+de versiones actuales. Orden: DB/cola/vector sanos y MinIO inicializado →
+backend migrado y sano → processor; processor espera además Azure.
+Frontend espera backend;
 Prometheus espera backend/processor y Grafana espera Prometheus.
 Grafana no tiene healthcheck Compose.
 
 [Overlay ai](../infra/litellm/compose.ai.yml) exige gateway sano a ambos
-consumidores. Activar solo el perfil no sustituye overlay, providers,
-dimensiones ni claves. Seguir los recorridos mock/IA/retorno del
+consumidores y monta en el processor un segundo secreto. Activar solo el perfil
+no sustituye overlay, providers, dimensiones ni claves.
+
+Redes y secretos que resuelve Compose (la tabla muestra qué es cada uno y qué
+frontera marca):
+
+| Elemento | Quién lo usa | Función y frontera |
+| --- | --- | --- |
+| Red `default` | Todos los servicios salvo `litellm-db` | Comunicación de aplicación; no restringe egress. |
+| Red `chat-private` (interna) | Backend y processor | Único camino del chat generativo, con el puerto 8003 del processor sin publicar; sin salida a internet. |
+| Red `gateway` (solo con el perfil `ai`) | LiteLLM y su PostgreSQL | Mantiene la base del gateway fuera de la red de aplicación: solo `litellm` está también en `default`, para que backend y processor lo alcancen. No es interna: LiteLLM publica su puerto de administración en loopback y necesita salida hacia el proveedor. |
+| Secreto `chat-hmac` | Backend y processor | Clave compartida que firma las peticiones del chat; ambos la leen del archivo montado en `/run/secrets/chat-hmac`, no de una variable de entorno. |
+| Secreto `summary-api-key` (solo con el overlay `ai`) | Solo el processor | Clave virtual propia del resumen de conversaciones, leída de `SUMMARY_API_KEY_FILE` y distinta de las claves de chat y de embeddings; el overlay no arranca sin ese archivo. |
+
+Seguir los recorridos mock/IA/retorno del
 [README](../README.md), con proyectos separados para índices mock y reales.
 Frontend sirve con **Vite preview**, no servidor de producción.
 Las cuatro apps usan usuario sin privilegios, raíz de solo lectura y tmpfs;
+MinIO y los servicios de un solo uso añaden raíz de solo lectura y tmpfs, pero
 no se extiende esa garantía a toda la infraestructura.
 `down` conserva volúmenes nombrados; `down -v` los elimina.
 Persistencia ante recreación no equivale a backup/restore.
@@ -409,7 +603,7 @@ Persistencia ante recreación no equivale a backup/restore.
 | [JUP-078](evidence/JUP-078-operational-closure.md) | Gateway dedicado y claves limitadas verificados en su corte del 10/10. | No adopción automática por el CD mock ni nueva prueba upstream o de chat generativo. |
 | Revisión estática JUP-060 | Código/configuración disponibles para reproducir. | No inventario vivo, capacidad, HA, RPO/RTO o despliegue final aceptado. |
 
-### 6.3 AWS: arquitectura de referencia y Terraform sin despliegue
+### 6.3 AWS: arquitectura de referencia, Terraform y pipeline sin despliegue
 
 ```mermaid
 flowchart TB
@@ -426,25 +620,40 @@ flowchart TB
   C[Cognito: identidad; tenant en aplicación] -.-> API
 ```
 
-Todas las conexiones son **conceptuales**. El usuario confirmó el 10/10 que AWS
-forma parte del entregable documental y no se desplegará. El
+Todas las conexiones son **conceptuales**. El 10/10 se confirmó que AWS formaba
+parte del entregable documental y no se desplegaría; JUP-131 amplió el alcance
+el 21/10 con el código y el pipeline que se describen abajo, **sin que a la fecha
+del corte haya nada desplegado en AWS**. El
 [esquema AWS completo](architecture-aws.md) incluye correspondencia con el stack,
 seguridad, alternativas de acceso, operación, fuentes y límites. La
 [plantilla Terraform](../infra/aws-reference/README.md) incorpora recursos,
 variables, ejemplos y pruebas simuladas como complemento técnico solicitado.
-Terraform es alternativa a CDK/CloudFormation; el pipeline CodePipeline/CodeBuild
-del esquema sigue conceptual y no está implementado por la plantilla.
+Terraform es alternativa a CDK/CloudFormation. La plantilla no incluye el
+pipeline CodePipeline/CodeBuild del esquema: lo aporta JUP-131 aparte, como
+código de control en [infra/aws-bootstrap](../infra/aws-bootstrap) y
+[infra/aws-cicd](../infra/aws-cicd), con dos pipelines manuales de creación y
+retirada de un ciclo desechable para dos ensayos y la defensa
+([runbook](deployment/aws-defensa.md), [ADR-0027](adr/ADR-0027-aws-defense-lifecycle.md),
+en estado Proposed).
 
-CockroachDB → PostgreSQL, Cognito y Bedrock requieren adaptaciones hipotéticas;
-no son capacidades integradas ni nuevas tareas de runtime en JUP-060. Las tareas
-ECS están desactivadas por defecto; un apply crearía el resto de recursos con
-coste, por lo que ese flag no es un modo de simulación. Solo se validan formato,
-esquema y pruebas con proveedores mock, sin plan real, credenciales ni apply.
+**Lo que el código admite desde JUP-131, apagado por defecto y sin ejecutar
+nada en AWS.** PostgreSQL como base operativa además de CockroachDB,
+`AUTH_PROVIDER=cognito` (§5) y `EMBEDDING_PROVIDER=bedrock` con Titan V2 en
+`eu-west-1`. Ningún Compose los activa y su evidencia
+([PostgreSQL](evidence/JUP-131-postgresql.md), [Cognito](evidence/JUP-131-cognito.md),
+[Bedrock](evidence/JUP-131-bedrock.md)) es local: no acredita RDS desplegado,
+un login contra Cognito real ni invocaciones a Bedrock. Las tareas ECS siguen desactivadas por defecto; un
+apply crearía el resto de recursos con coste, por lo que ese flag no es un modo
+de simulación. El estado operativo del ensayo (cuotas, regiones, entradas
+pendientes, reviews) cambia a diario y se consulta en el
+[runbook](deployment/aws-defensa.md) y en la
+[nota de continuidad](continuidad/cloud-aws.md), no aquí.
 
 La [propuesta EC2 del 09/10](planning/aws-deployment-proposal.md) queda como
 antecedente histórico: sus preguntas de cuenta/presupuesto, demo y fases
 operativas ya no son pendientes para esta entrega. La aceptación documental
-no exige recursos, migraciones, URL operativa ni pruebas AWS.
+no exige recursos, migraciones, URL operativa ni pruebas AWS; el ensayo de
+JUP-131 es una entrega operativa aparte con su propia evidencia.
 
 ## 7. Por que esta separado asi
 
@@ -456,10 +665,16 @@ no exige recursos, migraciones, URL operativa ni pruebas AWS.
 | API Azure simulada | [ADR-0001](adr/ADR-0001-azure-cost-api-simulation.md): HTTP, paginación y errores sin tenant real; CSV directo no probaría ese contrato. Datos limitados. |
 | LiteLLM/OpenRouter | [ADR-0002](adr/ADR-0002-litellm-openrouter.md): concentrar credenciales/políticas; su aceptación no implica calidad ni gasto autorizado. [ADR-0017](adr/ADR-0017-backend-query-embedding-own-key.md) separa clave del backend y fija compatibilidad de embeddings. |
 | Compose local | [ADR-0015](adr/ADR-0015-local-compose-deployment-boundary.md): topología reproducible; no selecciona Kubernetes, HA o hosting productivo. |
+| MinIO y extracción aislada | [ADR-0022 de artefactos](adr/ADR-0022-document-ingestion-artifact-lifecycle.md) (Proposed): el binario no pasa por la cola ni vive indefinidamente, y el texto normalizado durable permite recuperar y citar sin él. Añade operar MinIO (AGPL-3.0) y herramientas locales de OCR y conversión; la extracción falla cerrada si no hay aislamiento Linux. |
+| Chunking determinista | [ADR-0023 de chunking](adr/ADR-0023-deterministic-document-chunking.md) (Proposed): unidades estructurales reproducibles y sin modelos, a costa de no optimizar el recall. |
+| Recuperación verificada, contextual e híbrida | [ADR-0024](adr/ADR-0024-verified-contextual-retrieval.md) (Proposed): generaciones inmutables por tenant y espacios de embeddings verificados; más almacenamiento y preparación explícita, sin garantía de mejora universal. Apagada por defecto. |
+| Modelo generativo único | [ADR-0026](adr/ADR-0026-default-chat-model.md) (Proposed) resuelve el alias `economicon-chat` a un solo modelo sin alternativa de reserva; [ADR-0025](adr/ADR-0025-chat-model-selection.md) conserva la configuración de evaluación histórica (el archivo `ADR-0023-chat-model-selection.md` es solo un alias hacia él). |
+| Ciclo AWS desechable | [ADR-0027](adr/ADR-0027-aws-defense-lifecycle.md) (Proposed): control separado y pipelines manuales de creación y retirada; no hay despliegue a la fecha del corte (§6.3). |
 
 Se conservan estados de los ADR originales, incluidos los Proposed:
-documentar o integrar no ratifica decisiones. Esta consolidación no introduce
-una decisión arquitectónica nueva.
+documentar o integrar no ratifica decisiones. Los números 0013, 0022 y 0023
+se repiten en archivos distintos; por eso los ADR se citan por su archivo y no
+se renumeran. Esta consolidación no introduce una decisión arquitectónica nueva.
 
 ## 8. Observabilidad, entrega y límites
 
@@ -480,14 +695,19 @@ sus resultados se ven en un dashboard de Grafana aparte, alimentado desde el esq
 [ADR-0022](adr/ADR-0022-assistant-evaluation-results-in-grafana.md)).
 Ese dashboard muestra también tres indicadores medidos para la memoria (calidad de la detección de anomalías, coste de IA facturado frente a estimado, y frescura y reconciliación de los datos de coste): los mide `tools/memory-indicators.py`, que consulta al detector, al gateway de IA y a OpenRouter y escribe informes versionados que `evaluation-dashboard:load` carga como cualquier otro; Grafana no accede a la base del gateway ([nota](continuidad/indicadores-memoria.md)).
 
-[CI](../.github/workflows/ci.yml) ejecuta gobernanza/OpenSpec, pruebas y sintaxis
-de tres servicios Python, lint/test/build/typecheck frontend.
+[CI](../.github/workflows/ci.yml) ejecuta gobernanza/OpenSpec y política JUP,
+pruebas y sintaxis de tres servicios Python, lint/test/build/typecheck del
+frontend, las comprobaciones estáticas de la landing y, desde JUP-131, un
+contrato de aplicación sobre PostgreSQL y las comprobaciones offline de la demo
+AWS.
 [Reviews](../.github/workflows/pr-reviews.yml) aplica el proceso JUP.
 El [workflow CD](../.github/workflows/cd.yml) reutiliza CI y publica elegibilidad
 para el SHA de develop. El [agente privado](deployment/dockerserver-cd.md) consulta
 cada cinco minutos, construye una release aislada, fuerza puertos a loopback y
 ejecuta smoke antes de promover; state.json/journal acreditan despliegue real.
-Este CD usa nueve servicios en modo mock y datos desechables; no incorpora
+Este CD arranca el Compose general sin perfiles (los 10 servicios de larga
+ejecución y los 2 de un solo uso de §6.1, MinIO incluido) en modo mock y datos
+desechables; no incorpora
 automáticamente el gateway dedicado de JUP-078 ni es un despliegue productivo.
 No se deduce despliegue de sus checks. Rama JUP → PR a develop → revisión y
 validación separadas → integración según [CONTRIBUTING](../CONTRIBUTING.md).

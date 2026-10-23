@@ -1,5 +1,25 @@
 # Cloud AWS — arquitectura documental
 
+## Corrección de CI que bloquea PR154 — 23/10/2026
+
+Origen: HAL9000, chat `01a1270c-e332-7462-9c90-706d49ade92c`.
+Usuario pide resolver el fallo de CI comunicado por Víctor. Trabajo separado de
+JUP-138, desde develop `84b53b74d02ff5831ef9dbdd4f9c7d8c40cd4d24`, en
+`fix/JUP-131-ci-release-validation`; sin modificar la rama documental.
+
+Dos causas: processor agota veinte minutos descargando paquetes del mirror Azure;
+AWS offline compara incondicionalmente la aplicación actual con evidencia congelada
+en PR146. Baseline reproducido: 69 pruebas, un error por digest y una omitida.
+La corrección conserva receta/huellas y validación estricta de prepare/runner;
+CI comprueba integridad histórica y regresiones sin renovar aceptación. APT tiene
+reintentos5, esperas HTTP/HTTPS30s y límite total del paso8min.
+
+Controlador local: 74 pruebas, 73 correctas y una omitida (PostgreSQL opt-in).
+La preparación sigue `aws_deployable=false`, incluido el bloqueo por digest.
+Pruebas de CI remoto/publicación aún pendientes en este corte; ver
+[evidencia de corrección](../evidence/JUP-131-ci-regression.md).
+Ningún despliegue AWS, cambio de datos, inferencia, merge ni dispensa de reviews.
+
 ## Excepcion humana de integracion y reconciliacion — 22/10/2026
 
 Origen: HAL9000, chat `01a1270c-e332-7462-9c90-706d49ade92c`.

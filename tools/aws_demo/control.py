@@ -98,8 +98,15 @@ def validate_recipe(recipe):
 
 
 def validate_recipe_files(recipe, root):
+    """Deployment gate: evidence must bind the exact application being deployed."""
     root = Path(root).resolve()
     require(recipe["application_sha256"] == application_digest(root), "Release evidence application tree differs")
+    return validate_recipe_evidence(recipe, root)
+
+
+def validate_recipe_evidence(recipe, root):
+    """Check historical evidence integrity; this does not grant deployability."""
+    root = Path(root).resolve()
     for entry in recipe["evidence"].values():
         path = root / entry["path"]
         require(path.resolve().is_relative_to(root) and path.is_file(), "Evidence file missing or outside source")

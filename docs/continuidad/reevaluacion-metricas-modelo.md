@@ -84,6 +84,26 @@ en push y pasa en PR. El nuevo commit tiene sus propios checks pendientes.
 Origen: chat «Levantar Jupiter en dockerDevelop»,
 `01a16421-03a0-7460-b110-24738407ccb1`. Verificación: 2026-10-23.
 
+## Integración del PR156 solicitada el 23/10/2026
+
+El usuario pidió «Haz el merge de PR 156» después de la entrega del suplemento.
+Se prepara el squash mediante el PR existente y el mecanismo administrativo
+del repositorio, registrando la integración como excepción: no existen reviews
+humanas ni se afirma que la CI esté íntegramente conforme. En el head 2be5edd,
+JUP reviews y OpenSpec fallan; otros checks seguían ejecutándose al preparar
+esta integración. La orden de merge no acepta las campañas ni convierte el juez
+IA en revisión humana.
+
+Reconciliado sin conflictos con develop `3d4e574` (PR154 y PR157). Las evidencias
+JUP-133, el manifiesto y el dataset etiquetado quedan idénticos al head anterior;
+el contrato oficial rows-v1 vuelve a producir 18 ejecuciones / 1670 resultados.
+No se cambia DockerDevelop, DockerServer, los accesos o el límite de 10 USD.
+No se añaden inferencias ni nuevas pruebas funcionales. El PR enlazado conserva
+el estado y SHA definitivos del merge; el expediente privado registra el recibo
+de GitHub. Las protecciones permanecen activas, sin pushes directos a develop.
+
+Origen y fecha: mismo chat `01a16421-03a0-7460-b110-24738407ccb1`, 2026-10-23.
+
 ## Qué quedó hecho antes de las seis repeticiones
 
 - Inventario de qué medidas dependen del modelo ([inventario](../validation/model-dependence-inventory.md)) y lista de cifras de la memoria afectadas ([cifras](../validation/model-change-memory-figures.md)). La memoria no se copia al repositorio.

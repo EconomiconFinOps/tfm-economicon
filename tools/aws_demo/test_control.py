@@ -133,10 +133,10 @@ class PlanTests(unittest.TestCase):
 
 
 class ReleaseTests(unittest.TestCase):
-    def test_versioned_release_matches_application_and_acceptance_evidence(self):
+    def test_versioned_recipe_preserves_evidence_integrity_without_accepting_current_apps(self):
         root = Path(__file__).parents[2]
         recipe = control.validate_recipe(json.loads((root / "infra/aws-cicd/release.json").read_text()))
-        control.validate_recipe_files(recipe, root)
+        control.validate_recipe_evidence(recipe, root)
 
     def test_recipe_rejects_unreviewed_models_and_inline_task_keys(self):
         recipe = json.loads((Path(__file__).parents[2] / "infra/aws-cicd/release.json").read_text())
