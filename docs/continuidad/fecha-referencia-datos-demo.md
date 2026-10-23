@@ -21,6 +21,26 @@ rama `feat/JUP-119-coherent-cost-data-reference-date`. [ADR-0021](../adr/ADR-002
 
 ## Estado y límites
 
+Actualización específica de DockerDevelop, verificada el **23/10/2026**:
+el usuario solicitó publicar también el dataset usado con etiquetas. Se añade
+[la instantánea y su guía](../../fixtures/azure-cost/demo-tagged-20261023/README.md)
+al PR #156 / JUP-133: 1.370 registros (1.331 sintéticos y 39 públicos derivados),
+CSV de 11 columnas y manifiesto. Se cotejaron todas las claves/importes con la
+fuente versionada y todas las etiquetas con el enriquecimiento del 22/10.
+157 registros sin owner, 119 sin cost_center y 36 sin proyecto, deliberadamente.
+No se publican IDs operativos, credenciales ni campos de cuenta/recurso.
+La exportación de solo lectura no modifica runtime, accesos, cuotas ni el tope
+de 10 USD. No se hicieron llamadas nuevas al modelo.
+
+Esta instancia sí dispone de etiquetas añadidas posteriormente en la base;
+supersede para ella la limitación de etiquetado indicada abajo. El generador y
+la ingesta estándar siguen sin reproducir ese enriquecimiento. La instantánea
+no es un importador ni un backup: para cargarla en otro entorno hará falta una
+operación específica, aún no realizada. Origen: «Levantar Jupiter en
+dockerDevelop», chat `01a16421-03a0-7460-b110-24738407ccb1`.
+
+Las conclusiones siguientes conservan su corte del 13/10:
+
 - Los datos son de demostración (sintéticos o públicos con fechas desplazadas): no son facturas de Azure de 2026.
 - La cobertura de etiquetas, los responsables por centro de coste, propietario o aplicación y el desglose por grupo de
   recursos no tienen datos en la demo (limitación de la API de consulta, no del producto).

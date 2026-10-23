@@ -45,6 +45,12 @@ Regresión offline: 12 pruebas offline: 9 pasan y 3 fallan por expectativas fija
 
 Origen: chat «Levantar Jupiter en dockerDevelop», `01a16421-03a0-7460-b110-24738407ccb1`. Verificación y actualización: 2026-10-23.
 
+Ampliación solicitada después de la carga: publicar también el dataset Azure
+con etiquetas usado en DockerDevelop. [Instantánea de 1.370 registros](../../fixtures/azure-cost/demo-tagged-20261023/README.md)
+y [continuidad de datos](fecha-referencia-datos-demo.md), con CSV, procedencia y
+checksum. Extracción de solo lectura y comprobación contra la fuente; no añade
+inferencias, juicios ni cargas de base. Se incorpora al mismo PR #156.
+
 ## Qué quedó hecho
 
 - Inventario de qué medidas dependen del modelo ([inventario](../validation/model-dependence-inventory.md)) y lista de cifras de la memoria afectadas ([cifras](../validation/model-change-memory-figures.md)). La memoria no se copia al repositorio.

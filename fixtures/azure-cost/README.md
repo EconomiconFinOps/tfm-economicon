@@ -12,3 +12,8 @@ comando documentado en `docs/data/azure-sample-dataset.md`.
 - El ZIP original no debe añadirse al repositorio.
 
 Son datos públicos de ejemplo y deben utilizarse en desarrollo y pruebas.
+
+La [instantánea etiquetada de DockerDevelop del 23/10/2026](demo-tagged-20261023/README.md)
+añade el conjunto usado en la demo: 1.370 registros normalizados, sintéticos o
+derivados de estas muestras, con sus etiquetas y carencias deliberadas. Su
+manifiesto conserva procedencia y checksum; no sustituye las fuentes anteriores.
