@@ -6,11 +6,37 @@ Tarjeta: [JUP-133](https://trello.com/c/Yv1ETc2G). Cambio de modelo: [JUP-132](h
 
 | Concepto | Valor |
 | --- | --- |
-| Presupuesto máximo total | **1,5 USD** en OpenRouter, por todas las campañas de este plan |
-| Quién lo fijó | Lucia Mateo, 21/10/2026 |
-| Clave | La única clave de OpenRouter de Lucia; no se guarda ni se escribe en el repositorio |
+| Presupuesto máximo total | **10 USD** en OpenRouter, por todas las campañas de este plan, incluido el gasto anterior; también se conserva el límite global de 10 USD de la demo, sin sumar ambos |
+| Quién lo fijó | Autorización expresa «Autorizo 10» del usuario el 23/10/2026; sustituye el tope intermedio de 6,50 USD y los 1,50 USD originales |
+| Clave | Para DockerDevelop, la configuración privada existente del gateway, sin modificar credenciales; el registro histórico del 21–22/10 corresponde a la clave de Lucia. No se guarda ninguna clave en el repositorio |
 | Proveedor y modelo | Los que deje JUP-132 en `economicon-chat`. No se fija otro proveedor para medir |
-| Estado de la autorización | **El tope está fijado; el lanzamiento está sin autorizar** hasta la confirmación de abajo |
+| Estado de la autorización | Lanzamiento y tope total autorizados expresamente por el usuario el 23/10/2026; admisión serial con reserva intacta de 6,50 USD, histórico conservado y parada si no cabe la siguiente operación |
+
+### Actualización para DockerDevelop, 23/10/2026
+
+La autorización expresa del usuario sustituye para las tres repeticiones de
+JUP-070 A y las tres de JUP-071 la confirmación de Lucía requerida abajo. No
+autoriza al agente a escribir juicios humanos ni a reemplazar datos en una base
+compartida. Sin dos personas designadas, los resultados serán provisionales.
+El límite global de la demo permanece en 10 USD; no se cambian sus claves,
+cuotas ni accesos.
+
+El mínimo del colector es una **reserva por operación**, que se añade al consumo
+acumulado. La autorización posterior de 10 USD resuelve el bloqueo inicial:
+se retienen ≈0,077 USD del plan anterior y se asigna al trabajo nuevo un máximo
+de 9,923 USD, sujeto además al consumo y a las subcuotas vigentes de la demo.
+No se reinician contadores ni se libera una reserva con coste desconocido.
+La propuesta intermedia de 7,50 USD queda superada. El
+[informe de preparación](../evidence/JUP-133/JUP-133-infra-preflight-report.md)
+conserva el corte previo al nuevo permiso; no describe el estado posterior.
+
+### Resultado de las seis repeticiones en DockerDevelop
+
+Recogidas 171 operaciones, con informes separados y comparación; resultados provisionales sin juicios humanos. Gasto nuevo del gateway: **0.5291594448 USD**; acumulado aproximado con el histórico: **0.6061594448 USD / 10 USD**. Costes por repetición, limitaciones e incidencias en el [informe comparativo](../evidence/JUP-133/JUP-133-infra-comparison-report.md); estado de la carga y del dashboard en el [informe de carga](../evidence/JUP-133/JUP-133-infra-load-report.md). No se ha aceptado ninguna campaña.
+
+Las condiciones siguientes y el registro de gasto conservan el contexto
+histórico del 21–22/10; la excepción de autorización anterior se limita a este
+encargo.
 
 El tope no equivale a una orden de gastar. Antes de lanzar cada campaña con gasto hace falta una confirmación expresa de Lucia en ese momento, con estos tres datos delante:
 

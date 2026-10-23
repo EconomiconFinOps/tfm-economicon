@@ -293,6 +293,23 @@ El resultado de cada caso (`outcome`) combina comprobaciones objetivas por regla
 
 La herramienta lleva esta tabla fija y una prueba falla si el catálogo de JUP-067 incorpora un identificador sin clasificar.
 
+### Suplementos con juez IA (JUP-133)
+
+Una revisión autorizada con un agente se declara automatizada y provisional: no
+rellena las filas de juicio humano ni simula dos personas. JUP-133 conserva todas
+las filas originales y añade **`agent_` tanto a `grp` como a `metric_id`**, con
+`judgment=automatic`. El doble prefijo evita mezclar métricas en tablas o series
+que agrupan por identificador sin mostrar el grupo. Los recuentos de casos del
+suplemento combinan el juicio IA con las reglas originales, no prueban consenso.
+
+Los tres paneles de DockerDevelop se titulan «Juez IA» y muestran cobertura,
+robustez por repetición y métricas disponibles de JUP-070 A. Los paneles humanos
+anteriores conservan sus `not_measured`; no se atribuyen sus valores al agente.
+La falta de telemetría no se convierte en medida mediante un juicio: distancias,
+etapas y disponibilidad no capturadas permanecen `not_measured`. Véanse el
+[método y resultados](../evidence/JUP-133/JUP-133-agent-review-report.md) y el
+[informe de carga verificada](../evidence/JUP-133/JUP-133-agent-load-report.json).
+
 ## Señales en vivo (sección C)
 
 Son los síntomas de salud que ya emite el backend, leídos de Prometheus y no de esta base: consultas por minuto, latencia p95, tasa de error y las proporciones de búsquedas vacías y de fallos de recuperación sobre las consultas que terminaron. La sección enlaza al [dashboard de métricas técnicas](../../apps/monitoring/grafana/dashboards/technical-metrics.json) y no mezcla sus consultas con las de las campañas.

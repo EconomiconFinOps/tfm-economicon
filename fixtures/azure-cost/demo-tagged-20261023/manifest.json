@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "kind": "sanitized-demo-cost-snapshot",
+  "captured_at": "2026-10-23T16:49:57.499723+00:00",
+  "path": "azure-cost-tagged.csv",
+  "sha256": "eaa03413890aae9540e3324680fa6f424c8de7acd31a8a97b1800541d9b0edd8",
+  "encoding": "utf-8",
+  "delimiter": ",",
+  "columns": [
+    "tenant_id",
+    "subscription_id",
+    "usage_date",
+    "pretax_cost",
+    "currency",
+    "service_name",
+    "project",
+    "owner",
+    "environment",
+    "application",
+    "cost_center"
+  ],
+  "rows": 1370,
+  "empty_cells": "Absent optional service/project/tag values; never a zero cost.",
+  "numeric_format": "pretax_cost is exact decimal text with 12 fractional digits; never sum different currencies.",
+  "window": {
+    "end": "2026-10-30",
+    "start": "2026-07-01"
+  },
+  "source_environment": "DockerDevelop demo",
+  "source_fixture": "../demo/demo-cost.csv",
+  "source_fixture_sha256": "aded502bb9477baa0c2b88ab8affc75e12392993e4c1bc19acdaca70f1937256",
+  "source_fixture_rows": 1381,
+  "source_public_release": "microsoft/finops-toolkit v14",
+  "source_public_archive_sha256": "d7769d9e759b5968a68affcb364235ad938a705168c546ab86cad5bbb27ff607",
+  "public_shift_days": 822,
+  "license": "../LICENSE.microsoft-finops-toolkit.txt",
+  "provenance_record_counts": {
+    "public-shifted": 39,
+    "synthetic": 1331
+  },
+  "totals_by_tenant_currency": {
+    "tenant-core|EUR": {
+      "records": 779,
+      "pretax_cost": "106265.000000000000"
+    },
+    "tenant-growth|EUR": {
+      "records": 490,
+      "pretax_cost": "84823.300000000000"
+    },
+    "tenant-growth|USD": {
+      "records": 101,
+      "pretax_cost": "9007199254741838.372894883590"
+    }
+  },
+  "synthetic_enrichment": {
+    "applied_at": "2026-10-22",
+    "added_tags": [
+      "owner",
+      "environment",
+      "application",
+      "cost_center"
+    ],
+    "missing_owner": 157,
+    "missing_cost_center": 119,
+    "neither_of_these_missing": 1094,
+    "original_project_retained": true,
+    "project_empty_records": 36,
+    "note": "The 1094 count concerns only the four added tags; it does not certify the original project tag."
+  },
+  "extreme_cost_case": {
+    "subscription": "synthetic-growth-usd",
+    "date": "2026-10-03",
+    "service": "Archive",
+    "pretax_cost": "9007199254740993.000000000000",
+    "currency": "USD",
+    "purpose": "Synthetic precision case above 2^53, retained from the source fixture."
+  },
+  "checks": {
+    "matches_all_1370_normalized_source_cost_records": true,
+    "live_non_tag_data_unchanged_since_enrichment": true,
+    "live_tags_match_original_enrichment_rule": true,
+    "all_subscriptions_in_public_or_synthetic_source": true,
+    "live_account_and_resource_fields_all_null": true,
+    "database_read_only": true
+  },
+  "excluded_fields": [
+    "id",
+    "ingestion_id",
+    "created_at",
+    "source_row_hash",
+    "billing_account_id",
+    "subscription_name",
+    "resource_group",
+    "resource_id",
+    "resource_name",
+    "consumed_quantity",
+    "consumed_unit",
+    "resource_group_conflicts",
+    "dimensions"
+  ],
+  "limitations": [
+    "Not real customer invoices or resource inventory.",
+    "Normalized cost snapshot, not an Azure raw export or database restore.",
+    "No import or environment modification performed; default demo generation still lacks these extra tags.",
+    "Dataset verification does not imply model campaign acceptance."
+  ]
+}
