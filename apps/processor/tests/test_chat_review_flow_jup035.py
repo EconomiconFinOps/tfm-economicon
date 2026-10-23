@@ -63,7 +63,7 @@ def test_private_plan_then_only_final_stream_and_aggregate_usage(monkeypatch,cap
     caplog.set_level('INFO',logger='app.clients.chat_gateway')
     with diagnostic_scope('11111111-1111-4111-8111-111111111111','22222222-2222-4222-8222-222222222222'):
         records=execute(instance)
-    assert len(requests)==2 and [item['max_tokens'] for item in requests]==[1000,2200]
+    assert len(requests)==2 and [item['max_tokens'] for item in requests]==[1000,10000]
     assert all(item['num_retries']==0 for item in requests)
     assert all(item['temperature']==0 for item in requests)
     assert requests[0]['response_format']['json_schema']['name']=='PrivateAnswerPlan'
@@ -119,7 +119,7 @@ def test_draft_schema_and_local_bounds_and_no_authority():
         with pytest.raises(ValueError):validate_draft(plan,[])
     assert all(item['role']=='user' for item in phase_messages(CONTEXT['messages'],'final',PLAN)[1:])
     reserve=admission_tokens(len,CONTEXT['messages'],{'type':'object'},[])
-    assert reserve['total_output_tokens']==3200
+    assert reserve['total_output_tokens']==11000
     assert reserve['total_input_reserved_tokens']>reserve['draft_input_tokens']
 
 

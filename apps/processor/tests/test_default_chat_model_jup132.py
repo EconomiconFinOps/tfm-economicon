@@ -45,6 +45,6 @@ def test_new_chat_requires_flash_and_rejects_legacy_asset():
     legacy = Path(os.getenv("JUP132_LEGACY_TOKENIZER", ROOT / "chat/v2/tokenizer.json"))
     resources = chat_resources(ROOT / "chat/v4", flash)
     assert resources.prompt_version.startswith("jup-035.chat.v4:")
-    assert json.loads(resources.manifest_bytes)["budgets"]["output_tokens"] == 3200
+    assert json.loads(resources.manifest_bytes)["budgets"]["output_tokens"] == 11000
     with pytest.raises(ValueError):
         chat_resources(ROOT / "chat/v4", legacy)

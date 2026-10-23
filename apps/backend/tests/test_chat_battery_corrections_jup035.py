@@ -150,10 +150,10 @@ def test_private_schema_derives_visible_evidence_and_preserves_base(financial_al
 
 def test_chat_output_budget_is_separate_from_ingestion(monkeypatch):
     from app.core.context_budget import budget
-    assert budget('chat')['output_tokens'] == 3200
+    assert budget('chat')['output_tokens'] == 11000
     monkeypatch.setenv('CHAT_MAX_OUTPUT_TOKENS', '1600')
     assert budget('chat')['output_tokens'] == 1600
-    for value in ['0', '3201', '-1', '1.5']:
+    for value in ['0', '11001', '-1', '1.5']:
         monkeypatch.setenv('CHAT_MAX_OUTPUT_TOKENS', value)
         with pytest.raises(ValueError):
             budget('chat')

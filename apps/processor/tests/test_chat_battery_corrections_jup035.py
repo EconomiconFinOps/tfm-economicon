@@ -59,10 +59,10 @@ def test_private_schema_branches_preserve_scope_and_financial_authority(financia
 
 def test_chat_output_budget_reserves_configured_output(monkeypatch):
     from app.core.context_budget import budget
-    assert budget('chat')['output_tokens'] == 3200
+    assert budget('chat')['output_tokens'] == 11000
     monkeypatch.setenv('CHAT_MAX_OUTPUT_TOKENS', '1600')
     assert budget('chat')['output_tokens'] == 1600
-    monkeypatch.setenv('CHAT_MAX_OUTPUT_TOKENS', '3201')
+    monkeypatch.setenv('CHAT_MAX_OUTPUT_TOKENS', '11001')
     with pytest.raises(ValueError):
         budget('chat')
 
