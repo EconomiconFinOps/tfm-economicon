@@ -1,5 +1,24 @@
 # Arquitectura técnica — JUP-060
 
+## Actualización JUP-138 — 22/10/2026
+
+[Tarjeta](https://trello.com/c/WvzuP74W/130-jup-138). `docs/architecture.md`
+pasa del corte `a0e9a56` (11/10) a `develop 03e97ce6` (22/10). Se incorporan
+MinIO y la subida de archivos (JUP-124), el chunking y la recuperación
+contextual e híbrida (JUP-125, JUP-127), el chat generativo bajo
+`CHAT_ENABLED=false` y su red privada (JUP-122, JUP-123, JUP-132), la landing
+pública (JUP-089) y, en versión mínima, el código y el pipeline AWS de JUP-131
+sin despliegue. Los recuentos de Compose salen de `docker compose config`:
+10 servicios de larga ejecución, 2 de un solo uso y 6 volúmenes por defecto.
+
+No cambia código, pruebas, ADR ni sus estados. El inventario de fuentes, la tabla
+de desfases corregidos y los hallazgos fuera de alcance están en el
+[review del change archivado](../../openspec/changes/archive/2026-10-22-jup-138-actualizar-architecture/review.md).
+La vista sigue sin acreditar calidad generativa extremo a extremo, un despliegue
+vivo ni la aceptación del ensayo AWS. Desde aquí, quien integre un servicio de
+Compose, una ruta o un flag de chat o RAG debería actualizar el documento en
+el mismo PR: no hay ninguna comprobación automática que avise del desfase.
+
 Verificado 11/10/2026. Origen «Implementa JUP-060», chat
 `01a12ad8-69f9-75b1-9003-94d5e33386be`. [Tarjeta](https://trello.com/c/alMIpBOQ),
 [PR92](https://github.com/EconomiconFinOps/tfm-economicon/pull/92).
