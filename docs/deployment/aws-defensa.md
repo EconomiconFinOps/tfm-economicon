@@ -1,5 +1,23 @@
 # CI/CD AWS y primer ensayo — JUP-131
 
+## CI del controlador y aceptación de la aplicación — 23/10/2026
+
+`AWS demo offline` comprueba la receta, las huellas de sus evidencias y scripts,
+y las guardas del controlador. Una CI verde no renueva la aceptación de `apps/`.
+La receta versionada conserva la huella del candidato que se evaluó; no debe
+actualizarse automáticamente al cambiar la aplicación.
+
+`prepare.py` y el runner siguen exigiendo coincidencia exacta de la aplicación
+mediante `validate_recipe_files`. Si difiere, la preparación registra
+`Release evidence application tree differs` y `aws_deployable: false`; el runner
+rechaza la receta. `--allow-incomplete` sólo permite guardar ese informe bloqueado
+en CI. Antes de desplegar hay que evaluar el nuevo candidato y registrar evidencia
+que lo respalde, además de satisfacer los demás prerrequisitos de este runbook.
+
+La instalación de LibreOffice/Tesseract en CI tiene un máximo de ocho minutos,
+cinco reintentos APT y esperas HTTP/HTTPS de treinta segundos por operación de red.
+El límite del paso acota el total; no garantiza disponibilidad del mirror.
+
 ## Correcciones de revisión — 22/10/2026
 
 Las ocho solicitudes PR146 están implementadas con regresiones en
