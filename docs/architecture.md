@@ -577,11 +577,13 @@ frontera marca):
 
 | Elemento | Quién lo usa | Función y frontera |
 | --- | --- | --- |
-| Red `default` | Todos los servicios | Comunicación de aplicación; no restringe egress. |
+| Red `default` | Todos los servicios salvo `litellm-db` | Comunicación de aplicación; no restringe egress. |
 | Red `chat-private` (interna) | Backend y processor | Único camino del chat generativo, con el puerto 8003 del processor sin publicar; sin salida a internet. |
 | Red `gateway` (solo con el perfil `ai`) | LiteLLM y su PostgreSQL | Mantiene la base del gateway fuera de la red de aplicación: solo `litellm` está también en `default`, para que backend y processor lo alcancen. No es interna: LiteLLM publica su puerto de administración en loopback y necesita salida hacia el proveedor. |
 | Secreto `chat-hmac` | Backend y processor | Clave compartida que firma las peticiones del chat; ambos la leen del archivo montado en `/run/secrets/chat-hmac`, no de una variable de entorno. |
-| Secreto `summary-api-key` (solo con el overlay `ai`) | Solo el processor | Clave virtual propia del resumen de conversaciones, leída de `SUMMARY_API_KEY_FILE` y distinta de las claves de chat y de embeddings; el overlay no arranca sin ese archivo. | Seguir los recorridos mock/IA/retorno del
+| Secreto `summary-api-key` (solo con el overlay `ai`) | Solo el processor | Clave virtual propia del resumen de conversaciones, leída de `SUMMARY_API_KEY_FILE` y distinta de las claves de chat y de embeddings; el overlay no arranca sin ese archivo. |
+
+Seguir los recorridos mock/IA/retorno del
 [README](../README.md), con proyectos separados para índices mock y reales.
 Frontend sirve con **Vite preview**, no servidor de producción.
 Las cuatro apps usan usuario sin privilegios, raíz de solo lectura y tmpfs;

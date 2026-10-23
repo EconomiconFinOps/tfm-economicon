@@ -151,6 +151,11 @@ Comprobaciones ejecutadas:
   `#7-por-que-esta-separado-asi`; los dos títulos no han cambiado.
 - Diagramas Mermaid: los 10 se analizan y renderizan sin error con Mermaid 10.9.1 en Chrome headless. No se
   ha comparado la maquetación visual con la vista previa de GitHub.
+- Tablas GFM: las 5 tablas de `architecture.md` tienen las mismas celdas que su cabecera y una línea en blanco
+  detrás. Esto se comprobó tras la segunda review de Paris, que detectó que la tabla de redes y secretos de
+  §6.1 absorbía como filas siete líneas de prosa (13 filas en lugar de 6) y que la fila de `default` decía
+  «todos los servicios» siendo `litellm-db` solo de `gateway`. Renderizada con `marked` (GFM): ahora 6 filas
+  de 3 celdas y la frase «Seguir los recorridos…» en un párrafo.
 - `develop` al cierre sigue en `03e97ce6`: el corte no se ha movido (tarea 4.4).
 - `corepack pnpm openspec:validate`, `jup:check` y `jup:cleanup:check`: ver el cierre de la tarea 4.6.
 - CI de GitHub: el job «AWS demo offline» (paso «Test CI/CD controller without AWS», error `Release evidence
