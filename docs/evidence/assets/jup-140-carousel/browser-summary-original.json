@@ -1,0 +1,97 @@
+{
+  "runs": [
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "samples": 54,
+      "seconds": 118.319,
+      "wraps": 3,
+      "maxGap": 18.00006103515625,
+      "maxUncoveredEdge": 15.80401611328125,
+      "maxPageOverflow": 0,
+      "speedRange": [
+        29.60295949325372,
+        29.990689572901214
+      ]
+    },
+    {
+      "viewport": {
+        "width": 2560,
+        "height": 1440
+      },
+      "samples": 49,
+      "seconds": 104.373,
+      "wraps": 3,
+      "maxGap": 18.00006103515625,
+      "maxUncoveredEdge": 14.463623046875,
+      "maxPageOverflow": 0,
+      "speedRange": [
+        29.602020490849874,
+        30.052568796723058
+      ]
+    },
+    {
+      "viewport": {
+        "width": 3440,
+        "height": 1440
+      },
+      "samples": 49,
+      "seconds": 104.779,
+      "wraps": 3,
+      "maxGap": 18.000015258789062,
+      "maxUncoveredEdge": 15.82177734375,
+      "maxPageOverflow": 0,
+      "speedRange": [
+        29.603502827305952,
+        29.992645973032
+      ]
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "samples": 48,
+      "seconds": 100.249,
+      "wraps": 4,
+      "maxGap": 18.000015258789062,
+      "maxUncoveredEdge": 16.733428955078125,
+      "maxPageOverflow": 0,
+      "speedRange": [
+        29.60203563604991,
+        424.7045838006652
+      ]
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "samples": 44,
+      "seconds": 102.13,
+      "wraps": 3,
+      "maxGap": 18,
+      "maxUncoveredEdge": 14.61663818359375,
+      "maxPageOverflow": 0,
+      "speedRange": [
+        29.630931052649963,
+        30.037202121834756
+      ]
+    }
+  ],
+  "playbackProbe": {
+    "app": "https://demo-jupiter.danteinferno.es/",
+    "currentTime": 9.199891,
+    "muted": true,
+    "paused": false,
+    "readyState": 4,
+    "src": "/media/presentation.mp4",
+    "theme": "dark"
+  },
+  "limits": [
+    "First mobile run includes initial ResizeObserver transition; stable mobile repeated separately.",
+    "Reduced-motion interactive NOT_TESTED; current PM ratification 24/10/2026 14:42:20."
+  ]
+}

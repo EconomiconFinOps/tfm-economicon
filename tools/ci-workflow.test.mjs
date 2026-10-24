@@ -304,7 +304,7 @@ test("checks the independent public landing without production dependencies", ()
   const local = job.steps.filter(step => step["working-directory"] === "apps/landing");
   assert.deepEqual(local.map(step => step.run), [
     "node --check src/app.js && node --check scripts/build.mjs && node --check scripts/serve.mjs",
-    "node --test tests/build.test.mjs tests/server.test.mjs tests/llms.test.mjs",
+    "node --test tests/build.test.mjs tests/server.test.mjs tests/llms.test.mjs tests/signal-loop.test.mjs",
     "node scripts/build.mjs"
   ]);
   for (const step of local) { assert.equal(step.if, undefined); assert.equal(step["continue-on-error"], undefined); }
