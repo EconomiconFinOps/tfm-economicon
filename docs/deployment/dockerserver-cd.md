@@ -78,10 +78,12 @@ no se sustituye silenciosamente. La cuenta Docker sigue siendo de confianza.
 Se niega a sobrescribir configuración/secretos existentes. No copiar esos
 archivos al repositorio ni imprimir `compose config` en evidencias: contiene
 secretos. Antes de activar, verificar `Linger=yes` y que los puertos
-19252–19263 y 19352–19363 estén libres. Otras bases se eligen en `init`.
+19252–19264 y 19352–19364 estén libres (13 puertos por ranura). Otras bases
+se eligen en `init`.
 
-MinIO usa el último puerto de cada ranura (base + 11): `19263` en A y
-`19363` en B con la base inicial. `init` genera credenciales independientes
+MinIO usa el puerto base + 11: `19263` en A y `19363` en B con la base
+inicial. Landing usa el último puerto de cada ranura, base + 12: `19264` en A
+y `19364` en B. `init` genera credenciales independientes
 de administrador y de servicio, bucket `document-ingestion` y región `us-east-1`.
 Al preparar una nueva release en una raíz anterior, el agente añade sólo los
 valores documentales ausentes y `GRAFANA_EVALUATION_DB_PASSWORD` a `secrets.json`, sin rotar ni sobrescribir los
