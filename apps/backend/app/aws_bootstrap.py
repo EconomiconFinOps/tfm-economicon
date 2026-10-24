@@ -6,6 +6,10 @@ from app.db.migration_runner import MigrationRunner
 
 
 def execute(context, phase):
+    if phase == 'monitoring':
+        from app.aws_atlas import prepare_monitoring
+        prepare_monitoring(context)
+        return
     if phase == 'fixtures':
         from app.aws_bootstrap_identity import ensure_identity, bind_identity
         identity = ensure_identity(context)

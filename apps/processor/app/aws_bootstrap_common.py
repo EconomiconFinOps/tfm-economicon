@@ -38,6 +38,8 @@ def load_inputs(environment=None):
             require(re.fullmatch(re.escape(prefix) + r'rds!db-[A-Za-z0-9-]+', value['database_admin_secret_arns'][key]))
         for key in ['backend', 'processor', 'azure-cost-api']:
             require(re.fullmatch(re.escape(prefix + cluster + '/' + key + '/runtime-') + r'[A-Za-z0-9]{6}', value['runtime_secret_arns'][key]))
+        if 'grafana' in value['runtime_secret_arns']:
+            require(re.fullmatch(re.escape(prefix + cluster + '/grafana/runtime-') + r'[A-Za-z0-9]{6}', value['runtime_secret_arns']['grafana']))
         return value
     except Exception:
         raise BootstrapError('Explicit ECS bootstrap and owned resource references are required.') from None
@@ -140,7 +142,7 @@ def grant_application_roles(engine, roles):
 def run_entrypoint(component, execute):
     try:
         inputs = load_inputs()
-        require(len(sys.argv) == 2 and sys.argv[1] in {'database', 'fixtures', 'broker', 'reindex'})
+        require(len(sys.argv) == 2 and sys.argv[1] in {'database', 'fixtures', 'broker', 'reindex', 'monitoring'})
         import boto3
         from botocore.config import Config
         config = Config(signature_version='v4', ignore_configured_endpoint_urls=True, proxies={},

@@ -33,7 +33,7 @@ class Secrets:
 
 def inputs():
     prefix = 'arn:aws:secretsmanager:eu-west-1:123456789012:secret:economicon-ensayo1/'
-    outputs = {'runtime_secret_arns': {key: prefix + key + '/runtime-ABC123' for key in ['backend', 'processor', 'azure-cost-api']},
+    outputs = {'runtime_secret_arns': {key: prefix + key + '/runtime-ABC123' for key in ['backend', 'processor', 'azure-cost-api', 'grafana']},
                'rehearsal_secret_arn': prefix + 'rehearsal/credentials-ABC123',
                'database_endpoints': {key: {'host': f'economicon-ensayo1-{key}.synthetic.eu-west-1.rds.amazonaws.com', 'port': 5432, 'database': database}
                     for key, database in [('operational', 'economicon'), ('vectors', 'embeddings')]},
@@ -89,7 +89,7 @@ class BootstrapTests(unittest.TestCase):
                      redirect_stdout(output), redirect_stderr(errors):
                     self.assertEqual(bootstrap.main(), 1 if fail_broker else 0)
                 phases = [call.kwargs['family'].rsplit('-', 1)[-1] for call in ecs.register_task_definition.call_args_list]
-                self.assertEqual(phases, ['database', 'database', 'broker'] + ([] if fail_broker else ['fixtures', 'fixtures']))
+                self.assertEqual(phases, ['database', 'database', 'broker'] + ([] if fail_broker else ['fixtures', 'fixtures', 'monitoring']))
                 manifest = json.loads((work / 'bootstrap-tasks.json').read_text())
                 self.assertEqual(manifest['events'][-1]['status'], 'FAILED' if fail_broker else 'SUCCEEDED')
                 self.assertEqual(ecs.deregister_task_definition.call_count, len(phases))
@@ -109,10 +109,10 @@ class BootstrapTests(unittest.TestCase):
         config, outputs = inputs()
         client = Secrets()
         bundle = bootstrap.ensure_runtime_secrets(client, config, outputs)
-        self.assertEqual(len(client.writes), 4)
+        self.assertEqual(len(client.writes), 5)
         again = bootstrap.ensure_runtime_secrets(client, config, outputs)
         self.assertEqual(bundle, again)
-        self.assertEqual(len(client.writes), 4)
+        self.assertEqual(len(client.writes), 5)
         backend = json.loads(client.values[outputs['runtime_secret_arns']['backend']])
         processor = json.loads(client.values[outputs['runtime_secret_arns']['processor']])
         self.assertEqual(backend['CHAT_HMAC_KEY'], processor['CHAT_HMAC_KEY'])
