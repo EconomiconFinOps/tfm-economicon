@@ -262,7 +262,7 @@ jobs:
         run: node --check src/app.js && node --check scripts/build.mjs && node --check scripts/serve.mjs
       - name: Test public artifact and static server
         working-directory: apps/landing
-        run: node --test tests/build.test.mjs tests/server.test.mjs tests/llms.test.mjs
+        run: node --test tests/build.test.mjs tests/server.test.mjs tests/llms.test.mjs tests/signal-loop.test.mjs
       - name: Build non-indexable public artifact
         working-directory: apps/landing
         run: node scripts/build.mjs
