@@ -1,27 +1,48 @@
-const menuButton = document.querySelector('.menu-button');
-const mobileNav = document.querySelector('#mobile-nav');
+const root=document.documentElement;
+const themeButton=document.querySelector('.theme-toggle');
+let storedTheme=null;try{storedTheme=localStorage.getItem('economicon-landing-theme');}catch{}
+const initialTheme=storedTheme==='dark'||storedTheme==='light'?storedTheme:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+function setTheme(theme,remember=false){root.dataset.theme=theme;themeButton.setAttribute('aria-pressed',String(theme==='dark'));if(remember)try{localStorage.setItem('economicon-landing-theme',theme);}catch{}}
+setTheme(initialTheme);themeButton.addEventListener('click',()=>setTheme(root.dataset.theme==='dark'?'light':'dark',true));
+const menuButton=document.querySelector('.menu-button');const mobileNav=document.querySelector('#mobile-nav');
 function closeMenu(){menuButton.setAttribute('aria-expanded','false');menuButton.setAttribute('aria-label','Abrir menú');mobileNav.hidden=true;}
 menuButton.addEventListener('click',()=>{const open=menuButton.getAttribute('aria-expanded')!=='true';menuButton.setAttribute('aria-expanded',String(open));menuButton.setAttribute('aria-label',open?'Cerrar menú':'Abrir menú');mobileNav.hidden=!open;});
 mobileNav.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeMenu));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menuButton.getAttribute('aria-expanded')==='true'){closeMenu();menuButton.focus();}});
+const motionButton=document.querySelector('#motion-toggle');motionButton.addEventListener('click',()=>{const paused=document.body.classList.toggle('motion-paused');motionButton.textContent=paused?'Reanudar movimiento':'Pausar movimiento';});
 const tabs=[...document.querySelectorAll('[role=tab]')];
-const tabQuery=matchMedia('(max-width:600px)');
-const tabList=document.querySelector('[role=tablist]');
-function syncTabOrientation(){tabList.setAttribute('aria-orientation',tabQuery.matches?'horizontal':'vertical');}
-syncTabOrientation();tabQuery.addEventListener('change',syncTabOrientation);
-function selectTab(tab,focus=false){tabs.forEach(t=>{const selected=t===tab;t.setAttribute('aria-selected',String(selected));t.tabIndex=selected?0:-1;document.getElementById(t.getAttribute('aria-controls')).hidden=!selected;});if(focus)tab.focus();}
-tabs.forEach((tab,index)=>{tab.addEventListener('click',()=>selectTab(tab));tab.addEventListener('keydown',e=>{let next;if((tabQuery.matches&&e.key==='ArrowRight')||(!tabQuery.matches&&e.key==='ArrowDown'))next=(index+1)%tabs.length;else if((tabQuery.matches&&e.key==='ArrowLeft')||(!tabQuery.matches&&e.key==='ArrowUp'))next=(index+tabs.length-1)%tabs.length;else if(e.key==='Home')next=0;else if(e.key==='End')next=tabs.length-1;else return;e.preventDefault();selectTab(tabs[next],true);});});
-const demoDialog=document.querySelector('#demo-dialog');const infoDialog=document.querySelector('#info-dialog');
-let returnFocus=null;let demoStep=0;
-const demoSteps=[{name:'Costes observados',html:'<span class="demo-category">COSTE GLOBAL</span><div class="demo-figure">32.480 <span>EUR</span></div><p>Coste observado del periodo ilustrativo.<br>Julio – septiembre de 2026.</p><div class="demo-mini-bars" aria-hidden="true">'+Array(12).fill('<i></i>').join('')+'</div>'},{name:'Señal candidata',html:'<span class="demo-category">ANOMALÍAS</span><div class="demo-anomaly">Una variación.<br>Una investigación.</div><span class="demo-insight">Candidata a investigar</span><p>Ejemplo de señal en Compute. Requiere revisar el periodo y contrastar el contexto. No establece una causa.</p>'},{name:'Contexto con fuentes',html:'<span class="demo-category">ASISTENTE</span><div class="demo-anomaly">La explicación<br>tiene una fuente.</div><div class="demo-source">«Compara periodos equivalentes y revisa los componentes del coste.»<br><strong>↗ Guía ilustrativa · § 2</strong></div><p>Texto redactado para esta maqueta. Sin consulta a un modelo.</p>'}];
-function renderDemo(){document.querySelector('.demo-content').innerHTML=demoSteps[demoStep].html;document.querySelector('.demo-pagination').textContent='0'+(demoStep+1)+' / 03';document.querySelector('.demo-current').textContent=demoSteps[demoStep].name;document.querySelector('.demo-prev').disabled=demoStep===0;document.querySelector('.demo-next').disabled=demoStep===demoSteps.length-1;}
-function openDialog(dialog,trigger){returnFocus=trigger;closeMenu();dialog.showModal();dialog.querySelector('.dialog-close').focus();}
-document.querySelectorAll('.demo-trigger').forEach(button=>button.addEventListener('click',()=>{demoStep=0;renderDemo();openDialog(demoDialog,button);}));
-document.querySelector('.demo-prev').addEventListener('click',()=>{if(demoStep>0){demoStep--;renderDemo();}});document.querySelector('.demo-next').addEventListener('click',()=>{if(demoStep<demoSteps.length-1){demoStep++;renderDemo();}});
-[demoDialog,infoDialog].forEach(dialog=>{dialog.querySelector('.dialog-close').addEventListener('click',()=>dialog.close());dialog.addEventListener('close',()=>{if(returnFocus&&document.contains(returnFocus))returnFocus.focus();});dialog.addEventListener('click',event=>{if(event.target===dialog){const bounds=dialog.getBoundingClientRect();if(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom)dialog.close();}});});
-const info={
- scope:{title:'Un MVP, con un alcance concreto.',html:'<h3>Integrado en el MVP</h3><p>La aplicación integra análisis de costes con datos públicos y sintéticos, detección de anomalías candidatas y chat con recuperación documental y fuentes. No conecta a una cuenta Azure real ni ejecuta cambios sobre recursos.</p><h3>Simulado en esta página</h3><p>Las vistas, importes, señales y respuestas de esta landing son ilustraciones de diseño. No son capturas de una demo desplegada ni acreditan ahorros o decisiones automáticas. «Ver la demo» abre sólo un recorrido simulado, sin consultar un modelo.</p><h3>Pendiente de aprobación</h3><p>El dominio, alojamiento y HTTPS públicos y el destino auténtico de la demo requieren una decisión antes de conectarse. Esta página no ofrece acceso a la aplicación privada ni anuncia esas tareas como terminadas.</p>'},
- design:{title:'Una identidad, una lectura clara.',html:'<p>La propuesta conserva los logotipos originales, Inter para texto y Space Grotesk para titulares. El índigo y los lilas estructuran las superficies; el violeta destaca los botones y el lila identifica la señal candidata; el coral se reserva a ahorro e insights.</p><p>El diseño combina una portada profunda con secciones editoriales claras. La interfaz ilustrativa y el recorrido se recomponen en móvil, en lugar de reducir toda la pantalla de escritorio.</p><p>Esta es una propuesta de alta fidelidad para revisión visual. Su publicación o incorporación al producto requieren la decisión de Paris.</p>'},
- credits:{title:'Recursos y créditos.',html:'<p>Logotipos y favicon originales de Economicon. Tipografías Inter y Space Grotesk distribuidas bajo la SIL Open Font License; se sirven desde archivos locales.</p><p><a href="assets/Inter-OFL.txt" target="_blank" rel="noopener">Licencia de Inter ↗</a><br><a href="assets/SpaceGrotesk-OFL.txt" target="_blank" rel="noopener">Licencia de Space Grotesk ↗</a></p><p>Gráficos y elementos de interfaz creados para este prototipo. No se han utilizado fotografías de terceros. Nombres del equipo: Paris Arcos Martin, Víctor Méndez, Alejandro Aguado y Lucía Mateo.</p>'}
-};
-document.querySelectorAll('.resource-trigger').forEach(button=>button.addEventListener('click',()=>{const item=info[button.dataset.topic];document.getElementById('info-title').textContent=item.title;document.querySelector('.info-content').innerHTML=item.html;openDialog(infoDialog,button);}));
+function selectTab(tab,focus=false){for(const item of tabs){const selected=item===tab;item.setAttribute('aria-selected',String(selected));item.tabIndex=selected?0:-1;document.getElementById(item.getAttribute('aria-controls')).hidden=!selected;}if(focus)tab.focus();}
+tabs.forEach((tab,index)=>{tab.addEventListener('click',()=>selectTab(tab));tab.addEventListener('keydown',event=>{let next;if(event.key==='ArrowRight')next=(index+1)%tabs.length;else if(event.key==='ArrowLeft')next=(index+tabs.length-1)%tabs.length;else if(event.key==='Home')next=0;else if(event.key==='End')next=tabs.length-1;else return;event.preventDefault();selectTab(tabs[next],true);});});
+const config=globalThis.__LANDING_PUBLIC_CONFIG__||{};
+const appUrl=typeof config.appUrl==='string'?config.appUrl:null;const videoUrl=typeof config.videoUrl==='string'?config.videoUrl:null;
+const appLink=document.querySelector('.app-destination');if(appUrl){appLink.href=appUrl;appLink.target='_blank';appLink.rel='noopener noreferrer';appLink.referrerPolicy='no-referrer';appLink.removeAttribute('aria-disabled');appLink.removeAttribute('tabindex');}else{const error=document.querySelector('#app-error');error.textContent='La aplicación no está disponible en este momento.';error.hidden=false;}
+const video=document.querySelector('#presentation-video');
+const presentation=document.querySelector('.presentation');
+const videoToggle=document.querySelector('#video-toggle');
+const videoState=document.querySelector('#video-state');
+const originalLink=document.querySelector('#video-original');
+function videoMessage(message){videoState.textContent=message;videoState.hidden=!message;}
+if(videoUrl){originalLink.href=videoUrl;originalLink.hidden=false;}
+if(videoUrl&&/^\/media\/[A-Za-z0-9][A-Za-z0-9_-]{0,79}\.mp4$/.test(videoUrl)){
+  video.muted=true;
+  videoToggle.disabled=false;
+  videoToggle.hidden=false;
+  async function playVideo(){
+    try{await video.play();}
+    catch{if(!video.error)videoMessage('Pulsa Reproducir vídeo para comenzar. Si no funciona, abre el vídeo por separado.');}
+  }
+  video.addEventListener('loadeddata',()=>presentation.classList.add('media-loaded'));
+  video.addEventListener('play',()=>{videoToggle.textContent='Pausar vídeo';videoMessage('');});
+  video.addEventListener('pause',()=>{videoToggle.textContent='Reproducir vídeo';});
+  video.addEventListener('error',()=>{
+    presentation.classList.remove('media-loaded');videoToggle.disabled=true;videoToggle.hidden=true;
+    videoMessage('No se ha podido cargar el vídeo. Puedes abrirlo por separado o seguir explorando la página.');
+  });
+  videoToggle.addEventListener('click',()=>{if(video.paused)playVideo();else video.pause();});
+  video.src=videoUrl;
+  // One initial attempt only. Loading, scrolling, theme changes and visibility
+  // events never restart a video the visitor has deliberately paused.
+  playVideo();
+}else{
+  videoMessage(videoUrl?'El vídeo está disponible en el enlace externo.':'El vídeo no está disponible en este momento.');
+}

@@ -1,0 +1,19 @@
+# Economicon
+
+> MVP académico de FinOps para analizar costes de Azure con datos públicos y sintéticos, señales candidatas de anomalías y un asistente con fuentes documentales.
+
+La presentación pública muestra perspectivas ilustrativas del producto. Las cifras y respuestas de ejemplo no son resultados medidos ni beneficios comerciales acreditados.
+
+El MVP no conecta a una cuenta Azure real ni ejecuta acciones autónomas sobre recursos. Las señales requieren revisión humana; las explicaciones deben contrastarse con sus fuentes. El acceso a la aplicación puede requerir autorización.
+
+## Producto y documentación
+
+- [Presentación](./): Descripción pública de Economicon y vídeo del proyecto.
+- [Perspectivas](./#perspectivas): Costes, señales candidatas y contexto documental; vistas ilustrativas.
+- [Proyecto y límites](./#proyecto): Contexto académico y alcance del MVP.
+- [Documentación](https://github.com/EconomiconFinOps/tfm-economicon/tree/develop/docs): Documentación técnica pública del proyecto.
+- [Repositorio](https://github.com/EconomiconFinOps/tfm-economicon): Código y documentación de Economicon.
+
+## Aplicación
+
+- [Abrir la aplicación](<https://demo-jupiter.danteinferno.es/>): Puede requerir autorización.

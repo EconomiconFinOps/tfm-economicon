@@ -29,6 +29,7 @@ function fakeStack(overrides = {}) {
     "GET 8000 /health": () => json(200, { status: "ok" }),
     "GET 8001 /health": () => json(200, { status: "ok" }),
     "GET 8002 /health": () => json(200, { status: "ok" }),
+    "GET 8088 /healthz": () => json(200, {status:"ok"}),
     "GET 5173 /": () => json(200, {}),
     "POST 8000 /auth/login": () => json(200, { access_token: TOKEN, token_type: "bearer" }),
     "GET 8000 /billing/summary": () => json(200, { data_status: "available", totals: [{ amount: "12.50", currency: "USD" }] }),

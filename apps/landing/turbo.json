@@ -15,7 +15,9 @@
       "env": [
         "SITE_ORIGIN",
         "LANDING_OUT_DIR",
-        "PORT"
+        "PORT",
+        "LANDING_VIDEO_URL",
+        "LANDING_APP_URL"
       ]
     }
   }

@@ -11,6 +11,8 @@ Solo usar datos desechables y una cuenta/host con usuarios locales de confianza;
 no se acredita aislamiento entre usuarios del servidor compartido.
 No ejecutar código de PR en un runner con acceso al Docker compartido.
 
+El inventario del CD incluye `LANDING_HOST_PORT` en offset12 de cada slot (13 puertos por slot, separados100). Landing forma parte del Compose general; los dos destinos quedan ausentes hasta configuración pública explícita y no se fabrican accesos. [Contrato runtime](../landing-runtime.md).
+
 ## Flujo
 
 1. Un push integrado a `develop` ejecuta `CD DockerServer`. También admite

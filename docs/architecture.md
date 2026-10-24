@@ -70,7 +70,7 @@ flowchart TB
 | API Azure simulada | HTTP posicional, bearer local, paginación y errores reproducibles sobre CSV público. No autentica contra Azure ni representa una factura completa. | [README](../apps/azure-cost-api/README.md), [fixture](../fixtures/azure-cost/README.md) |
 | LiteLLM, opcional | Proxy del processor y de embeddings del backend; claves virtuales separadas y DB propia. OpenRouter es el upstream configurado. | [Configuración](../infra/litellm/config.example.yaml), [operación](../infra/litellm/README.md) |
 | Shared config | Configuración reutilizable del workspace; no es servicio de runtime. | [Paquete](../packages/shared-config/README.md) |
-| Landing pública | Aplicación estática independiente de la interfaz autenticada: sin backend, sesión ni claves, con una demo ilustrativa rotulada como tal. No está en Compose ni en el CD, y su dominio y publicación siguen pendientes de decisión humana. | [README](../apps/landing/README.md), [operación](operations/public-landing.md) |
+| Landing pública | Aplicación estática independiente de la interfaz autenticada: sin backend, sesión ni claves, con perspectivas ilustrativas rotuladas como tales, tema claro/oscuro y vídeo local nativo aprobado. Incluida en Compose general y en el inventario de puertos del CD; configura vídeo/app al arrancar, con runtime-config.js no-store y healthz local en una red propia. Dominio y publicación conservan decisión humana. | [README](../apps/landing/README.md), [operación](operations/public-landing.md) |
 
 ## 3. Flujos implementados y vertical objetivo
 
@@ -498,6 +498,7 @@ flowchart TB
     F
     B
     W[Processor: host 8001]
+    LP[Landing: loopback8088, red landing-public]
     AZ[Azure simulada: host 8002]
     CR[CockroachDB: host 26257 y 8080]
     Q[RabbitMQ: host 5672 y 15672]
@@ -532,14 +533,14 @@ flowchart TB
   PG --> LV[(gateway-data)]
 ```
 
-Valores por defecto de [docker-compose.yml](../docker-compose.yml): **10 servicios
+Valores por defecto de [docker-compose.yml](../docker-compose.yml): **11 servicios
 de larga ejecución, 2 de un solo uso (`backend-migrate` y `minio-init`) y 6
 volúmenes**. El perfil `demo` añade la API Azure con los datos de demostración y
-`demo-data` (de un solo uso, **11 y 3**); el perfil `ai` añade LiteLLM, su
-PostgreSQL y `gateway-data` (**12 y 2**, y 7 volúmenes). Los recuentos se
+`demo-data` (de un solo uso, **12 y 3**); el perfil `ai` añade LiteLLM, su
+PostgreSQL y `gateway-data` (**13 y 2**, y 7 volúmenes). Los recuentos se
 reproducen con `docker compose config --services` y `--volumes`, con las
 variables obligatorias definidas y, para `ai`, el overlay de abajo.
-Las cuatro apps publican puerto **sin dirección loopback por defecto**;
+Las cuatro apps previas publican puerto **sin dirección loopback por defecto**;
 las publicaciones de infraestructura, MinIO incluido, sí usan 127.0.0.1 (la URL
 firmada de una subida se firma para ese host y puerto). El puerto 8003 del
 processor solo existe en la red interna `chat-private`: no se publica.
@@ -557,6 +558,7 @@ son puntos de fallo.
 | LiteLLM / DB gateway | 1.103.2 / postgres:17-alpine por digest |
 | MinIO / mc | RELEASE.2025-10-15T17-29-55Z / RELEASE.2025-08-13T08-35-41Z, compilados desde fuentes con checksum sobre golang:1.24.8 por digest; imagen final python:3.12-slim por digest |
 | Apps Python | python:3.12-slim por digest; requirements usan rangos, no resolución pip completamente fijada |
+| Landing | node:22-alpine por digest; build estático y servidor Node sin dependencias de producción; [operación](landing-runtime.md) |
 | Frontend | node:20-alpine por digest; pnpm 9.0.0 y lockfile. CI usa Node 22 |
 
 Los digests completos están en los Dockerfiles de las aplicaciones, Compose y
@@ -577,7 +579,8 @@ frontera marca):
 
 | Elemento | Quién lo usa | Función y frontera |
 | --- | --- | --- |
-| Red `default` | Todos los servicios salvo `litellm-db` | Comunicación de aplicación; no restringe egress. |
+| Red `default` | Todos los servicios salvo `litellm-db` y `landing` | Comunicación de aplicación; no restringe egress. |
+| Red `landing-public` | Sólo landing | Separa su servidor8080 de la red de aplicación; publica loopback8088, sin credenciales ni dependencias privadas; sólo un bind dedicado de medios públicos en lectura, fuera del checkout y de la imagen, con manifiesto/SHA y snapshot máximo50MiB. No restringe egress. |
 | Red `chat-private` (interna) | Backend y processor | Único camino del chat generativo, con el puerto 8003 del processor sin publicar; sin salida a internet. |
 | Red `gateway` (solo con el perfil `ai`) | LiteLLM y su PostgreSQL | Mantiene la base del gateway fuera de la red de aplicación: solo `litellm` está también en `default`, para que backend y processor lo alcancen. No es interna: LiteLLM publica su puerto de administración en loopback y necesita salida hacia el proveedor. |
 | Secreto `chat-hmac` | Backend y processor | Clave compartida que firma las peticiones del chat; ambos la leen del archivo montado en `/run/secrets/chat-hmac`, no de una variable de entorno. |
@@ -586,7 +589,8 @@ frontera marca):
 Seguir los recorridos mock/IA/retorno del
 [README](../README.md), con proyectos separados para índices mock y reales.
 Frontend sirve con **Vite preview**, no servidor de producción.
-Las cuatro apps usan usuario sin privilegios, raíz de solo lectura y tmpfs;
+Las cinco apps, incluida landing, usan usuario sin privilegios, raíz de solo lectura y tmpfs;
+El processor declara `/tmp:uid=10001,gid=10001,mode=0700`, alineado con el usuario existente de su imagen: workspace efímero privado para carga local del tokenizer y arranque. La raíz sigue de sólo lectura y no-new-privileges permanece activo.
 MinIO y los servicios de un solo uso añaden raíz de solo lectura y tmpfs, pero
 no se extiende esa garantía a toda la infraestructura.
 `down` conserva volúmenes nombrados; `down -v` los elimina.
@@ -705,7 +709,7 @@ El [workflow CD](../.github/workflows/cd.yml) reutiliza CI y publica elegibilida
 para el SHA de develop. El [agente privado](deployment/dockerserver-cd.md) consulta
 cada cinco minutos, construye una release aislada, fuerza puertos a loopback y
 ejecuta smoke antes de promover; state.json/journal acreditan despliegue real.
-Este CD arranca el Compose general sin perfiles (los 10 servicios de larga
+Este CD arranca el Compose general sin perfiles (los 11 servicios de larga
 ejecución y los 2 de un solo uso de §6.1, MinIO incluido) en modo mock y datos
 desechables; no incorpora
 automáticamente el gateway dedicado de JUP-078 ni es un despliegue productivo.

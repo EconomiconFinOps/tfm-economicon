@@ -18,7 +18,7 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
-| [Landing publica](landing-publica.md) | JUP-089 / PR142: reconciliacion con develop 7f6c8d56 preparada para merge por excepcion humana expresa22Oct; se omiten validaciones pendientes sin nuevas aprobaciones ni despliegue publico. | 2026-10-22 |
+| [Landing pública](landing-publica.md) | JUP-140 R4 aprobado localmente; reconciliación develop 93624f77 y OpenSpec archivado con promociones/enlaces del 24/10. Evaluación independiente del cierre antes de publicar PR; pairing humano y CI definitiva pendientes. Imagen/medio intactos; reduce interactivo NOT_TESTED y globales históricos conservados. | 2026-10-24 |
 | [Despliegue AWS](cloud-aws.md) | Corrección de CI para PR154: evidencia histórica separada de readiness, guardas AWS conservadas y APT acotado; controlador73PASS/1SKIP. Publicación y CI remota pendientes. | 2026-10-23 |
 | [Cortes de respuesta del chat](cortes-respuesta-chat.md) | JUP-135 integrada por squash f224226d en PR153, con excepcion humana de merge; CI tecnica previa conforme. Agregados de medicion comunicados y pendientes documentales conservados; sin aceptacion generativa nueva. | 2026-10-22 |
 | [Reevaluación de métricas del modelo](reevaluacion-metricas-modelo.md) | JUP-133: corrección de fixtures y altura preparada; suite Linux 1998 PASS sin omisiones y OpenSpec 92 PASS. CI remota/reviews e integración pendientes; demo con incidencias, sin aceptación. | 2026-10-23 |
