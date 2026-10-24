@@ -9,7 +9,55 @@ function closeMenu(){menuButton.setAttribute('aria-expanded','false');menuButton
 menuButton.addEventListener('click',()=>{const open=menuButton.getAttribute('aria-expanded')!=='true';menuButton.setAttribute('aria-expanded',String(open));menuButton.setAttribute('aria-label',open?'Cerrar menú':'Abrir menú');mobileNav.hidden=!open;});
 mobileNav.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeMenu));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menuButton.getAttribute('aria-expanded')==='true'){closeMenu();menuButton.focus();}});
-const motionButton=document.querySelector('#motion-toggle');motionButton.addEventListener('click',()=>{const paused=document.body.classList.toggle('motion-paused');motionButton.textContent=paused?'Reanudar movimiento':'Pausar movimiento';});
+// One semantic sequence; decorative copies cover the viewport plus a full period.
+// Speed is the original desktop period (1014px) / 34s, independent of viewport.
+function setupSignalLoop(){
+ const track=document.querySelector('.signal-track');
+ const group=track?.querySelector('.signal-group');
+ if(!track||!group)return ()=>{};
+ const section=track.closest('.signal-section');
+ const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+ const speed=1014/34;
+ let animation=null,period=0;
+ function update(){
+  const staticMode=reduced.matches||typeof track.animate!=='function'||typeof ResizeObserver==='undefined';
+  track.classList.toggle('signal-static',staticMode);
+  if(staticMode){
+   animation?.cancel();animation=null;period=0;
+   track.querySelectorAll('[data-signal-copy]').forEach(copy=>copy.remove());
+   return;
+  }
+  const gap=Number.parseFloat(getComputedStyle(track).columnGap)||0;
+  const nextPeriod=group.getBoundingClientRect().width+gap;
+  const width=section.getBoundingClientRect().width;
+  if(!Number.isFinite(nextPeriod)||nextPeriod<=0||width<=0)return;
+  const count=Math.max(2,Math.ceil(width/nextPeriod)+2);
+  const copies=[...track.querySelectorAll('[data-signal-copy]')];
+  while(copies.length<count-1){
+   const copy=group.cloneNode(true);
+   copy.dataset.signalCopy='';copy.setAttribute('aria-hidden','true');copy.setAttribute('inert','');
+   copy.querySelectorAll('[id]').forEach(node=>node.removeAttribute('id'));
+   track.append(copy);copies.push(copy);
+  }
+  while(copies.length>count-1)copies.pop().remove();
+  if(!animation||Math.abs(nextPeriod-period)>.01){
+   const phase=animation?(((Number(animation.currentTime)||0)/1000*speed)%period)/period:0;
+   animation?.cancel();
+   animation=track.animate([{transform:'translateX(0)'},{transform:`translateX(-${nextPeriod}px)`}],{duration:nextPeriod/speed*1000,iterations:Infinity,easing:'linear'});
+   animation.currentTime=phase*nextPeriod/speed*1000;
+   period=nextPeriod;
+  }
+  if(document.body.classList.contains('motion-paused'))animation.pause();else animation.play();
+ }
+ if(typeof ResizeObserver!=='undefined'){
+  const observer=new ResizeObserver(update);observer.observe(section);observer.observe(group);
+ }
+ reduced.addEventListener('change',update);
+ update();
+ return update;
+}
+const syncSignalMotion=setupSignalLoop();
+const motionButton=document.querySelector('#motion-toggle');motionButton.addEventListener('click',()=>{const paused=document.body.classList.toggle('motion-paused');motionButton.textContent=paused?'Reanudar movimiento':'Pausar movimiento';syncSignalMotion();});
 const tabs=[...document.querySelectorAll('[role=tab]')];
 function selectTab(tab,focus=false){for(const item of tabs){const selected=item===tab;item.setAttribute('aria-selected',String(selected));item.tabIndex=selected?0:-1;document.getElementById(item.getAttribute('aria-controls')).hidden=!selected;}if(focus)tab.focus();}
 tabs.forEach((tab,index)=>{tab.addEventListener('click',()=>selectTab(tab));tab.addEventListener('keydown',event=>{let next;if(event.key==='ArrowRight')next=(index+1)%tabs.length;else if(event.key==='ArrowLeft')next=(index+tabs.length-1)%tabs.length;else if(event.key==='Home')next=0;else if(event.key==='End')next=tabs.length-1;else return;event.preventDefault();selectTab(tabs[next],true);});});

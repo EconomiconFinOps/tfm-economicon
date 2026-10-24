@@ -18,7 +18,7 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
-| [Landing pública](landing-publica.md) | JUP-140 R4 aprobado localmente; reconciliación develop 93624f77 y OpenSpec archivado con promociones/enlaces del 24/10. Evaluación independiente del cierre antes de publicar PR; pairing humano y CI definitiva pendientes. Imagen/medio intactos; reduce interactivo NOT_TESTED y globales históricos conservados. | 2026-10-24 |
+| [Landing pública](landing-publica.md) | Corrección local del bucle tras PR160 sobre ffb5d307: velocidad constante, cobertura1920/2560/3440/móvil y capturas ambos temas. Landing36PASS/CI19PASS; evaluaciones independientes y aprobación visual pendientes. Reduce interactivo NOT_TESTED por dispensa ratificada; sin publicación. | 2026-10-24 |
 | [Despliegue AWS](cloud-aws.md) | Corrección de CI para PR154: evidencia histórica separada de readiness, guardas AWS conservadas y APT acotado; controlador73PASS/1SKIP. Publicación y CI remota pendientes. | 2026-10-23 |
 | [Cortes de respuesta del chat](cortes-respuesta-chat.md) | JUP-135 integrada por squash f224226d en PR153, con excepcion humana de merge; CI tecnica previa conforme. Agregados de medicion comunicados y pendientes documentales conservados; sin aceptacion generativa nueva. | 2026-10-22 |
 | [Reevaluación de métricas del modelo](reevaluacion-metricas-modelo.md) | JUP-133: PR156 incorporó seis repeticiones y juez IA provisional; PR158 integrada en develop93624f77 corrige fixtures y altura. Evidencia ajena Linux1998PASS/0omisiones y OpenSpec92PASS, sin aceptación de campañas. La composición139 comprueba su delta por separado. | 2026-10-23 |
