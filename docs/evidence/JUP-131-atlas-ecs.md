@@ -38,7 +38,9 @@ La landing y el vídeo permanecen en el flujo Pages, fuera de ECS.
 `python tools/aws_demo/monitoring_smoke.py`: construye únicamente las imágenes
 de monitorización y prueba PostgreSQL TLS con una CA sintética local. Comprueba
 rechazo401 anónimo, tres dashboards, salud de ambos datasources, consulta de las
-19 identidades/hashes/conteos y reinicio de Grafana. Raíces de contenedor de sólo
+19 identidades/hashes/conteos y reinicio de Grafana. Añade login con cookie segura,
+consulta real con Host de origen distinto del Origin público y rechazo403 de
+otro dominio, sin alterar preferencias. Raíces de contenedor de sólo
 lectura y discos temporales vacíos; todos los contenedores propios se retiran.
 No prueba el DNS Cloud Map ni CloudFront real; esos controles quedan para el ensayo.
 
@@ -46,6 +48,22 @@ Terraform:13 pruebas mock PASS, incluida red privada, rutas, secretos referencia
 dos contenedores y capacidad. Se mantienen dos réplicas de cada aplicación;
 rolling150% =4.5vCPU; monitorización rolling200% =1vCPU: máximo agregado5.5vCPU.
 La cuota efectiva exigida sigue siendo6; no basta el valor predeterminado AWS.
+
+## Revisión de la preparación
+
+Revisión asistida independiente de `ffb5d307..a7341d79`: dos hallazgos reproducidos
+y corregidos. La cookie de navegador obtenía403 al consultar tras CloudFront;
+Grafana11.3 espera el hostname en `csrf_trusted_origins`, por lo que se limita a
+`frontend_domain`. Prueba aislada posterior PASS, incluido origen ajeno403 y
+preferencia persistida tras reiniciar. La recuperación no retiraba definiciones
+`backend-monitoring` huérfanas; ahora las reconoce con las mismas comprobaciones
+de cuenta/ciclo/SHA/etiquetas. Rechaza componentes, fases y propietarios ajenos.
+Regresión RED→GREEN y87 controles offline OK (7 opt-in, PostgreSQL probado aparte).
+
+[PR161](https://github.com/EconomiconFinOps/tfm-economicon/pull/161) conserva los
+resultados remotos por SHA y el estado de revisión. Los dictámenes humanos
+`Revision JUP-131` y `Validacion JUP-131` siguen pendientes; la revisión asistida
+no los sustituye. Sin merge ni despliegue.
 
 ## Coste y límites
 

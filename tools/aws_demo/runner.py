@@ -397,7 +397,7 @@ class Runner:
                              "--status", "ACTIVE", deploy=True)
         retired = []
         for arn in inventory.get("taskDefinitionArns", []):
-            if not re.fullmatch(re.escape(prefix) + r'(backend|processor)-(database|broker|fixtures|reindex):[1-9][0-9]*', arn):
+            if not re.fullmatch(re.escape(prefix) + r'((backend|processor)-(database|broker|fixtures|reindex)|backend-monitoring):[1-9][0-9]*', arn):
                 continue
             details = self.aws("ecs", "describe-task-definition", "--task-definition", arn, "--include", "TAGS", deploy=True)
             require(details["taskDefinition"]["taskDefinitionArn"] == arn, "Bootstrap definition identity differs")

@@ -1,5 +1,12 @@
 # Coste de infraestructura AWS para el caso de negocio
 
+Actualización 24/10: el límite vigente del proyecto es **30 EUR**. La ampliación
+de Grafana/Atlas y los escenarios con IVA supuesto y margen se calculan en
+[atlas.py](atlas.py) y [atlas-resultados.json](atlas-resultados.json). Un ciclo de
+dos horas se estima en23,40EUR; tres ciclos de dos horas en39,42EUR, por encima
+del límite. El corte del22Oct siguiente conserva sus hipótesis históricas; los
+60EUR que menciona ya no son el presupuesto autorizado.
+
 Estimación a 22 de octubre de 2026, dirigida a Lucía para el caso de negocio.
 Mantener la arquitectura Terraform actual encendida 730 horas cuesta aproximadamente
 **1.289 USD / 1.150 EUR al mes sin IVA**, con el consumo pequeño supuesto abajo.

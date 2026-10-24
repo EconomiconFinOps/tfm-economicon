@@ -5,6 +5,7 @@ prefix; cleanup removes only those created here. Python standard library only.
 """
 import argparse
 import http.client
+from http.cookies import SimpleCookie
 import json
 import os
 from pathlib import Path
@@ -28,11 +29,18 @@ def docker(*args, input=None):
 
 def probe():
     from monitoring_checks import check_monitoring
+    cookies = SimpleCookie()
+    public_origin = 'https://app.example.test'
     def exchange(method, path, body, headers):
         connection = http.client.HTTPConnection('127.0.0.1', 23000, timeout=10)
         try:
-            connection.request(method, path, body=body, headers=headers)
+            # CloudFront removes the viewer Host; the ALB receives the origin Host.
+            connection.request(method, path, body=body, headers={'Host': 'origin.example.test', **headers})
             response = connection.getresponse()
+            if path == '/grafana/login':
+                for name, value in response.getheaders():
+                    if name.lower() == 'set-cookie':
+                        cookies.load(value)
             raw = response.read()
             return response.status, json.loads(raw) if raw.startswith(b'{') else {}
         finally:
@@ -43,25 +51,48 @@ def probe():
     for _ in range(45):
         try:
             proof = check_monitoring(exchange, 'localhost', 'c' * 64, manifest, dashboards)
-            import base64
-            headers = {'Content-Type': 'application/json', 'Authorization': 'Basic ' + base64.b64encode(('admin:' + 'c'*64).encode()).decode()}
-            marker = Path('/test/preferences-set')
-            if marker.exists():
-                status, preferences = exchange('GET', '/grafana/api/user/preferences', None, headers)
-                if status != 200 or preferences.get('homeDashboardUID') != 'economicon-assistant-evidence':
-                    raise ValueError('Grafana preferences did not persist across restart')
-                proof['preferences_retained'] = True
-            else:
-                status, _ = exchange('PUT', '/grafana/api/user/preferences', b'{"homeDashboardUID":"economicon-assistant-evidence"}', headers)
-                if status != 200:
-                    raise ValueError('Cannot set isolated persistence fixture')
-                marker.touch()
-            print(json.dumps(proof))
-            return
+            break
         except (OSError, ValueError, KeyError, IndexError) as error:
             last = error
             time.sleep(2)
-    raise RuntimeError('Monitoring acceptance failed: ' + str(last))
+    else:
+        raise RuntimeError('Monitoring acceptance failed: ' + str(last))
+    status, _ = exchange('POST', '/grafana/login', json.dumps({'user': 'admin', 'password': 'c' * 64}).encode(),
+                         {'Content-Type': 'application/json', 'Origin': public_origin})
+    if status != 200 or 'grafana_session' not in cookies or not cookies['grafana_session']['secure']:
+        raise AssertionError('Grafana browser login must issue a secure session cookie')
+    headers = {'Content-Type': 'application/json', 'Origin': public_origin,
+               'Cookie': '; '.join(morsel.OutputString(attrs=[]) for morsel in cookies.values())}
+    def browser_exchange(method, path, body, supplied_headers):
+        actual_headers = dict(headers) if 'Authorization' in supplied_headers else {}
+        if method == 'GET':
+            actual_headers.pop('Origin', None)
+        result = exchange(method, path, body, actual_headers)
+        if method == 'POST' and result[0] != 200:
+            raise AssertionError('Browser datasource query rejected: ' + str(result[0]) + ' ' + str(result[1].get('message')))
+        return result
+    # Includes real POST /api/ds/query under cookie auth, with mismatching Host/Origin.
+    check_monitoring(browser_exchange, 'app.example.test', 'unused', manifest, dashboards)
+    marker = Path('/test/preferences-set')
+    if marker.exists():
+        status, preferences = exchange('GET', '/grafana/api/user/preferences', None, headers)
+        if status != 200 or preferences.get('homeDashboardUID') != 'economicon-assistant-evidence':
+            raise AssertionError('Grafana preferences did not persist across restart')
+        proof['preferences_retained'] = True
+    else:
+        status, _ = exchange('PUT', '/grafana/api/user/preferences', b'{"homeDashboardUID":"economicon-assistant-evidence"}', headers)
+        if status != 200:
+            raise AssertionError('Cannot set isolated persistence fixture with browser session')
+        marker.touch()
+    status, _ = exchange('PUT', '/grafana/api/user/preferences', b'{"homeDashboardUID":"forbidden"}',
+                         {**headers, 'Origin': 'https://foreign.example.test'})
+    if status != 403:
+        raise AssertionError('A foreign Origin must remain forbidden under cookie auth')
+    status, preferences = exchange('GET', '/grafana/api/user/preferences', None, headers)
+    if status != 200 or preferences.get('homeDashboardUID') != 'economicon-assistant-evidence':
+        raise AssertionError('The rejected foreign Origin changed user preferences')
+    proof.update(browser_session='allowed', foreign_origin='denied')
+    print(json.dumps(proof))
 
 
 def main():
@@ -105,7 +136,9 @@ def main():
             images.append(grafana_image)
             name = prefix + '-grafana'
             env = {
-                'GF_SERVER_HTTP_PORT': '23000', 'GF_SERVER_ROOT_URL': 'http://localhost:23000/grafana/', 'GF_SERVER_SERVE_FROM_SUB_PATH': 'true',
+                'GF_SERVER_HTTP_PORT': '23000', 'GF_SERVER_ROOT_URL': 'https://app.example.test/grafana/', 'GF_SERVER_SERVE_FROM_SUB_PATH': 'true',
+                'GF_SECURITY_COOKIE_SECURE': 'true', 'GF_SECURITY_COOKIE_SAMESITE': 'lax',
+                'GF_SECURITY_CSRF_TRUSTED_ORIGINS': 'app.example.test',
                 'GF_AUTH_ANONYMOUS_ENABLED': 'false', 'GF_USERS_ALLOW_SIGN_UP': 'false', 'GF_SECURITY_ADMIN_PASSWORD': 'c'*64,
                 'GF_SECURITY_SECRET_KEY': 'd'*64, 'GF_DATABASE_TYPE': 'postgres', 'GF_DATABASE_HOST': 'localhost:25432',
                 'GF_DATABASE_NAME': 'grafana', 'GF_DATABASE_USER': 'economicon_grafana', 'GF_DATABASE_PASSWORD': 'b'*64,

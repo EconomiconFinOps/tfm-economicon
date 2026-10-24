@@ -1,5 +1,390 @@
 # Cloud AWS — arquitectura documental
 
+## Atlas integrado en la preparación de ECS — 24/10/2026
+
+Origen: este chat, tarea `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`; autorización
+humana para integrar Atlas/Grafana/carga aditiva, CI verde y techo30EUR, sin
+desplegar. Checkout `tfm-economicon-aws-cicd`, rama `feat/JUP-131-atlas-ecs`,
+[PR161](https://github.com/EconomiconFinOps/tfm-economicon/pull/161) contra develop.
+PR146 ya integrada; esta ampliación parte de `ffb5d307772f697cffb8b1e73e6330250e093601`.
+
+Implementado: SQL Atlas byte a byte y19 informes canónicos revalidados aquí;
+bootstrap privado aditivo, repetible, conserva histórico adicional y aborta
+conflictos atómicamente. Lector de evaluación sin escritura/DDL y propietario
+independiente para metadatos Grafana, ambos en el RDS vectorial existente.
+Grafana/Prometheus comparten una tarea privada0.5vCPU/1GiB, secretos separados,
+TLS verificado y ruta `/grafana/` por CloudFront/ALB. Tres dashboards intactos.
+Prometheus limitado a24h/256MB y loopback; métricas efímeras, metadatos en RDS.
+Máximo rolling agregado5.5vCPU; se sigue exigiendo cuota efectiva6. Landing/vídeo
+siguen fuera de ECS en el flujo de HAL, sin nueva comunicación a otros chats.
+
+Verificación propia24Oct: PostgreSQL16 real6PASS más manifiesto; controlador87OK
+(7 opt-in, SQL aparte); Terraform13PASS; OpenSpec92PASS; Grafana aislado PASS con
+TLS,401 anónimo, tres dashboards,19/1688, cookie segura, Origin público/Host de
+backend distintos, origen ajeno403 y preferencia persistida tras reinicio.
+Revisión asistida de `a7341d79` pidió corregir CSRF y limpieza de bootstrap
+monitoring huérfano; ambos reproducidos RED→GREEN. CI del candidato final y
+revalidación incremental en curso; los dos dictámenes humanos siguen pendientes.
+Detalles y límites: [evidencia](../evidence/JUP-131-atlas-ecs.md),
+[plan](../planning/2026-10-24-jup131-atlas-ecs.md) y [runbook](../deployment/aws-defensa.md).
+
+Presupuesto vigente30EUR: rechaza saldo/estimación desconocidos y exceso.
+[Escenarios Atlas](../planning/costes-aws/atlas-resultados.json), catálogo22Oct,
+IVA supuesto21% y margen20%: un ciclo2h23,40EUR; tres ciclos2h39,42EUR. El programa
+de varios ensayos y defensa necesita ajustar duración/saldo antes de autorizarlo.
+AWS Budgets30USD es alerta, no apagado ni límite garantizado; última lectura
+anterior24Oct tenía correo pendiente de confirmar y0,60USD visibles.
+
+Preparación local separada `.work/atlas-prep/` no ejecuta AWS. La configuración
+original `.work/ensayo1/config.json` conserva SHA/ventana históricos y saldo0;
+no se ha sustituido por una aprobación nueva. La receta mantiene digest de
+aceptación histórica distinto del árbol actual: esta prueba de Atlas no acredita
+aceptación completa PostgreSQL/Cognito/Bedrock/demo del candidato integrado.
+Pendiente: CI técnica final, dictámenes de PR e integración, aceptación completa,
+cuota efectiva6, saldo/estimación/ventana vigentes y bootstrap de control antes de
+un despliegue expresamente autorizado. Cloud Map/CloudFront/RDS reales no probados.
+Sin recursos AWS creados/modificados, modelos ejecutados ni despliegue.
+
+## Antecedente: paquete Atlas recibido, antes de integrar — 24/10/2026
+
+Origen: transferencia de HAL 9000, chat `01a1270c-e332-7462-9c90-706d49ade92c`,
+con indicación humana de trasladar la parte útil al chat AWS. Recibida como
+entrada documental; no amplía autorización para desplegar, SQL, IAM, cuotas,
+presupuesto, modelos ni comunicaciones externas. Acuse en este chat.
+
+Paquete [Drive](https://drive.google.com/file/d/1Ynfqp3-eefkm56ewwgNVINH7mp0U5lwH/view),
+copia local en `C:/Users/DanteInferno/Documents/Economicon/materiales/07-evidencias/landing-publicacion-paris-20261024/atlas-package.zip`
+y carpeta hermana `atlas/`. ZIP SHA256
+`c4eb723006f5a83518b4791b4177bd26d8f61e14f975e208d5acc49d78411f14`.
+Leídos instrucciones, guía, manifiestos y comprobación local. Revalidados aquí
+ZIP, 13 entradas SHA256SUMS y 12 archivos/tamaños del manifiesto; no ejecutados
+scripts, SQL ni inferencias. HAL acredita adicionalmente 19 hashes canónicos
+de informes contra `ffb5d307772f697cffb8b1e73e6330250e093601` (PR159/160), según
+`atlas-verification.json` junto al ZIP; esa comprobación no se repitió aquí.
+Recibo propio `.work/aws-access/atlas-handoff-receipt.json`.
+
+La guía presupone Compose, mientras el ensayo usa ECS/release inmutable.
+[Adaptación documentada](../deployment/aws-defensa.md#entrada-atlas-del-24102026-adaptación-pendiente-para-ecs):
+reconciliar versión antes de cambiar el SHA/digest/CI; preparar importación
+aditiva y privada del SQL (19/1688 declarados) sin importador destructivo;
+resolver Grafana, ausente en Terraform/receta actuales, antes de añadir servicios,
+cuota/coste, lector o ruta. UID `economicon-assistant-evidence`, cinco secciones,
+otros dos dashboards e histórico adicional deben conservarse. COMPROBACION-LOCAL
+es evidencia del autor en entorno desechable, no verificación del AWS real.
+
+Según HAL, la landing se publica por su flujo existente Pages
+`economicon-landing`, `https://landing-economicon.danteinferno.es/`; no hemos
+verificado su publicación en este chat. App existente `https://demo-jupiter.danteinferno.es/`
+y Grafana `/grafana/` no cambian el dominio AWS preparado `economicon.danteinferno.es`.
+No crear `landing-demo-jupiter`, ni contactar a Jarvis por esta entrega.
+MP4 original21094149bytes, SHA256
+`7e9bdfb148cee61acb2e96837f041a5014f3f7048bf2a244a5cb20128f080292`;
+manifiesto `8f55e48b9a02d6a0d3c80d35ddde4263605bce46f4139bd7b8cb5991cb328c1f`.
+Medios conservados fuera del repo e imágenes; variables runtime de Compose no
+se trasladan a Pages/ECS sin adaptación. Sin cambios de código/infra, SQL, build,
+despliegue, nuevos subdominios o mensajes a HAL/Jarvis/Discord.
+
+## Presupuesto creado y monitor reanudado — 24/10/2026
+
+Origen: este chat, tarea de preparación AWS, identificador
+01a15abb-d5f3-7fd3-a622-ea9e73b0db18. Usuario autoriza control de gasto30EUR
+para evitar recursos olvidados y proporciona destinatario para los avisos.
+Consola confirma creado `economicon-defensa-2026-control-30usd`:30USD,
+periodo único01Oct–01Dic2026 (fin exclusivo indicado por UI), toda la cuenta,
+todos los servicios/regiones, costes sin combinar. USD obligatorio en formulario;
+30USD es umbral conservador nominal, no conversión exacta de30EUR ni tope de
+facturación garantizado. Avisos reales >50/80/100%=15/24/30USD, un destinatario,
+SIN acciones IAM ni apagado. Contabilizado visible0,60USD; puede haber retrasos.
+**Correo pendiente de verificación (0/1): el operador debe confirmar el enlace
+recibido de AWS Budgets; hasta entonces no recibirá avisos.** No almacenar email
+en continuidad. Recibos locales `.work/aws-access/budget-30usd-created.{json,png}`.
+Configuración local de ensayo `.work/ensayo1/config.json` budget_eur=30; no
+estimaciones nuevas inventadas, builds ni despliegues. La estimación anterior
+con techo60EUR queda histórica: revalidar duración/coste total antes del ensayo.
+AWS Budgets sólo avisa y puede retrasarse; no garantiza detener cargos. El
+presupuesto vence01Dic: revisar/remover remanentes antes, no asumir vigilancia
+posterior. https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html
+
+Tras login humano, lectura de cuota aplicada Fargate Irlanda confirma0vCPU
+(defaultAWS6 NO asignado). Caso179267775500075 sin nueva respuestaAWS;
+últimaAWS22Oct16:12:03Europe/Paris, propio seguimiento23Oct12:24:37 ya conocido.
+Monitor sigue ACTIVE; restablecidos checks válidos y auth_block_notified=false.
+Recibo `.work/aws-access/fargate-console-status-latest.json`, estado monitor
+actualizado. El bloqueo de sesión descrito abajo queda resuelto para este corte;
+CLI no renovada. Sin solicitudes duplicadas ni despliegue.
+
+## Monitor bloqueado por autenticación — 24/10/2026 13:10 Europe/Paris
+
+Tras reinicio del runtime/pestañas ausentes, consulta de consola de cuota Irlanda
+redirige a AWS Sign-In. No se puede confirmar cuota actual ni nuevas respuestas
+del caso. No confundir con cuota0: último efectivo confirmado0vCPU el23Oct21:07
+Europe/Paris; últimaAWS conocida22Oct16:12. CLIya caducada, sin nueva prueba ni
+lectura de credenciales. TabIAB1 de login conservada para intervención humana.
+
+Primer aviso de renovación registrado en fargate-monitor-state.json
+(auth_block_notified=true); no repetir en cada ejecución mientras siga el mismo
+bloqueo. Recibo .work/aws-access/fargate-monitor-auth-required-20261024.json.
+Seguimiento permanece activo, sin despliegues ni mensajes aAWS. Siguiente paso:
+usuario inicia sesión y avisa para reanudar comprobaciones de sólo lectura.
+
+## Seguimiento automático autorizado — 23/10/2026
+
+El humano solicita aviso cuando AWS responda al caso o asigne cuota Fargate,
+sin desplegar. Creada automatización heartbeat activa en este chat, cada hora:
+`vigilar-respuesta-aws-y-cuota-fargate-irlanda`, nombre «Vigilar respuesta AWS y
+cuota Fargate Irlanda». Herramienta confirma creaciónACTIVE y tarjeta de consulta.
+No se encontró monitor previo equivalente en automations antes de crear éste.
+
+Sólo lectura del caso179267775500075 ycuotaaplicada L-3032A538/eu-west-1.
+Estado/deduplicación `.work/aws-access/fargate-monitor-state.json`: baseline
+aplicada0,6solicitadas; últimaAWS22Oct16:12:03 ypropioseguimiento23Oct12:24:37
+ya conocidos. No avisar del mensaje propio ni repetir avisos si nada cambia.
+Avisar por respuestaAWSnueva/cambio efectivo/denegación/cierre relevante o
+intervención humana. Si caduca sesión avisar una vez y distinguir desconocido0.
+Continuar tras respuestas intermedias, finalizar tras confirmar efectiva>=6.
+No reenviar seguimientos ni abrir chat/llamada, nuevas solicitudes/recursos,
+modelos, credenciales, apply/destroy/builds/pipelines/despliegue uotrosmensajes.
+
+Necesita equipo encendido y aplicación de escritorio activa porque usa sesión
+de navegador yarchivoslocales; sesiónAWSdebecontinuarválida. Límite explicado
+al usuario según documentaciónoficialOpenAI de tareas programadas. No cambia
+el estado de la cuota por haberse configurado este monitor. Futuras ejecuciones
+deben releer continuidad vigente antes de decidir qué es una novedad.
+
+## Seguimiento Fargate enviado por web — 23/10/2026 12:24 Europe/Paris
+
+Autorización humana expresa: enviar seguimiento por web en caso179267775500075
+para pedir prioridad, sin desplegar. Borrador y canalWeb releídos en UI y envío
+único realizado; correspondencia visible confirma autorDante_Inferno y fecha
+23Oct12:24:37+02:00 con texto exacto preparado. No contactos adicionales ni adjuntos.
+Solicitud de priorización6vCPU/Irlanda por defensa29Oct/ensayos y detalles de
+capacidad/rolling ya descritos abajo. No aprobación ni nueva respuestaAWS observada.
+
+Recibos `.work/aws-access/fargate-support-followup-sent.json` y captura `.png`;
+borrador original conservado como antecedente, ya no pendiente de envío.
+TabSupport5 marcado para conservar confirmación. Sin chat/llamada, solicitud
+duplicada, upgrade de soporte, recursos nuevos ni despliegue. Próximo paso:
+respuesta del caso y cuota efectiva antes de cualquier ensayo; no inferir
+aprobación por haber publicado el seguimiento ni reenviarlo por inercia.
+
+## Seguimiento preparado para agilizar Fargate — 23/10/2026
+
+Usuario pregunta cómo agilizar antes de defensa29Oct. Lectura del caso existente
+179267775500075 en Support confirma planBásico y respuesta automática AWS del
+22Oct16:12:03Europe/Paris: procesamiento puede tardar hasta96h; no es aprobación
+ni plazo garantizado. Referencia temporal desde mensaje:26Oct16:12París.
+Correspondencia inicial sólo contiene región/cuota6 y texto genérico ServiceQuotas;
+no había uso académico ni fecha de defensa. Cuota aplicada sigue0 en vistaFargate.
+
+Preparado borrador exacto en `.work/aws-access/fargate-support-draft.txt` y en
+campo Responder del caso (IAB5), SIN pulsar Enviar. Solicita priorizar6vCPU,
+explica defensa29Oct ydosensayos previos,6tareasLinuxx86 de0,5vCPU/1GiB=3vCPU
+estables/6para rolling, sesiones temporales con teardown; pide información
+adicional necesaria yfecha estimada de resolución. Sin credenciales, archivos
+privados, gastos comprometidos ni datos del evaluador. Captura local
+`.work/aws-access/fargate-support-draft.png`; tabs conservadas para revisión.
+
+Formulario ofrece Web/Chat/Teléfono. El soporteBásico admite cuotas según
+https://repost.aws/knowledge-center/get-aws-help y documentación oficial
+https://docs.aws.amazon.com/awssupport/latest/user/create-service-quota-increase.html.
+No hace falta contratar soporte de pago para presentar seguimiento de cuota;
+no se ha probado disponibilidad efectiva de agenteChat/llamada ni se ha iniciado
+contacto. No duplicar solicitud ni cambiar región/cuota por inercia.
+
+Pendiente autorización humana expresa para enviar mensaje aAWS en su nombre;
+la pregunta de opciones no se convirtió en permiso de comunicación externa.
+Sin envío, nueva solicitud, upgrade, despliegue ni cambioIAM/DNS. Si autorizado,
+releer borrador/UI y enviar sólo en este caso; comprobar correspondencia publicada.
+
+## Fargate verificado en consola — 23/10/2026 08:36 Europe/Paris
+
+Tras login humano en IAB4, consola cuenta605600557607/Irlanda eu-west-1,
+Fargate On-Demand L-3032A538 muestra cuota aplicada0vCPU, predeterminadaAWS6.
+Historial muestra solicitud22Oct por6vCPU en «Caso abierto». No confundir el
+default6 con capacidad asignada; ensayo aún bloqueado. Consulta sólo lectura,
+sin nuevas solicitudes ni despliegue. Evidencia local de lectura visible
+`.work/aws-access/fargate-console-status-latest.json`,06:36:51UTC,URL
+https://eu-west-1.console.aws.amazon.com/servicequotas/home/services/fargate/quotas/L-3032A538.
+Esto supera la imposibilidad de lectura de08:33; no se ha renovado CLI ni se
+afirma fecha nueva de actualización administrativa del caso. Tab marcado para
+conservar la vista del resultado.
+
+## Comprobación bloqueada por sesión caducada — 23/10/2026 08:33 Europe/Paris
+
+Petición humana de reconsultar Fargate Irlanda. Ambas lecturas CLI (cuota efectiva
+y solicitud) fallan por sesión expirada, sin dato nuevo de cuota. Recibo
+`.work/aws-access/fargate-status-latest.json` registra fallos06:33:37UTC; no
+interpretar resultados ausentes como0. Último efectivo confirmado22Oct23:33París:
+0vCPU/CASE_OPENED. Consola tampoco tiene sesión: tabIAB4 abierto en SignIn AWS
+para ServiceQuotas Irlanda, marcado handoff. Necesita inicio de sesión humano
+antes de consultar. No credenciales leídas/renovadas, ni solicitudes o despliegue.
+
+## Nueva comprobación Fargate — 22/10/2026 23:33 Europe/Paris
+
+Por petición humana, lectura ServiceQuotas Irlanda eu-west-1: L-3032A538 sigue
+efectiva0vCPU; solicitud6vCPU sigue CASE_OPENED, caso179267775500075, última
+actualización administrativa22Oct16:02:40+02:00. No aprobación efectiva ni cambio
+de cuota observado. Recibo `.work/aws-access/fargate-status-latest.json`, corte
+21:33:36UTC. Sin solicitud duplicada, cambios AWS ni despliegue. Fargate continúa
+bloqueando el ensayo. No se han reconsultado otros servicios por esta petición.
+
+## Evaluador dado de alta con fecha aclarada — 22/10/2026
+
+El humano confirma30Nov2026, incluido. Supera la espera de fecha inválida del
+corte anterior. Alta IAMautorizada para Carlos: economicon-evaluador-carlos,
+política arn:aws:iam::605600557607:policy/economicon-evaluador-carlos-hasta-20261130
+como identitypolicy y boundary iguales, hash349e33182367be171bbe6652b8c51331966a074816a9be1474ca77436f8bbf27.
+Consola con contraseña inicial/reset obligatorio,0accesskeys/0grupos/0inline,
+1política adjunta. No contraseña/correo personal en continuidad.
+
+MFAobligatorio antesdelectura; excepción inicial acotada a contraseña/MFA propios.
+DenyAll desde2026-11-30T23:00:00Z=01Dec00:00Europe/Paris incluso conMFA/sesión.
+IAMusuario/loginprofile no se eliminan por esa condición: bloqueo de permisos,
+retirada posterior pendiente cuando finalice la revisión. Lectura de metadatos
+infraestructura; algunos listados de cuenta son globales/enregiones proyecto,
+sin contenidoS3/secretos/DB/logs ni cambios/modelos/costes deejecución.
+Guía y alcance exactos [runbook](../deployment/aws-defensa.md).
+
+AccessAnalyzer0findings,23casos simulados conformes (MFA/fecha/región/cambios/
+secretos/objetos/credenciales/identidad ajena), readback de política/boundary y
+configuración de usuario conforme. Recibo .work/aws-access/evaluator-access-receipt.json,
+6simulaciones adicionales del principal IAM real con su boundary conformes;
+recibo evaluator-principal-simulations.json (sin operaciones reales de despliegue).
+política/validación/simulaciones homónimas. Contraseña sólo en archivo privado
+.work/aws-access/private-evaluator/acceso-carlos.txt, ignorado porGit yACL verificada
+únicamente Windowsoperador/SYSTEM. Sin contraseña en comandos/logs/chat ni email
+enviado; entrega privada aCarlos por el humano pendiente. Payloadtemporal deperfil
+eliminado, no borrado de otros archivos. Loginreal/MFAdeCarlos aún no verificados.
+No despliegue ni acciones sobreinfra/control/DNS/cuotas;altaIAMdeevaluador sí realizada.
+
+## Acceso del evaluador pendiente de fecha válida — 22/10/2026
+
+El usuario facilita nombre y correo del evaluador Carlos (correo solo en chat,
+no duplicado en documentación) y solicita vigencia «31 de noviembre». Esa fecha
+no existe; pregunta async enviada para elegir30Nov2026 o31Oct2026. Pendiente
+respuesta, sin asumir fecha por selección predeterminada ni crear acceso.
+
+Preflight de lectura19:56UTC: cuenta correcta; Organizations describe devuelve
+AWSOrganizationsNotInUseException (cuenta fuera de organización). No se activó
+Organizations/IdentityCenter ni se listaron instancias después de esa respuesta.
+La modalidad IdentityCenter que asigna cuentasAWS requiere organización; la
+instancia de cuenta aislada para apps no resuelve esta entrada a consola.
+IAM get-user de economicon-evaluador-carlos devuelveNoSuchEntity, no se creó.
+Recibo `.work/aws-access/evaluator-access-preflight.json` sin credenciales.
+
+Alternativa propuesta: usuario exclusivo de consola, sin access keys, lectura de
+infraestructura, MFA/autogestión limitada y bloqueo de permisos por fecha explícita.
+No alta, contraseña, políticas/permisos nuevos ni comunicación al evaluador.
+Siguiente: fecha válida, definir/verificar política y entrega privada de acceso;
+mantener prohibición de desplegar. No reutilizar credenciales del operador.
+
+## Seguimiento de cuotas y DNS y acceso del evaluador — 22/10/2026
+
+Orden humana: enviar estimación a HAL para Lucía y comprobar cuotas/DNS, sin
+desplegar; asesorar acceso de un evaluador. Envío a HAL9000 confirmado por tool,
+chat01a1270c-e332-7462-9c90-706d49ade92c, con informe/rutas/cifras/supuestos y límites.
+No se afirma entrega de HAL a Lucía ni se envió Discord desde aquí.
+
+Lecturas AWS19:36–19:37UTC: FargateIrlanda L-3032A538 efectiva0, solicitud6
+CASE_OPENED caso179267775500075. CodeBuildMediumParís L-2DC20C30 efectiva15
+(necesaria1), solicitud1 aún CASE_OPENED caso179267775900317. Primera lectura
+del casoCodeBuild falló429 en OAuth; repetida secuencialmente conforme. No se
+renovaron sesiones manualmente ni se generaron credenciales/solicitudes nuevas.
+Recibo `.work/aws-access/quota-status-user-check.json` conserva ambos intentos.
+
+Jarvis terminó delegación (turno01a16474-8996-7651-8cd9-2afd2ec524bd,
+cursor e562b468-2871-4183-921d-db03cf94a54b:7). Informa4NS TTLauto, preservados
+20registros yNS padre. Comprobación propia19:36UTC:1.1.1.1/8.8.8.8 devuelven
+4NS esperados; ns-54.awsdns-06.com devuelveSOAserial1. ConsultasdirectasWindows
+a diva/salvador devuelven error DNS; no afirmar verificación completa de los
+autoritativos por este chat. Recibo `.work/aws-access/dns-status-user-check.json`.
+Esto supera el estado anterior DNSpendiente/cuotas0/0. DNSyaobservable público;
+CodeBuildcapacidaddisponible; Fargatecontinúabloqueando, ademásdelrestodeprerrequisitos.
+
+Usuario confirma evaluador con cuentaAWS propia: propuesta de rol entrecuentas
+temporal de lectura acotada a recursos del proyecto. PedirIDcuenta12dígitos,
+ARNusuario/rolconcreto,fecha fin yalcanceconsola/CLI. Requiereautorización
+sts:AssumeRoleensuorigen y trustacotadoenproyecto. No crear acceso todavía ni
+solicitarclaves/contraseñas/root. Fuentes oficiales IAMbest-practices ytutorial
+cross-account-with-roles consultadas22Oct. Sin despliegue ni cambios AWSenestecorte.
+
+Estimación mensual del 22/10/2026: [costes AWS](costes-aws.md). Plantilla HA
+730h ≈1150EUR/mes sinIVA; cálculo público/offline separado del presupuesto de
+60EUR para ensayos. No modifica autorización, readiness ni estado de las cuotas.
+
+## Roles, zona y conexión preparados por autorización expresa — 22/10/2026
+
+Usuario autoriza preparar roles, DNS y GitHub mientras aprueban cuotas, sin
+aplicación. Posteriormente pide delegar DNS a Jarvis en Neon Bastion y confirma
+paso GitHub completado; Cloudflare pendiente. Solo estos prerrequisitos AWS se
+han creado ahora, superando el estado previo de solo solicitudes de cuota:
+
+- Zona pública economicon.danteinferno.es ID Z0908169205CKOWLEJ2DZ. SOA responde
+  directamente desde ns-54.awsdns-06.com; no equivale a delegación pública.
+- CodeConnection París economicon-github, ARN
+  arn:aws:codeconnections:eu-west-3:605600557607:connection/df45512d-c3c4-44ca-93ca-c4ae399eb637.
+  AVAILABLE tras intervención del usuario, comprobado por API.
+- IAM policy arn:aws:iam::605600557607:policy/economicon-runtime-boundary,
+  SHA del fichero b56e0aae9910112997055b1bd821eed04a5efff38a2c508079e8e2b715bb00a6.
+  Access Analyzer0findings,15simulaciones conformes, review técnica independiente
+  favorable sin P1/P2/P3. Ceiling solo ensayo*/defensa*, no default reference.
+- Roles economicon-defensa-{build,deploy,pipeline,expiry}, trusts iguales a
+  plantilla y verificados por GetRole;0políticas inline/adjuntas. Son base IAM,
+  no permisos efectivos de despliegue. La boundary es para futuros ECS, no
+  está adjunta a los4roles de control. Antes del bootstrap hay que importarlos
+  a aws_iam_role.{build,deploy,pipeline,expiry} del estado infra/aws-bootstrap.
+  No se aplicó Terraform ni se crearon proyectos/pipelines/buckets/secretos/apps.
+
+La sesión CLI root de la cuenta correcta se usó solo para el alcance de preparación
+expresamente autorizado. No claves permanentes, credenciales en archivos ni
+cambios a roles/recursos ajenos. Artefactos públicos locales y readback:
+.work/aws-prerequisites/{resources.json,runtime-boundary.json,boundary-validation.json,
+boundary-simulation-results.json,verification-summary.json} y scripts de estas
+operaciones. Recibo del alcance/importación/servicios en docs/deployment/aws-defensa.md.
+Coste previsto de la zona0,50USD/mes+consultas, sin prorrateo; factura/saldoEUR
+no verificados. Presupuesto total60EUR se mantiene, coste completo pendiente.
+
+Petición enviada con autorización humana a «Jarvis», Neon Bastion, host local,
+chat01a14bba-2515-7672-8bb3-ce01b4b54e4b. Solo cuatro NS en Cloudflare con nombre
+economicon y TTLauto: ns-1509.awsdns-60.org, ns-2005.awsdns-58.co.uk,
+ns-995.awsdns-60.net, ns-54.awsdns-06.com. Conservar padre y otros registros;
+comprobar conflictos/DS antes de sustituir nada, sin A/AAAA/CNAME de app.
+Petición enviada y reiterada al finalizar su turno anterior; snapshots aún
+muestran a Jarvis con la incidencia SSH de Mother. DNS consultado directamente
+en diva.ns.cloudflare.com devuelve NXDOMAIN: delegación aún no aplicada/visible.
+No se vuelve a enviar para evitar duplicados; comprobar su respuesta en siguiente paso. No interpretar entrega de mensaje como ejecución o aceptación.
+NS padre comprobados: diva.ns.cloudflare.com y salvador.ns.cloudflare.com.
+
+Cuotas efectivas reconsultadas al terminar: FargateIrlanda0/CodeBuildMediumParís0.
+Ensayo1 actualizado con zoneID real pero aws_deployable=false; coste/restante0,
+DNS delegado, políticas/control, secretos, reviews/CIpushdevelop y ventana aún
+pendientes. Trello actualizado mediante DockerServer, readback conforme y columna intacta,
+sin Discord. No despliegue de aplicación. Candidato PR8e879dae y su CI intactos;
+actualización operativa/documental local, sin nuevo push ni merge.
+
+## Petición de primera prueba y preflight actualizado — 22/10/2026
+
+Usuario pregunta si podemos realizar una prueba de despliegue AWS. Comprobación
+actual de solo lectura: sesión CLI válida, cuenta605600557607, identidad root.
+La primera consulta sin región devuelve NoRegion; repetida con eu-west-3 da STS
+conforme, sin modificar el perfil ni renovar/extraer credenciales.
+
+- Fargate Irlanda cuota efectiva0, necesaria6; solicitud CASE_OPENED, caso179267775500075.
+- CodeBuild Medium París efectiva0, necesaria1; CASE_OPENED, caso179267775900317.
+- IAM no devuelve roles con prefijo economicon; Route53 no devuelve zonas.
+- CodeConnections París sin conexiones; Secrets Manager París sin referencias
+  cuyo nombre coincida economicon. No se leen valores de secretos ni se infiere
+  ausencia de otros secretos globalmente.
+- PR146 sigue OPEN/borrador en8e879dae, sin merge. Única review lmatsan mantiene
+  CHANGES_REQUESTED y no hay Validacion; CI técnica continúa SUCCESS.
+
+Ensayo bloqueado por capacidad y prerrequisitos. No iniciar bootstrap de pago,
+apply ni pipelines mientras las cuotas sigan0. Siguiente: aprobación efectiva
+6/1 por AWS, preparar roles/boundary, conexión/secretos y DNS/delegación, resolver
+reviews/integración develop, coste completo y ventana antes del ciclo. No repetir
+solicitudes abiertas. Evidencia pública .work/aws-access/trial-readiness-20261022.json.
+No recursos creados/modificados ni ensayo iniciado en esta comprobación.
+
 ## Corrección de CI que bloquea PR154 — 23/10/2026
 
 Origen: HAL9000, chat `01a1270c-e332-7462-9c90-706d49ade92c`.
@@ -63,9 +448,27 @@ localdoctor/smoke80PASS; trazabilidad/higiene conformes. Node/Git EPERM del
 sandbox se resuelve repitiendo con permiso de proceso, sin cambiar tests.
 Review técnica independiente APPROVE, sin nuevos P1/P2/P3; no sustituye humana.
 Imagenbackend reconstruida a9fa0549a2d8; Linux sin red/raízRO/uid10001/tmp0700
-repite controlador68PASS/1SKIP y backend142PASS. CI final por SHA pendiente de
-publicación. Receta/evidencia renovada y validada offline:
+repite controlador68PASS/1SKIP y backend142PASS. Candidato publicado
+8e879dae3f23d52f46ea2b625ca1f2eebd22cd4a; CI final verificada SUCCESS. Receta/evidencia renovada y validada offline:
 apphash8a47bf3d8f88fbc45652bdcbe5ecb7f71c036c3e9d3bfc0b51bb556d36cd633d.
+
+Cierre verificado del SHA8e879dae: [CI push39800901608](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39800901608)
+SUCCESS (8jobs técnicos) y [CI PR39801651320](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/39801651320)
+SUCCESS (8técnicos+JUPpolicy). SQL39800911469 SUCCESS. Ediciones de cuerpo
+cancelaron PR39800911163/39801234155; no fueron fallos de código. Evidencia
+ignorada .work/aws-review-fixes/ci-{push,pr}.json. ZIP limpio8e879dae valida
+receta/evidencias. .work/ensayo1 actualizado a este SHA, aws_deployable=false,
+cuenta/motores reales, DNS REPLACE y coste/restante0 deliberados; el SHA debe
+integrarse en develop y elegirse su CIpush antes de regenerar para lanzamiento.
+
+Gate JUP reviews39801651793 falla únicamente por falta Validacion JUP-131 y
+CHANGES_REQUESTED de lmatsan; logs leídos, no eludido. Roles actuales consultados
+en integración Trello DockerServer: Alejandro liderazgo, Victor pairing, Lucia
+revisión, Paris validación; cuerpo PR reconciliado con la asignación vigente.
+PR146 sigue borrador, sin merge. Trello actualizado por integración DockerServer
+con readback exacto y columna intacta; sin Discord. Recibo y pruebas no inventan
+aceptación humana. Cierre CI conservado en continuidad local sin nuevo commit
+para mantener el SHA probado8e879dae; solo README/tema de continuidad modificados.
 
 Prerrequisitos del ensayo intactos: cuotas efectivas, roles/boundary, zona y
 Cloudflare, CodeConnections/secretos París, coste/ventana60EUR y aceptación

@@ -150,5 +150,9 @@ run "ecs_runtime_configuration" {
     condition     = contains([for env in jsondecode(aws_ecs_task_definition.monitoring[0].container_definitions)[0].environment : "${env.name}=${env.value}"], "GF_DATABASE_SSL_MODE=verify-full") && contains([for env in jsondecode(aws_ecs_task_definition.monitoring[0].container_definitions)[0].environment : "${env.name}=${env.value}"], "GF_AUTH_ANONYMOUS_ENABLED=false") && alltrue([for service in aws_ecs_service.application : service.deployment_maximum_percent == 150])
     error_message = "RDS TLS, authenticated Grafana and constrained rolling capacity are required."
   }
+  assert {
+    condition     = contains([for env in jsondecode(aws_ecs_task_definition.monitoring[0].container_definitions)[0].environment : "${env.name}=${env.value}"], "GF_SECURITY_CSRF_TRUSTED_ORIGINS=${var.frontend_domain}")
+    error_message = "Browser session queries must trust only the frontend Origin when CloudFront strips Host."
+  }
 
 }
