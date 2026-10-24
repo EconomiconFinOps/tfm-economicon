@@ -32,3 +32,32 @@ run "monitoring_private_routing_and_capacity" {
     error_message = "Preparation must not enable services; credentials remain outside Terraform."
   }
 }
+
+run "metrics_routes_are_denied_before_grafana" {
+  command = plan
+
+  assert {
+    condition = alltrue([
+      for path in ["/metrics", "/metrics/internal", "/grafana/metrics", "/grafana/metrics/internal"] : anytrue([
+        for pattern in one(one(aws_lb_listener_rule.deny_metrics.condition).path_pattern).values : can(regex("^${replace(pattern, "*", ".*")}$", path))
+      ])
+    ])
+    error_message = "Internal application and Grafana metrics must not be forwarded by the public routes."
+  }
+  assert {
+    condition = alltrue([
+      for path in ["/grafana", "/grafana/login", "/grafana/api/health", "/grafana/api/ds/query"] : !anytrue([
+        for pattern in one(one(aws_lb_listener_rule.deny_metrics.condition).path_pattern).values : can(regex("^${replace(pattern, "*", ".*")}$", path))
+      ])
+    ])
+    error_message = "The metrics deny rule must preserve Grafana login, health and dashboard queries."
+  }
+  assert {
+    condition     = aws_lb_listener_rule.deny_metrics.priority < aws_lb_listener_rule.grafana.priority && one(aws_lb_listener_rule.deny_metrics.action).type == "fixed-response" && one(one(aws_lb_listener_rule.deny_metrics.action).fixed_response).status_code == "404"
+    error_message = "Metrics must receive a fixed 404 before the Grafana forward rule."
+  }
+  assert {
+    condition     = length(one(one(aws_lb_listener_rule.deny_metrics.condition).path_pattern).values) <= 3
+    error_message = "The deny condition must fit the ALB limit of three match evaluations."
+  }
+}

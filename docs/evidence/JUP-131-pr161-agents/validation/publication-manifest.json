@@ -1,0 +1,238 @@
+{
+  "author": "agent /root/pr161_validation",
+  "files": [
+    {
+      "path": "validation.md",
+      "source": ".work/pr161-validation/validation.md",
+      "original_sha256": "d13bca8b30a8240cf406eb64cd0de6ef2c3c067f630d7e1fd575fbf23681cc0d",
+      "published_sha256": "d0ac36ef629426cf2b81b8b3f2e0b47abaf47c95c1bf98d049b04d67710dfc83",
+      "metadata_header_omitted": false,
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 0
+    },
+    {
+      "path": "delta-validation.md",
+      "source": ".work/pr161-validation/delta-validation.md",
+      "original_sha256": "da21a06a4197988b1993783787fd80e554c7f869febcc418efd8298df0fb3da9",
+      "published_sha256": "da21a06a4197988b1993783787fd80e554c7f869febcc418efd8298df0fb3da9",
+      "metadata_header_omitted": false,
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 0
+    },
+    {
+      "path": "azure-delta-validation.md",
+      "source": ".work/pr161-validation/azure-delta-validation.md",
+      "original_sha256": "c6c2e656ddffa09dadb08407ae6b67a01a30c7bd11118ba87bf8010cb3f07c4c",
+      "published_sha256": "c6c2e656ddffa09dadb08407ae6b67a01a30c7bd11118ba87bf8010cb3f07c4c",
+      "metadata_header_omitted": false,
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 0
+    },
+    {
+      "path": "azure-delta-manifest.json",
+      "source": ".work/pr161-validation/azure-delta-manifest.json",
+      "original_sha256": "ac36db78859ed98f185a156d6a875ae74288bae1ff7ef19e71712647c97ec72c",
+      "published_sha256": "721667d4639079eff4ce191aee14a20d7cdaddcdbb16058fca7a8667399baba8",
+      "metadata_header_omitted": false,
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 0
+    },
+    {
+      "path": "azure-runtime.log",
+      "source": ".work/pr161-validation/azure-runtime.log",
+      "original_sha256": "67b54d01089fcb54f5b9a1b1e564906d7a89b648b3e26882920f71b65c6f9607",
+      "published_sha256": "672a8f427d928296514d6ae0e80adc070ad957294170584e65b6b4da533bfdd7",
+      "metadata_header_omitted": true,
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 0
+    },
+    {
+      "path": "azure-green-all-tests.log",
+      "source": ".work/pr161-validation/azure-green-all-tests.log",
+      "original_sha256": "8485a390264050c80238bca64cdd7af650523fd819e634162e0fee30fdb79b46",
+      "published_sha256": "ebdc96f6eb6a639e281400fc2bc79420e9265ec6d3b93d9019d92dedb6ecc43a",
+      "metadata_header_omitted": true,
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 1
+    },
+    {
+      "path": "artifact-release-checks.json",
+      "source": ".work/pr161-validation/artifact-release-checks.json",
+      "original_sha256": "af6b7eb788e91108a67df6476339479f9a8f8f3fd0a8cc3908aef187bff9ea39",
+      "published_sha256": "b69c2203471c6970fd40defd92885637bbf0b0b85b73c602306c9660e25bf90f",
+      "metadata_header_omitted": false,
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 0
+    },
+    {
+      "path": "delta-manifest.json",
+      "source": ".work/pr161-validation/delta-manifest.json",
+      "original_sha256": "3390236f54b2f4e154fe285f6591ac58d9c4d9bb43082f1b16d68bb00d6e8926",
+      "published_sha256": "1728005fbe5f7d64879f1468271521426aa9a93950bebff80bf6e926d562f52d",
+      "metadata_header_omitted": false,
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 0
+    },
+    {
+      "path": "cleanup-summary.json",
+      "source": ".work/pr161-validation/cleanup-summary.json",
+      "original_sha256": "a814115e718b2876c68a9ec9f556879fc29a48a3e043d0d880d6c77308e23664",
+      "published_sha256": "266c754d30c3de69158294a051f9293c50b13495805e58b488530b59992e4f43",
+      "metadata_header_omitted": false,
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 0
+    },
+    {
+      "path": "remote/public-source-proof.json",
+      "source": ".work/pr161-validation/remote/public-source-proof.json",
+      "original_sha256": "b865fb7658b07bb0d8f8a073051e3c96158232ccbd011e74d0545b63b4e00690",
+      "published_sha256": "b865fb7658b07bb0d8f8a073051e3c96158232ccbd011e74d0545b63b4e00690",
+      "metadata_header_omitted": false,
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 0
+    },
+    {
+      "path": "remote/atlas-postgresql-real.log",
+      "source": ".work/pr161-validation/remote/atlas-postgresql-real.log",
+      "original_sha256": "7a2685db8c5d48bec5f51049cf645ad5832e0132be4bb3f44797cca57ff5c49d",
+      "published_sha256": "7a2685db8c5d48bec5f51049cf645ad5832e0132be4bb3f44797cca57ff5c49d",
+      "metadata_header_omitted": false,
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 0
+    },
+    {
+      "path": "remote/atlas-extra-real-rerun.log",
+      "source": ".work/pr161-validation/remote/atlas-extra-real-rerun.log",
+      "original_sha256": "a87f32fdeffb0080510e5ad3120532e8542dcf1a3e09d48fd47329724492a6da",
+      "published_sha256": "a87f32fdeffb0080510e5ad3120532e8542dcf1a3e09d48fd47329724492a6da",
+      "metadata_header_omitted": false,
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 0
+    },
+    {
+      "path": "remote/processor-bootstrap-linux.log",
+      "source": ".work/pr161-validation/remote/processor-bootstrap-linux.log",
+      "original_sha256": "efdcd7fd6aaf9abf3974bc56d027bf9538cdeadb3130e8d75a88529a46841de5",
+      "published_sha256": "efdcd7fd6aaf9abf3974bc56d027bf9538cdeadb3130e8d75a88529a46841de5",
+      "metadata_header_omitted": false,
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 0
+    },
+    {
+      "path": "remote/resources.jsonl",
+      "source": ".work/pr161-validation/remote/resources.jsonl",
+      "original_sha256": "6b9ae4c075b00e68b7183104f317b17f401072ed68822f6b1d8f964d79c0cdc1",
+      "published_sha256": "6b9ae4c075b00e68b7183104f317b17f401072ed68822f6b1d8f964d79c0cdc1",
+      "metadata_header_omitted": false,
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 0
+    },
+    {
+      "path": "controller-targeted-windows-unsandboxed.log",
+      "source": ".work/pr161-validation/controller-targeted-windows-unsandboxed.log",
+      "original_sha256": "f245d1ad0cd0558d5287dc38e7e2db0c9542feba4f2b12125d9830c5ad0a3a7c",
+      "published_sha256": "fac5d39248ac6ad650a8e17bc5cb725cd837f704a05a357c1fd1564cf22b3761",
+      "metadata_header_omitted": true,
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 0
+    },
+    {
+      "path": "backend-bootstrap-targeted-windows-unsandboxed.log",
+      "source": ".work/pr161-validation/backend-bootstrap-targeted-windows-unsandboxed.log",
+      "original_sha256": "bd653ceb9c75384081a09ae77e7081ccbb26ca8292a876813619deeba09541fa",
+      "published_sha256": "2577300dff4bf4bba5cc12784f759182366e68f03cca141e491a242ff4e8cf3c",
+      "metadata_header_omitted": true,
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 1
+    },
+    {
+      "path": "terraform-aws-reference-test.log",
+      "source": ".work/pr161-validation/terraform-aws-reference-test.log",
+      "original_sha256": "5a593310ecf689d507bc9112ec86daa4500e98cf6e755733d509acbdfe15a06a",
+      "published_sha256": "d9ddb523d9a42a6bc952fa8beb6eb896762ce39e0f64f476c2a080b8b0d8b8b7",
+      "metadata_header_omitted": true,
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 0
+    },
+    {
+      "path": "terraform-aws-bootstrap-test.log",
+      "source": ".work/pr161-validation/terraform-aws-bootstrap-test.log",
+      "original_sha256": "2f53537d5507c603110a007c1e316abfb1fe2db2285b2102434e78b4cb4248d8",
+      "published_sha256": "a1239aa298541a1c91998c1e264615483fa943eb4eb330a109a914cfe070b43a",
+      "metadata_header_omitted": true,
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 0
+    },
+    {
+      "path": "edge-functions.log",
+      "source": ".work/pr161-validation/edge-functions.log",
+      "original_sha256": "715e385a51bd4aaeb208a09899da837bef849d5a64dab3af691f182629bb9926",
+      "published_sha256": "641e4d7589cf27943f72cf5d4251f44e80d79e7857f61200f9bace96a81a62b0",
+      "metadata_header_omitted": true,
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 0
+    },
+    {
+      "path": "delta-red-monitoring-original-edge.log",
+      "source": ".work/pr161-validation/delta-red-monitoring-original-edge.log",
+      "original_sha256": "df605661343fa3f34b9da44d6adbcc45a8b667a7d66b787fc2716be9f0045243",
+      "published_sha256": "a33feed0483667c4d17186b09ff31d19e9dbe3a97ce99e0e01abc680e165e41c",
+      "metadata_header_omitted": true,
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 0
+    },
+    {
+      "path": "delta-terraform-fmt.log",
+      "source": ".work/pr161-validation/delta-terraform-fmt.log",
+      "original_sha256": "40b99d82c9704228533ae075c67ed5101ab49889cc145ff2363a3b333818fd3a",
+      "published_sha256": "a3680b6601c39b586ea892ad2bbaa58a7f72b62a64f73917b09aa8c5f188110e",
+      "metadata_header_omitted": true,
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 0
+    },
+    {
+      "path": "delta-terraform-validate.log",
+      "source": ".work/pr161-validation/delta-terraform-validate.log",
+      "original_sha256": "ef246f9bec741ff2badb9b6162d7b6ea4de5933f5580157e9a01079d5b2a1208",
+      "published_sha256": "08ba709723f91eea8041665057752e2e0d8a678071e85895f917c2056a6f3177",
+      "metadata_header_omitted": true,
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 0
+    },
+    {
+      "path": "delta-green-terraform-test.log",
+      "source": ".work/pr161-validation/delta-green-terraform-test.log",
+      "original_sha256": "db64c4de320564db6c80fa89fcf2ba9d1aa52f2a1b6581c0d4c496a0bfb1db8e",
+      "published_sha256": "71bff089029435867685d14a5730f3914e57e7e5ed7628246acb3ff8a82a126e",
+      "metadata_header_omitted": true,
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 0
+    },
+    {
+      "path": "azure-red-original-errors.log",
+      "source": ".work/pr161-validation/azure-red-original-errors.log",
+      "original_sha256": "d933f213a78c4d3ef67979f8da4398629576a9699afe8fb36e793932fea7f240",
+      "published_sha256": "2c2be442fdd28bcf2a612e18059cd9294b1612dcf89b159d97a5f2ee94c7b523",
+      "extraction": "complete first contextlib failure; six HTTP exception payload/traceback blocks; pytest failure summary",
+      "line_endings": "normalized to LF",
+      "personal_path_prefixes_replaced": 1
+    },
+    {
+      "path": "remote-monitoring-console.log",
+      "source": ".work/pr161-validation/remote-monitoring-console.log",
+      "original_sha256": "33a1845fa8f09a91f079fb4ace66cfae35fe3a13b7dea3c097087bc9c96fea92",
+      "published_sha256": "2feecd3652180abfd350e0abfa6931650a7b0722c6494359b4d332d50ce41bd1",
+      "extraction": "both probe result JSON records, smoke source hash/instrumentation and final PASS; no output altered"
+    }
+  ],
+  "excluded": [
+    "source archives",
+    "candidate-source and Terraform copies",
+    "executables/provider binaries",
+    "temporary files",
+    "large initial environment-error logs",
+    "initial harness assertion-error logs"
+  ],
+  "execution_origin": ".work/pr161-validation/",
+  "no_actual_secrets_included": true
+}

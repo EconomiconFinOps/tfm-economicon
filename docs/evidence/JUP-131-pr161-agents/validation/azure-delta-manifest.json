@@ -1,0 +1,24 @@
+{
+  "author": "agent /root/pr161_validation",
+  "base_source_sha": "e730dc15fb3feb45a3b346fc9e48332c4608b049",
+  "snapshot_utc": "2026-10-24T21:36:37.040195+00:00",
+  "candidate_kind": "uncommitted two-file Azure delta",
+  "files": [
+    {
+      "path": "apps/azure-cost-api/app/errors.py",
+      "sha256": "389e2a7c72185d34122c89028c2147e64a0db904ac38190839e3b4844e4a4a48",
+      "base_sha256": "2f6612520f6001475ce63e49819c8492e61afd05beb67c9f905d438e0c6ba1a5"
+    },
+    {
+      "path": "apps/azure-cost-api/tests/test_errors.py",
+      "sha256": "0cbc76998fdddd661c54c5d2bdc61542507ddcf992dbfebf582a2c0683886678",
+      "base_sha256": null
+    }
+  ],
+  "results": {
+    "runtime": 0,
+    "red_original_errors": 1,
+    "green_all_azure": 0
+  },
+  "status": "PASS"
+}

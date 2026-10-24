@@ -1,0 +1,14 @@
+
+STDERR
+test_exact_package_and_canonical_sources (tools.aws_demo.test_atlas_postgresql.AtlasArtifactTests.test_exact_package_and_canonical_sources) ... ok
+test_additive_idempotent_and_preserves_unrelated_history (tools.aws_demo.test_atlas_postgresql.AtlasPostgreSQLTests.test_additive_idempotent_and_preserves_unrelated_history) ... ok
+test_changed_artifact_is_rejected_before_database_changes (tools.aws_demo.test_atlas_postgresql.AtlasPostgreSQLTests.test_changed_artifact_is_rejected_before_database_changes) ... ok
+test_conflicting_identity_aborts_without_partial_import (tools.aws_demo.test_atlas_postgresql.AtlasPostgreSQLTests.test_conflicting_identity_aborts_without_partial_import) ... ok
+test_existing_privileged_reader_is_rejected (tools.aws_demo.test_atlas_postgresql.AtlasPostgreSQLTests.test_existing_privileged_reader_is_rejected) ... ok
+test_metadata_database_survives_repeated_setup_and_is_separate (tools.aws_demo.test_atlas_postgresql.AtlasPostgreSQLTests.test_metadata_database_survives_repeated_setup_and_is_separate) ... ok
+test_reader_can_query_but_cannot_write_or_create (tools.aws_demo.test_atlas_postgresql.AtlasPostgreSQLTests.test_reader_can_query_but_cannot_write_or_create) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 2.181s
+
+OK

@@ -1,0 +1,77 @@
+{
+  "source_sha": "e730dc15fb3feb45a3b346fc9e48332c4608b049",
+  "base_sha": "ffb5d307772f697cffb8b1e73e6330250e093601",
+  "archive_sha256": "be92192370bd546b0829e549bb2c61b0729a484169ddab8cf5038eaf69784db2",
+  "dashboards": [
+    {
+      "path": "apps/monitoring/grafana/dashboards/assistant-evaluation.json",
+      "uid": "economicon-assistant-evaluation",
+      "sha256": "43227d7cc02576d4b6b2f6f214dcead71f76a5b2782c924f7a89668c8abfa7b6",
+      "base_identical": true
+    },
+    {
+      "path": "apps/monitoring/grafana/dashboards/assistant-evidence.json",
+      "uid": "economicon-assistant-evidence",
+      "sha256": "156815b420604794bc776f8b67bf47c79df61b2612ecb8405659c8a12492414a",
+      "base_identical": true,
+      "sections": [
+        "1 · Negocio y fiabilidad de los datos",
+        "2 · Calidad y robustez del asistente",
+        "3 · Recuperación documental y citas",
+        "4 · Coste y rendimiento del chat",
+        "5 · Salud técnica y diagnóstico · detalle"
+      ]
+    },
+    {
+      "path": "apps/monitoring/grafana/dashboards/technical-metrics.json",
+      "uid": "economicon-technical-metrics",
+      "sha256": "d9560fdca39be806fa66268a4950de7a3f1a2bb94adabeeda0534b2b8ee70976",
+      "base_identical": true
+    }
+  ],
+  "release_guard": {
+    "status": "EXPECTED_REJECTION",
+    "expected_digest": "8a47bf3d8f88fbc45652bdcbe5ecb7f71c036c3e9d3bfc0b51bb556d36cd633d",
+    "candidate_digest": "4855445e350f6d2e301ca4cd8ec3771616b8c8e25921e304e6ab33246d4338fd",
+    "message": "Release evidence application tree differs",
+    "historical_evidence_hashes_valid": true
+  },
+  "historical_budget_guard": [
+    {
+      "field": "budget_eur",
+      "value": "30.01",
+      "message": "Project budget cannot exceed 30 EUR"
+    },
+    {
+      "field": "budget_eur",
+      "value": "60",
+      "message": "Project budget cannot exceed 30 EUR"
+    },
+    {
+      "field": "available_credit_eur",
+      "value": "None",
+      "message": "Set verified available_credit_eur"
+    },
+    {
+      "field": "available_credit_eur",
+      "value": "0",
+      "message": "Set verified available_credit_eur"
+    },
+    {
+      "field": "available_credit_eur",
+      "value": "nan",
+      "message": "Set verified available_credit_eur"
+    },
+    {
+      "field": "available_credit_eur",
+      "value": "8",
+      "message": "Cycle exceeds verified remaining project budget"
+    },
+    {
+      "field": "estimated_cycle_eur",
+      "value": "inf",
+      "message": "Set verified estimated_cycle_eur"
+    }
+  ],
+  "budget_policy_note": "The user removed the 30 EUR operational cap on 2026-10-24; this candidate still enforces it. Adaptation is pending separately."
+}

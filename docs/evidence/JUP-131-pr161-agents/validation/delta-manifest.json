@@ -1,0 +1,24 @@
+{
+  "base_source_sha": "e730dc15fb3feb45a3b346fc9e48332c4608b049",
+  "snapshot_utc": "2026-10-24T21:28:49.181977+00:00",
+  "candidate_kind": "uncommitted two-file delta",
+  "files": [
+    {
+      "path": "infra/aws-reference/edge.tf",
+      "sha256": "e78050dcc2d0b4f4ce76c1e3c9b64537c25a995e4b1537915dc3e7285726e2e7",
+      "base_sha256": "cea72ea07f34db457c622eff32d22f3204828c66ad92d47f60ec4460d4380f97"
+    },
+    {
+      "path": "infra/aws-reference/tests/monitoring.tftest.hcl",
+      "sha256": "d215fb2d3ea7d759a6a2a276b60e7541d2ce77e7ef9031f75972437ce5864c9f",
+      "base_sha256": "4dd3ae34ba5134f5ed6290062875630a4ee7d6811db4f24ab0e897009f83c469"
+    }
+  ],
+  "results": {
+    "red_original_edge": 1,
+    "fmt": 0,
+    "validate": 0,
+    "all_mock_tests": 0
+  },
+  "status": "PASS"
+}

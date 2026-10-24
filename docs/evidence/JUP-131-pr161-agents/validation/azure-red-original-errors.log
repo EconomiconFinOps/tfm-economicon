@@ -1,0 +1,105 @@
+Extracto de .work/pr161-validation/azure-red-original-errors.log: contexto completo del primer fallo, bloques de excepción de los seis casos HTTP y resumen pytest. Se omiten stacks repetidos; prefijos de rutas personales sustituidos por <user-home>.
+
+FFFFFFF                                                                  [100%]
+================================== FAILURES ===================================
+________ test_api_error_survives_context_manager_traceback_restoration ________
+
+    def test_api_error_survives_context_manager_traceback_restoration():
+        @contextmanager
+        def request_scope():
+            yield
+    
+        error = ApiError(429, "TooManyRequests", "Retry later", {"Retry-After": "3"})
+        with pytest.raises(ApiError) as caught:
+            with request_scope():
+>               raise error
+E               app.errors.ApiError: (429, 'TooManyRequests', 'Retry later', {'Retry-After': '3'})
+
+tests\test_errors.py:16: ApiError
+
+During handling of the above exception, another exception occurred:
+
+    def test_api_error_survives_context_manager_traceback_restoration():
+        @contextmanager
+        def request_scope():
+            yield
+    
+        error = ApiError(429, "TooManyRequests", "Retry later", {"Retry-After": "3"})
+        with pytest.raises(ApiError) as caught:
+>           with request_scope():
+                 ^^^^^^^^^^^^^^^
+
+tests\test_errors.py:15: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+<user-home>\AppData\Local\Programs\Python\Python314\Lib\contextlib.py:195: in __exit__
+    exc.__traceback__ = traceback
+    ^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = ApiError(status_code=429, code='TooManyRequests', message='Retry later', headers={'Retry-After': '3'})
+name = '__traceback__', value = <traceback object at 0x0000028540A2B280>
+
+>   ???
+E   dataclasses.FrozenInstanceError: cannot assign to field '__traceback__'
+
+<string>:18: FrozenInstanceError
+self = ApiError(status_code=401, code='AuthenticationFailed', message='A valid simulated bearer token is required.', headers={'WWW-Authenticate': 'Bearer'})
+name = '__traceback__', value = None
+
+>   ???
+E   dataclasses.FrozenInstanceError: cannot assign to field '__traceback__'
+
+<string>:18: FrozenInstanceError
+
+self = ApiError(status_code=403, code='AuthorizationFailed', message='The simulated identity is not allowed to query this subscription.', headers=None)
+name = '__traceback__', value = None
+
+>   ???
+E   dataclasses.FrozenInstanceError: cannot assign to field '__traceback__'
+
+<string>:18: FrozenInstanceError
+
+self = ApiError(status_code=429, code='TooManyRequests', message='The simulated Azure endpoint is throttling requests.', headers={'Retry-After': '3'})
+name = '__traceback__', value = None
+
+>   ???
+E   dataclasses.FrozenInstanceError: cannot assign to field '__traceback__'
+
+<string>:18: FrozenInstanceError
+
+self = ApiError(status_code=500, code='InternalServerError', message='The simulated Azure endpoint encountered an internal error.', headers=None)
+name = '__traceback__', value = None
+
+>   ???
+E   dataclasses.FrozenInstanceError: cannot assign to field '__traceback__'
+
+<string>:18: FrozenInstanceError
+
+self = ApiError(status_code=404, code='SubscriptionNotFound', message='The subscription is not present in the fixture.', headers=None)
+name = '__traceback__', value = None
+
+>   ???
+E   dataclasses.FrozenInstanceError: cannot assign to field '__traceback__'
+
+<string>:18: FrozenInstanceError
+
+self = ApiError(status_code=400, code='BadRequest', message='Only api-version=2025-03-01 is supported.', headers=None)
+name = '__traceback__', value = None
+
+>   ???
+E   dataclasses.FrozenInstanceError: cannot assign to field '__traceback__'
+
+<string>:18: FrozenInstanceError
+
+Resumen pytest:
+
+FAILED tests/test_errors.py::test_api_error_survives_context_manager_traceback_restoration
+FAILED tests/test_resilience.py::test_missing_token_returns_401_with_challenge
+FAILED tests/test_resilience.py::test_forbidden_identity_returns_403 - datacl...
+FAILED tests/test_resilience.py::test_rate_limit_scenario_returns_retry_after
+FAILED tests/test_resilience.py::test_server_error_scenario_returns_500 - dat...
+FAILED tests/test_query_api.py::test_unknown_subscription_uses_azure_error_shape
+FAILED tests/test_query_api.py::test_unsupported_api_version_is_a_bad_request
+7 failed, 1 warning in 3.06s
+
+STDERR

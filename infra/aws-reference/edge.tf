@@ -83,7 +83,8 @@ resource "aws_lb_listener_rule" "deny_metrics" {
   }
   condition {
     path_pattern {
-      values = ["/metrics", "/metrics/*"]
+      # Block the Grafana metrics prefix within ALB's three-value condition limit.
+      values = ["/metrics", "/metrics/*", "/grafana/metrics*"]
     }
   }
 }

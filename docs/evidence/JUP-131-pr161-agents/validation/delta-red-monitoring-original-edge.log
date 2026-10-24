@@ -1,0 +1,39 @@
+tests\monitoring.tftest.hcl... in progress
+  run "monitoring_private_routing_and_capacity"... pass
+  run "metrics_routes_are_denied_before_grafana"... fail
+tests\monitoring.tftest.hcl... tearing down
+tests\monitoring.tftest.hcl... fail
+
+Failure! 1 passed, 1 failed.
+
+STDERR
+
+Error: Test assertion failed
+
+  on tests\monitoring.tftest.hcl line 40, in run "metrics_routes_are_denied_before_grafana":
+  40:     condition = alltrue([
+  41:       for path in ["/metrics", "/metrics/internal", "/grafana/metrics", "/grafana/metrics/internal"] : anytrue([
+  42:         for pattern in one(one(aws_lb_listener_rule.deny_metrics.condition).path_pattern).values : can(regex("^${replace(pattern, "*", ".*")}$", path))
+  43:       ])
+  44:     ])
+    ├────────────────
+    │ aws_lb_listener_rule.deny_metrics.condition is [
+    │     {
+    │       "host_header": [],
+    │       "http_header": [],
+    │       "http_request_method": [],
+    │       "path_pattern": [
+    │         {
+    │           "values": [
+    │             "/metrics",
+    │             "/metrics/*"
+    │           ]
+    │         }
+    │       ],
+    │       "query_string": [],
+    │       "source_ip": []
+    │     }
+    │   ]
+
+Internal application and Grafana metrics must not be forwarded by the public
+routes.

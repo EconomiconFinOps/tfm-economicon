@@ -137,6 +137,18 @@ still grants neither acceptance of review contents nor authorization to merge.
 
 A validation lists what was not validated instead of marking it as met. The Validacion section of the pull request template is the leader's own evidence; it does not replace the validation review.
 
+### One-off authorization: PR161 agent review and validation
+
+On 2026-10-24 the user explicitly authorized two independent agents to carry
+out `Revision JUP-131` and `Validacion JUP-131` for PR161. This replaces the
+assigned human verdicts only for that increment. Reports must identify their
+agent authorship, exact candidate, checks actually performed and limitations.
+The authorization, scope and results are recorded in
+[the PR161 exception](docs/evidence/JUP-131-pr161-agent-exception.md).
+It neither changes the ordinary process nor grants deployment or merge
+authorization. Platform approvals and automated checks must retain their
+actual state; agent reports must not be represented as reviews by team members.
+
 The desired GitHub rules and their administrator activation procedure are in
 docs/governance/github-branch-protection.md.
 The approved repository lifecycle, legacy-branch audit and release flow are in

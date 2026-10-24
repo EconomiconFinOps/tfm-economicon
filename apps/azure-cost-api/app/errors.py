@@ -2,8 +2,10 @@ from dataclasses import dataclass
 from typing import Mapping
 
 
-@dataclass(frozen=True)
+@dataclass
 class ApiError(Exception):
+    """API failure whose traceback remains writable for exception handlers."""
+
     status_code: int
     code: str
     message: str

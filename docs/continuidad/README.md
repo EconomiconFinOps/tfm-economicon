@@ -1,9 +1,36 @@
 # Continuidad del proyecto
 
+24Oct, actualización posterior: el usuario autoriza una excepción para PR161:
+revisión y validación por dos agentes independientes, ya lanzados sobre e730dc15.
+Documentada en PR, Trello y [evidencia](../evidence/JUP-131-pr161-agent-exception.md).
+Retira el presupuesto30EUR como condición del ensayo en la cuenta del máster;
+los límites de Pontia no están acreditados y la configuración anterior se deberá
+adaptar. DNS redirigido por indicación humana a Jarvis **local**, retirado de Mother;
+el chat local guardó los cuatro NS y verificó ambos autoritativos y dos
+resolutores, conservando los otros 22 registros. DNS independiente a las
+23:26 Europe/Paris confirma la delegación nueva. Revisión y validación favorables
+para las correcciones de métricas y ApiError: Terraform 14 PASS, Azure 82 PASS,
+PostgreSQL/Grafana reales y recursos propios retirados. Informes en
+[evidencia PR161](../evidence/JUP-131-pr161-agents/README.md). CI del commit final
+pendiente de confirmar; `JUP reviews` conserva su requisito de reviews GitHub.
+Sin desplegar. Ver [cloud-aws.md](cloud-aws.md).
+
+Hito anterior24Oct23:03París: cuenta del máster Economicon323188184300 preparada parcialmente:
+Fargate6/CodeBuild30, conexión GitHubAVAILABLE, boundary validada y cuatro roles
+sin políticas, zona Route53 y secretos de control creados. Plan bootstrap
+4importaciones/23altas/4cambios/0bajas, sin aplicar. DNS pedido a Jarvis con
+autorización humana; DNS público aún antiguo. Secreto GitHub guardado por el
+usuario y AWSCURRENT confirmado sólo por metadatos; contenido/autenticación no
+probados. CorreoBudgets pendiente. Budget30USD creado,
+sin apagado; techo humano30EUR y saldo restante por conciliar. PR161 técnica verde,
+dictámenes/aceptación/integración pendientes. Paquete de ensayo bloqueado;
+sin aplicación, builds ni pipelines. Monitor original separado. Ver [cloud-aws.md](cloud-aws.md).
+
 24Oct: integración Atlas preparada en PR161: carga aditiva privada, Grafana y
 Prometheus en ECS, tres dashboards y19/1688 conservados. PostgreSQL real,
 Grafana con cookies/TLS/reinicio y Terraform13 PASS. Revisión asistida detectó
-dos fallos corregidos y revalidó el delta0f1522e6; CI final y dictámenes humanos pendientes.
+dos fallos corregidos y revalidó el delta0f1522e6. CI técnica y SQL finales de
+e730dc15 SUCCESS; JUP reviews en rojo por los dos dictámenes humanos ausentes.
 Techo30EUR; tres ciclos de2h exceden el presupuesto. Sin despliegue. Ver [cloud-aws.md](cloud-aws.md).
 
 24Oct: sesiónAWS recuperada; Fargate Irlanda aplicada0 y sin nueva respuestaAWS.
@@ -48,7 +75,7 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
 | [Landing pública](landing-publica.md) | JUP-140 R4 aprobado localmente; reconciliación develop 93624f77 y OpenSpec archivado con promociones/enlaces del 24/10. Evaluación independiente del cierre antes de publicar PR; pairing humano y CI definitiva pendientes. Imagen/medio intactos; reduce interactivo NOT_TESTED y globales históricos conservados. | 2026-10-24 |
-| [Despliegue AWS](cloud-aws.md) | Atlas/Grafana preparados en PR161, carga aditiva y pruebas locales PASS; CI final/revisiones pendientes. Presupuesto30EUR bloquea saldo desconocido; Fargate0 y avisos30USD según corte anterior24Oct, sin nueva consulta ni despliegue. | 2026-10-24 |
+| [Despliegue AWS](cloud-aws.md) | Cuenta323188184300: cuotas6/30, GitHubAVAILABLE, roles base/zona/secretos/Budget preparados; plan bootstrap sin aplicar. DNS por Jarvis, token/correo/aceptación/reviews/saldo/ventana pendientes. Techo30EUR; CI técnica e730SUCCESS. Cuenta original y monitor separados; sin despliegue. | 2026-10-24 |
 | [Cortes de respuesta del chat](cortes-respuesta-chat.md) | JUP-135 integrada por squash f224226d en PR153, con excepcion humana de merge; CI tecnica previa conforme. Agregados de medicion comunicados y pendientes documentales conservados; sin aceptacion generativa nueva. | 2026-10-22 |
 | [Reevaluación de métricas del modelo](reevaluacion-metricas-modelo.md) | JUP-133: PR156 incorporó seis repeticiones y juez IA provisional; PR158 integrada en develop93624f77 corrige fixtures y altura. Evidencia ajena Linux1998PASS/0omisiones y OpenSpec92PASS, sin aceptación de campañas. La composición139 comprueba su delta por separado. | 2026-10-23 |
 | [Composición narrativa de evaluación](dashboard-evaluacion-composicion.md) | JUP-139: entrega R8 aprobada por Paris el 24/10; revisión y validación locales favorables, 137 medidas y 19/1688 conservados. Develop idéntico a 93624f77. OpenSpec archivado 24/10 con promoción de requisitos; evaluación del delta documental y publicación pendientes. Tres dashboards intactos, publicación y etapas humanas pendientes. | 2026-10-24 |

@@ -1,5 +1,213 @@
 # Cloud AWS — arquitectura documental
 
+## Excepción PR161, presupuesto retirado y Jarvis local — 24/10/2026
+
+Origen: «Preparar despliegue en AWS», chat `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+El usuario retira expresamente el requisito operativo de30EUR para la cuenta
+del máster; ya no se pide conciliar ese techo ni verificar el correo Budgets
+como condición del ensayo. La existencia de límites de Pontia sigue sin
+acreditar. No se inventa saldo: controlador/configuración publicados todavía
+contienen la guarda anterior y requieren adaptación antes de ejecutarlos.
+Los presupuestos AWS existentes no se han eliminado ni modificado.
+
+El usuario autoriza documentar una excepción y lanzar dos agentes para suplir
+los dictámenes humanos de PR161. Agentes lanzados: `/root/pr161_code_review`
+(`Revision JUP-131`) y `/root/pr161_validation` (`Validacion JUP-131`), ambos
+sobre `e730dc15fb3feb45a3b346fc9e48332c4608b049`, base `ffb5d307772f697cffb8b1e73e6330250e093601`.
+Excepción en [evidencia](../evidence/JUP-131-pr161-agent-exception.md), AGENTS,
+CONTRIBUTING, descripción de [PR161](https://github.com/EconomiconFinOps/tfm-economicon/pull/161)
+y [Trello JUP-131](https://trello.com/c/NtiH8R4Z), conservando historial/columna.
+El revisor aprobó la corrección del único P2 (métricas Grafana públicas) y el
+ajuste posterior de `ApiError` para Starlette. El validador comprobó PostgreSQL,
+Grafana y retirada de recursos propios; reprodujo RED/GREEN de rutas (14 mocks
+Terraform) y del traceback (siete fallos originales, 82 pruebas Azure PASS).
+Los informes preservan candidato y deltas por hashes; se publican en
+[PR161 agentes](../evidence/JUP-131-pr161-agents/README.md). Sin atribuirlos a
+Lucía/Paris, sin aprobación ficticia ni merge/despliegue autorizado.
+Recibos locales en `.work/pr161-agent-exception/`.
+
+CI histórica e730 verde a las 12:45 UTC; el run posterior `40133534310` de las
+21:17 UTC detectó el fallo de `ApiError` con Starlette actual. Se corrigió la
+dataclass congelada y se añadió una regresión. La CI del commit final debe
+confirmarse; el check `JUP reviews` mantiene su lógica de reviews GitHub y no
+se ha forzado a verde por documentar la excepción. Tampoco se modificó la
+aceptación histórica de la receta: tras el delta Azure, el digest calculado
+de aplicación es `415625fdff2cb998a3716a726a1b4a5b7f46852a6adba99fda56872fcde8733d`.
+
+Corrección humana del destino DNS: **Jarvis de este equipo, host `local`**,
+`C:/Users/DanteInferno/Documents/Neon Bastion`, chat `01a14bba-2515-7672-8bb3-ce01b4b54e4b`.
+La copia en Mother tiene el mismo ID, pero otro host. Se retiró allí el encargo
+y se envió la petición concreta al local. Éste confirmó autorización humana
+consultada y sesión Cloudflare válida; conservaba los cuatro NS antiguos y
+26 registros totales. Tras confirmación humana final, el **24/10 a las 23:25
+Europe/Paris** comunica cambio guardado y verificado: los cuatro NS nuevos,
+TTL Auto, otros 22 registros idénticos y NS del padre conservados. Verificó
+ambos autoritativos de Cloudflare y los resolutores 1.1.1.1 y 8.8.8.8. Una
+consulta independiente a Google DNS a las **23:26** confirma los cuatro NS
+de la cuenta del máster. La delegación queda resuelta; no acredita aplicación
+disponible ni todas las cachés mundiales. Recibos locales sin secretos:
+`.work/master-prerequisites/jarvis-local-dns-receipt.json` y
+`.work/master-prerequisites/dns-after-jarvis-20261024.json`.
+Evidencia original en el proyecto Neon Bastion:
+`outputs/dockerserver-infra/economicon-delegacion-master-20261024.json`.
+La necesidad anterior de login en Mother queda superada.
+
+No hay daemon Docker local disponible. Para la validación independiente se
+comprobó DockerServer por SSH:4CPU,~17GiB disponibles y115GiB libres. Sólo se
+autorizan pruebas desechables propias y aisladas, con retirada por identidad,
+sin tocar servicios existentes; no AWS ni modelos. Pruebas realizadas allí,
+con cero puertos publicados y limpieza verificada por identidad: 10 contenedores,
+tres tags propios y tres volúmenes anónimos ausentes. El servidor descargó la
+fuente pública e730 y verificó sus 2603 blobs; no se transfirió el checkout local.
+
+## Cuenta del máster: prerrequisitos preparados, ensayo bloqueado — 24/10/2026
+
+Hito anterior al cambio de instrucciones superior: sus requisitos de30EUR,
+dictámenes humanos y destino Mother quedan sustituidos por ese apartado.
+
+Origen: «Preparar despliegue en AWS», chat `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+Autorización humana: preparar todo para un ensayo en Economicon `323188184300`;
+GitHub completado por el usuario. Corte AWS general de lectura 24Oct22:47
+Europe/Paris; metadatos del secreto GitHub verificados de nuevo a las23:03.
+No se ha arrancado aplicación, modelo, build ni pipeline. Este hito sustituye
+la ausencia de prerrequisitos observada en la auditoría anterior.
+
+- Cuotas efectivas confirmadas de nuevo: Fargate Irlanda `L-3032A538` =6vCPU;
+  CodeBuild Medium París `L-2DC20C30` =30. Son de la cuenta nueva; el caso y
+  monitor de `605600557607` siguen separados.
+- Boundary creada `arn:aws:iam::323188184300:policy/economicon-runtime-boundary`:
+  Access Analyzer0hallazgos y15simulacionesPASS. Cuatro roles
+  `economicon-defensa-{build,deploy,pipeline,expiry}` con trusts revisados,
+  todavía **sin políticas de identidad**. Sus importaciones Terraform están
+  planificadas; no se han aplicado ni importado al estado.
+- Conexión `economicon-github` **AVAILABLE**, comprobada por API después de la
+  autorización humana. ARN París:
+  `arn:aws:codeconnections:eu-west-3:323188184300:connection/e312ee17-b315-4e34-97b8-a42499df90ae`.
+- Zona pública `Z08694913EM6SGJ47MEXG`, `economicon.danteinferno.es`, creada y
+  responde SOA; sólo contiene NS/SOA. Destinos: `ns-1596.awsdns-07.co.uk`,
+  `ns-238.awsdns-29.com`, `ns-547.awsdns-04.net`, `ns-1366.awsdns-42.org`.
+  DNS público23:03 todavía devuelve los cuatro NS de la cuenta anterior,
+  TTL21600; sin DS ni A/AAAA/CNAME en el apex. Usuario autorizó expresamente
+  el cambio por Jarvis. Petición enviada a «Jarvis» en Neon Bastion,
+  chat `01a14bba-2515-7672-8bb3-ce01b4b54e4b`, host Mother. Jarvis confirmó
+  NS antiguos en ambos autoritativos Cloudflare y SOA/NS nuevos en Route53,
+  pero **no ejecutó el cambio**: sesión Cloudflare caducada y no pudo leer
+  nuestra autorización humana desde Mother. Requiere intervención en su chat
+  para recuperar acceso/confirmar el cambio. No mezclar ambos conjuntos de NS.
+- Secretos de control París: `economicon/bootstrap/mq-admin` tiene AWSCURRENT,
+  generado en memoria, sin copiar su valor a disco; `economicon/bootstrap/github-checks`
+  era un contenedor sin versión en el corte22:47. A las23:03 el usuario confirma
+  haberlo guardado y `DescribeSecret` verifica exactamente una versión
+  **AWSCURRENT**, sin borrado programado, en la cuenta323188184300. Último cambio
+  a las23:00:02 Europe/Paris. No se leyó el valor ni se validó su JSON o
+  autenticación. El formato indicado al usuario fue JSON con clave `token`,
+  sin copiar la credencial local de gh. Reautenticación
+  GitHub completada. La orgEconomiconFinOps no figura como propietaria admisible
+  para este usuario: no generar con la selección All repositories por defecto.
+  API confirma repositorio público; ambas consultas reales del runner
+  (Actions run40095219997 y comparación con develop) responden200 sin autenticar.
+  Formulario ajustado a **Public repositories,0permisos de cuenta**, caduca31Oct;
+  lectura pública solamente, sin acceso privado ni escritura. No está limitado
+  exclusivamente a este repositorio, como tampoco lo está la lectura pública
+  implícita de cualquier token. Generación/entrada en AWS realizadas por el
+  usuario; comprobación del agente sólo de metadatos. Si el repo se privatiza,
+  revisar acceso. Caducidad/permisos reales del valor guardado no inspeccionados.
+- AWS Budget nuevo `economicon-defensa-2026-control-30usd`:30USD acumulados
+  01Oct–01DicUTC, toda esta cuenta, impuestos incluidos y créditos/reembolsos
+  excluidos; avisos de gasto real >50/80/100%. Destinatario autorizado cotejado
+  por API; **consola confirma0/1correos verificados, pendiente**.0,00USD mostrado
+  no acredita saldo disponible ni ausencia de cargos retrasados. Sin apagado.
+
+Plan bootstrap local protegido `.work/master-bootstrap/bootstrap.tfplan`:
+**4importaciones,23altas,4actualizaciones,0eliminaciones**. Actualizaciones de
+roles sólo descripción/tags; trusts idénticos. Terraform1.13.3/provider6.13.0,
+validatePASS. Hash del plan
+`9d463b86ca725660e9bc6d46dd114ad84e7c26116b485e4afb92f49533c75fda`.
+No aplicar todavía: crear CodePipeline puede iniciar una ejecución inicial.
+Revisión asistida de la preparación: dosP2 de validación/idempotencia del
+presupuesto corregidos,8pruebasPASS;15simulacionesPASS. Cinco controles de
+rechazo de receta obsoleta PASS; el primer intento falló por permisos del
+directorio temporal del sandbox, repetición con permisos normales sin cambios
+de código PASS. No se atribuyen esos fallos de entorno a la aplicación.
+
+Paquete local `.work/master-rehearsal/`: configuración de cuenta nueva,
+`start-up.json`, `start-down.json`, `readiness.json`, `preflight-summary.json`
+y escenarios de coste. **aws_deployable=false**: saldo restante desconocido,
+ventanaUTC por fijar, CI push del SHA integrado en develop y aceptación offline
+completa pendientes. No modificar el digest histórico sólo para obtener READY.
+La CI técnica/SQL del candidato `e730dc15` sigueSUCCESS, PR161OPEN/REVIEW_REQUIRED;
+lectura23:03:22checksSUCCESS,1SKIPPED y sólo `JUP reviews`FAILURE, sin reviews
+publicadas. Faltan los dos dictámenes humanos. Este corte no cambia código ni ejecuta CI.
+
+Techo humano30EUR vigente. Catálogo22Oct y supuestos IVA21%/margen20%:
+un ciclo2h23,40EUR; dos ciclos/3h totales29,15EUR; dos/4h31,41EUR;
+tres/3h32,65EUR. La cifra29,15 deja margen insuficiente sin reconciliar gasto
+previo y tiempos de alta/retirada; no acredita viabilidad de ensayos y defensa
+dentro del techo. Asignación del máster desconocida. No rellenar saldo ficticio.
+
+Recibos sin valores secretos en `.work/master-prerequisites/`:
+`resources.json`, `final-readback.json`, `bootstrap-plan-summary.json`,
+`dns-public-readback.json`, validación/simulaciones IAM y plan de preparación.
+Hito23:03: `github-secret-metadata-20261024T210300Z.json`,
+`dns-public-readback-20261024T2104.json` y `ci-readback-20261024T2104.json`.
+Lectura final confirma ECS0clusters, CodeBuild0proyectos y CodePipeline0pipelines.
+Pendiente humano: verificar correo Budgets, dictámenes PR y acceso
+Cloudflare en Jarvis; pendiente técnico: verificar cambio DNS, aceptación candidata,
+integración/CI develop y conciliación de presupuesto/ventana antes de autorizar
+bootstrap y ensayo. La revisión automática bloqueó el botón de recuperar el
+secreto por riesgo de mostrarlo; la entrada se entrega al usuario y la
+comprobación del agente queda limitada a metadatos.
+
+## Antecedente: auditoría de lectura de la cuenta del máster — 24/10/2026
+
+Origen: este chat, `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`. Alcance autorizado:
+comprobar compatibilidad de la cuenta alternativa, sin despliegue ni cambios
+de recursos. Corte de comprobación: 24Oct2026, aproximadamente22:20 Europe/Paris.
+La identificación inicial como Academy/Learner Lab queda superada: el acceso
+real es el [portal SSO de Pontia](https://pontia.awsapps.com/start/#/), cuenta
+AWS **Economicon `323188184300`**, perteneciente a una organización. No se ha
+acreditado un crédito, saldo o vencimiento de Learner Lab.
+
+Consola y STS confirman esa cuenta. Perfil CLI aislado `economicon-master-audit`,
+configuración no secreta `.work/aws-access/master-audit-config`; login SSO
+completado tras autorización humana explícita del alcance de las dos cuentas
+asignadas al portal. Todas las consultas se limitaron a Economicon; no se
+inspeccionaron recursos de la otra cuenta. Sin claves estáticas nuevas.
+
+| Requisito | Resultado confirmado y límite de la evidencia |
+| --- | --- |
+| Fargate Irlanda | Cuota **aplicada6vCPU**, `L-3032A538`, por consola y `get-service-quota`; utilización visible0. Cumple el mínimo6 del controlador, incluido rolling Atlas5.5. |
+| CodeBuild París | Cuota **aplicada30** ejecuciones Linux/Medium, `L-2DC20C30`; requisito1. |
+| Regiones y red | Irlanda, París, us-east-1, Frankfurt y Estocolmo habilitadas sin opt-in; tres AZ disponibles en Irlanda. Cuotas VPC5, NAT5/AZ, EIP5, ALB50. VPC por defecto presente; no se creó red. |
+| IAM | Rol `AWSReservedSSO_AdministratorAccess_6ee990f52d2ca1f5`, política AWS `AdministratorAccess`, sin boundary ni inline; máximo de sesión del rol43200s, no prueba de duración efectiva de la sesión SSO. Simulación33acciones `allowed`, incluyendo roles/PassRole y creación de componentes. |
+| Restricciones de organización | `ListPoliciesForTarget` y `ListParents` denegados. La simulación no aportó `OrganizationsDecisionDetail`: no acredita ausencia de SCP ni garantiza el resultado de futuras escrituras. |
+| PostgreSQL y RabbitMQ | Catálogo regional admite PostgreSQL16.9 `db.t4g.medium`, gp3, cifrado y Multi-AZ; cuota RDS40 instancias/usadas0. MQ admite RabbitMQ3.13 `mq.m5.large`, `CLUSTER_MULTI_AZ`, en las tres AZ. La consulta de cuotas MQ no devolvió entradas; no se inventa un límite aplicado. pgvector y arranque reales pendientes. |
+| Bedrock | Titan Text Embeddings V2 y Nova Micro `AUTHORIZED`, acuerdo/entitlement/región `AVAILABLE`; perfil `eu.amazon.nova-micro-v1:0` `ACTIVE`. Titan On-Demand6000peticiones/min y300000tokens/min; Nova cross-region400peticiones/min y400000tokens/min. No se invocó ningún modelo. |
+| Componentes y preparación | Lecturas de ECS/ECR/RDS/MQ/Cognito/KMS/Secrets/Cloud Map/Route53/ACM/WAF/CloudFront/S3/CodeConnections/CodePipeline/CodeBuild/Scheduler/DynamoDB accesibles. No aparecen recursos del proyecto en los ámbitos revisados; conexiones GitHub, zona DNS y roles `economicon*` ausentes. CloudFront0 distribuciones. Disponibilidad de API y simulación no sustituyen la prueba de creación. |
+| Presupuesto | **Techo humano30EUR vigente**. Consola AWS Budgets de esta cuenta muestra la pantalla inicial sin presupuestos configurados; CLI `DescribeBudgets` devuelve salida vacía, no un saldo0. Presupuesto/avisos30USD de `605600557607` no se trasladan. Crédito, asignación del máster, gasto acumulado y fecha de disponibilidad todavía desconocidos; no hay corte automático de30EUR acreditado. |
+
+Conclusión: las cuotas que bloqueaban la cuenta original están resueltas **en
+esta alternativa** y la arquitectura resulta viable según las lecturas. No
+equivale a aceptación del despliegue ni autoriza a ejecutarlo. Faltaría confirmar
+asignación de gasto/disponibilidad con el máster, establecer el control de coste
+en esta cuenta, preparar bootstrap/roles/GitHub/secretos y DNS/certificados con
+sus nuevos identificadores, y renovar configuración/ventana/estimación del ensayo.
+Conservar techo30EUR; los escenarios Atlas de abajo siguen siendo estimaciones,
+no una asignación de crédito. También siguen pendientes revisión humana e
+integración de PR161 y aceptación del candidato completo.
+
+Fuentes locales de requisitos: `tools/aws_demo/{control,runner}.py`,
+`infra/aws-bootstrap/main.tf`, `infra/aws-reference/{variables,data,edge}.tf`.
+Recibos locales sin secretos: `.work/aws-access/master-account-readonly-receipt.json`
+y `master-account-followup-receipt.json`; captura `master-fargate-applied-6.png`.
+No se crearon/modificaron recursos, permisos IAM, modelos, builds ni despliegues.
+No cambiar la delegación DNS de la cuenta anterior antes de preparar el destino.
+
+El monitor Fargate conserva la cuenta original `605600557607` y su caso
+`179267775500075`: **no registrar estas6vCPU como aprobación de ese caso**.
+La sesión de consola actual pertenece a `323188184300`; comprobar identidad
+antes de cualquier lectura del monitor. La CLI original no se ha renovado.
+
 ## Atlas integrado en la preparación de ECS — 24/10/2026
 
 Origen: este chat, tarea `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`; autorización
@@ -28,8 +236,15 @@ monitoring huérfano; ambos reproducidos RED→GREEN. Revalidación asistida del
 el revisor PASS, smoke verificado por el implementador. CI anteriora7341d79
 [push40094121176](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/40094121176),
 [PR40094206962](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/40094206962)
-y SQL40094206943 SUCCESS; CI del candidato final en curso. Los dos dictámenes
-humanos siguen pendientes; la revalidación asistida no los sustituye.
+y SQL40094206943 SUCCESS. CI definitiva de `e730dc15fb3feb45a3b346fc9e48332c4608b049`
+confirmada SUCCESS: [push40095219997](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/40095219997),
+[PR40095225030](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/40095225030)
+y [SQL40095224920](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/40095224920).
+Incluye todas las baterías de aplicación y los nuevos controles PostgreSQL/Grafana.
+Un fallo intermedio de `terraform fmt` quedó corregido sin cambio semántico en
+e730dc15. `JUP reviews`40095224907 sigue FAILURE por ausencia de los dictámenes
+humanos `Revision JUP-131` y `Validacion JUP-131`; no se modificó la política.
+PR161 lista para revisar, sin merge. La revalidación asistida no sustituye a las personas.
 Detalles y límites: [evidencia](../evidence/JUP-131-atlas-ecs.md),
 [plan](../planning/2026-10-24-jup131-atlas-ecs.md) y [runbook](../deployment/aws-defensa.md).
 
@@ -45,10 +260,13 @@ original `.work/ensayo1/config.json` conserva SHA/ventana históricos y saldo0;
 no se ha sustituido por una aprobación nueva. La receta mantiene digest de
 aceptación histórica distinto del árbol actual: esta prueba de Atlas no acredita
 aceptación completa PostgreSQL/Cognito/Bedrock/demo del candidato integrado.
-Pendiente: CI técnica final, dictámenes de PR e integración, aceptación completa,
+Pendiente: dictámenes de PR e integración, aceptación completa,
 cuota efectiva6, saldo/estimación/ventana vigentes y bootstrap de control antes de
 un despliegue expresamente autorizado. Cloud Map/CloudFront/RDS reales no probados.
 Sin recursos AWS creados/modificados, modelos ejecutados ni despliegue.
+Recibo local sin secretos `.work/aws-access/atlas-ecs-preparation-receipt.json`;
+contenedores desechables de prueba retirados. JUP-131 actualizado por integración
+autorizada DockerServer, con historial/roles/columna conservados y enlaces CI.
 
 ## Antecedente: paquete Atlas recibido, antes de integrar — 24/10/2026
 

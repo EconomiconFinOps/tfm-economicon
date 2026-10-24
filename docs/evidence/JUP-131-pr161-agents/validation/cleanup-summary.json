@@ -1,0 +1,8 @@
+{
+  "containers_created": 10,
+  "containers_absent": 10,
+  "test_image_tags_absent": 3,
+  "anonymous_volumes_absent": 3,
+  "published_ports": 0,
+  "status": "PASS"
+}

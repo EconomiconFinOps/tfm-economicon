@@ -1,0 +1,40 @@
+{
+  "title": "Revision JUP-131",
+  "reviewer": "/root/pr161_code_review",
+  "date": "2026-10-24",
+  "timezone": "Europe/Paris",
+  "base": "ffb5d307772f697cffb8b1e73e6330250e093601",
+  "candidate": "e730dc15fb3feb45a3b346fc9e48332c4608b049",
+  "scope": "Two-file local Azure ApiError compatibility fix, separate from preserved ALB approval",
+  "files_sha256": {
+    "apps/azure-cost-api/app/errors.py": "389e2a7c72185d34122c89028c2147e64a0db904ac38190839e3b4844e4a4a48",
+    "apps/azure-cost-api/tests/test_errors.py": "0cbc76998fdddd661c54c5d2bdc61542507ddcf992dbfebf582a2c0683886678"
+  },
+  "verdict": "APPROVE",
+  "findings": [],
+  "hash_or_immutability_dependent_repository_consumers_found": false,
+  "behavioral_difference": "ApiError instances become unhashable; no dependent repository consumer found. Handler registration uses the class.",
+  "checks_executed": [
+    "Complete reads of direct consumers and changed files; reference/hash/cache/mutability search",
+    "git diff --check for Azure delta: PASS",
+    "azure_error_check.py on Python 3.14.4: PASS; original FrozenInstanceError, corrected same-instance propagation and writable traceback; fields/args/payload preserved"
+  ],
+  "own_evidence": ["azure_error_check.py", "azure-error-check.json"],
+  "coordinator_evidence_read": {
+    "ci_run_reported": "40133534310",
+    "ci_failure_log": ".work/pr161-metrics-fix/latest-ci-failed.log",
+    "red_log": ".work/pr161-azure-fix/red.log",
+    "green_log": ".work/pr161-azure-fix/green-current-stack.log",
+    "green_result": "82 passed, 1 warning",
+    "reported_environment": "FastAPI 0.162.0 / Starlette 1.10.0 / pytest 9.1.1 / Python 3.14.4",
+    "executed_by_this_reviewer": false
+  },
+  "preserved_reports": ["review.md", "review.json", "revalidation.md", "revalidation.json"],
+  "limitations": [
+    "Python 3.12 awaits new CI",
+    "No own broad suite, ASGI/HTTP, services, Terraform, Docker, AWS or cloud execution",
+    "Validator report not read",
+    "No shared source or project documentation edits; no commits, push or publication",
+    "Approval applies only to exact two-file hashes, with original operational gates remaining"
+  ]
+}
