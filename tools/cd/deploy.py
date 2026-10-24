@@ -23,7 +23,7 @@ PORTS = {"COCKROACH_SQL_PORT": 0, "COCKROACH_HTTP_PORT": 1,
          "RABBITMQ_PORT": 2, "RABBITMQ_MANAGEMENT_PORT": 3, "PGVECTOR_PORT": 4,
          "API_HOST_PORT": 5, "PROCESSOR_HOST_PORT": 6,
          "AZURE_COST_API_HOST_PORT": 7, "FRONTEND_HOST_PORT": 8,
-         "PROMETHEUS_PORT": 9, "GRAFANA_PORT": 10, "MINIO_HOST_PORT": 11}
+         "PROMETHEUS_PORT": 9, "GRAFANA_PORT": 10, "MINIO_HOST_PORT": 11, "LANDING_HOST_PORT": 12}
 
 
 def run(args, cwd=None, capture=False, timeout=1200, env=None):
@@ -110,8 +110,8 @@ def document_secrets(root):
 
 
 def init(root, port_base):
-    if not 1024 <= port_base <= 65424:
-        raise ValueError("Port base must leave room for both twelve-port slots")
+    if not 1024 <= port_base <= 65423:
+        raise ValueError("Port base must leave room for both thirteen-port slots")
     if (root / "config.json").exists() or (root / "secrets.json").exists():
         raise ValueError("Already initialized; existing secrets must be preserved")
     root.mkdir(parents=True, mode=0o700, exist_ok=True)

@@ -270,6 +270,8 @@ docker compose build frontend
 docker compose up -d --wait frontend
 ```
 
+La landing pública arranca con el Compose general, sin perfil, en `http://127.0.0.1:8088/` (`LANDING_HOST_PORT`). Sus destinos `LANDING_VIDEO_URL` y `LANDING_APP_URL` son públicos y se leen al arrancar. Para cambiarlos, recrear sólo landing con la misma imagen; restart conserva los valores anteriores. Ver [operación, caché y reversión](docs/landing-runtime.md). La salud local no acredita reproducción externa ni acceso a la aplicación.
+
 Los puertos de CockroachDB, RabbitMQ y pgvector se enlazan exclusivamente a
 loopback. `COCKROACH_SQL_PORT`, `COCKROACH_HTTP_PORT`, `RABBITMQ_PORT`,
 `RABBITMQ_MANAGEMENT_PORT` y `PGVECTOR_PORT` permiten ejecutar proyectos

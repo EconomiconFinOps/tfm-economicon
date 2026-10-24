@@ -11,7 +11,7 @@ const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const compose = parse(fs.readFileSync(path.join(root, "docker-compose.yml"), "utf8"));
 const gatewayCompose = parse(fs.readFileSync(path.join(root, "infra/litellm/docker-compose.yml"), "utf8"));
 
-const applicationServices = ["azure-cost-api", "backend", "processor", "frontend"];
+const applicationServices = ["azure-cost-api", "backend", "processor", "frontend", "landing"];
 const infrastructureServices = ["cockroachdb", "rabbitmq", "postgres-pgvector"];
 const monitoringServices = ["prometheus", "grafana"];
 const demoServices = ["azure-cost-api-demo", "demo-data"];
@@ -33,7 +33,7 @@ test("demo data services are opt-in, read-only and never part of the default sta
     assert.deepEqual(service.profiles, ["demo"], `${serviceName} must belong to the demo profile only`);
     assert.equal(service.init, true, `${serviceName} must use an init process`);
     assert.equal(service.read_only, true, `${serviceName} must use a read-only root filesystem`);
-    assert.ok(service.tmpfs.includes("/tmp"), `${serviceName} must provide a writable /tmp`);
+    assert.ok(service.tmpfs.some(mount => mount.split(":", 1)[0] === "/tmp"), `${serviceName} must provide a writable /tmp`);
     assert.ok(service.security_opt.includes("no-new-privileges:true"), `${serviceName} must disable privilege escalation`);
     assert.equal(service.ports, undefined, `${serviceName} must not publish ports`);
     assert.ok((service.volumes ?? []).every((volume) => volume.endsWith(":ro")), `${serviceName} must mount read-only`);
@@ -68,7 +68,7 @@ test("builds every application from a versioned Dockerfile", () => {
     assert.ok(service.healthcheck, `${serviceName} must define a healthcheck`);
     assert.equal(service.init, true, `${serviceName} must use an init process`);
     assert.equal(service.read_only, true, `${serviceName} must use a read-only root filesystem`);
-    assert.ok(service.tmpfs.includes("/tmp"), `${serviceName} must provide a writable /tmp`);
+    assert.ok(service.tmpfs.some(mount => mount.split(":", 1)[0] === "/tmp"), `${serviceName} must provide a writable /tmp`);
     assert.ok(
       service.security_opt.includes("no-new-privileges:true"),
       `${serviceName} must disable privilege escalation`,
@@ -186,6 +186,7 @@ test("preserves monitoring configuration, persistence and health dependencies", 
 
 test("separates published application ports from fixed container ports", () => {
   const expected = {
+    landing: ["LANDING_HOST_PORT", "8080", null],
     backend: ["API_HOST_PORT", "8000", "API_PORT"],
     processor: ["PROCESSOR_HOST_PORT", "8001", "PROCESSOR_PORT"],
     frontend: ["FRONTEND_HOST_PORT", "5173", null],
@@ -377,4 +378,30 @@ test("document storage starts in the general stack with private initialized buck
   assert.match(initialization,/mc anonymous set none/);
   assert.match(initialization,/document-staging-expiration-v1/);
   assert.match(initialization,/"Prefix":"staging\/"/);
+});
+
+
+test("landing has only public startup configuration and its own network", () => {
+ const service=compose.services.landing;
+ assert.deepEqual(Object.keys(service.environment).sort(),['LANDING_APP_URL','LANDING_VIDEO_URL']);
+ assert.deepEqual(service.build.args,{SITE_ORIGIN:'${SITE_ORIGIN:-}'});
+ assert.deepEqual(service.networks,['landing-public']);
+ assert.equal(service.depends_on,undefined);
+ assert.deepEqual(service.volumes,["../landing-public-media:/landing/public-media:ro"]);
+ assert.equal(service.secrets,undefined);
+ assert.equal(service.profiles,undefined);
+ assert.deepEqual(compose.networks['landing-public'],{driver:'bridge'});
+ assert.match(String(service.ports[0]),/^127\.0\.0\.1:/);
+ assert.ok(service.healthcheck.test.at(-1).includes('/healthz'));
+ for(const [name,other] of Object.entries(compose.services))if(name!=='landing')assert.ok(!(Array.isArray(other.networks)?other.networks:Object.keys(other.networks||{})).includes('landing-public'));
+});
+
+
+test("processor owns its private writable temporary workspace as its existing image user", () => {
+ assert.deepEqual(compose.services.processor.tmpfs,['/tmp:uid=10001,gid=10001,mode=0700']);
+ assert.equal(compose.services.processor.read_only,true);
+ assert.ok(compose.services.processor.security_opt.includes('no-new-privileges:true'));
+ const dockerfile=fs.readFileSync(path.join(root,'apps/processor/Dockerfile'),'utf8');
+ assert.match(dockerfile,/useradd .*--uid 10001 economicon/);
+ assert.match(dockerfile,/^USER economicon$/m);
 });

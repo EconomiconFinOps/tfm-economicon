@@ -108,7 +108,7 @@ class RuntimeTests(unittest.TestCase):
             self.assertTrue(path.read_bytes() == before)
 
     def test_invalid_port_base_rejected_before_creating_files(self):
-        for port in (0, 1023, 65425, 65535):
+        for port in (0, 1023, 65424, 65425, 65535):
             with self.assertRaises(ValueError):
                 deploy.init(self.root / "invalid", port)
         self.assertFalse((self.root / "invalid").exists())
@@ -151,6 +151,7 @@ class RuntimeTests(unittest.TestCase):
             release = deploy.prepare(self.root, self.source, sha, slot)
             values = dict(line.split("=", 1) for line in (release / ".env").read_text().splitlines())
             base = 19252 + slot * 100
+            self.assertEqual(values["LANDING_HOST_PORT"], f"'{base + 12}'")
             self.assertEqual(values["MINIO_HOST_PORT"], f"'{base + 11}'")
             self.assertEqual(values["DOCUMENT_S3_ENDPOINT"], "'http://minio:9000'")
             self.assertEqual(values["DOCUMENT_S3_PUBLIC_ENDPOINT"], f"'http://127.0.0.1:{base + 11}'")

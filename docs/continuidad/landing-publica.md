@@ -1,5 +1,83 @@
 # Landing pública — JUP-089
 
+## Hito vigente — 24/10/2026
+
+R4 aprobado por Paris tras revisión técnica y validación funcional locales independientes favorables y retorno conforme de controles originales. Se autorizó archivo OpenSpec y reconciliación con develop 93624f77, seguidos de evaluación independiente afectada y presentación del cierre antes de publicar PR. La reconciliación conserva trabajo y dos filas entrantes del índice; quince archivos locales cambian sólo CRLF→LF, sin identidad RAW con los originales. [Cierre y límites](../evidence/JUP-140-closure.md) · [Resultado R4](../evidence/JUP-140-R4.md). Imagen y medio intactos; previews propias conservadas para presentación. Pairing humano, CI definitiva y publicación pendientes; reduce interactivo NOT_TESTED y globales históricos conservados. Los apartados siguientes son cortes históricos.
+
+## JUP-140 R4 — ampliación autorizada antes de publicar,23/10/2026
+
+Paris conserva el resultado visual R3 aprobado y añade descripción factual llms.txt, recetas claras de app/vídeo y cableado del SITE_ORIGIN existente a la construcción Compose. Origen real de landing confirmado y separado del destino app.29testsLinux/0SKIP y62consumidores; HTTP local A→B→A coherente en llms/runtime con mismaimagen/manifest/13estáticos. Se conserva el modo local noindex sin origen; no DNS/TLS/visita pública o indexación acreditados.
+
+[Resultado R4 y HTTP legible](../evidence/JUP-140-R4.md) · [Operación](../landing-runtime.md). La UI/medio R3 y sus originales se mantienen por identidad; el cierre documental previo también se preserva. R4 aún requiere candidato fijo, controles y evaluación independiente afectada antes de cierre/DoD/archivo y PR. Sin Git/publicación. Los cortes siguientes conservan el hito humano R3 y sus límites.
+
+## JUP-140 — resultado R3 aprobado y preparación de PR,23/10/2026
+
+Paris aprobó el resultado local tras dos evaluaciones independientes favorables, comprobaciones finales y revisión visual completa en claro/oscuro/escritorio/móvil. AC10 local cumplido. [Evidencia navegable y capturas](../evidence/JUP-140-R3.md) · [Historial](../evidence/JUP-140-validation.md) · [Operación](../landing-runtime.md).
+
+El cierre modifica sólo documentación, tareas y capturas; no cambia código, Docker, CSS/JS, imagen, medio ni configuración aprobados. Reproducción real y misma imagen A→B→A acreditadas; pruebas globales R2 reutilizadas sólo para entradas intactas, con fecha/519SKIP/fallos conservados. Movimiento reducido interactivo NOT_TESTED por dispensa humana. No hay nuevas pruebas de proveedores o acceso a la app.
+
+La instrucción prepara título/descripción de PR, no autoriza publicarla. OpenSpec sigue activo: archivo/promoción preparados, pendientes de autorización específica. También pendientes reconciliación autorizada con develop, evidencia de pairing de Alejandro, commit/push/CI del SHA final y reviews humanas de Lucía/Víctor; Paris lidera. La tarjeta seguía10Backlog en el corte oficial23/10/2026, sin atribuir estados nuevos. El producto no se declara integrado ni desplegado. Los cortes siguientes conservan sus resultados originales.
+
+## Corte JUP-140 R3 anterior a evaluación —23/10/2026
+
+Paris aprobó la propuesta clara/oscura y suministro local del único vídeo, y confirmó construcción inicial/prueba propia. La composición se aplica al candidato: CTA app único en cabecera, vídeo prominente nativo muted/autoplay/playsinline, selector de tema y movimiento con pausa. Medio fuera del checkout/imagen en carpeta dedicada RO, manifiesto de MIME/bytes/SHA y snapshot verificado50MiB; exactamente dos variables públicas runtime. Procedimiento vigente en [operación](../landing-runtime.md).
+
+El MP4 verificado tiene21094149bytes/SHA7e9bdfb148cee61acb2e96837f041a5014f3f7048bf2a244a5cb20128f080292,H264/AAC18,900998s, sin conversión. Navegador propio: autoplay sinPlay con readyState4/pausedfalse/mutedtrue y avance0,107→7,980s escritorio/0,088→8,075s móvil. Pausa conserva3,751781s al cambiar tema por teclado; sonido sólo tras control explícito.320/390/escritorio, ambos temas, menú/Escape/foco/pestañas y pausa de movimiento comprobados sin overflow observado. No se visita Access, ni se acreditan subtítulos/anonimato Drive. Reduce interactivo sigue NOT_TESTED por dispensa humana.
+
+23pruebas focales Linux PASS/0SKIP (incluye symlinks; Windows anterior19PASS/1SKIP conservado),43topología+Turbo PASS,lint/build estático correctos. Primer build estático falló por nombre de salida de ensayo sin sufijo dist; corregido sólo el destino, fallo conservado. A→B→A con tres contenedores, misma imagen/manifiesto RAW y13recursos estáticos; medios GET/HEAD/206/416 y errores de suministro/URL/app comprobados. El rechazo de política autoplay se prueba con doble controlado, no como bloqueo real observado en este navegador. El arranque general/globales R2 conservan su fecha y aplicabilidad de entradas intactas; no se reejecutan por rutina.
+
+Implementación/documentación cerradas y candidato fijado para solicitar dos nuevas guardas originales PM y evaluación independiente R3. Originales R1/R2/R3parcial/propuesta conservados; los PASS R2 no se trasladan a la UI nueva. Directorio de traspaso externo preparado, imagen sólo local: distribución y despliegue externo pendientes. Sin Git/archivo/publicación/gasto/LLM. Los apartados siguientes son historia con sus límites de cada corte.
+
+## Histórico — R2 y propuesta visual anterior a aprobación,23/10/2026
+
+Los informes originales R2 fueron favorables en su alcance: revisión técnica
+REVIEW_PASS y validación funcional afectada VALIDATION_PASS, con cotejo de retorno
+PM contra las mismas guardas originales. AC10 y decisión final humana permanecen
+pendientes; la dispensa del ensayo interactivo de movimiento reducido no es PASS.
+Las referencias y resultados R1/R2 siguientes se conservan como historia fechada.
+
+Después Paris pidió un único acceso a la aplicación en cabecera y vídeo integrado.
+La R3 ordinaria parcial retira duplicados/modal de vídeo, limpia jerarquía y textos,
+y prepara el panel antes de las ilustraciones;13 pruebas focales PASS. El visor
+protegido de Drive sigue negro; el original sí reproduce en la sesión disponible.
+No se acredita reproducción inline ni acceso anónimo. No hay guardas o dictámenes
+R3 y no se hereda aceptación R2 para este delta.
+
+La petición posterior toma Chargebee como referencia y añade modo oscuro. Se
+prepara una propuesta externa clara/oscura con capturas1440/390/320, vídeo junto
+al titular, tarjetas animadas y un solo acceso a la app. No se ha trasladado esta
+composición amplia al producto. El póster indica suministro pendiente; fuente
+nula y tiempo0, sin PASS de autoplay. No se descarga/rehostea el vídeo ni se añaden
+montajes/orígenes o se relajan protecciones. PM debe presentar el diseño a Paris
+y obtener la decisión concreta de suministro antes de ampliar implementación.
+
+La opción de suministro presentada usa el mismo contenedor, medios públicos
+aprobados fuera de la imagen, montaje dedicado de sólo lectura y ruta media
+cerrada. Es una propuesta pendiente, no arquitectura aplicada. Mantendría las dos
+variables runtime y los cambios de URL sin rebuild; la CSP actual ya permite
+medios del mismo origen por fallback a default-src self. Después de aprobación
+se actualizarán diseño/escenarios y pruebas afectadas, con candidato fijo y dos
+guardas originales PM antes de los mismos dos evaluadores. La preview local de
+la propuesta no es una R3 aceptada. Sin Git writes, archivo o publicación.
+
+## JUP-140 R2 — corrección mínima aprobada,23/10/2026
+
+Paris aprobó processor.tmpfs uid/gid10001/mode0700 después del fallo R1; se aplicó tras ambos originales y cotejo PM conforme. Código/Dockerfile/usuario no cambian. Arranque GENERAL recreado13 servicios correctos, permisos/seguridad/salud medidos sin suplemento tmpfs. A→B→A R2 pasa con imagen/assets/manifiesto RAW iguales y otros contenedores intactos; hash semántico registrado aparte y ambigüedad R1 conservada/aclarada.
+
+Topología41PASS, consumidores Python de Compose R2 74PASS y global build5/5PASS. Global test completo favorable en volumen Linux propio:6926PASS/519SKIP,5/5 tareas sin caché,7m0.655s. Se conservan el primer test global2FAIL del backend y la repetición secuencial incompleta en Windows; misma imagen/fuentes/límites y sin cambios de tests, causa de la diferencia no demostrada.2507 fuentes RAW cotejadas antes/después sin discrepancias. Apps/packages842 inputs idénticos R1/R2. Evaluaciones R2 y presentación/aprobación final pendientes. Paris dispensa explícitamente sólo el ensayo interactivo reduce («olvidate de eso es un TFM»): NOT_TESTED por decisión humana, CSSOM comprobado, sin convertir la omisión en PASS ni tocar preferencias. [Evidencia actual e historia R1](../evidence/JUP-140-validation.md). No Git writes/archivo/publicación/despliegue/merge.
+
+## JUP-140 R1 histórico: destinos de arranque y Compose general —23/10/2026
+
+[Tarjeta](https://trello.com/c/rXLyK4g4) · [OpenSpec activo](../../openspec/changes/archive/2026-10-24-jup-140-landing-video-app-runtime/) · [operación](../landing-runtime.md) · [evidencia](../evidence/JUP-140-validation.md).
+
+Diseño Docker/Compose v2 aprobado por Paris sobre base3d4e5749. Implementación local: Node22 por digest, servicio landing sin perfil en Compose general, red propia y loopback8088; configuración pública no-store de LANDING_VIDEO_URL/LANDING_APP_URL al arrancar, vídeo bajo clic/fallback y enlace de app separado del recorrido ilustrativo. No hay destinos operativos fijados en assets ni acceso a APIs privadas.
+
+Prueba A→B→A con tres contenedores landing distintos, misma imagen/manifiesto/hashes y otros contenedores intactos; restart negativo conserva entorno anterior. El arranque GENERAL original falla en el directorio temporal del processor; el ensayo completo usa un ajuste temporal propio de tmpfs y subredes libres. La propuesta mínima de corrección de Compose está pendiente de decisión humana y NO aplicada. No convertir ese ensayo condicionado en PASS del original.
+
+El vídeo original reproduce con controles y avance de tiempo en la sesión disponible; el iframe muestra visor/miniatura pero reproducción negra. Fallback comprobado, sin relajar sandbox/CSP; reproducción integrada y anónima no acreditadas. Los enlaces de aplicación se comprueban por href: Cloudflare Access no se visita ni atraviesa. Móvil1440/390/320 sin desbordamiento, teclado/pestañas/menú/Escape/foco y retirada del iframe comprobados; regla reduced-motion conservada, sin nueva emulación del navegador.
+
+Evaluaciones independientes sobre candidato fijo y aprobación final pendientes. Roles oficiales: Paris lidera, Alejandro pairing, Lucía revisión y Víctor validación; la asignación no acredita participación. Sin archivo OpenSpec, Git writes, subida, PR, publicación, despliegue o merge autorizados en este corte. Los límites y decisiones históricas siguientes conservan su fecha y alcance.
+
 ## Excepcion humana para integrar PR142 - 22/10/2026
 
 Orden directa en HAL9000 (chat 01a1270c-e332-7462-9c90-706d49ade92c): "Mergea tambien la 142, tienes excepcion humana para saltarte las validaciones." Este permiso puntual supera los bloqueos historicos de merge y revalidacion exclusivamente para PR142. Se prepara squash administrativo hacia develop; no equivale a aceptacion publica ni a cierre de Trello.

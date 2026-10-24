@@ -2,6 +2,30 @@ include:
   - ./infra/litellm/docker-compose.yml
 
 services:
+  landing:
+    build:
+      context: .
+      dockerfile: apps/landing/Dockerfile
+      args:
+        SITE_ORIGIN: ${SITE_ORIGIN:-}
+    environment:
+      LANDING_VIDEO_URL: ${LANDING_VIDEO_URL:-}
+      LANDING_APP_URL: ${LANDING_APP_URL:-}
+    ports:
+      - "127.0.0.1:${LANDING_HOST_PORT:-8088}:8080"
+    networks: [landing-public]
+    volumes: ["../landing-public-media:/landing/public-media:ro"]
+    init: true
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ["no-new-privileges:true"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+
   minio:
     build:
       context: .
@@ -415,7 +439,7 @@ services:
     init: true
     read_only: true
     tmpfs:
-      - /tmp
+      - /tmp:uid=10001,gid=10001,mode=0700
     security_opt:
       - no-new-privileges:true
     healthcheck:
@@ -491,6 +515,8 @@ secrets:
     file: ${CHAT_HMAC_FILE:?required private HMAC file}
 
 networks:
+  landing-public:
+    driver: bridge
   chat-private:
     internal: true
     ipam:

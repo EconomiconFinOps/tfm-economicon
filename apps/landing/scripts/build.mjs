@@ -5,7 +5,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { SECURITY_HEADERS } from './security.mjs';
 
 export const appRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-export const PUBLIC_INPUTS = Object.freeze(['index.html', 'style.css', 'app.js', '404.html', 'assets/economicon-primary.png', 'assets/economicon-inverse.png', 'assets/favicon.png', 'assets/Inter.woff2', 'assets/SpaceGrotesk.woff2', 'assets/Inter-OFL.txt', 'assets/SpaceGrotesk-OFL.txt']);
+export const PUBLIC_INPUTS = Object.freeze(['index.html', 'style.css', 'app.js', '404.html', 'llms.txt', 'assets/economicon-primary.png', 'assets/economicon-inverse.png', 'assets/favicon.png', 'assets/Inter.woff2', 'assets/SpaceGrotesk.woff2', 'assets/Inter-OFL.txt', 'assets/SpaceGrotesk-OFL.txt']);
 export const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 export function parseOrigin(value = '') {
   if (!value) return null;
@@ -34,6 +34,7 @@ export async function buildLanding({sourceDir = path.join(appRoot, 'src'), outDi
   const files = new Map();
   for (const relative of PUBLIC_INPUTS) files.set(relative, await readPublicInput(sourceDir, relative));
   const metadata = [
+    '<link rel="describedby" href="/llms.txt" type="text/plain">',
     '<meta name="robots" content="' + (publicOrigin ? 'index,follow' : 'noindex,nofollow') + '">',
     '<meta property="og:type" content="website"><meta property="og:locale" content="es_ES">',
     '<meta property="og:site_name" content="Economicon"><meta property="og:title" content="Economicon — El gasto. Con contexto.">',

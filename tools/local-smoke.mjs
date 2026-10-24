@@ -58,6 +58,7 @@ export async function runSmoke({
   const database = databaseName(vars.get("DATABASE_URL"));
   const api = `http://127.0.0.1:${port(vars, "API_HOST_PORT", "8000")}`;
   const services = [
+    ["landing", `http://127.0.0.1:${port(vars, "LANDING_HOST_PORT", "8088")}/healthz`],
     ["backend", `${api}/health`],
     ["processor", `http://127.0.0.1:${port(vars, "PROCESSOR_HOST_PORT", "8001")}/health`],
     ["azure-cost-api", `http://127.0.0.1:${port(vars, "AZURE_COST_API_HOST_PORT", "8002")}/health`],
@@ -78,7 +79,7 @@ export async function runSmoke({
   let token;
   let jobId;
   const steps = [
-    ["Salud de backend, processor, Azure Cost API y frontend", async () => {
+    ["Salud de landing, backend, processor, Azure Cost API y frontend", async () => {
       for (const [name, url] of services) {
         const healthy = await until(healthTimeoutMs, async () => {
           try {

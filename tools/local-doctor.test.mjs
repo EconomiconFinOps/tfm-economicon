@@ -129,7 +129,7 @@ test("reads required variables and published ports from the Compose file", () =>
   const ports = Object.fromEntries(contract.ports.map((port) => [port.variable, port]));
   assert.deepEqual(Object.keys(ports).sort(), [
     "API_HOST_PORT", "AZURE_COST_API_HOST_PORT", "COCKROACH_HTTP_PORT", "COCKROACH_SQL_PORT",
-    "FRONTEND_HOST_PORT", "GRAFANA_PORT", "MINIO_HOST_PORT", "PGVECTOR_PORT", "PROCESSOR_HOST_PORT",
+    "FRONTEND_HOST_PORT", "GRAFANA_PORT", "LANDING_HOST_PORT", "MINIO_HOST_PORT", "PGVECTOR_PORT", "PROCESSOR_HOST_PORT",
     "PROMETHEUS_PORT", "RABBITMQ_MANAGEMENT_PORT", "RABBITMQ_PORT",
   ]);
   assert.deepEqual(ports.COCKROACH_SQL_PORT, { variable: "COCKROACH_SQL_PORT", default: "26257", host: "127.0.0.1" });
