@@ -261,6 +261,18 @@ resource "aws_cloudfront_distribution" "main" {
       }
     }
   }
+  dynamic "ordered_cache_behavior" {
+    for_each = ["/grafana", "/grafana/*"]
+    content {
+      path_pattern             = ordered_cache_behavior.value
+      target_origin_id         = "api"
+      allowed_methods          = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
+      cached_methods           = ["GET", "HEAD"]
+      viewer_protocol_policy   = "https-only"
+      cache_policy_id          = aws_cloudfront_cache_policy.api.id
+      origin_request_policy_id = aws_cloudfront_origin_request_policy.api.id
+    }
+  }
   restrictions {
     geo_restriction {
       restriction_type = "none"

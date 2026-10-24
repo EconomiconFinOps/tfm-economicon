@@ -25,6 +25,10 @@ from bedrock_contract import expected_profile, validate_profile
 ROOT = Path(__file__).resolve().parents[2]
 WORK = ROOT / ".work/aws-demo"
 APPLICATIONS = ("backend", "processor", "azure-cost-api")
+IMAGES = {name: {'repository': name, 'dockerfile': f'apps/{name}/Dockerfile',
+                'context': '.' if name == 'backend' else 'apps/' + name} for name in APPLICATIONS}
+IMAGES.update({name: {'repository': 'grafana', 'dockerfile': f'apps/monitoring/aws/{name}.Dockerfile',
+                     'context': '.'} for name in ('grafana', 'prometheus')})
 
 
 def public_process_env():
@@ -219,10 +223,9 @@ class Runner:
         self.tf("test")
 
     def build(self):
-        for name in APPLICATIONS:
-            context = "." if name == "backend" else "apps/" + name
+        for name, spec in IMAGES.items():
             image = f'economicon-local/{name}:{self.config["source_sha"]}'
-            run(["docker", "build", "--platform", "linux/amd64", "-f", f"apps/{name}/Dockerfile", "-t", image, context], public_process_env())
+            run(["docker", "build", "--platform", "linux/amd64", "-f", spec['dockerfile'], "-t", image, spec['context']], public_process_env())
             run(["docker", "save", "-o", str(WORK / (name + ".tar")), image], public_process_env())
             self.upload(name + ".tar")
         bundle = WORK / "source.zip"
@@ -293,15 +296,17 @@ class Runner:
             docker_env = public_process_env()
             docker_env["DOCKER_CONFIG"] = str(WORK / "docker-auth.private")
             run(["docker", "login", "--username", "AWS", "--password-stdin", registry], docker_env, password)
-            for name in APPLICATIONS:
+            for name, spec in IMAGES.items():
                 archive = self.download(name + ".tar")
                 run(["docker", "load", "-i", str(archive)], docker_env)
                 local_image = f'economicon-local/{name}:{self.config["source_sha"]}'
-                tagged = outputs["ecr_repositories"][name] + ":" + self.config["source_sha"]
+                repository = outputs['ecr_repositories'][spec['repository']]
+                tag = self.config['source_sha'] + ('-prometheus' if name == 'prometheus' else '')
+                tagged = repository + ':' + tag
                 run(["docker", "tag", local_image, tagged], docker_env)
                 run(["docker", "push", tagged], docker_env)
-                detail = self.aws("ecr", "describe-images", "--repository-name", outputs["ecr_repositories"][name].split("/", 1)[1], "--image-ids", "imageTag=" + self.config["source_sha"], deploy=True)
-                images[name] = outputs["ecr_repositories"][name] + "@" + detail["imageDetails"][0]["imageDigest"]
+                detail = self.aws("ecr", "describe-images", "--repository-name", repository.split("/", 1)[1], "--image-ids", "imageTag=" + tag, deploy=True)
+                images[name] = repository + "@" + detail["imageDetails"][0]["imageDigest"]
             (WORK / "images.json").write_text(json.dumps(images))
             for command in recipe["bootstrap"]:
                 try:

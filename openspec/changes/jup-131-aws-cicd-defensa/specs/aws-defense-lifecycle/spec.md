@@ -1,5 +1,46 @@
 ## ADDED Requirements
 
+### Requirement: Additive Atlas evaluations
+The private bootstrap SHALL verify the exact Atlas SQL digest, load the 19 runs
+and 1688 results transactionally, preserve unrelated history, and reject identity
+or result conflicts without partial updates. It SHALL NOT call a model or invoke
+the destructive general evaluation loader.
+
+#### Scenario: Repeated import with additional history
+- **WHEN** the approved artifact is imported twice into a database with another run
+- **THEN** the approved runs exist once and the additional run and results remain
+
+#### Scenario: Conflicting run or changed artifact
+- **WHEN** an existing run differs or the packaged SQL digest changes
+- **THEN** bootstrap fails without overwriting existing evaluations
+
+### Requirement: Private authenticated monitoring
+The release SHALL package Grafana 11.3.0 and Prometheus 2.55.1 as immutable images,
+retain all three dashboards, expose Grafana under `/grafana/` without prefix
+rewriting or caching, deny anonymous access, and use a SELECT-only evaluation
+role. Metadata SHALL persist in a separate database on existing RDS with verified
+TLS. Prometheus history MAY be ephemeral and bounded to 24h/256MB for each cycle.
+
+#### Scenario: Restart and constrained rolling deployment
+- **WHEN** monitoring restarts or application services roll to new tasks
+- **THEN** Grafana metadata survives, monitoring uses one 0.5vCPU/1GiB task,
+  and the aggregate configured rolling maximum remains at most six vCPU
+
+#### Scenario: Offline preparation and live acceptance
+- **WHEN** CI tests the candidate
+- **THEN** isolated PostgreSQL and Grafana verify the SQL, TLS, authentication,
+  three dashboards and datasource queries without AWS or inference
+- **AND** real release acceptance still checks monitoring through the public route
+
+### Requirement: Thirty euro project budget
+The controller SHALL reject a project ceiling above 30 EUR and any cycle estimate
+above verified remaining funds. Unknown amounts SHALL block launch. This gate
+SHALL NOT be described as an AWS billing cap; expiry and cleanup remain required.
+
+#### Scenario: Old sixty euro configuration
+- **WHEN** an operator supplies the former 60 EUR ceiling or an unknown balance
+- **THEN** preparation remains blocked until a verified configuration within 30 EUR is supplied
+
 ### Requirement: Manual reproducible AWS cycle
 The system SHALL keep the documented AWS topology and execute deployment only
 from a manually started pipeline pinned to a reviewed source revision and cycle configuration.

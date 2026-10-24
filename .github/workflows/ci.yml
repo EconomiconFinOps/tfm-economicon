@@ -74,7 +74,25 @@ jobs:
       - name: Exercise native PostgreSQL migrations, restart and billing isolation
         env:
           AWS_POSTGRES_TEST_URL: postgresql+psycopg://jup131:jup131-disposable-synthetic-pass@127.0.0.1:25432/economicon_jup131_test?sslmode=disable
-        run: python -m unittest tools.aws_demo.test_postgresql -v
+        run: python -m unittest tools.aws_demo.test_postgresql tools.aws_demo.test_atlas_postgresql -v
+
+  aws-monitoring:
+    name: AWS monitoring isolated
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Grafana TLS, authentication, dashboards and restart without AWS
+        run: python tools/aws_demo/monitoring_smoke.py
 
   aws-demo-offline:
     name: AWS demo offline

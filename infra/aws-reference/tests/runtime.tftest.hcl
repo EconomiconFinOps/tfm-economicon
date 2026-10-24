@@ -93,10 +93,27 @@ run "ecs_runtime_configuration" {
     override_during = plan
     values          = { repository_url = "123456789012.dkr.ecr.eu-west-1.amazonaws.com/economicon-reference/azure-cost-api" }
   }
+  override_resource {
+    target          = aws_ecr_repository.application["grafana"]
+    override_during = plan
+    values          = { repository_url = "123456789012.dkr.ecr.eu-west-1.amazonaws.com/economicon-reference/grafana" }
+  }
+  override_resource {
+    target          = aws_secretsmanager_secret.application["grafana"]
+    override_during = plan
+    values          = { arn = "arn:aws:secretsmanager:eu-west-1:123456789012:secret:synthetic-grafana-000000" }
+  }
+  override_resource {
+    target          = aws_db_instance.main["vectors"]
+    override_during = plan
+    values          = { address = "synthetic.eu-west-1.rds.amazonaws.com", master_user_secret = [{ secret_arn = "arn:aws:secretsmanager:eu-west-1:123456789012:secret:rds!db-synthetic-vectors", kms_key_id = "synthetic", secret_status = "active" }] }
+  }
   variables {
     deploy_applications              = true
     application_adaptations_verified = true
     container_images = {
+      grafana        = "123456789012.dkr.ecr.eu-west-1.amazonaws.com/economicon-reference/grafana@sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      prometheus     = "123456789012.dkr.ecr.eu-west-1.amazonaws.com/economicon-reference/grafana@sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
       backend        = "123456789012.dkr.ecr.eu-west-1.amazonaws.com/economicon-reference/backend@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
       processor      = "123456789012.dkr.ecr.eu-west-1.amazonaws.com/economicon-reference/processor@sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
       azure-cost-api = "123456789012.dkr.ecr.eu-west-1.amazonaws.com/economicon-reference/azure-cost-api@sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
@@ -121,4 +138,17 @@ run "ecs_runtime_configuration" {
     condition     = contains([for statement in jsondecode(aws_iam_role_policy.documents["backend"].policy).Statement : jsonencode(statement.Action)], jsonencode("s3:PutObject")) && !contains([for statement in jsondecode(aws_iam_role_policy.documents["processor"].policy).Statement : jsonencode(statement.Action)], jsonencode("s3:PutObject"))
     error_message = "Only backend may grant upload URLs or finalize objects; processor reads and cleans up."
   }
+  assert {
+    condition     = aws_ecs_service.monitoring[0].desired_count == 1 && !aws_ecs_service.monitoring[0].network_configuration[0].assign_public_ip && aws_ecs_task_definition.monitoring[0].cpu == "512" && aws_ecs_task_definition.monitoring[0].memory == "1024"
+    error_message = "Monitoring stays one private 0.5vCPU/1GiB task."
+  }
+  assert {
+    condition     = length(jsondecode(aws_ecs_task_definition.monitoring[0].container_definitions)) == 2 && alltrue([for container in jsondecode(aws_ecs_task_definition.monitoring[0].container_definitions) : container.readonlyRootFilesystem]) && length(jsondecode(aws_ecs_task_definition.monitoring[0].container_definitions)[0].secrets) == 4
+    error_message = "Both containers must use read-only roots; credentials are secret references."
+  }
+  assert {
+    condition     = contains([for env in jsondecode(aws_ecs_task_definition.monitoring[0].container_definitions)[0].environment : "${env.name}=${env.value}"], "GF_DATABASE_SSL_MODE=verify-full") && contains([for env in jsondecode(aws_ecs_task_definition.monitoring[0].container_definitions)[0].environment : "${env.name}=${env.value}"], "GF_AUTH_ANONYMOUS_ENABLED=false") && alltrue([for service in aws_ecs_service.application : service.deployment_maximum_percent == 150])
+    error_message = "RDS TLS, authenticated Grafana and constrained rolling capacity are required."
+  }
+
 }

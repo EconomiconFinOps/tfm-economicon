@@ -1,5 +1,215 @@
 # CI/CD AWS y primer ensayo — JUP-131
 
+## Atlas preparado para ECS — 24/10/2026
+
+La ampliación autorizada está implementada en `feat/JUP-131-atlas-ecs`, basada
+exactamente en Atlas/PR159+160 (`ffb5d307`). PR146 ya estaba integrada; este delta
+requiere una PR propia. [Evidencia y límites](../evidence/JUP-131-atlas-ecs.md).
+
+- La fase privada `backend monitoring` verifica e importa el SQL aditivo antes
+  de activar servicios; conserva histórico ajeno y aborta conflictos.
+- Grafana y Prometheus comparten una tarea privada de 0.5 vCPU/1 GiB; Grafana
+  persiste metadatos en una DB separada del RDS existente y lee evaluaciones con
+  otro rol. Tres dashboards, cinco secciones del narrativo y TLS verificado.
+- `/grafana/` usa autenticación propia y cookies seguras; sin acceso anónimo.
+  Las credenciales se generan en Secrets Manager durante el bootstrap autorizado
+  futuro. No entregar al evaluador la contraseña administrativa de Grafana.
+- Landing Pages y vídeo quedan fuera de las imágenes. Prometheus retiene sólo
+  24h/256MB efímeros por tarea; el histórico de evaluaciones permanece en RDS.
+- El máximo rolling calculado baja a5.5vCPU con aplicaciones150% y monitorización
+  200%; se sigue exigiendo cuota efectiva6vCPU antes de crear infraestructura.
+
+**Control de gasto:** el controlador rechaza techo>30EUR. El campo heredado
+`available_credit_eur` es saldo verificado del proyecto, no crédito promocional.
+No rellenar un saldo/estimación ficticios para obtener READY. Avisos AWS30USD no
+son un apagado automático; el operador debe confirmar el correo de Budgets.
+
+El cálculo reproducible `python docs/planning/costes-aws/atlas.py`, con precios
+22Oct, IVA supuesto21% y margen20%, estima23.40EUR para un ciclo de2h y39.42EUR
+para tres ciclos de2h. El programa completo anterior no cabe en30EUR con esas
+hipótesis. Medir duración facturable, descontar gasto existente y ajustar el
+alcance/ventana antes de autorizar el primer ensayo; sin cambiar la HA prevista.
+
+Para preparar sin AWS: `python tools/aws_demo/prepare.py --config .work/ensayo1/config.json --output .work/atlas-prep --allow-incomplete`.
+La configuración histórica sigue bloqueada por saldo/estimación, caducidad y
+fuente antigua. Además, la receta conserva el digest de aceptación histórico:
+la nueva evidencia de monitorización no declara aceptada toda la aplicación.
+Antes del ensayo: aceptación offline del candidato completo, integración y CI
+push exacta de develop, cuotas efectivas, bootstrap/control importando roles ya
+creados, saldo/ventana y autorización humana de despliegue. Pruebas de AWS,
+CloudFront/Cloud Map y comportamiento real de modelos continúan pendientes.
+
+
+## Entrada Atlas del 24/10/2026: adaptación pendiente para ECS
+
+Paquete recibido de HAL para preparar AWS, sin autorización de despliegue o
+carga SQL. La guía de Atlas presupone un servidor Compose existente; el flujo
+de este proyecto usa Terraform, ECS y una release fijada. No ejecutar sus
+comandos Compose ni editar imágenes/releases ya publicadas.
+
+La identidad del paquete es `ffb5d307772f697cffb8b1e73e6330250e093601`
+(PR159/160 según la entrega). ZIP SHA256
+`c4eb723006f5a83518b4791b4177bd26d8f61e14f975e208d5acc49d78411f14`.
+Verificados localmente ZIP, 13 entradas SHA256SUMS y 12 archivos del manifiesto.
+Recibo: `.work/aws-access/atlas-handoff-receipt.json`; referencias y procedencia
+en [continuidad AWS](../continuidad/cloud-aws.md).
+
+| Elemento | Encaje en la preparación AWS |
+| --- | --- |
+| Landing y vídeo | HAL mantiene Pages `economicon-landing` y `https://landing-economicon.danteinferno.es/`. No añadir servicio ECS, bind de medios ni subdominio `landing-demo-jupiter` por este paquete. `demo-jupiter` y su `/grafana/` pertenecen a la instalación existente; no acreditan los futuros endpoints AWS. |
+| Versión | El ensayo sigue fijado a `8e879dae3f23d52f46ea2b625ca1f2eebd22cd4a`. Antes de incorporar Atlas, reconciliar los cambios necesarios, revisar compatibilidad con el runtime AWS y regenerar digest/evidencias/CI para el SHA resultante. No reutilizar la CI anterior ni tomar cambios posteriores automáticamente. |
+| Mediciones | `02-anadir-evaluaciones.sql` aporta 19 ejecuciones/1688 resultados declarados. Para una futura carga AWS, incorporar el SQL con hash al artefacto revisado y adaptar una tarea privada con transacción, bloqueo, rechazo de colisiones y conservación del histórico. El runner actual no tiene una fase de evaluación habilitada; no ejecutar `evaluation-dashboard.py load`, que vacía tablas. |
+| Grafana | La referencia AWS actual no define servicio Grafana; su observabilidad usa CloudWatch/SNS. El UID `economicon-assistant-evidence`, sus cinco secciones, lector DB y otros dos dashboards son requisitos de una adaptación todavía pendiente. No suponer que la ruta Compose `/grafana/` existe en AWS. Cualquier servicio/ruta/secretos nuevos requiere plan, cuota y coste revisados. |
+| Aceptación futura | Verificar carga inicial y repetida, histórico adicional y colisiones; lector de solo lectura, cinco secciones y los otros dos dashboards. Las pruebas del autor en contenedor desechable no acreditan nuestro runtime. No hacen falta inferencias nuevas para comprobar esta importación. |
+
+Primero resolver la integración de versión y el alcance de Grafana en AWS;
+después preparar su delta y verificaciones offline antes de un ensayo autorizado.
+Conservar las dependencias vigentes: cuota efectiva, roles/secretos, revisión,
+ventana/caducidad renovada y presupuesto. El umbral solicitado el 24/10 es30EUR;
+el presupuesto de avisos creado es30USD, sin corte automático y con verificación
+de correo pendiente en ese corte. Las referencias posteriores a60EUR son históricas.
+
+
+## Acceso de revisión del evaluador — 22/10/2026
+
+Por solicitud del usuario se ha creado el usuario de consola
+`economicon-evaluador-carlos`. Fecha aclarada expresamente:30/11/2026 incluido,
+Europe/Paris. Permisos bloqueados por Deny temporal desde
+`2026-11-30T23:00:00Z` (01/12 00:00 local), también para sesiones existentes.
+El usuario/perfil no se eliminan automáticamente: el bloqueo se aplica a las
+acciones AWS y habrá que retirar la identidad cuando deje de ser necesaria.
+
+Política `economicon-evaluador-carlos-hasta-20261130` usada como política de
+identidad y permissions boundary, sin grupos, políticas adicionales ni access
+keys. Permite revisión de configuración/metadatos en Irlanda/París/Virginia,
+configuración de buckets economicon y zona delegada, roles/políticas economicon.
+Algunos listados de infraestructura de consola muestran metadatos de toda la
+cuenta en esas regiones. No permite leer documentos S3, secretos, datos DynamoDB,
+contenido de logs, descifrar KMS, invocar modelos ni ejecutar pipelines/tareas.
+
+Primer acceso: cambiar contraseña, entrar en «Credenciales de seguridad» y
+registrar MFA con nombre `economicon-evaluador-carlos`; cerrar sesión y volver
+a entrar con MFA para revisar recursos. Antes de MFA sólo se permite su propia
+configuración inicial de contraseña/MFA. Contraseña inicial en un archivo local
+privado, con ACL sólo para el usuario Windows del operador y SYSTEM, fuera deGit;
+entrega al evaluador pendiente del operador. No correo enviado ni contraseña en
+este documento. No se ha probado el login real del evaluador ni su MFA personal.
+
+AWS Access Analyzer sin findings;23simulaciones de política favorables, lectura
+posterior del documento y del límite de permisos conforme;6simulaciones más del
+principal real con su boundary confirman lectura/cambio/MFA/fecha. Evidencias públicas
+locales `.work/aws-access/evaluator-{policy,validation,simulations,access-receipt}.json`.
+No se ha activado Organizations/IdentityCenter; la cuenta no pertenece a una
+organización. Ningún cambio a aplicación, bootstrap, DNS o cuotas por este alta.
+
+## Prerrequisitos autorizados y preparados — 22/10/2026
+
+El usuario autoriza crear roles, DNS y conexión GitHub mientras se resuelven las
+cuotas, sin desplegar aplicación/control. Se han creado únicamente:
+
+- Zona pública `economicon.danteinferno.es`, ID `Z0908169205CKOWLEJ2DZ`.
+  La zona responde SOA directamente en Route53; esto NO prueba delegación padre.
+- Conexión `economicon-github` en París:
+  `arn:aws:codeconnections:eu-west-3:605600557607:connection/df45512d-c3c4-44ca-93ca-c4ae399eb637`.
+  Usuario completó autorización de GitHub; API confirma AVAILABLE.
+- Boundary `arn:aws:iam::605600557607:policy/economicon-runtime-boundary`.
+  Access Analyzer sin findings,15 simulaciones IAM conformes y revisión técnica
+  independiente favorable. Ceiling de futuros roles ECS ensayo*/defensa*, no
+  concede permisos por sí misma. No está adjunta a los roles de control.
+- Roles base `economicon-defensa-build`, `economicon-defensa-deploy`,
+  `economicon-defensa-pipeline`, `economicon-defensa-expiry`, con relaciones de
+  confianza de la plantilla actual y sin políticas de permisos asociadas.
+  Sus permisos efectivos se configurarán al preparar el bootstrap completo,
+  cuando se conozcan buckets, tabla, logs y referencias de secretos concretos.
+
+No se han creado CodeBuild, pipelines, buckets, bases, tareas Fargate ni secretos,
+ni se han ejecutado modelos. Ninguna clave permanente generada. La zona cuesta
+0,50USD/mes más consultas; no se prorratea por días. Presupuesto restante del
+proyecto y coste completo del ciclo siguen sin verificarse.
+
+### Delegación comprobada en Cloudflare
+
+Por petición expresa del usuario se envió a «Jarvis», proyecto «Neon Bastion»,
+chat `01a14bba-2515-7672-8bb3-ce01b4b54e4b` en host local. Operación limitada a
+cuatro registros NS con nombre `economicon`, TTL Auto, en `danteinferno.es`:
+
+- `ns-1509.awsdns-60.org`
+- `ns-2005.awsdns-58.co.uk`
+- `ns-995.awsdns-60.net`
+- `ns-54.awsdns-06.com`
+
+Conservar NS del padre `diva.ns.cloudflare.com` y `salvador.ns.cloudflare.com`.
+Si existen DS o registros incompatibles, comprobar conflicto antes de sustituir
+nada. No crear destinos A/AAAA/CNAME de aplicación todavía. Verificar después
+NS desde autoritativo padre y SOA del hijo; no confundir propagación pública con
+consulta directa a Route53. Jarvis comunicó ejecución terminada; comprobación
+independiente22/10/2026 19:36UTC:1.1.1.1 y8.8.8.8 devuelven los cuatro NS
+esperados, y ns-54.awsdns-06.com responde SOA del hijo (serial1). Las consultas
+directas Windows a los dos NS padre devolvieron error de servidor; no se atribuye
+a este chat una verificación autoritativa completa. Jarvis informa preservados
+los20registros anteriores y los NS padre. No se han creado destinos de aplicación.
+
+### Incorporación futura al estado Terraform
+
+Los cuatro roles se crearon por API para preparar IAM sin ejecutar el grafo
+completo del control. Antes del bootstrap autorizado, con inputs reales y
+estado local protegido, IMPORTAR los cuatro roles en `infra/aws-bootstrap`:
+
+```text
+aws_iam_role.build     -> economicon-defensa-build
+aws_iam_role.deploy    -> economicon-defensa-deploy
+aws_iam_role.pipeline  -> economicon-defensa-pipeline
+aws_iam_role.expiry    -> economicon-defensa-expiry
+```
+
+Después revisar el plan completo; no intentar crearlos otra vez ni mantener dos
+estados dueños de esos roles. Boundary, zona y conexión siguen siendo referencias
+externas del bootstrap, como prevé el diseño. No se ha importado ni aplicado
+Terraform ahora. Artefactos públicos de preparación y readback en
+`.work/aws-prerequisites/`; no contienen credenciales. Los secretos de GitHub/MQ,
+Fargate efectivo6vCPU, CI pushdevelop/aceptación y ventana/coste aún son requisitos
+de lanzamiento. DNS delegado verificado y CodeBuild Medium efectivo15 en París
+(se requería1). Los secretos/control siguen pendientes. El paquete ensayo1
+permanece bloqueado.
+
+### Servicios y cuotas
+
+Corte22/10/2026 19:36–19:37UTC: FargateIrlanda L-3032A538 efectiva0,
+solicitud6 CASE_OPENED/caso179267775500075; CodeBuildMediumParís L-2DC20C30
+efectiva15, suficiente para1. Su solicitud1 sigue CASE_OPENED/caso179267775900317:
+el valor efectivo comprobado es distinto del estado administrativo del caso.
+No se han reiterado solicitudes ni ejecutado builds/tareas. Recibos locales
+`.work/aws-access/{quota-status-user-check,dns-status-user-check}.json`.
+
+| Servicio | Papel en Economicon |
+| --- | --- |
+| IAM | Identidades temporales y permisos: build, despliegue, pipeline y retirada. |
+| Route53 | DNS del subdominio delegado para los certificados y destinos futuros. |
+| CodeConnections | Acceso autorizado al repositorio GitHub desde AWS. |
+| CodePipeline | Secuencia manual de validar, compilar, planificar, aprobar, aplicar y retirar. |
+| CodeBuild | Ejecuta builds, pruebas y Terraform; la cuota Medium1 permite una ejecución simultánea. |
+| ECS/Fargate | ECS coordina tareas y Fargate aporta CPU/memoria para los tres contenedores. Se solicitan6vCPU para capacidad/rolling. |
+| ECR | Registro de imágenes de contenedor por digest. |
+| RDS PostgreSQL | Bases operativa y vectorial con pgvector. |
+| Amazon MQ | RabbitMQ para trabajos de ingesta y procesamiento. |
+| S3 | Frontend, documentos y, en el control separado, estado/artefactos. |
+| Cognito | Inicio de sesión y verificación de identidad. |
+| Bedrock | Embeddings Titan y respuestas Nova del asistente. |
+| ALB, CloudFront, WAF | Entrada privada a API, publicación web y protección HTTP. |
+| Secrets Manager, KMS | Secretos y cifrado. |
+| CloudWatch, Scheduler, DynamoDB | Logs/alertas, caducidad del ensayo y bloqueo del ciclo. |
+
+Las solicitudes de cuota pueden tardar horas o días; AWS no da aquí una fecha
+garantizada. CASE_OPENED significa caso enviado a Support, no capacidad efectiva.
+No confundir el tamaño/cupo solicitado con recursos funcionando o gastos de uso.
+
+Fuentes oficiales consultadas22/10/2026:
+[cuotas](https://docs.aws.amazon.com/servicequotas/latest/userguide/request-quota-increase.html),
+[horas o días](https://docs.aws.amazon.com/r53recovery/latest/dg/working-with-rs-service-quota-checks.html),
+[precio DNS](https://aws.amazon.com/route53/pricing/),
+[delegación](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/CreatingNewSubdomain.html),
+[conexión](https://docs.aws.amazon.com/codeconnections/latest/APIReference/API_CreateConnection.html).
+
 ## CI del controlador y aceptación de la aplicación — 23/10/2026
 
 `AWS demo offline` comprueba la receta, las huellas de sus evidencias y scripts,

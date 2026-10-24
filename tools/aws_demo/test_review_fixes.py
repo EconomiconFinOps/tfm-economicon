@@ -55,7 +55,7 @@ class ReviewFixTests(unittest.TestCase):
                 patch.dict(os.environ, GITHUB_TOKEN='sensitive', MQ_ADMIN_PASSWORD='sensitive',
                            AWS_CONTAINER_CREDENTIALS_RELATIVE_URI='/sensitive'):
             item.build()
-        self.assertEqual(len(calls), 6)
+        self.assertEqual(len(calls), 10)
         for _, env in calls:
             self.assertNotIn('GITHUB_TOKEN', env)
             self.assertNotIn('MQ_ADMIN_PASSWORD', env)

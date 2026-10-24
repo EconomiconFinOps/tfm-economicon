@@ -13,7 +13,10 @@ locals {
       secret_keys = ["AZURE_COST_VALID_TOKENS", "AZURE_COST_SKIPTOKEN_SECRET"]
     }
   }
-  active_applications = var.deploy_applications ? local.applications : {}
+  workloads                   = merge(local.applications, { grafana = { port = 3000, secret_keys = ["GF_DATABASE_PASSWORD", "GF_SECURITY_ADMIN_PASSWORD", "GF_SECURITY_SECRET_KEY", "GRAFANA_EVALUATION_DB_PASSWORD"] } })
+  application_rolling_percent = 150
+  rolling_vcpu                = length(local.applications) * floor(var.desired_count * local.application_rolling_percent / 100) * 0.5 + 1
+  active_applications         = var.deploy_applications ? local.applications : {}
   task_trust = jsonencode({
     Version   = "2012-10-17"
     Statement = [{ Effect = "Allow", Action = "sts:AssumeRole", Principal = { Service = "ecs-tasks.amazonaws.com" } }]
@@ -27,7 +30,7 @@ resource "aws_ecs_cluster" "main" {
   }
 }
 resource "aws_ecr_repository" "application" {
-  for_each             = local.applications
+  for_each             = local.workloads
   name                 = "${local.name}/${each.key}"
   image_tag_mutability = "IMMUTABLE"
   force_delete         = false
@@ -39,18 +42,18 @@ resource "aws_ecr_repository" "application" {
   }
 }
 resource "aws_cloudwatch_log_group" "application" {
-  for_each          = local.applications
+  for_each          = local.workloads
   name              = "/ecs/${local.name}/${each.key}"
   retention_in_days = 30
 }
 resource "aws_iam_role" "execution" {
-  for_each             = local.applications
+  for_each             = local.workloads
   name                 = "${local.name}-${each.key}-exec"
   permissions_boundary = var.permissions_boundary_arn
   assume_role_policy   = local.task_trust
 }
 resource "aws_iam_role_policy" "execution" {
-  for_each = local.applications
+  for_each = local.workloads
   role     = aws_iam_role.execution[each.key].id
   policy = jsonencode({
     Version = "2012-10-17"
@@ -73,7 +76,7 @@ resource "aws_iam_role_policy" "execution" {
   })
 }
 resource "aws_iam_role" "task" {
-  for_each             = local.applications
+  for_each             = local.workloads
   name                 = "${local.name}-${each.key}-task"
   permissions_boundary = var.permissions_boundary_arn
   assume_role_policy   = local.task_trust
@@ -222,7 +225,7 @@ resource "aws_ecs_service" "application" {
   platform_version                   = "1.4.0"
   desired_count                      = var.desired_count
   deployment_minimum_healthy_percent = 100
-  deployment_maximum_percent         = 200
+  deployment_maximum_percent         = local.application_rolling_percent
   health_check_grace_period_seconds  = each.key == "backend" ? 90 : null
   enable_execute_command             = false
   wait_for_steady_state              = true
@@ -244,9 +247,9 @@ resource "aws_ecs_service" "application" {
     }
   }
   dynamic "service_registries" {
-    for_each = contains(["azure-cost-api", "processor"], each.key) ? [1] : []
+    for_each = [1]
     content {
-      registry_arn = each.key == "processor" ? aws_service_discovery_service.processor.arn : aws_service_discovery_service.fixture.arn
+      registry_arn = each.key == "backend" ? aws_service_discovery_service.backend.arn : (each.key == "processor" ? aws_service_discovery_service.processor.arn : aws_service_discovery_service.fixture.arn)
     }
   }
   depends_on = [

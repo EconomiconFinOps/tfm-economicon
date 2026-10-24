@@ -19,8 +19,8 @@ def config():
         "origin_domain": "origin.economicon.danteinferno.es", "route53_zone_id": "Z123456789",
         "availability_zones": ["eu-west-1a", "eu-west-1b", "eu-west-1c"],
         "postgres_version": "16.9", "rabbitmq_version": "3.13",
-        "expires_at": "2026-10-23T18:00:00Z", "budget_eur": 60,
-        "estimated_cycle_eur": 9, "available_credit_eur": 60,
+        "expires_at": "2026-10-23T18:00:00Z", "budget_eur": 30,
+        "estimated_cycle_eur": 9, "available_credit_eur": 30,
         "ci_run_id": "12345", "release_recipe": "infra/aws-cicd/release.json",
     }
 

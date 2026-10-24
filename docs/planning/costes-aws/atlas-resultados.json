@@ -1,0 +1,44 @@
+{
+  "verified": "2026-10-24",
+  "prices_verified": "2026-10-22",
+  "reference": "ffb5d307772f697cffb8b1e73e6330250e093601",
+  "assumptions": "Existing catalog hypotheses, no credits/free tier; VAT21 is a conservative assumption, not tax advice. Billing and cleanup may exceed estimates.",
+  "scenarios": [
+    {
+      "cycles": 1,
+      "total_billable_hours": 2,
+      "baseline_eur": "15.97",
+      "monitoring_increment_eur": "0.141",
+      "subtotal_eur": "16.11",
+      "with_assumed_vat21_and_margin20_eur": "23.40",
+      "within_30_eur": true
+    },
+    {
+      "cycles": 1,
+      "total_billable_hours": 4,
+      "baseline_eur": "19.03",
+      "monitoring_increment_eur": "0.187",
+      "subtotal_eur": "19.22",
+      "with_assumed_vat21_and_margin20_eur": "27.91",
+      "within_30_eur": true
+    },
+    {
+      "cycles": 3,
+      "total_billable_hours": 3,
+      "baseline_eur": "22.32",
+      "monitoring_increment_eur": "0.164",
+      "subtotal_eur": "22.49",
+      "with_assumed_vat21_and_margin20_eur": "32.65",
+      "within_30_eur": false
+    },
+    {
+      "cycles": 3,
+      "total_billable_hours": 6,
+      "baseline_eur": "26.91",
+      "monitoring_increment_eur": "0.232",
+      "subtotal_eur": "27.15",
+      "with_assumed_vat21_and_margin20_eur": "39.42",
+      "within_30_eur": false
+    }
+  ]
+}
