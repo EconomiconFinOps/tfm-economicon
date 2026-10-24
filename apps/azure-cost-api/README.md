@@ -4,6 +4,11 @@ Servicio FastAPI que implementa el recorrido normal del subconjunto Azure Cost
 Management Query definido en JUP-073. Lee el fixture público
 `EA-Cost-Actual.sample.csv`; no se conecta a Azure ni simula un tenant real.
 
+## Compatibilidad temporal de dependencias
+
+JUP-140 / [PR #162](https://github.com/EconomiconFinOps/tfm-economicon/pull/162): `requirements.txt` fija `starlette==1.9.0` como contención temporal de compatibilidad. `ApiError` sigue congelado; este pin no corrige su interacción con otras versiones ni fija el resto de dependencias Python.
+Las variantes normal y demo comparten Dockerfile y requisitos; los contenedores ya creados conservan sus dependencias hasta reconstruirse. Ver [comprobaciones y límites](../../docs/continuidad/azure-cost-api-compatibilidad.md).
+
 ## Ejecutar
 
 Desde `apps/azure-cost-api`:

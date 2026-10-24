@@ -18,6 +18,7 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
+| [Compatibilidad Azure Cost API](azure-cost-api-compatibilidad.md) | JUP-140/PR162: contención temporal Starlette 1.9.0; ApiError congelado, resolución limpia y 81 PASS, imagen y HTTP normal/demo comprobados localmente. Otros rangos y servicios conservados. | 2026-10-24 |
 | [Landing pública](landing-publica.md) | JUP-140/PR162:14marcadores sustituidos por viñetas violetas, textos/datos/JS conservados y Azure excluido. Landing36PASS(26+10), capturas nativas claro/oscuro/móvil/amplia; evaluaciones independientes y aprobación visual pendientes. | 2026-10-24 |
 | [Despliegue AWS](cloud-aws.md) | Corrección de CI para PR154: evidencia histórica separada de readiness, guardas AWS conservadas y APT acotado; controlador73PASS/1SKIP. Publicación y CI remota pendientes. | 2026-10-23 |
 | [Cortes de respuesta del chat](cortes-respuesta-chat.md) | JUP-135 integrada por squash f224226d en PR153, con excepcion humana de merge; CI tecnica previa conforme. Agregados de medicion comunicados y pendientes documentales conservados; sin aceptacion generativa nueva. | 2026-10-22 |
