@@ -59,6 +59,9 @@ preferencia persistida tras reiniciar. La recuperación no retiraba definiciones
 `backend-monitoring` huérfanas; ahora las reconoce con las mismas comprobaciones
 de cuenta/ciclo/SHA/etiquetas. Rechaza componentes, fases y propietarios ajenos.
 Regresión RED→GREEN y87 controles offline OK (7 opt-in, PostgreSQL probado aparte).
+Revalidación asistida del delta `a7341d79..0f1522e6`: APPROVE sin nuevos hallazgos;
+el revisor repitió la regresión de limpieza PASS y cotejó la prueba de cookies.
+Las ejecuciones de Docker y su evidencia pertenecen al implementador.
 
 [PR161](https://github.com/EconomiconFinOps/tfm-economicon/pull/161) conserva los
 resultados remotos por SHA y el estado de revisión. Los dictámenes humanos

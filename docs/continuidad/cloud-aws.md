@@ -23,8 +23,13 @@ Verificación propia24Oct: PostgreSQL16 real6PASS más manifiesto; controlador87
 TLS,401 anónimo, tres dashboards,19/1688, cookie segura, Origin público/Host de
 backend distintos, origen ajeno403 y preferencia persistida tras reinicio.
 Revisión asistida de `a7341d79` pidió corregir CSRF y limpieza de bootstrap
-monitoring huérfano; ambos reproducidos RED→GREEN. CI del candidato final y
-revalidación incremental en curso; los dos dictámenes humanos siguen pendientes.
+monitoring huérfano; ambos reproducidos RED→GREEN. Revalidación asistida del delta
+`a7341d79..0f1522e6`: APPROVE, sin nuevos hallazgos; focal de limpieza repetido por
+el revisor PASS, smoke verificado por el implementador. CI anteriora7341d79
+[push40094121176](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/40094121176),
+[PR40094206962](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/40094206962)
+y SQL40094206943 SUCCESS; CI del candidato final en curso. Los dos dictámenes
+humanos siguen pendientes; la revalidación asistida no los sustituye.
 Detalles y límites: [evidencia](../evidence/JUP-131-atlas-ecs.md),
 [plan](../planning/2026-10-24-jup131-atlas-ecs.md) y [runbook](../deployment/aws-defensa.md).
 

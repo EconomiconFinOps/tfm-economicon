@@ -19,7 +19,7 @@
     },
     "monitoring": {
       "path": "docs/evidence/JUP-131-atlas-ecs.md",
-      "sha256": "bb752843467fb89486944e16a41002ad30618f4d82cf54667b848896f2b31483"
+      "sha256": "fc5b3aee510ea5857797c902179f39d9e821c35710d2c93f91b5ab632171c059"
     }
   },
   "bootstrap": [

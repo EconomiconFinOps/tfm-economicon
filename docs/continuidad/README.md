@@ -3,7 +3,7 @@
 24Oct: integración Atlas preparada en PR161: carga aditiva privada, Grafana y
 Prometheus en ECS, tres dashboards y19/1688 conservados. PostgreSQL real,
 Grafana con cookies/TLS/reinicio y Terraform13 PASS. Revisión asistida detectó
-dos fallos ya corregidos; CI del candidato final y dictámenes humanos pendientes.
+dos fallos corregidos y revalidó el delta0f1522e6; CI final y dictámenes humanos pendientes.
 Techo30EUR; tres ciclos de2h exceden el presupuesto. Sin despliegue. Ver [cloud-aws.md](cloud-aws.md).
 
 24Oct: sesiónAWS recuperada; Fargate Irlanda aplicada0 y sin nueva respuestaAWS.
