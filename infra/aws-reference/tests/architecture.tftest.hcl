@@ -52,7 +52,8 @@ run "application_activation_requires_adaptation" {
   expect_failures = [
     aws_ecs_task_definition.application["backend"],
     aws_ecs_task_definition.application["processor"],
-    aws_ecs_task_definition.application["azure-cost-api"]
+    aws_ecs_task_definition.application["azure-cost-api"],
+    aws_ecs_task_definition.monitoring[0]
   ]
 }
 
@@ -89,10 +90,27 @@ run "adapted_workload_shape" {
     target = aws_ecr_repository.application["azure-cost-api"]
     values = { repository_url = "123456789012.dkr.ecr.eu-west-1.amazonaws.com/economicon-reference/azure-cost-api" }
   }
+  override_resource {
+    target          = aws_ecr_repository.application["grafana"]
+    override_during = plan
+    values          = { repository_url = "123456789012.dkr.ecr.eu-west-1.amazonaws.com/economicon-reference/grafana" }
+  }
+  override_resource {
+    target          = aws_secretsmanager_secret.application["grafana"]
+    override_during = plan
+    values          = { arn = "arn:aws:secretsmanager:eu-west-1:123456789012:secret:synthetic-grafana-000000" }
+  }
+  override_resource {
+    target          = aws_db_instance.main["vectors"]
+    override_during = plan
+    values          = { address = "synthetic.eu-west-1.rds.amazonaws.com", master_user_secret = [{ secret_arn = "arn:aws:secretsmanager:eu-west-1:123456789012:secret:rds!db-synthetic-vectors", kms_key_id = "synthetic", secret_status = "active" }] }
+  }
   variables {
     deploy_applications              = true
     application_adaptations_verified = true
     container_images = {
+      grafana        = "123456789012.dkr.ecr.eu-west-1.amazonaws.com/economicon-reference/grafana@sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      prometheus     = "123456789012.dkr.ecr.eu-west-1.amazonaws.com/economicon-reference/grafana@sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
       backend        = "123456789012.dkr.ecr.eu-west-1.amazonaws.com/economicon-reference/backend@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
       processor      = "123456789012.dkr.ecr.eu-west-1.amazonaws.com/economicon-reference/processor@sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
       azure-cost-api = "123456789012.dkr.ecr.eu-west-1.amazonaws.com/economicon-reference/azure-cost-api@sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"

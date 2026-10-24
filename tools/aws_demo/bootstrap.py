@@ -22,7 +22,9 @@ except ImportError:
 
 ROOT = Path(__file__).resolve().parents[2]
 WORK = ROOT / '.work/aws-demo'
-COMPONENTS = ('backend', 'processor', 'azure-cost-api')
+COMPONENTS = ('backend', 'processor', 'azure-cost-api', 'grafana')
+MONITORING_KEYS = ('GF_DATABASE_PASSWORD', 'GF_SECURITY_ADMIN_PASSWORD',
+                   'GF_SECURITY_SECRET_KEY', 'GRAFANA_EVALUATION_DB_PASSWORD')
 
 
 class BootstrapControllerError(RuntimeError):
@@ -89,6 +91,7 @@ def ensure_runtime_secrets(client, config, outputs):
                       mq_passwords={name: secrets.token_hex(32) for name in ('backend', 'processor')},
                       chat_hmac_key=secrets.token_hex(32), auth_secret_key=secrets.token_hex(32),
                       azure_token=secrets.token_hex(32), skiptoken_key=secrets.token_hex(32),
+                      monitoring={key: secrets.token_hex(32) for key in MONITORING_KEYS},
                       smoke_user={'email': 'aws-defensa+' + config['cycle_id'] + '@example.com',
                                   'password': 'Ec1!' + secrets.token_hex(24)})
         _write_secret(client, bundle_arn, bundle, config, 'credentials-v1')
@@ -96,7 +99,11 @@ def ensure_runtime_secrets(client, config, outputs):
     for field in ['chat_hmac_key', 'auth_secret_key', 'azure_token', 'skiptoken_key']:
         check(isinstance(bundle.get(field), str) and re.fullmatch(r'[0-9a-f]{64}', bundle[field]))
     for component in COMPONENTS:
-        if component == 'azure-cost-api':
+        if component == 'grafana':
+            check(set(bundle.get('monitoring', {})) == set(MONITORING_KEYS))
+            check(all(isinstance(value, str) and re.fullmatch('[a-f0-9]{64}', value) for value in bundle['monitoring'].values()))
+            value = dict(identity, **bundle['monitoring'])
+        elif component == 'azure-cost-api':
             value = dict(identity, AZURE_COST_VALID_TOKENS=bundle['azure_token'], AZURE_COST_SKIPTOKEN_SECRET=bundle['skiptoken_key'])
         else:
             password = bundle['database_passwords'][component]
@@ -167,6 +174,7 @@ def main():
         tasks.run('backend', 'broker', payload)
         tasks.run('backend', 'fixtures', payload)
         tasks.run('processor', 'fixtures', payload)
+        tasks.run('backend', 'monitoring', payload)
         print(json.dumps({'phase': 'application-bootstrap', 'result': 'SUCCESS', 'application_ready': False}))
         return 0
     except Exception:

@@ -16,6 +16,10 @@
     "demo_data": {
       "path": "docs/evidence/JUP-131-aws-fixtures-checks.md",
       "sha256": "5475aa9eb7a9cfb537fd1ed24a63ca3c7150b1e535780167b53d26e193126a55"
+    },
+    "monitoring": {
+      "path": "docs/evidence/JUP-131-atlas-ecs.md",
+      "sha256": "fc5b3aee510ea5857797c902179f39d9e821c35710d2c93f91b5ab632171c059"
     }
   },
   "bootstrap": [

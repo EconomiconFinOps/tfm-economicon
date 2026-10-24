@@ -1,5 +1,34 @@
 # Continuidad del proyecto
 
+24Oct: integración Atlas preparada en PR161: carga aditiva privada, Grafana y
+Prometheus en ECS, tres dashboards y19/1688 conservados. PostgreSQL real,
+Grafana con cookies/TLS/reinicio y Terraform13 PASS. Revisión asistida detectó
+dos fallos corregidos y revalidó el delta0f1522e6; CI final y dictámenes humanos pendientes.
+Techo30EUR; tres ciclos de2h exceden el presupuesto. Sin despliegue. Ver [cloud-aws.md](cloud-aws.md).
+
+24Oct: sesiónAWS recuperada; Fargate Irlanda aplicada0 y sin nueva respuestaAWS.
+Presupuesto creado30USD acumulados01Oct–01Dic, avisos50/80/100%; correo pendiente
+de verificar, sin apagado automático. Techo local del ensayo30EUR. Ver [cloud-aws.md](cloud-aws.md).
+
+Coste AWS actualizado el 22/10/2026: [costes-aws.md](costes-aws.md), cálculo
+mensual reproducible, escenarios temporales y borrador para el caso de negocio.
+Estado: estimación enviada a HAL para Lucía por autorización humana; no factura,
+despliegue ni benchmark.
+Acceso de evaluador22/10: fecha aclarada30Nov2026; usuario exclusivo de consola
+creado, lectura/MFA y caducidad de permisos configuradas. Credenciales privadas
+para entregar por el operador; primer login/MFA aún pendiente. Ver cloud-aws.
+Fargate23/10 08:36París: tras login humano, consola confirma aplicada0vCPU y
+solicitud6 en Caso abierto; el defaultAWS6 no es cuota asignada. Sin despliegue.
+Evidencia y caso en [cloud-aws.md](cloud-aws.md).
+Seguimiento23Oct12:24París enviado por web al caso179267775500075 con autorización
+humana, publicación verificada. Prioridad por defensa29Oct solicitada; pendiente
+respuesta/aprobación, sin upgrade, duplicados ni despliegue. Detalle en cloud-aws.
+Monitor23Oct activo cada hora en este chat para respuestaAWS/cuotaFargate;
+avisos sólo con cambios o intervención necesaria, sin despliegue. Requiere
+equipo/app activos y sesiónAWSválida. Identificador y baseline en cloud-aws.
+Antecedente Monitor24Oct13:10París (resuelto tras login): sesiónAWS caducada, primer aviso de login necesario;
+cuota y respuesta actuales desconocidas. Último efectivo0 del23Oct, sin despliegue.
+
 Resúmenes técnicos para retomar el trabajo. Trello conserva alcance, responsables
 y estado operativo; GitHub conserva código y revisiones; OpenSpec conserva
 requisitos y diseño. Este índice enlaza evidencia, no sustituye esas fuentes.
@@ -19,7 +48,7 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
 | [Landing pública](landing-publica.md) | JUP-140 R4 aprobado localmente; reconciliación develop 93624f77 y OpenSpec archivado con promociones/enlaces del 24/10. Evaluación independiente del cierre antes de publicar PR; pairing humano y CI definitiva pendientes. Imagen/medio intactos; reduce interactivo NOT_TESTED y globales históricos conservados. | 2026-10-24 |
-| [Despliegue AWS](cloud-aws.md) | Corrección de CI para PR154: evidencia histórica separada de readiness, guardas AWS conservadas y APT acotado; controlador73PASS/1SKIP. Publicación y CI remota pendientes. | 2026-10-23 |
+| [Despliegue AWS](cloud-aws.md) | Atlas/Grafana preparados en PR161, carga aditiva y pruebas locales PASS; CI final/revisiones pendientes. Presupuesto30EUR bloquea saldo desconocido; Fargate0 y avisos30USD según corte anterior24Oct, sin nueva consulta ni despliegue. | 2026-10-24 |
 | [Cortes de respuesta del chat](cortes-respuesta-chat.md) | JUP-135 integrada por squash f224226d en PR153, con excepcion humana de merge; CI tecnica previa conforme. Agregados de medicion comunicados y pendientes documentales conservados; sin aceptacion generativa nueva. | 2026-10-22 |
 | [Reevaluación de métricas del modelo](reevaluacion-metricas-modelo.md) | JUP-133: PR156 incorporó seis repeticiones y juez IA provisional; PR158 integrada en develop93624f77 corrige fixtures y altura. Evidencia ajena Linux1998PASS/0omisiones y OpenSpec92PASS, sin aceptación de campañas. La composición139 comprueba su delta por separado. | 2026-10-23 |
 | [Composición narrativa de evaluación](dashboard-evaluacion-composicion.md) | JUP-139: entrega R8 aprobada por Paris el 24/10; revisión y validación locales favorables, 137 medidas y 19/1688 conservados. Develop idéntico a 93624f77. OpenSpec archivado 24/10 con promoción de requisitos; evaluación del delta documental y publicación pendientes. Tres dashboards intactos, publicación y etapas humanas pendientes. | 2026-10-24 |

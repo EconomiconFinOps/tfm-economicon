@@ -45,7 +45,8 @@ def validate_config(config, actual_sha):
     require(stamp.tzinfo is not None and stamp.utcoffset().total_seconds() == 0, "expires_at must be UTC")
     for key in ("budget_eur", "estimated_cycle_eur", "available_credit_eur"):
         require(type(config.get(key)) in (int, float) and math.isfinite(config[key]) and config[key] > 0, "Set verified " + key)
-    require(config["estimated_cycle_eur"] <= min(config["budget_eur"], config["available_credit_eur"]) <= 60, "Cycle exceeds available budget")
+    require(config['budget_eur'] <= 30, 'Project budget cannot exceed 30 EUR')
+    require(config["estimated_cycle_eur"] <= min(config["budget_eur"], config["available_credit_eur"]), "Cycle exceeds verified remaining project budget")
     require(re.fullmatch(r"[0-9]+", config.get("ci_run_id", "")), "CI run required")
     recipe = PurePosixPath(config.get("release_recipe", ""))
     require(not recipe.is_absolute() and ".." not in recipe.parts and str(recipe).startswith("infra/aws-cicd/"), "Recipe must be versioned under infra/aws-cicd")
@@ -59,7 +60,7 @@ def validate_recipe(recipe):
     require(re.fullmatch(r"[a-f0-9]{64}", recipe.get("application_sha256", "")), "Accepted application tree hash required")
     evidence = recipe.get("evidence", {})
     require(isinstance(evidence, dict), "Evidence must be an object")
-    for key in ("postgresql", "cognito", "bedrock", "demo_data"):
+    for key in ("postgresql", "cognito", "bedrock", "demo_data", "monitoring"):
         require(isinstance(evidence.get(key), dict) and isinstance(evidence[key].get("sha256"), str)
                 and isinstance(evidence[key].get("path"), str), "Acceptance evidence missing: " + key)
         require(bool(re.fullmatch(r"[a-f0-9]{64}", evidence.get(key, {}).get("sha256", ""))), "Acceptance evidence missing: " + key)
@@ -213,7 +214,7 @@ def check_applications_plan(plan):
                for kind in ("aws_ecs_task_definition", "aws_ecs_service")
                for app in ("backend", "processor", "azure-cost-api")}
     allowed |= {'aws_iam_role_policy.bedrock["backend"]', 'aws_iam_role_policy.bedrock["processor"]',
-                'aws_iam_role_policy.bedrock_chat[0]'}
+                'aws_iam_role_policy.bedrock_chat[0]', 'aws_ecs_task_definition.monitoring[0]', 'aws_ecs_service.monitoring[0]'}
     for resource in plan.get("resource_changes", []):
         actions = resource["change"]["actions"]
         if actions == ["no-op"] or resource.get("mode") == "data" and actions == ["read"]:
@@ -236,7 +237,7 @@ def cleanup_inventory(state):
         address = resource["address"]
         if address in ('aws_s3_bucket.main["frontend"]', 'aws_s3_bucket.main["documents"]'):
             buckets.append(resource["values"]["id"])
-        if address in [f'aws_ecr_repository.application["{name}"]' for name in ("backend", "processor", "azure-cost-api")]:
+        if address in [f'aws_ecr_repository.application["{name}"]' for name in ("backend", "processor", "azure-cost-api", "grafana")]:
             repos.append(resource["values"]["name"])
     return {"buckets": buckets, "repositories": repos}
 

@@ -11,7 +11,7 @@
   "postgres_version": "REPLACE_VERIFIED_ENGINE_VERSION",
   "rabbitmq_version": "REPLACE_VERIFIED_ENGINE_VERSION",
   "expires_at": "2026-10-23T18:00:00Z",
-  "budget_eur": 60,
+  "budget_eur": 30,
   "available_credit_eur": 0,
   "estimated_cycle_eur": 0,
   "ci_run_id": "REPLACE_SUCCESSFUL_CI_RUN",

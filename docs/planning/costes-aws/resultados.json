@@ -1,0 +1,2483 @@
+{
+  "date": "2026-10-22",
+  "source_commit": "8e879dae3f23d52f46ea2b625ca1f2eebd22cd4a",
+  "assumptions": "README.md",
+  "fx": {
+    "usd_per_eur": "1.1205",
+    "date": "2026-10-22",
+    "source": "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/eurofxref-graph-usd.en.html",
+    "method": "read official daily table via web; EUR = USD / rate"
+  },
+  "scenarios": [
+    {
+      "name": "referencia_ha_730h",
+      "hours": "730",
+      "cycles": 1,
+      "ha": true,
+      "variable_scale": "1",
+      "totals_usd": {
+        "infra_fija": "1234.8163000000",
+        "datos_almacenados": "0.7600000000",
+        "operacion_variable": "29.590000000000",
+        "ingesta_variable": "0.0900000000",
+        "red_variable": "11.8800000000",
+        "cicd_variable": "8.8000000000",
+        "ia_variable": "3.0600400000"
+      },
+      "total_usd": "1288.996340000000",
+      "total_eur": "1150.376028558679161088799643",
+      "total_eur_plus_20pct_contingency": "1380.451234270414993306559572",
+      "rows": [
+        {
+          "category": "infra_fija",
+          "item": "Fargate vCPU",
+          "quantity": "2190",
+          "usd_rate": "0.0404800000",
+          "price_key": "cpu",
+          "usd": "88.6512000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Fargate GiB",
+          "quantity": "4380",
+          "usd_rate": "0.0044450000",
+          "price_key": "memory",
+          "usd": "19.4691000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RDS dos bases (standby incluido en precio HA)",
+          "quantity": "1460",
+          "usd_rate": "0.1380000000",
+          "price_key": "rds_ha",
+          "usd": "201.4800000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RDS GP3 40 GB lógicos",
+          "quantity": "40",
+          "usd_rate": "0.2540000000",
+          "price_key": "rds_disk_ha",
+          "usd": "10.1600000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RabbitMQ cluster completo o broker único",
+          "quantity": "730",
+          "usd_rate": "0.9630000000",
+          "price_key": "mq_ha",
+          "usd": "702.9900000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RabbitMQ EBS 200 GB por nodo",
+          "quantity": "600",
+          "usd_rate": "0.1100000000",
+          "price_key": "mq_disk",
+          "usd": "66.0000000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "NAT Gateway",
+          "quantity": "2190",
+          "usd_rate": "0.0480000000",
+          "price_key": "nat",
+          "usd": "105.1200000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "IPv4 NAT",
+          "quantity": "2190",
+          "usd_rate": "0.0050000000",
+          "price_key": "ipv4",
+          "usd": "10.9500000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "ALB interno",
+          "quantity": "730",
+          "usd_rate": "0.0252000000",
+          "price_key": "alb",
+          "usd": "18.3960000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "WAF ACL",
+          "quantity": "1",
+          "usd_rate": "5",
+          "price_key": "waf_acl",
+          "usd": "5"
+        },
+        {
+          "category": "infra_fija",
+          "item": "WAF una regla",
+          "quantity": "1",
+          "usd_rate": "1",
+          "price_key": "waf_rule",
+          "usd": "1"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Route53 pública persistente",
+          "quantity": "1",
+          "usd_rate": "0.5",
+          "price_key": "zone",
+          "usd": "0.5"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Route53 privada (mes sin prorrateo por ciclo)",
+          "quantity": "1",
+          "usd_rate": "0.5",
+          "price_key": "zone",
+          "usd": "0.5"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Cloud Map registros processor y azure-cost-api",
+          "quantity": "4",
+          "usd_rate": "0.1",
+          "price_key": "cloudmap",
+          "usd": "0.4"
+        },
+        {
+          "category": "infra_fija",
+          "item": "KMS una versión; demo reserva mes completo",
+          "quantity": "1",
+          "usd_rate": "1.0000000000",
+          "price_key": "key",
+          "usd": "1.0000000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Secrets 6 runtime prorrateados + 2 control persistentes",
+          "quantity": "8",
+          "usd_rate": "0.4000000000",
+          "price_key": "secret",
+          "usd": "3.2000000000"
+        },
+        {
+          "category": "datos_almacenados",
+          "item": "S3 app+control incluyendo versiones GB-mes",
+          "quantity": "20",
+          "usd_rate": "0.0230000000",
+          "price_key": "s3_storage",
+          "usd": "0.4600000000"
+        },
+        {
+          "category": "datos_almacenados",
+          "item": "ECR retención 3 GB-mes",
+          "quantity": "3",
+          "usd_rate": "0.1",
+          "price_key": "ecr",
+          "usd": "0.3"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Logs ingeridos GB (incluye observabilidad ECS)",
+          "quantity": "10",
+          "usd_rate": "0.5700000000",
+          "price_key": "log_ingest",
+          "usd": "5.7000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Logs retenidos GB-mes",
+          "quantity": "5",
+          "usd_rate": "0.0300000000",
+          "price_key": "log_storage",
+          "usd": "0.1500000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Métricas custom/Container Insights equivalentes",
+          "quantity": "60",
+          "usd_rate": "0.3000000000",
+          "price_key": "metric",
+          "usd": "18.0000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Alarmas estándar",
+          "quantity": "3",
+          "usd_rate": "0.1000000000",
+          "price_key": "alarm",
+          "usd": "0.3000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "ALB 0.25 LCU promedio",
+          "quantity": "182.50",
+          "usd_rate": "0.0080000000",
+          "price_key": "lcu",
+          "usd": "1.460000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Cognito Essentials MAU",
+          "quantity": "100",
+          "usd_rate": "0.0150000000",
+          "price_key": "mau",
+          "usd": "1.5000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "DNS consultas",
+          "quantity": "1000000",
+          "usd_rate": "4E-7",
+          "price_key": "dns",
+          "usd": "0.4000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Secrets API requests",
+          "quantity": "10000",
+          "usd_rate": "0.0000050000",
+          "price_key": "secret_request",
+          "usd": "0.0500000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "KMS requests",
+          "quantity": "10000",
+          "usd_rate": "0.0000030000",
+          "price_key": "key_request",
+          "usd": "0.0300000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Reserva control DDB PITR/SNS/SQS/Scheduler y logs París USD",
+          "quantity": "1",
+          "usd_rate": "2",
+          "price_key": "assumption",
+          "usd": "2"
+        },
+        {
+          "category": "ingesta_variable",
+          "item": "S3 PUT/COPY/LIST operaciones",
+          "quantity": "10000",
+          "usd_rate": "0.0000050000",
+          "price_key": "s3_put",
+          "usd": "0.0500000000"
+        },
+        {
+          "category": "ingesta_variable",
+          "item": "S3 GET operaciones",
+          "quantity": "100000",
+          "usd_rate": "4.000E-7",
+          "price_key": "s3_get",
+          "usd": "0.0400000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "CloudFront egress a Europa GB",
+          "quantity": "100",
+          "usd_rate": "0.0850000000",
+          "price_key": "cf_egress",
+          "usd": "8.5000000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "CloudFront HTTPS requests",
+          "quantity": "1000000",
+          "usd_rate": "0.0000012000",
+          "price_key": "cf_request",
+          "usd": "1.2000000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "CloudFront Function (una por petición)",
+          "quantity": "1000000",
+          "usd_rate": "1.000E-7",
+          "price_key": "cf_function",
+          "usd": "0.1000000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "WAF requests",
+          "quantity": "1000000",
+          "usd_rate": "6E-7",
+          "price_key": "waf_request",
+          "usd": "0.6000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "NAT GB procesados (incluye pulls/Bedrock)",
+          "quantity": "10",
+          "usd_rate": "0.0480000000",
+          "price_key": "nat_gb",
+          "usd": "0.4800000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "Reserva transferencia interAZ/interregión USD",
+          "quantity": "1",
+          "usd_rate": "1",
+          "price_key": "assumption",
+          "usd": "1"
+        },
+        {
+          "category": "cicd_variable",
+          "item": "CodeBuild minutos: 180 por ciclo up+down",
+          "quantity": "720",
+          "usd_rate": "0.0100000000",
+          "price_key": "build",
+          "usd": "7.2000000000"
+        },
+        {
+          "category": "cicd_variable",
+          "item": "CodePipeline V2 action-minutes: 200 por ciclo",
+          "quantity": "800",
+          "usd_rate": "0.002",
+          "price_key": "pipeline",
+          "usd": "1.600"
+        },
+        {
+          "category": "ia_variable",
+          "item": "Nova Micro entrada millones tokens agregados",
+          "quantity": "50000",
+          "usd_rate": "0.0000400000",
+          "price_key": "llm_input_1k",
+          "usd": "2.0000000000"
+        },
+        {
+          "category": "ia_variable",
+          "item": "Nova Micro salida millones tokens agregados",
+          "quantity": "5000",
+          "usd_rate": "0.0001600000",
+          "price_key": "llm_output_1k",
+          "usd": "0.8000000000"
+        },
+        {
+          "category": "ia_variable",
+          "item": "Titan V2 embeddings millones tokens",
+          "quantity": "10000",
+          "usd_rate": "0.0000260040",
+          "price_key": "embedding_1k",
+          "usd": "0.2600400000"
+        }
+      ]
+    },
+    {
+      "name": "piloto_single_az_730h",
+      "hours": "730",
+      "cycles": 1,
+      "ha": false,
+      "variable_scale": "1",
+      "totals_usd": {
+        "infra_fija": "484.6961500000",
+        "datos_almacenados": "0.7600000000",
+        "operacion_variable": "29.590000000000",
+        "ingesta_variable": "0.0900000000",
+        "red_variable": "11.8800000000",
+        "cicd_variable": "8.8000000000",
+        "ia_variable": "3.0600400000"
+      },
+      "total_usd": "538.876190000000",
+      "total_eur": "480.9247568049977688531905399",
+      "total_eur_plus_20pct_contingency": "577.1097081659973226238286479",
+      "rows": [
+        {
+          "category": "infra_fija",
+          "item": "Fargate vCPU",
+          "quantity": "1095",
+          "usd_rate": "0.0404800000",
+          "price_key": "cpu",
+          "usd": "44.3256000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Fargate GiB",
+          "quantity": "2190",
+          "usd_rate": "0.0044450000",
+          "price_key": "memory",
+          "usd": "9.7345500000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RDS dos bases (standby incluido en precio HA)",
+          "quantity": "1460",
+          "usd_rate": "0.0690000000",
+          "price_key": "rds_single",
+          "usd": "100.7400000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RDS GP3 40 GB lógicos",
+          "quantity": "40",
+          "usd_rate": "0.1270000000",
+          "price_key": "rds_disk_single",
+          "usd": "5.0800000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RabbitMQ cluster completo o broker único",
+          "quantity": "730",
+          "usd_rate": "0.3210000000",
+          "price_key": "mq_single",
+          "usd": "234.3300000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RabbitMQ EBS 200 GB por nodo",
+          "quantity": "200",
+          "usd_rate": "0.1100000000",
+          "price_key": "mq_disk",
+          "usd": "22.0000000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "NAT Gateway",
+          "quantity": "730",
+          "usd_rate": "0.0480000000",
+          "price_key": "nat",
+          "usd": "35.0400000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "IPv4 NAT",
+          "quantity": "730",
+          "usd_rate": "0.0050000000",
+          "price_key": "ipv4",
+          "usd": "3.6500000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "ALB interno",
+          "quantity": "730",
+          "usd_rate": "0.0252000000",
+          "price_key": "alb",
+          "usd": "18.3960000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "WAF ACL",
+          "quantity": "1",
+          "usd_rate": "5",
+          "price_key": "waf_acl",
+          "usd": "5"
+        },
+        {
+          "category": "infra_fija",
+          "item": "WAF una regla",
+          "quantity": "1",
+          "usd_rate": "1",
+          "price_key": "waf_rule",
+          "usd": "1"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Route53 pública persistente",
+          "quantity": "1",
+          "usd_rate": "0.5",
+          "price_key": "zone",
+          "usd": "0.5"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Route53 privada (mes sin prorrateo por ciclo)",
+          "quantity": "1",
+          "usd_rate": "0.5",
+          "price_key": "zone",
+          "usd": "0.5"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Cloud Map registros processor y azure-cost-api",
+          "quantity": "2",
+          "usd_rate": "0.1",
+          "price_key": "cloudmap",
+          "usd": "0.2"
+        },
+        {
+          "category": "infra_fija",
+          "item": "KMS una versión; demo reserva mes completo",
+          "quantity": "1",
+          "usd_rate": "1.0000000000",
+          "price_key": "key",
+          "usd": "1.0000000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Secrets 6 runtime prorrateados + 2 control persistentes",
+          "quantity": "8",
+          "usd_rate": "0.4000000000",
+          "price_key": "secret",
+          "usd": "3.2000000000"
+        },
+        {
+          "category": "datos_almacenados",
+          "item": "S3 app+control incluyendo versiones GB-mes",
+          "quantity": "20",
+          "usd_rate": "0.0230000000",
+          "price_key": "s3_storage",
+          "usd": "0.4600000000"
+        },
+        {
+          "category": "datos_almacenados",
+          "item": "ECR retención 3 GB-mes",
+          "quantity": "3",
+          "usd_rate": "0.1",
+          "price_key": "ecr",
+          "usd": "0.3"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Logs ingeridos GB (incluye observabilidad ECS)",
+          "quantity": "10",
+          "usd_rate": "0.5700000000",
+          "price_key": "log_ingest",
+          "usd": "5.7000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Logs retenidos GB-mes",
+          "quantity": "5",
+          "usd_rate": "0.0300000000",
+          "price_key": "log_storage",
+          "usd": "0.1500000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Métricas custom/Container Insights equivalentes",
+          "quantity": "60",
+          "usd_rate": "0.3000000000",
+          "price_key": "metric",
+          "usd": "18.0000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Alarmas estándar",
+          "quantity": "3",
+          "usd_rate": "0.1000000000",
+          "price_key": "alarm",
+          "usd": "0.3000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "ALB 0.25 LCU promedio",
+          "quantity": "182.50",
+          "usd_rate": "0.0080000000",
+          "price_key": "lcu",
+          "usd": "1.460000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Cognito Essentials MAU",
+          "quantity": "100",
+          "usd_rate": "0.0150000000",
+          "price_key": "mau",
+          "usd": "1.5000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "DNS consultas",
+          "quantity": "1000000",
+          "usd_rate": "4E-7",
+          "price_key": "dns",
+          "usd": "0.4000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Secrets API requests",
+          "quantity": "10000",
+          "usd_rate": "0.0000050000",
+          "price_key": "secret_request",
+          "usd": "0.0500000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "KMS requests",
+          "quantity": "10000",
+          "usd_rate": "0.0000030000",
+          "price_key": "key_request",
+          "usd": "0.0300000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Reserva control DDB PITR/SNS/SQS/Scheduler y logs París USD",
+          "quantity": "1",
+          "usd_rate": "2",
+          "price_key": "assumption",
+          "usd": "2"
+        },
+        {
+          "category": "ingesta_variable",
+          "item": "S3 PUT/COPY/LIST operaciones",
+          "quantity": "10000",
+          "usd_rate": "0.0000050000",
+          "price_key": "s3_put",
+          "usd": "0.0500000000"
+        },
+        {
+          "category": "ingesta_variable",
+          "item": "S3 GET operaciones",
+          "quantity": "100000",
+          "usd_rate": "4.000E-7",
+          "price_key": "s3_get",
+          "usd": "0.0400000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "CloudFront egress a Europa GB",
+          "quantity": "100",
+          "usd_rate": "0.0850000000",
+          "price_key": "cf_egress",
+          "usd": "8.5000000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "CloudFront HTTPS requests",
+          "quantity": "1000000",
+          "usd_rate": "0.0000012000",
+          "price_key": "cf_request",
+          "usd": "1.2000000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "CloudFront Function (una por petición)",
+          "quantity": "1000000",
+          "usd_rate": "1.000E-7",
+          "price_key": "cf_function",
+          "usd": "0.1000000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "WAF requests",
+          "quantity": "1000000",
+          "usd_rate": "6E-7",
+          "price_key": "waf_request",
+          "usd": "0.6000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "NAT GB procesados (incluye pulls/Bedrock)",
+          "quantity": "10",
+          "usd_rate": "0.0480000000",
+          "price_key": "nat_gb",
+          "usd": "0.4800000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "Reserva transferencia interAZ/interregión USD",
+          "quantity": "1",
+          "usd_rate": "1",
+          "price_key": "assumption",
+          "usd": "1"
+        },
+        {
+          "category": "cicd_variable",
+          "item": "CodeBuild minutos: 180 por ciclo up+down",
+          "quantity": "720",
+          "usd_rate": "0.0100000000",
+          "price_key": "build",
+          "usd": "7.2000000000"
+        },
+        {
+          "category": "cicd_variable",
+          "item": "CodePipeline V2 action-minutes: 200 por ciclo",
+          "quantity": "800",
+          "usd_rate": "0.002",
+          "price_key": "pipeline",
+          "usd": "1.600"
+        },
+        {
+          "category": "ia_variable",
+          "item": "Nova Micro entrada millones tokens agregados",
+          "quantity": "50000",
+          "usd_rate": "0.0000400000",
+          "price_key": "llm_input_1k",
+          "usd": "2.0000000000"
+        },
+        {
+          "category": "ia_variable",
+          "item": "Nova Micro salida millones tokens agregados",
+          "quantity": "5000",
+          "usd_rate": "0.0001600000",
+          "price_key": "llm_output_1k",
+          "usd": "0.8000000000"
+        },
+        {
+          "category": "ia_variable",
+          "item": "Titan V2 embeddings millones tokens",
+          "quantity": "10000",
+          "usd_rate": "0.0000260040",
+          "price_key": "embedding_1k",
+          "usd": "0.2600400000"
+        }
+      ]
+    },
+    {
+      "name": "referencia_ha_demanda_x0.1",
+      "hours": "730",
+      "cycles": 1,
+      "ha": true,
+      "variable_scale": "0.1",
+      "totals_usd": {
+        "infra_fija": "1234.8163000000",
+        "datos_almacenados": "0.34600000000",
+        "operacion_variable": "5.0290000000000",
+        "ingesta_variable": "0.00900000000",
+        "red_variable": "2.08800000000",
+        "cicd_variable": "8.8000000000",
+        "ia_variable": "0.30600400000"
+      },
+      "total_usd": "1251.3943040000000",
+      "total_eur": "1116.817763498438197233377956",
+      "total_eur_plus_20pct_contingency": "1340.181316198125836680053547",
+      "rows": [
+        {
+          "category": "infra_fija",
+          "item": "Fargate vCPU",
+          "quantity": "2190",
+          "usd_rate": "0.0404800000",
+          "price_key": "cpu",
+          "usd": "88.6512000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Fargate GiB",
+          "quantity": "4380",
+          "usd_rate": "0.0044450000",
+          "price_key": "memory",
+          "usd": "19.4691000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RDS dos bases (standby incluido en precio HA)",
+          "quantity": "1460",
+          "usd_rate": "0.1380000000",
+          "price_key": "rds_ha",
+          "usd": "201.4800000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RDS GP3 40 GB lógicos",
+          "quantity": "40",
+          "usd_rate": "0.2540000000",
+          "price_key": "rds_disk_ha",
+          "usd": "10.1600000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RabbitMQ cluster completo o broker único",
+          "quantity": "730",
+          "usd_rate": "0.9630000000",
+          "price_key": "mq_ha",
+          "usd": "702.9900000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RabbitMQ EBS 200 GB por nodo",
+          "quantity": "600",
+          "usd_rate": "0.1100000000",
+          "price_key": "mq_disk",
+          "usd": "66.0000000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "NAT Gateway",
+          "quantity": "2190",
+          "usd_rate": "0.0480000000",
+          "price_key": "nat",
+          "usd": "105.1200000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "IPv4 NAT",
+          "quantity": "2190",
+          "usd_rate": "0.0050000000",
+          "price_key": "ipv4",
+          "usd": "10.9500000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "ALB interno",
+          "quantity": "730",
+          "usd_rate": "0.0252000000",
+          "price_key": "alb",
+          "usd": "18.3960000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "WAF ACL",
+          "quantity": "1",
+          "usd_rate": "5",
+          "price_key": "waf_acl",
+          "usd": "5"
+        },
+        {
+          "category": "infra_fija",
+          "item": "WAF una regla",
+          "quantity": "1",
+          "usd_rate": "1",
+          "price_key": "waf_rule",
+          "usd": "1"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Route53 pública persistente",
+          "quantity": "1",
+          "usd_rate": "0.5",
+          "price_key": "zone",
+          "usd": "0.5"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Route53 privada (mes sin prorrateo por ciclo)",
+          "quantity": "1",
+          "usd_rate": "0.5",
+          "price_key": "zone",
+          "usd": "0.5"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Cloud Map registros processor y azure-cost-api",
+          "quantity": "4",
+          "usd_rate": "0.1",
+          "price_key": "cloudmap",
+          "usd": "0.4"
+        },
+        {
+          "category": "infra_fija",
+          "item": "KMS una versión; demo reserva mes completo",
+          "quantity": "1",
+          "usd_rate": "1.0000000000",
+          "price_key": "key",
+          "usd": "1.0000000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Secrets 6 runtime prorrateados + 2 control persistentes",
+          "quantity": "8",
+          "usd_rate": "0.4000000000",
+          "price_key": "secret",
+          "usd": "3.2000000000"
+        },
+        {
+          "category": "datos_almacenados",
+          "item": "S3 app+control incluyendo versiones GB-mes",
+          "quantity": "2.0",
+          "usd_rate": "0.0230000000",
+          "price_key": "s3_storage",
+          "usd": "0.04600000000"
+        },
+        {
+          "category": "datos_almacenados",
+          "item": "ECR retención 3 GB-mes",
+          "quantity": "3",
+          "usd_rate": "0.1",
+          "price_key": "ecr",
+          "usd": "0.3"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Logs ingeridos GB (incluye observabilidad ECS)",
+          "quantity": "1.0",
+          "usd_rate": "0.5700000000",
+          "price_key": "log_ingest",
+          "usd": "0.57000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Logs retenidos GB-mes",
+          "quantity": "0.5",
+          "usd_rate": "0.0300000000",
+          "price_key": "log_storage",
+          "usd": "0.01500000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Métricas custom/Container Insights equivalentes",
+          "quantity": "6.0",
+          "usd_rate": "0.3000000000",
+          "price_key": "metric",
+          "usd": "1.80000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Alarmas estándar",
+          "quantity": "3",
+          "usd_rate": "0.1000000000",
+          "price_key": "alarm",
+          "usd": "0.3000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "ALB 0.25 LCU promedio",
+          "quantity": "18.250",
+          "usd_rate": "0.0080000000",
+          "price_key": "lcu",
+          "usd": "0.1460000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Cognito Essentials MAU",
+          "quantity": "10.0",
+          "usd_rate": "0.0150000000",
+          "price_key": "mau",
+          "usd": "0.15000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "DNS consultas",
+          "quantity": "100000.0",
+          "usd_rate": "4E-7",
+          "price_key": "dns",
+          "usd": "0.04000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Secrets API requests",
+          "quantity": "1000.0",
+          "usd_rate": "0.0000050000",
+          "price_key": "secret_request",
+          "usd": "0.00500000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "KMS requests",
+          "quantity": "1000.0",
+          "usd_rate": "0.0000030000",
+          "price_key": "key_request",
+          "usd": "0.00300000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Reserva control DDB PITR/SNS/SQS/Scheduler y logs París USD",
+          "quantity": "1",
+          "usd_rate": "2",
+          "price_key": "assumption",
+          "usd": "2"
+        },
+        {
+          "category": "ingesta_variable",
+          "item": "S3 PUT/COPY/LIST operaciones",
+          "quantity": "1000.0",
+          "usd_rate": "0.0000050000",
+          "price_key": "s3_put",
+          "usd": "0.00500000000"
+        },
+        {
+          "category": "ingesta_variable",
+          "item": "S3 GET operaciones",
+          "quantity": "10000.0",
+          "usd_rate": "4.000E-7",
+          "price_key": "s3_get",
+          "usd": "0.00400000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "CloudFront egress a Europa GB",
+          "quantity": "10.0",
+          "usd_rate": "0.0850000000",
+          "price_key": "cf_egress",
+          "usd": "0.85000000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "CloudFront HTTPS requests",
+          "quantity": "100000.0",
+          "usd_rate": "0.0000012000",
+          "price_key": "cf_request",
+          "usd": "0.12000000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "CloudFront Function (una por petición)",
+          "quantity": "100000.0",
+          "usd_rate": "1.000E-7",
+          "price_key": "cf_function",
+          "usd": "0.01000000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "WAF requests",
+          "quantity": "100000.0",
+          "usd_rate": "6E-7",
+          "price_key": "waf_request",
+          "usd": "0.06000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "NAT GB procesados (incluye pulls/Bedrock)",
+          "quantity": "1.0",
+          "usd_rate": "0.0480000000",
+          "price_key": "nat_gb",
+          "usd": "0.04800000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "Reserva transferencia interAZ/interregión USD",
+          "quantity": "1",
+          "usd_rate": "1",
+          "price_key": "assumption",
+          "usd": "1"
+        },
+        {
+          "category": "cicd_variable",
+          "item": "CodeBuild minutos: 180 por ciclo up+down",
+          "quantity": "720",
+          "usd_rate": "0.0100000000",
+          "price_key": "build",
+          "usd": "7.2000000000"
+        },
+        {
+          "category": "cicd_variable",
+          "item": "CodePipeline V2 action-minutes: 200 por ciclo",
+          "quantity": "800",
+          "usd_rate": "0.002",
+          "price_key": "pipeline",
+          "usd": "1.600"
+        },
+        {
+          "category": "ia_variable",
+          "item": "Nova Micro entrada millones tokens agregados",
+          "quantity": "5000.0",
+          "usd_rate": "0.0000400000",
+          "price_key": "llm_input_1k",
+          "usd": "0.20000000000"
+        },
+        {
+          "category": "ia_variable",
+          "item": "Nova Micro salida millones tokens agregados",
+          "quantity": "500.0",
+          "usd_rate": "0.0001600000",
+          "price_key": "llm_output_1k",
+          "usd": "0.08000000000"
+        },
+        {
+          "category": "ia_variable",
+          "item": "Titan V2 embeddings millones tokens",
+          "quantity": "1000.0",
+          "usd_rate": "0.0000260040",
+          "price_key": "embedding_1k",
+          "usd": "0.02600400000"
+        }
+      ]
+    },
+    {
+      "name": "referencia_ha_demanda_x10",
+      "hours": "730",
+      "cycles": 1,
+      "ha": true,
+      "variable_scale": "10",
+      "totals_usd": {
+        "infra_fija": "1234.8163000000",
+        "datos_almacenados": "4.9000000000",
+        "operacion_variable": "275.200000000000",
+        "ingesta_variable": "0.9000000000",
+        "red_variable": "109.8000000000",
+        "cicd_variable": "8.8000000000",
+        "ia_variable": "30.6004000000"
+      },
+      "total_usd": "1665.016700000000",
+      "total_eur": "1485.958679161088799643016510",
+      "total_eur_plus_20pct_contingency": "1783.150414993306559571619812",
+      "rows": [
+        {
+          "category": "infra_fija",
+          "item": "Fargate vCPU",
+          "quantity": "2190",
+          "usd_rate": "0.0404800000",
+          "price_key": "cpu",
+          "usd": "88.6512000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Fargate GiB",
+          "quantity": "4380",
+          "usd_rate": "0.0044450000",
+          "price_key": "memory",
+          "usd": "19.4691000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RDS dos bases (standby incluido en precio HA)",
+          "quantity": "1460",
+          "usd_rate": "0.1380000000",
+          "price_key": "rds_ha",
+          "usd": "201.4800000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RDS GP3 40 GB lógicos",
+          "quantity": "40",
+          "usd_rate": "0.2540000000",
+          "price_key": "rds_disk_ha",
+          "usd": "10.1600000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RabbitMQ cluster completo o broker único",
+          "quantity": "730",
+          "usd_rate": "0.9630000000",
+          "price_key": "mq_ha",
+          "usd": "702.9900000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RabbitMQ EBS 200 GB por nodo",
+          "quantity": "600",
+          "usd_rate": "0.1100000000",
+          "price_key": "mq_disk",
+          "usd": "66.0000000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "NAT Gateway",
+          "quantity": "2190",
+          "usd_rate": "0.0480000000",
+          "price_key": "nat",
+          "usd": "105.1200000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "IPv4 NAT",
+          "quantity": "2190",
+          "usd_rate": "0.0050000000",
+          "price_key": "ipv4",
+          "usd": "10.9500000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "ALB interno",
+          "quantity": "730",
+          "usd_rate": "0.0252000000",
+          "price_key": "alb",
+          "usd": "18.3960000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "WAF ACL",
+          "quantity": "1",
+          "usd_rate": "5",
+          "price_key": "waf_acl",
+          "usd": "5"
+        },
+        {
+          "category": "infra_fija",
+          "item": "WAF una regla",
+          "quantity": "1",
+          "usd_rate": "1",
+          "price_key": "waf_rule",
+          "usd": "1"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Route53 pública persistente",
+          "quantity": "1",
+          "usd_rate": "0.5",
+          "price_key": "zone",
+          "usd": "0.5"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Route53 privada (mes sin prorrateo por ciclo)",
+          "quantity": "1",
+          "usd_rate": "0.5",
+          "price_key": "zone",
+          "usd": "0.5"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Cloud Map registros processor y azure-cost-api",
+          "quantity": "4",
+          "usd_rate": "0.1",
+          "price_key": "cloudmap",
+          "usd": "0.4"
+        },
+        {
+          "category": "infra_fija",
+          "item": "KMS una versión; demo reserva mes completo",
+          "quantity": "1",
+          "usd_rate": "1.0000000000",
+          "price_key": "key",
+          "usd": "1.0000000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Secrets 6 runtime prorrateados + 2 control persistentes",
+          "quantity": "8",
+          "usd_rate": "0.4000000000",
+          "price_key": "secret",
+          "usd": "3.2000000000"
+        },
+        {
+          "category": "datos_almacenados",
+          "item": "S3 app+control incluyendo versiones GB-mes",
+          "quantity": "200",
+          "usd_rate": "0.0230000000",
+          "price_key": "s3_storage",
+          "usd": "4.6000000000"
+        },
+        {
+          "category": "datos_almacenados",
+          "item": "ECR retención 3 GB-mes",
+          "quantity": "3",
+          "usd_rate": "0.1",
+          "price_key": "ecr",
+          "usd": "0.3"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Logs ingeridos GB (incluye observabilidad ECS)",
+          "quantity": "100",
+          "usd_rate": "0.5700000000",
+          "price_key": "log_ingest",
+          "usd": "57.0000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Logs retenidos GB-mes",
+          "quantity": "50",
+          "usd_rate": "0.0300000000",
+          "price_key": "log_storage",
+          "usd": "1.5000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Métricas custom/Container Insights equivalentes",
+          "quantity": "600",
+          "usd_rate": "0.3000000000",
+          "price_key": "metric",
+          "usd": "180.0000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Alarmas estándar",
+          "quantity": "3",
+          "usd_rate": "0.1000000000",
+          "price_key": "alarm",
+          "usd": "0.3000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "ALB 0.25 LCU promedio",
+          "quantity": "1825.00",
+          "usd_rate": "0.0080000000",
+          "price_key": "lcu",
+          "usd": "14.600000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Cognito Essentials MAU",
+          "quantity": "1000",
+          "usd_rate": "0.0150000000",
+          "price_key": "mau",
+          "usd": "15.0000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "DNS consultas",
+          "quantity": "10000000",
+          "usd_rate": "4E-7",
+          "price_key": "dns",
+          "usd": "4.0000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Secrets API requests",
+          "quantity": "100000",
+          "usd_rate": "0.0000050000",
+          "price_key": "secret_request",
+          "usd": "0.5000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "KMS requests",
+          "quantity": "100000",
+          "usd_rate": "0.0000030000",
+          "price_key": "key_request",
+          "usd": "0.3000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Reserva control DDB PITR/SNS/SQS/Scheduler y logs París USD",
+          "quantity": "1",
+          "usd_rate": "2",
+          "price_key": "assumption",
+          "usd": "2"
+        },
+        {
+          "category": "ingesta_variable",
+          "item": "S3 PUT/COPY/LIST operaciones",
+          "quantity": "100000",
+          "usd_rate": "0.0000050000",
+          "price_key": "s3_put",
+          "usd": "0.5000000000"
+        },
+        {
+          "category": "ingesta_variable",
+          "item": "S3 GET operaciones",
+          "quantity": "1000000",
+          "usd_rate": "4.000E-7",
+          "price_key": "s3_get",
+          "usd": "0.4000000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "CloudFront egress a Europa GB",
+          "quantity": "1000",
+          "usd_rate": "0.0850000000",
+          "price_key": "cf_egress",
+          "usd": "85.0000000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "CloudFront HTTPS requests",
+          "quantity": "10000000",
+          "usd_rate": "0.0000012000",
+          "price_key": "cf_request",
+          "usd": "12.0000000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "CloudFront Function (una por petición)",
+          "quantity": "10000000",
+          "usd_rate": "1.000E-7",
+          "price_key": "cf_function",
+          "usd": "1.0000000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "WAF requests",
+          "quantity": "10000000",
+          "usd_rate": "6E-7",
+          "price_key": "waf_request",
+          "usd": "6.0000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "NAT GB procesados (incluye pulls/Bedrock)",
+          "quantity": "100",
+          "usd_rate": "0.0480000000",
+          "price_key": "nat_gb",
+          "usd": "4.8000000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "Reserva transferencia interAZ/interregión USD",
+          "quantity": "1",
+          "usd_rate": "1",
+          "price_key": "assumption",
+          "usd": "1"
+        },
+        {
+          "category": "cicd_variable",
+          "item": "CodeBuild minutos: 180 por ciclo up+down",
+          "quantity": "720",
+          "usd_rate": "0.0100000000",
+          "price_key": "build",
+          "usd": "7.2000000000"
+        },
+        {
+          "category": "cicd_variable",
+          "item": "CodePipeline V2 action-minutes: 200 por ciclo",
+          "quantity": "800",
+          "usd_rate": "0.002",
+          "price_key": "pipeline",
+          "usd": "1.600"
+        },
+        {
+          "category": "ia_variable",
+          "item": "Nova Micro entrada millones tokens agregados",
+          "quantity": "500000",
+          "usd_rate": "0.0000400000",
+          "price_key": "llm_input_1k",
+          "usd": "20.0000000000"
+        },
+        {
+          "category": "ia_variable",
+          "item": "Nova Micro salida millones tokens agregados",
+          "quantity": "50000",
+          "usd_rate": "0.0001600000",
+          "price_key": "llm_output_1k",
+          "usd": "8.0000000000"
+        },
+        {
+          "category": "ia_variable",
+          "item": "Titan V2 embeddings millones tokens",
+          "quantity": "100000",
+          "usd_rate": "0.0000260040",
+          "price_key": "embedding_1k",
+          "usd": "2.6004000000"
+        }
+      ]
+    },
+    {
+      "name": "demo_3_ciclos_2h",
+      "hours": "6",
+      "cycles": 3,
+      "ha": true,
+      "variable_scale": "1",
+      "totals_usd": {
+        "infra_fija": "13.92616136986301369863013698",
+        "datos_almacenados": "0.3460000000",
+        "operacion_variable": "2.849410958904109589041095890",
+        "ingesta_variable": "0.0090000000",
+        "red_variable": "1.3440000000",
+        "cicd_variable": "6.6000000000",
+        "ia_variable": "0.08200400000",
+        "residuos_reserva": "5"
+      },
+      "total_usd": "30.15657632876712328767123287",
+      "total_eur": "26.91349962406704443344152867",
+      "total_eur_plus_20pct_contingency": "32.29619954888045332012983440",
+      "rows": [
+        {
+          "category": "infra_fija",
+          "item": "Fargate vCPU",
+          "quantity": "18",
+          "usd_rate": "0.0404800000",
+          "price_key": "cpu",
+          "usd": "0.7286400000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Fargate GiB",
+          "quantity": "36",
+          "usd_rate": "0.0044450000",
+          "price_key": "memory",
+          "usd": "0.1600200000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RDS dos bases (standby incluido en precio HA)",
+          "quantity": "12",
+          "usd_rate": "0.1380000000",
+          "price_key": "rds_ha",
+          "usd": "1.6560000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RDS GP3 40 GB lógicos",
+          "quantity": "0.3287671232876712328767123288",
+          "usd_rate": "0.2540000000",
+          "price_key": "rds_disk_ha",
+          "usd": "0.08350684931506849315068493152"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RabbitMQ cluster completo o broker único",
+          "quantity": "6",
+          "usd_rate": "0.9630000000",
+          "price_key": "mq_ha",
+          "usd": "5.7780000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RabbitMQ EBS 200 GB por nodo",
+          "quantity": "4.931506849315068493150684932",
+          "usd_rate": "0.1100000000",
+          "price_key": "mq_disk",
+          "usd": "0.5424657534246575342465753425"
+        },
+        {
+          "category": "infra_fija",
+          "item": "NAT Gateway",
+          "quantity": "18",
+          "usd_rate": "0.0480000000",
+          "price_key": "nat",
+          "usd": "0.8640000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "IPv4 NAT",
+          "quantity": "18",
+          "usd_rate": "0.0050000000",
+          "price_key": "ipv4",
+          "usd": "0.0900000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "ALB interno",
+          "quantity": "6",
+          "usd_rate": "0.0252000000",
+          "price_key": "alb",
+          "usd": "0.1512000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "WAF ACL",
+          "quantity": "0.008219178082191780821917808219",
+          "usd_rate": "5",
+          "price_key": "waf_acl",
+          "usd": "0.04109589041095890410958904110"
+        },
+        {
+          "category": "infra_fija",
+          "item": "WAF una regla",
+          "quantity": "0.008219178082191780821917808219",
+          "usd_rate": "1",
+          "price_key": "waf_rule",
+          "usd": "0.008219178082191780821917808219"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Route53 pública persistente",
+          "quantity": "1",
+          "usd_rate": "0.5",
+          "price_key": "zone",
+          "usd": "0.5"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Route53 privada (mes sin prorrateo por ciclo)",
+          "quantity": "3",
+          "usd_rate": "0.5",
+          "price_key": "zone",
+          "usd": "1.5"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Cloud Map registros processor y azure-cost-api",
+          "quantity": "0.03287671232876712328767123288",
+          "usd_rate": "0.1",
+          "price_key": "cloudmap",
+          "usd": "0.003287671232876712328767123288"
+        },
+        {
+          "category": "infra_fija",
+          "item": "KMS una versión; demo reserva mes completo",
+          "quantity": "1",
+          "usd_rate": "1.0000000000",
+          "price_key": "key",
+          "usd": "1.0000000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Secrets 6 runtime prorrateados + 2 control persistentes",
+          "quantity": "2.049315068493150684931506849",
+          "usd_rate": "0.4000000000",
+          "price_key": "secret",
+          "usd": "0.8197260273972602739726027396"
+        },
+        {
+          "category": "datos_almacenados",
+          "item": "S3 app+control incluyendo versiones GB-mes",
+          "quantity": "2",
+          "usd_rate": "0.0230000000",
+          "price_key": "s3_storage",
+          "usd": "0.0460000000"
+        },
+        {
+          "category": "datos_almacenados",
+          "item": "ECR retención 3 GB-mes",
+          "quantity": "3",
+          "usd_rate": "0.1",
+          "price_key": "ecr",
+          "usd": "0.3"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Logs ingeridos GB (incluye observabilidad ECS)",
+          "quantity": "1",
+          "usd_rate": "0.5700000000",
+          "price_key": "log_ingest",
+          "usd": "0.5700000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Logs retenidos GB-mes",
+          "quantity": "1",
+          "usd_rate": "0.0300000000",
+          "price_key": "log_storage",
+          "usd": "0.0300000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Métricas custom/Container Insights equivalentes",
+          "quantity": "0.4931506849315068493150684932",
+          "usd_rate": "0.3000000000",
+          "price_key": "metric",
+          "usd": "0.1479452054794520547945205480"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Alarmas estándar",
+          "quantity": "0.02465753424657534246575342466",
+          "usd_rate": "0.1000000000",
+          "price_key": "alarm",
+          "usd": "0.002465753424657534246575342466"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "ALB 0.25 LCU promedio",
+          "quantity": "1.50",
+          "usd_rate": "0.0080000000",
+          "price_key": "lcu",
+          "usd": "0.012000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Cognito Essentials MAU",
+          "quantity": "5",
+          "usd_rate": "0.0150000000",
+          "price_key": "mau",
+          "usd": "0.0750000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "DNS consultas",
+          "quantity": "10000",
+          "usd_rate": "4E-7",
+          "price_key": "dns",
+          "usd": "0.0040000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Secrets API requests",
+          "quantity": "1000",
+          "usd_rate": "0.0000050000",
+          "price_key": "secret_request",
+          "usd": "0.0050000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "KMS requests",
+          "quantity": "1000",
+          "usd_rate": "0.0000030000",
+          "price_key": "key_request",
+          "usd": "0.0030000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Reserva control DDB PITR/SNS/SQS/Scheduler y logs París USD",
+          "quantity": "1",
+          "usd_rate": "2",
+          "price_key": "assumption",
+          "usd": "2"
+        },
+        {
+          "category": "ingesta_variable",
+          "item": "S3 PUT/COPY/LIST operaciones",
+          "quantity": "1000",
+          "usd_rate": "0.0000050000",
+          "price_key": "s3_put",
+          "usd": "0.0050000000"
+        },
+        {
+          "category": "ingesta_variable",
+          "item": "S3 GET operaciones",
+          "quantity": "10000",
+          "usd_rate": "4.000E-7",
+          "price_key": "s3_get",
+          "usd": "0.0040000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "CloudFront egress a Europa GB",
+          "quantity": "1",
+          "usd_rate": "0.0850000000",
+          "price_key": "cf_egress",
+          "usd": "0.0850000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "CloudFront HTTPS requests",
+          "quantity": "10000",
+          "usd_rate": "0.0000012000",
+          "price_key": "cf_request",
+          "usd": "0.0120000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "CloudFront Function (una por petición)",
+          "quantity": "10000",
+          "usd_rate": "1.000E-7",
+          "price_key": "cf_function",
+          "usd": "0.0010000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "WAF requests",
+          "quantity": "10000",
+          "usd_rate": "6E-7",
+          "price_key": "waf_request",
+          "usd": "0.0060000"
+        },
+        {
+          "category": "red_variable",
+          "item": "NAT GB procesados (incluye pulls/Bedrock)",
+          "quantity": "5",
+          "usd_rate": "0.0480000000",
+          "price_key": "nat_gb",
+          "usd": "0.2400000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "Reserva transferencia interAZ/interregión USD",
+          "quantity": "1",
+          "usd_rate": "1",
+          "price_key": "assumption",
+          "usd": "1"
+        },
+        {
+          "category": "cicd_variable",
+          "item": "CodeBuild minutos: 180 por ciclo up+down",
+          "quantity": "540",
+          "usd_rate": "0.0100000000",
+          "price_key": "build",
+          "usd": "5.4000000000"
+        },
+        {
+          "category": "cicd_variable",
+          "item": "CodePipeline V2 action-minutes: 200 por ciclo",
+          "quantity": "600",
+          "usd_rate": "0.002",
+          "price_key": "pipeline",
+          "usd": "1.200"
+        },
+        {
+          "category": "ia_variable",
+          "item": "Nova Micro entrada millones tokens agregados",
+          "quantity": "1000",
+          "usd_rate": "0.0000400000",
+          "price_key": "llm_input_1k",
+          "usd": "0.0400000000"
+        },
+        {
+          "category": "ia_variable",
+          "item": "Nova Micro salida millones tokens agregados",
+          "quantity": "100.0",
+          "usd_rate": "0.0001600000",
+          "price_key": "llm_output_1k",
+          "usd": "0.01600000000"
+        },
+        {
+          "category": "ia_variable",
+          "item": "Titan V2 embeddings millones tokens",
+          "quantity": "1000",
+          "usd_rate": "0.0000260040",
+          "price_key": "embedding_1k",
+          "usd": "0.0260040000"
+        },
+        {
+          "category": "residuos_reserva",
+          "item": "Reserva adicional tras destroy USD (no límite)",
+          "quantity": "1",
+          "usd_rate": "5",
+          "price_key": "assumption",
+          "usd": "5"
+        }
+      ]
+    },
+    {
+      "name": "demo_3_ciclos_4h",
+      "hours": "12",
+      "cycles": 3,
+      "ha": true,
+      "variable_scale": "1",
+      "totals_usd": {
+        "infra_fija": "24.05232273972602739726027397",
+        "datos_almacenados": "0.3460000000",
+        "operacion_variable": "3.011821917808219178082191781",
+        "ingesta_variable": "0.0090000000",
+        "red_variable": "1.3440000000",
+        "cicd_variable": "6.6000000000",
+        "ia_variable": "0.08200400000",
+        "residuos_reserva": "5"
+      },
+      "total_usd": "40.44514865753424657534246575",
+      "total_eur": "36.09562575415818525242522602",
+      "total_eur_plus_20pct_contingency": "43.31475090498982230291027122",
+      "rows": [
+        {
+          "category": "infra_fija",
+          "item": "Fargate vCPU",
+          "quantity": "36",
+          "usd_rate": "0.0404800000",
+          "price_key": "cpu",
+          "usd": "1.4572800000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Fargate GiB",
+          "quantity": "72",
+          "usd_rate": "0.0044450000",
+          "price_key": "memory",
+          "usd": "0.3200400000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RDS dos bases (standby incluido en precio HA)",
+          "quantity": "24",
+          "usd_rate": "0.1380000000",
+          "price_key": "rds_ha",
+          "usd": "3.3120000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RDS GP3 40 GB lógicos",
+          "quantity": "0.6575342465753424657534246575",
+          "usd_rate": "0.2540000000",
+          "price_key": "rds_disk_ha",
+          "usd": "0.1670136986301369863013698630"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RabbitMQ cluster completo o broker único",
+          "quantity": "12",
+          "usd_rate": "0.9630000000",
+          "price_key": "mq_ha",
+          "usd": "11.5560000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RabbitMQ EBS 200 GB por nodo",
+          "quantity": "9.863013698630136986301369863",
+          "usd_rate": "0.1100000000",
+          "price_key": "mq_disk",
+          "usd": "1.084931506849315068493150685"
+        },
+        {
+          "category": "infra_fija",
+          "item": "NAT Gateway",
+          "quantity": "36",
+          "usd_rate": "0.0480000000",
+          "price_key": "nat",
+          "usd": "1.7280000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "IPv4 NAT",
+          "quantity": "36",
+          "usd_rate": "0.0050000000",
+          "price_key": "ipv4",
+          "usd": "0.1800000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "ALB interno",
+          "quantity": "12",
+          "usd_rate": "0.0252000000",
+          "price_key": "alb",
+          "usd": "0.3024000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "WAF ACL",
+          "quantity": "0.01643835616438356164383561644",
+          "usd_rate": "5",
+          "price_key": "waf_acl",
+          "usd": "0.08219178082191780821917808220"
+        },
+        {
+          "category": "infra_fija",
+          "item": "WAF una regla",
+          "quantity": "0.01643835616438356164383561644",
+          "usd_rate": "1",
+          "price_key": "waf_rule",
+          "usd": "0.01643835616438356164383561644"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Route53 pública persistente",
+          "quantity": "1",
+          "usd_rate": "0.5",
+          "price_key": "zone",
+          "usd": "0.5"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Route53 privada (mes sin prorrateo por ciclo)",
+          "quantity": "3",
+          "usd_rate": "0.5",
+          "price_key": "zone",
+          "usd": "1.5"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Cloud Map registros processor y azure-cost-api",
+          "quantity": "0.06575342465753424657534246575",
+          "usd_rate": "0.1",
+          "price_key": "cloudmap",
+          "usd": "0.006575342465753424657534246575"
+        },
+        {
+          "category": "infra_fija",
+          "item": "KMS una versión; demo reserva mes completo",
+          "quantity": "1",
+          "usd_rate": "1.0000000000",
+          "price_key": "key",
+          "usd": "1.0000000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Secrets 6 runtime prorrateados + 2 control persistentes",
+          "quantity": "2.098630136986301369863013699",
+          "usd_rate": "0.4000000000",
+          "price_key": "secret",
+          "usd": "0.8394520547945205479452054796"
+        },
+        {
+          "category": "datos_almacenados",
+          "item": "S3 app+control incluyendo versiones GB-mes",
+          "quantity": "2",
+          "usd_rate": "0.0230000000",
+          "price_key": "s3_storage",
+          "usd": "0.0460000000"
+        },
+        {
+          "category": "datos_almacenados",
+          "item": "ECR retención 3 GB-mes",
+          "quantity": "3",
+          "usd_rate": "0.1",
+          "price_key": "ecr",
+          "usd": "0.3"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Logs ingeridos GB (incluye observabilidad ECS)",
+          "quantity": "1",
+          "usd_rate": "0.5700000000",
+          "price_key": "log_ingest",
+          "usd": "0.5700000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Logs retenidos GB-mes",
+          "quantity": "1",
+          "usd_rate": "0.0300000000",
+          "price_key": "log_storage",
+          "usd": "0.0300000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Métricas custom/Container Insights equivalentes",
+          "quantity": "0.9863013698630136986301369863",
+          "usd_rate": "0.3000000000",
+          "price_key": "metric",
+          "usd": "0.2958904109589041095890410959"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Alarmas estándar",
+          "quantity": "0.04931506849315068493150684932",
+          "usd_rate": "0.1000000000",
+          "price_key": "alarm",
+          "usd": "0.004931506849315068493150684932"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "ALB 0.25 LCU promedio",
+          "quantity": "3.00",
+          "usd_rate": "0.0080000000",
+          "price_key": "lcu",
+          "usd": "0.024000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Cognito Essentials MAU",
+          "quantity": "5",
+          "usd_rate": "0.0150000000",
+          "price_key": "mau",
+          "usd": "0.0750000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "DNS consultas",
+          "quantity": "10000",
+          "usd_rate": "4E-7",
+          "price_key": "dns",
+          "usd": "0.0040000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Secrets API requests",
+          "quantity": "1000",
+          "usd_rate": "0.0000050000",
+          "price_key": "secret_request",
+          "usd": "0.0050000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "KMS requests",
+          "quantity": "1000",
+          "usd_rate": "0.0000030000",
+          "price_key": "key_request",
+          "usd": "0.0030000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Reserva control DDB PITR/SNS/SQS/Scheduler y logs París USD",
+          "quantity": "1",
+          "usd_rate": "2",
+          "price_key": "assumption",
+          "usd": "2"
+        },
+        {
+          "category": "ingesta_variable",
+          "item": "S3 PUT/COPY/LIST operaciones",
+          "quantity": "1000",
+          "usd_rate": "0.0000050000",
+          "price_key": "s3_put",
+          "usd": "0.0050000000"
+        },
+        {
+          "category": "ingesta_variable",
+          "item": "S3 GET operaciones",
+          "quantity": "10000",
+          "usd_rate": "4.000E-7",
+          "price_key": "s3_get",
+          "usd": "0.0040000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "CloudFront egress a Europa GB",
+          "quantity": "1",
+          "usd_rate": "0.0850000000",
+          "price_key": "cf_egress",
+          "usd": "0.0850000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "CloudFront HTTPS requests",
+          "quantity": "10000",
+          "usd_rate": "0.0000012000",
+          "price_key": "cf_request",
+          "usd": "0.0120000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "CloudFront Function (una por petición)",
+          "quantity": "10000",
+          "usd_rate": "1.000E-7",
+          "price_key": "cf_function",
+          "usd": "0.0010000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "WAF requests",
+          "quantity": "10000",
+          "usd_rate": "6E-7",
+          "price_key": "waf_request",
+          "usd": "0.0060000"
+        },
+        {
+          "category": "red_variable",
+          "item": "NAT GB procesados (incluye pulls/Bedrock)",
+          "quantity": "5",
+          "usd_rate": "0.0480000000",
+          "price_key": "nat_gb",
+          "usd": "0.2400000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "Reserva transferencia interAZ/interregión USD",
+          "quantity": "1",
+          "usd_rate": "1",
+          "price_key": "assumption",
+          "usd": "1"
+        },
+        {
+          "category": "cicd_variable",
+          "item": "CodeBuild minutos: 180 por ciclo up+down",
+          "quantity": "540",
+          "usd_rate": "0.0100000000",
+          "price_key": "build",
+          "usd": "5.4000000000"
+        },
+        {
+          "category": "cicd_variable",
+          "item": "CodePipeline V2 action-minutes: 200 por ciclo",
+          "quantity": "600",
+          "usd_rate": "0.002",
+          "price_key": "pipeline",
+          "usd": "1.200"
+        },
+        {
+          "category": "ia_variable",
+          "item": "Nova Micro entrada millones tokens agregados",
+          "quantity": "1000",
+          "usd_rate": "0.0000400000",
+          "price_key": "llm_input_1k",
+          "usd": "0.0400000000"
+        },
+        {
+          "category": "ia_variable",
+          "item": "Nova Micro salida millones tokens agregados",
+          "quantity": "100.0",
+          "usd_rate": "0.0001600000",
+          "price_key": "llm_output_1k",
+          "usd": "0.01600000000"
+        },
+        {
+          "category": "ia_variable",
+          "item": "Titan V2 embeddings millones tokens",
+          "quantity": "1000",
+          "usd_rate": "0.0000260040",
+          "price_key": "embedding_1k",
+          "usd": "0.0260040000"
+        },
+        {
+          "category": "residuos_reserva",
+          "item": "Reserva adicional tras destroy USD (no límite)",
+          "quantity": "1",
+          "usd_rate": "5",
+          "price_key": "assumption",
+          "usd": "5"
+        }
+      ]
+    },
+    {
+      "name": "demo_3_ciclos_8h",
+      "hours": "24",
+      "cycles": 3,
+      "ha": true,
+      "variable_scale": "1",
+      "totals_usd": {
+        "infra_fija": "44.30464547945205479452054794",
+        "datos_almacenados": "0.3460000000",
+        "operacion_variable": "3.336643835616438356164383562",
+        "ingesta_variable": "0.0090000000",
+        "red_variable": "1.3440000000",
+        "cicd_variable": "6.6000000000",
+        "ia_variable": "0.08200400000",
+        "residuos_reserva": "5"
+      },
+      "total_usd": "61.02229331506849315068493150",
+      "total_eur": "54.45987801434046689039262071",
+      "total_eur_plus_20pct_contingency": "65.35185361720856026847114485",
+      "rows": [
+        {
+          "category": "infra_fija",
+          "item": "Fargate vCPU",
+          "quantity": "72",
+          "usd_rate": "0.0404800000",
+          "price_key": "cpu",
+          "usd": "2.9145600000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Fargate GiB",
+          "quantity": "144",
+          "usd_rate": "0.0044450000",
+          "price_key": "memory",
+          "usd": "0.6400800000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RDS dos bases (standby incluido en precio HA)",
+          "quantity": "48",
+          "usd_rate": "0.1380000000",
+          "price_key": "rds_ha",
+          "usd": "6.6240000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RDS GP3 40 GB lógicos",
+          "quantity": "1.315068493150684931506849315",
+          "usd_rate": "0.2540000000",
+          "price_key": "rds_disk_ha",
+          "usd": "0.3340273972602739726027397260"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RabbitMQ cluster completo o broker único",
+          "quantity": "24",
+          "usd_rate": "0.9630000000",
+          "price_key": "mq_ha",
+          "usd": "23.1120000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "RabbitMQ EBS 200 GB por nodo",
+          "quantity": "19.72602739726027397260273973",
+          "usd_rate": "0.1100000000",
+          "price_key": "mq_disk",
+          "usd": "2.169863013698630136986301370"
+        },
+        {
+          "category": "infra_fija",
+          "item": "NAT Gateway",
+          "quantity": "72",
+          "usd_rate": "0.0480000000",
+          "price_key": "nat",
+          "usd": "3.4560000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "IPv4 NAT",
+          "quantity": "72",
+          "usd_rate": "0.0050000000",
+          "price_key": "ipv4",
+          "usd": "0.3600000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "ALB interno",
+          "quantity": "24",
+          "usd_rate": "0.0252000000",
+          "price_key": "alb",
+          "usd": "0.6048000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "WAF ACL",
+          "quantity": "0.03287671232876712328767123288",
+          "usd_rate": "5",
+          "price_key": "waf_acl",
+          "usd": "0.1643835616438356164383561644"
+        },
+        {
+          "category": "infra_fija",
+          "item": "WAF una regla",
+          "quantity": "0.03287671232876712328767123288",
+          "usd_rate": "1",
+          "price_key": "waf_rule",
+          "usd": "0.03287671232876712328767123288"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Route53 pública persistente",
+          "quantity": "1",
+          "usd_rate": "0.5",
+          "price_key": "zone",
+          "usd": "0.5"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Route53 privada (mes sin prorrateo por ciclo)",
+          "quantity": "3",
+          "usd_rate": "0.5",
+          "price_key": "zone",
+          "usd": "1.5"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Cloud Map registros processor y azure-cost-api",
+          "quantity": "0.1315068493150684931506849315",
+          "usd_rate": "0.1",
+          "price_key": "cloudmap",
+          "usd": "0.01315068493150684931506849315"
+        },
+        {
+          "category": "infra_fija",
+          "item": "KMS una versión; demo reserva mes completo",
+          "quantity": "1",
+          "usd_rate": "1.0000000000",
+          "price_key": "key",
+          "usd": "1.0000000000"
+        },
+        {
+          "category": "infra_fija",
+          "item": "Secrets 6 runtime prorrateados + 2 control persistentes",
+          "quantity": "2.197260273972602739726027397",
+          "usd_rate": "0.4000000000",
+          "price_key": "secret",
+          "usd": "0.8789041095890410958904109588"
+        },
+        {
+          "category": "datos_almacenados",
+          "item": "S3 app+control incluyendo versiones GB-mes",
+          "quantity": "2",
+          "usd_rate": "0.0230000000",
+          "price_key": "s3_storage",
+          "usd": "0.0460000000"
+        },
+        {
+          "category": "datos_almacenados",
+          "item": "ECR retención 3 GB-mes",
+          "quantity": "3",
+          "usd_rate": "0.1",
+          "price_key": "ecr",
+          "usd": "0.3"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Logs ingeridos GB (incluye observabilidad ECS)",
+          "quantity": "1",
+          "usd_rate": "0.5700000000",
+          "price_key": "log_ingest",
+          "usd": "0.5700000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Logs retenidos GB-mes",
+          "quantity": "1",
+          "usd_rate": "0.0300000000",
+          "price_key": "log_storage",
+          "usd": "0.0300000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Métricas custom/Container Insights equivalentes",
+          "quantity": "1.972602739726027397260273973",
+          "usd_rate": "0.3000000000",
+          "price_key": "metric",
+          "usd": "0.5917808219178082191780821919"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Alarmas estándar",
+          "quantity": "0.09863013698630136986301369863",
+          "usd_rate": "0.1000000000",
+          "price_key": "alarm",
+          "usd": "0.009863013698630136986301369863"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "ALB 0.25 LCU promedio",
+          "quantity": "6.00",
+          "usd_rate": "0.0080000000",
+          "price_key": "lcu",
+          "usd": "0.048000000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Cognito Essentials MAU",
+          "quantity": "5",
+          "usd_rate": "0.0150000000",
+          "price_key": "mau",
+          "usd": "0.0750000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "DNS consultas",
+          "quantity": "10000",
+          "usd_rate": "4E-7",
+          "price_key": "dns",
+          "usd": "0.0040000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Secrets API requests",
+          "quantity": "1000",
+          "usd_rate": "0.0000050000",
+          "price_key": "secret_request",
+          "usd": "0.0050000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "KMS requests",
+          "quantity": "1000",
+          "usd_rate": "0.0000030000",
+          "price_key": "key_request",
+          "usd": "0.0030000000"
+        },
+        {
+          "category": "operacion_variable",
+          "item": "Reserva control DDB PITR/SNS/SQS/Scheduler y logs París USD",
+          "quantity": "1",
+          "usd_rate": "2",
+          "price_key": "assumption",
+          "usd": "2"
+        },
+        {
+          "category": "ingesta_variable",
+          "item": "S3 PUT/COPY/LIST operaciones",
+          "quantity": "1000",
+          "usd_rate": "0.0000050000",
+          "price_key": "s3_put",
+          "usd": "0.0050000000"
+        },
+        {
+          "category": "ingesta_variable",
+          "item": "S3 GET operaciones",
+          "quantity": "10000",
+          "usd_rate": "4.000E-7",
+          "price_key": "s3_get",
+          "usd": "0.0040000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "CloudFront egress a Europa GB",
+          "quantity": "1",
+          "usd_rate": "0.0850000000",
+          "price_key": "cf_egress",
+          "usd": "0.0850000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "CloudFront HTTPS requests",
+          "quantity": "10000",
+          "usd_rate": "0.0000012000",
+          "price_key": "cf_request",
+          "usd": "0.0120000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "CloudFront Function (una por petición)",
+          "quantity": "10000",
+          "usd_rate": "1.000E-7",
+          "price_key": "cf_function",
+          "usd": "0.0010000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "WAF requests",
+          "quantity": "10000",
+          "usd_rate": "6E-7",
+          "price_key": "waf_request",
+          "usd": "0.0060000"
+        },
+        {
+          "category": "red_variable",
+          "item": "NAT GB procesados (incluye pulls/Bedrock)",
+          "quantity": "5",
+          "usd_rate": "0.0480000000",
+          "price_key": "nat_gb",
+          "usd": "0.2400000000"
+        },
+        {
+          "category": "red_variable",
+          "item": "Reserva transferencia interAZ/interregión USD",
+          "quantity": "1",
+          "usd_rate": "1",
+          "price_key": "assumption",
+          "usd": "1"
+        },
+        {
+          "category": "cicd_variable",
+          "item": "CodeBuild minutos: 180 por ciclo up+down",
+          "quantity": "540",
+          "usd_rate": "0.0100000000",
+          "price_key": "build",
+          "usd": "5.4000000000"
+        },
+        {
+          "category": "cicd_variable",
+          "item": "CodePipeline V2 action-minutes: 200 por ciclo",
+          "quantity": "600",
+          "usd_rate": "0.002",
+          "price_key": "pipeline",
+          "usd": "1.200"
+        },
+        {
+          "category": "ia_variable",
+          "item": "Nova Micro entrada millones tokens agregados",
+          "quantity": "1000",
+          "usd_rate": "0.0000400000",
+          "price_key": "llm_input_1k",
+          "usd": "0.0400000000"
+        },
+        {
+          "category": "ia_variable",
+          "item": "Nova Micro salida millones tokens agregados",
+          "quantity": "100.0",
+          "usd_rate": "0.0001600000",
+          "price_key": "llm_output_1k",
+          "usd": "0.01600000000"
+        },
+        {
+          "category": "ia_variable",
+          "item": "Titan V2 embeddings millones tokens",
+          "quantity": "1000",
+          "usd_rate": "0.0000260040",
+          "price_key": "embedding_1k",
+          "usd": "0.0260040000"
+        },
+        {
+          "category": "residuos_reserva",
+          "item": "Reserva adicional tras destroy USD (no límite)",
+          "quantity": "1",
+          "usd_rate": "5",
+          "price_key": "assumption",
+          "usd": "5"
+        }
+      ]
+    }
+  ]
+}

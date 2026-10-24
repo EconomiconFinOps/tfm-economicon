@@ -51,7 +51,8 @@ class PrivateTasks:
 
     def definition(self, component, phase, inputs):
         config = self.config
-        _require(component in {'backend', 'processor'} and phase in {'database', 'fixtures', 'reindex', 'broker'})
+        _require(component in {'backend', 'processor'} and phase in {'database', 'fixtures', 'reindex', 'broker', 'monitoring'})
+        _require(phase != 'monitoring' or component == 'backend')
         _require(config['region'] == 'eu-west-1' and re.fullmatch(r'[0-9]{12}', config['account_id']))
         _require(re.fullmatch(r'(?:ensayo[0-9][a-z0-9]{0,3}|defensa[0-9]{0,2})', config['cycle_id']))
         _require(re.fullmatch(r'[a-f0-9]{40}', config['source_sha']))
