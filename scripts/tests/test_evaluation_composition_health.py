@@ -40,4 +40,42 @@ class CompositionHTTPErrorRate(unittest.TestCase):
     def test_no_traffic_has_no_sample(self):
         self.check_case({},[])
 
+
+class CompositionRetrievalStates(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        root=Path(__file__).resolve().parents[2]
+        dashboard=json.loads((root/'apps/monitoring/grafana/dashboards/assistant-evidence.json').read_text(encoding='utf8'))
+        cls.by_id={p['id']:p for p in panels(dashboard['panels'])}
+        cls.image=support.requerir_promtool()
+
+    def check_state(self, values, expected, temporal=None):
+        series={'backend_'+name:pattern for name,pattern in values.items()}
+        if not series:series={'unrelated_counter':'0+1x10'}
+        cases=[support.caso(self.by_id[i]['targets'][0]['expr'],series,expected) for i in (904,5005)]
+        if temporal is not None:
+            cases += [support.caso(t['expr'],series,temporal) for t in self.by_id[8348]['targets']]
+        runner=support.TasaDeErrorConPromtoolTests();runner.imagen=self.image
+        result=runner.ejecutar(cases)
+        self.assertEqual(result.returncode,0,(result.stdout+result.stderr).decode('utf8','replace'))
+
+    def test_observed_zero_denominator_is_not_zero_percent(self):
+        self.check_state({'assistant_queries_total':'0+0x10','retrieval_failures_total':'0+0x10','retrieval_empty_total':'0+0x10'},[-1],[])
+
+    def test_absent_series_is_not_inferred_inactivity(self):
+        self.check_state({},[],[])
+
+    def test_completed_queries_without_retrieval_events_are_measured_zero(self):
+        self.check_state({'assistant_queries_total':'0+10x10','retrieval_failures_total':'0+0x10','retrieval_empty_total':'0+0x10'},[0],[0])
+
+    def test_missing_failure_counter_does_not_claim_observed_zero(self):
+        self.check_state({'assistant_queries_total':'0+0x10','retrieval_empty_total':'0+0x10'},[],[])
+
+    def test_nonzero_events_keep_the_original_denominator(self):
+        series={'backend_assistant_queries_total':'0+30x10','backend_retrieval_failures_total':'0+10x10','backend_retrieval_empty_total':'0+5x10'}
+        cases=[support.caso(self.by_id[i]['targets'][0]['expr'],series,[value]) for i,value in ((904,0.25),(5005,0.125))]
+        runner=support.TasaDeErrorConPromtoolTests();runner.imagen=self.image
+        result=runner.ejecutar(cases)
+        self.assertEqual(result.returncode,0,(result.stdout+result.stderr).decode('utf8','replace'))
+
 if __name__=='__main__':unittest.main()
