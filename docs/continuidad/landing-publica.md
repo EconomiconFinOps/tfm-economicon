@@ -1,5 +1,9 @@
 # Landing pública — JUP-089
 
+## Viñetas violetas —24/10/2026
+
+14marcadores decorativos pasan a viñetas violetas accesibles; textos/datos y JS del carrusel conservados, Azure fuera. Landing36PASS(26+10), buildnativo y capturas representativas1920/3440/390 en claro/oscuro; póster sólo markup, no captura del fallback. [Evidencia y galería](../evidence/JUP-140-vinetas-violetas.md). Candidato local pendiente de evaluaciones independientes y aprobación visual antes de subir. Los apartados siguientes conservan su corte histórico.
+
 ## Corrección vigente del bucle responsive — 24/10/2026
 
 Seguimiento local de JUP-140/PR160 ya integrada, sobre develop `ffb5d307`: una secuencia semántica y copias decorativas según ancho evitan el hueco de pantallas grandes, con velocidad constante y fase conservada al redimensionar/pausar. Navegador real1920/2560/3440/390, tres cruces estables por ancho, gap18px y overflow0; capturas completas claro/oscuro y borde320. Landing36PASS, contratoCI19PASS, policy104/gobernanza15 y OpenSpec92 correctos. [Evidencia y capturas](../evidence/JUP-140-carousel.md).
