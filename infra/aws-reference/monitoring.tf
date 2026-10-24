@@ -61,15 +61,15 @@ resource "aws_ecs_task_definition" "monitoring" {
       mountPoints            = [{ sourceVolume = "grafana-tmp", containerPath = "/tmp", readOnly = false }]
       portMappings           = [{ containerPort = 3000, hostPort = 3000, protocol = "tcp" }]
       environment = [for name, value in {
-        GF_SERVER_ROOT_URL               = "https://${var.frontend_domain}/grafana/"
-        GF_SERVER_SERVE_FROM_SUB_PATH    = "true"
-        GF_AUTH_ANONYMOUS_ENABLED        = "false"
-        GF_AUTH_BASIC_ENABLED            = "true"
-        GF_USERS_ALLOW_SIGN_UP           = "false"
-        GF_SECURITY_ADMIN_USER           = "admin"
-        GF_SECURITY_COOKIE_SECURE        = "true"
-        GF_SECURITY_COOKIE_SAMESITE      = "lax"
-        GF_SECURITY_ALLOW_EMBEDDING      = "false"
+        GF_SERVER_ROOT_URL            = "https://${var.frontend_domain}/grafana/"
+        GF_SERVER_SERVE_FROM_SUB_PATH = "true"
+        GF_AUTH_ANONYMOUS_ENABLED     = "false"
+        GF_AUTH_BASIC_ENABLED         = "true"
+        GF_USERS_ALLOW_SIGN_UP        = "false"
+        GF_SECURITY_ADMIN_USER        = "admin"
+        GF_SECURITY_COOKIE_SECURE     = "true"
+        GF_SECURITY_COOKIE_SAMESITE   = "lax"
+        GF_SECURITY_ALLOW_EMBEDDING   = "false"
         # Grafana 11.3 compares Origin.Hostname(), not the complete URL.
         GF_SECURITY_CSRF_TRUSTED_ORIGINS = var.frontend_domain
         GF_ANALYTICS_REPORTING_ENABLED   = "false"
