@@ -3,6 +3,20 @@
   "source_note": "Cifras tomadas de la hoja de hechos del encargo de redacción de la memoria (21/10/2026) y contrastadas con la evidencia del repositorio. No se copia texto de la memoria; los apartados (a-i) son los de docs/memoria/README.md.",
   "figures": [
     {
+      "id": "friday-sunday-evolution",
+      "sections": [
+        "h",
+        "i"
+      ],
+      "figure": "Evolución descriptiva del chat entre el viernes 23 y el domingo 25 de octubre",
+      "previous_value": "23/10/2026: 119/132 operaciones comunes completadas (90,2 %), mediana 20,128 s y p95 148,796 s",
+      "new_value": "25/10/2026: 41/44 operaciones comunes completadas (93,2 %), mediana 12,020 s y p95 49,485 s",
+      "status": "cambia",
+      "inventory_id": "friday-sunday-evolution-jup133",
+      "evidence": "docs/evidence/JUP-133/evolution-20261025/summary.json",
+      "note": "Fuente descriptiva adicional para h/i; no acredita incorporación a la memoria canónica. Tres repeticiones el viernes frente a una el domingo, arnés y carga distintos: no comparación causal. La calidad del domingo (39 conformes, 7 parciales, 4 fallos de 50, por agente) carece de juicio homogéneo del viernes. No se calcula ahorro con bases de coste distintas ni se acepta la RC."
+    },
+    {
       "id": "robustness-outcomes",
       "sections": [
         "h"
