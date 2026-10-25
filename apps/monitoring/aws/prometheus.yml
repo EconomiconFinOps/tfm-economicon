@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 30s
+scrape_configs:
+  - job_name: backend
+    dns_sd_configs:
+      - names: ["backend.__NAMESPACE__"]
+        type: A
+        port: 8000
+        refresh_interval: 30s
+  - job_name: processor
+    dns_sd_configs:
+      - names: ["processor.__NAMESPACE__"]
+        type: A
+        port: 8001
+        refresh_interval: 30s

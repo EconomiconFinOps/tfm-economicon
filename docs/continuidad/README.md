@@ -1,5 +1,87 @@
 # Continuidad del proyecto
 
+25Oct: PR161 reconciliada con la aplicación aprobada `0edd11ef`; ApiError
+intacto y Starlette 1.9.0, Atlas/Grafana/carga aditiva conservados. CI técnica
+completa y SQL del árbol integrado SUCCESS; aceptación offline/digest renovados.
+Excepción de agentes reconocida sólo en PR161 con informes ligados al candidato;
+guardas generales conservadas. Configuración del máster regenerada sin saldo
+ficticio; CI develop y ventana pendientes. Sin merge ni despliegue. Estado final
+y recibos en [cloud-aws.md](cloud-aws.md).
+
+Los párrafos siguientes conservan su corte histórico.
+
+25Oct: versión de aplicación aprobada por el usuario `0edd11ef`, PR162
+integrada en `develop`. CI push `40137719699` SUCCESS; Azure instala
+Starlette 1.9.0 y supera 81 pruebas, con `ApiError` idéntico a la base.
+SQL de la PR también SUCCESS. Atlas/ECS sigue en PR161, abierta y con un
+conflicto documental; su cambio anterior de `ApiError` debe retirarse al
+reconciliarla con la versión aprobada. Configuración del ensayo aún obsoleta,
+sin despliegue. Ver [cloud-aws.md](cloud-aws.md).
+
+25Oct: por decisión expresa del usuario, el despliegue se prepara únicamente
+en Economicon del máster, cuenta `323188184300`. Eliminada la automatización
+de seguimiento de la cuenta original `605600557607`; ya no se requiere su
+inicio de sesión ni esperar su cuota. El estado anterior queda como histórico.
+Sin despliegue iniciado. Ver [cloud-aws.md](cloud-aws.md).
+
+24Oct, actualización posterior: el usuario autoriza una excepción para PR161:
+revisión y validación por dos agentes independientes, ya lanzados sobre e730dc15.
+Documentada en PR, Trello y [evidencia](../evidence/JUP-131-pr161-agent-exception.md).
+Retira el presupuesto30EUR como condición del ensayo en la cuenta del máster;
+los límites de Pontia no están acreditados y la configuración anterior se deberá
+adaptar. DNS redirigido por indicación humana a Jarvis **local**, retirado de Mother;
+el chat local guardó los cuatro NS y verificó ambos autoritativos y dos
+resolutores, conservando los otros 22 registros. DNS independiente a las
+23:26 Europe/Paris confirma la delegación nueva. Revisión y validación favorables
+para las correcciones de métricas y ApiError: Terraform 14 PASS, Azure 82 PASS,
+PostgreSQL/Grafana reales y recursos propios retirados. Informes en
+[evidencia PR161](../evidence/JUP-131-pr161-agents/README.md). Commit publicado
+`30d4370a`: CI PR, CI push y SQL SUCCESS a las 23:47 Europe/Paris. `JUP reviews`
+sigue FAILURE al exigir reviews de cuentas GitHub; la excepción tiene los
+informes, pero ese mecanismo no se ha cambiado. Sin merge ni despliegue.
+Ver [cloud-aws.md](cloud-aws.md).
+
+Hito anterior24Oct23:03París: cuenta del máster Economicon323188184300 preparada parcialmente:
+Fargate6/CodeBuild30, conexión GitHubAVAILABLE, boundary validada y cuatro roles
+sin políticas, zona Route53 y secretos de control creados. Plan bootstrap
+4importaciones/23altas/4cambios/0bajas, sin aplicar. DNS pedido a Jarvis con
+autorización humana; DNS público aún antiguo. Secreto GitHub guardado por el
+usuario y AWSCURRENT confirmado sólo por metadatos; contenido/autenticación no
+probados. CorreoBudgets pendiente. Budget30USD creado,
+sin apagado; techo humano30EUR y saldo restante por conciliar. PR161 técnica verde,
+dictámenes/aceptación/integración pendientes. Paquete de ensayo bloqueado;
+sin aplicación, builds ni pipelines. Monitor original separado. Ver [cloud-aws.md](cloud-aws.md).
+
+24Oct: integración Atlas preparada en PR161: carga aditiva privada, Grafana y
+Prometheus en ECS, tres dashboards y19/1688 conservados. PostgreSQL real,
+Grafana con cookies/TLS/reinicio y Terraform13 PASS. Revisión asistida detectó
+dos fallos corregidos y revalidó el delta0f1522e6. CI técnica y SQL finales de
+e730dc15 SUCCESS; JUP reviews en rojo por los dos dictámenes humanos ausentes.
+Techo30EUR; tres ciclos de2h exceden el presupuesto. Sin despliegue. Ver [cloud-aws.md](cloud-aws.md).
+
+24Oct: sesiónAWS recuperada; Fargate Irlanda aplicada0 y sin nueva respuestaAWS.
+Presupuesto creado30USD acumulados01Oct–01Dic, avisos50/80/100%; correo pendiente
+de verificar, sin apagado automático. Techo local del ensayo30EUR. Ver [cloud-aws.md](cloud-aws.md).
+
+Coste AWS actualizado el 22/10/2026: [costes-aws.md](costes-aws.md), cálculo
+mensual reproducible, escenarios temporales y borrador para el caso de negocio.
+Estado: estimación enviada a HAL para Lucía por autorización humana; no factura,
+despliegue ni benchmark.
+Acceso de evaluador22/10: fecha aclarada30Nov2026; usuario exclusivo de consola
+creado, lectura/MFA y caducidad de permisos configuradas. Credenciales privadas
+para entregar por el operador; primer login/MFA aún pendiente. Ver cloud-aws.
+Fargate23/10 08:36París: tras login humano, consola confirma aplicada0vCPU y
+solicitud6 en Caso abierto; el defaultAWS6 no es cuota asignada. Sin despliegue.
+Evidencia y caso en [cloud-aws.md](cloud-aws.md).
+Seguimiento23Oct12:24París enviado por web al caso179267775500075 con autorización
+humana, publicación verificada. Prioridad por defensa29Oct solicitada; pendiente
+respuesta/aprobación, sin upgrade, duplicados ni despliegue. Detalle en cloud-aws.
+Monitor23Oct activo cada hora en este chat para respuestaAWS/cuotaFargate;
+avisos sólo con cambios o intervención necesaria, sin despliegue. Requiere
+equipo/app activos y sesiónAWSválida. Identificador y baseline en cloud-aws.
+Antecedente Monitor24Oct13:10París (resuelto tras login): sesiónAWS caducada, primer aviso de login necesario;
+cuota y respuesta actuales desconocidas. Último efectivo0 del23Oct, sin despliegue.
+
 Resúmenes técnicos para retomar el trabajo. Trello conserva alcance, responsables
 y estado operativo; GitHub conserva código y revisiones; OpenSpec conserva
 requisitos y diseño. Este índice enlaza evidencia, no sustituye esas fuentes.
@@ -20,7 +102,7 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 | --- | --- | --- |
 | [Compatibilidad Azure Cost API](azure-cost-api-compatibilidad.md) | JUP-140/PR162: contención temporal Starlette 1.9.0; ApiError congelado, resolución limpia y 81 PASS, imagen y HTTP normal/demo comprobados localmente. Otros rangos y servicios conservados. | 2026-10-24 |
 | [Landing pública](landing-publica.md) | JUP-140/PR162:14marcadores sustituidos por viñetas violetas, textos/datos/JS conservados y Azure excluido. Landing36PASS(26+10), capturas nativas claro/oscuro/móvil/amplia; evaluaciones independientes y aprobación visual pendientes. | 2026-10-24 |
-| [Despliegue AWS](cloud-aws.md) | Corrección de CI para PR154: evidencia histórica separada de readiness, guardas AWS conservadas y APT acotado; controlador73PASS/1SKIP. Publicación y CI remota pendientes. | 2026-10-23 |
+| [Despliegue AWS](cloud-aws.md) | PR161 reconciliada con 0edd11ef, ApiError/pin conservados y aceptación offline renovada. Configuración máster regenerada; informes/CI final en recibos. Integración y ventana pendientes; sin despliegue. | 2026-10-25 |
 | [Cortes de respuesta del chat](cortes-respuesta-chat.md) | JUP-135 integrada por squash f224226d en PR153, con excepcion humana de merge; CI tecnica previa conforme. Agregados de medicion comunicados y pendientes documentales conservados; sin aceptacion generativa nueva. | 2026-10-22 |
 | [Reevaluación de métricas del modelo](reevaluacion-metricas-modelo.md) | JUP-133: PR156 incorporó seis repeticiones y juez IA provisional; PR158 integrada en develop93624f77 corrige fixtures y altura. Evidencia ajena Linux1998PASS/0omisiones y OpenSpec92PASS, sin aceptación de campañas. La composición139 comprueba su delta por separado. | 2026-10-23 |
 | [Composición narrativa de evaluación](dashboard-evaluacion-composicion.md) | JUP-139: entrega R8 aprobada por Paris el 24/10; revisión y validación locales favorables, 137 medidas y 19/1688 conservados. Develop idéntico a 93624f77. OpenSpec archivado 24/10 con promoción de requisitos; evaluación del delta documental y publicación pendientes. Tres dashboards intactos, publicación y etapas humanas pendientes. | 2026-10-24 |

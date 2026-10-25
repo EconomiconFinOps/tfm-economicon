@@ -74,7 +74,7 @@ resource "aws_mq_broker" "main" {
   }
 }
 resource "aws_secretsmanager_secret" "application" {
-  for_each                = toset(["backend", "processor", "azure-cost-api"])
+  for_each                = toset(keys(local.workloads))
   name                    = "${local.name}/${each.key}/runtime"
   description             = "JSON secret container only: values are provisioned outside Terraform, see README"
   kms_key_id              = aws_kms_key.data.arn

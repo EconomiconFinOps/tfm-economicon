@@ -34,22 +34,26 @@ class RunnerTests(unittest.TestCase):
         item = object.__new__(runner.Runner)
         item.config = config()
         prefix = 'arn:aws:ecs:eu-west-1:123456789012:task-definition/economicon-ensayo1-bootstrap-'
-        owned, foreign = prefix + 'backend-database:1', prefix + 'processor-database:2'
+        owned = [prefix + 'backend-database:1', prefix + 'backend-monitoring:1']
+        foreign = prefix + 'processor-database:2'
+        unsupported = [prefix + 'processor-monitoring:1', prefix + 'backend-unrecognised:1']
         calls = []
         def aws(*args, **kwargs):
             calls.append(args)
             if args[1] == 'list-task-definitions':
-                return {'taskDefinitionArns': [owned, foreign, 'arn:aws:ecs:eu-west-1:999999999999:task-definition/foreign:1']}
+                return {'taskDefinitionArns': owned + [foreign] + unsupported + ['arn:aws:ecs:eu-west-1:999999999999:task-definition/foreign:1']}
             if args[1] == 'describe-task-definition':
                 arn = args[3]
-                tags = dict(Project='economicon', Environment='ensayo1', Purpose='bootstrap', SourceSha='a' * 40 if arn == owned else 'b' * 40)
+                tags = dict(Project='economicon', Environment='ensayo1', Purpose='bootstrap', SourceSha='a' * 40 if arn in owned else 'b' * 40)
                 return {'taskDefinition': {'taskDefinitionArn': arn, 'status': 'ACTIVE'},
                         'tags': [{'key': key, 'value': value} for key, value in tags.items()]}
             return {}
         item.aws = aws
-        self.assertEqual(item.retire_bootstrap_definitions('economicon-ensayo1'), [owned])
+        self.assertEqual(item.retire_bootstrap_definitions('economicon-ensayo1'), owned)
         retired = [args[3] for args in calls if args[1] == 'deregister-task-definition']
-        self.assertEqual(retired, [owned])
+        self.assertEqual(retired, owned)
+        inspected = [args[3] for args in calls if args[1] == 'describe-task-definition']
+        self.assertEqual(inspected, owned + [foreign])
 
     def test_inactive_definition_is_retired_metadata_not_active_inventory(self):
         item = object.__new__(runner.Runner)

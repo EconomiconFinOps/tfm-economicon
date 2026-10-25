@@ -1,0 +1,8 @@
+tests\pipelines.tftest.hcl... in progress
+  run "manual_serialized_pipelines_and_private_state"... pass
+tests\pipelines.tftest.hcl... tearing down
+tests\pipelines.tftest.hcl... pass
+
+Success! 1 passed, 0 failed.
+
+STDERR

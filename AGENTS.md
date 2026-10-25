@@ -66,3 +66,19 @@ No author/draft/dismissed title supplies a role; Comment does not lift changes.
 This records the real pairing rather than crediting Paris with coimplementation.
 Both independent titled verdicts and affected-delta revalidation remain required;
 this exception grants no merge approval or power to dismiss a historical review.
+
+### One-off authorization for PR161
+
+On 2026-10-24 the user authorized two independent agents to perform the review
+and validation of PR161 / JUP-131 instead of the assigned human verdicts. Scope,
+candidate SHA, attribution and evidence are recorded in
+`docs/evidence/JUP-131-pr161-agent-exception.md`. This is specific to PR161; it
+does not authorize deployment, merge, fabricated human reviews or weakening
+the general repository policy.
+
+For the 2026-10-25 reconciliation, `JUP reviews` recognizes this case through
+the exact visible declaration and two integrity-checked agent reports specified
+in CONTRIBUTING. The reviewed commit must be an ancestor of the live PR head;
+only the explicitly listed publication documents may change afterwards. Any
+code delta requires both agents to revalidate. Outstanding GitHub change requests
+still block; no GitHub approval or human identity is fabricated.

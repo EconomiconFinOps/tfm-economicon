@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import subprocess
 
-from control import validate_config, validate_recipe, validate_recipe_files, application_digest, state_key
+from control import validate_config, validate_recipe, validate_recipe_files, application_digest, state_key, master_budget_waiver
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -40,12 +40,13 @@ def prepare(config, output, actual_sha):
             "sourceRevisions": [{"actionName": "Source", "revisionType": "COMMIT_ID", "revisionValue": config["source_sha"]}],
             "variables": [{"name": "ConfigKey", "value": key}]}
         (output / ("start-" + direction + ".json")).write_text(json.dumps(request, indent=2) + "\n")
+    cost_check = "regional estimate; master budget requirement waived, organization limit unverified" if master_budget_waiver(config) else "remaining project budget and regional estimate"
     report = {"local_preparation": "COMPLETE", "aws_deployable": not blockers,
               "aws_preflight_executed": False, "aws_resources_created": False,
               "config_key": key, "state_key": state_key(config) if isinstance(config.get("cycle_id"), str) else None,
               "blockers": sorted(set(blockers)),
               "application_sha256": application_digest(ROOT),
-              "required_cloud_checks": ["account/IAM", "remaining project budget and regional estimate", "Ireland AZs and quotas",
+              "required_cloud_checks": ["account/IAM", cost_check, "Ireland AZs and quotas",
                 "RDS/MQ versions/classes", "DNS ownership and delegation", "model access", "exact-SHA develop push CI and ancestry"]}
     (output / "readiness.json").write_text(json.dumps(report, indent=2) + "\n")
     return report

@@ -1,0 +1,81 @@
+{
+  "candidate_sha": "812697387918c25e905a240fa35573091d9fdc16",
+  "title": "Revision JUP-131",
+  "agent": "/root/pr161_code_review",
+  "verdict": "APPROVE",
+  "report": "docs/evidence/JUP-131-pr161-reconciliation/revision.md",
+  "report_sha256": "6b48ac3bc636a8f12546afd243e555c532c5af935dcbff3cc077305d16764471",
+  "checked_at": "2026-10-25T12:19:10.023765+01:00",
+  "base_sha": "30d4370aca3903cf764111e451153ae2ed83510c",
+  "approved_application_base_sha": "0edd11eff3458683553bd4c36f3011b77c1d3de4",
+  "critical_files_sha256_lf": {
+    "tools/pr161-agent-evidence.mjs": "e9a674c66bcc8f8aad5f539e2f85786d929203441fc3c2a501b5800ba774f02e",
+    "tools/pr-policy.mjs": "2b5e5ba88965664dfe88e3312cce077b0e1a21a9354a5ea843666da85b464eb4",
+    ".github/workflows/pr-reviews.yml": "b7232762bfe8cf4ebe29e520e7d23de19deb2f35060708899415e198c576aafa",
+    "tools/aws_demo/control.py": "50c4bbe5bda83173f34dbc3fa780fb2db6f81d5ba0b55407f48b44d3881d4abf",
+    "tools/aws_demo/prepare.py": "2973c178d48b62c5d76c91d2a875c1a810c4537209c4c33d98dacf68101d49f6",
+    "infra/aws-cicd/release.json": "0485223b5f9cfb94f27abf745d11929c010a65d9880b297917231aa9318b1206",
+    "docs/evidence/JUP-131-pr161-reconciliation/application-acceptance.md": "5eb418403fcf3dcc0dbccde23c7423e38f138da2cb2b206eee400f4afa87a3f0"
+  },
+  "findings": [],
+  "closed_findings": [
+    {
+      "priority": "P2",
+      "title": "Duplicate visible role labels accepted when letter case differs",
+      "introduced_location": "tools/pr161-agent-evidence.mjs:38",
+      "observed_candidate": "bfffb88b0086f1a255dc8098f22a3240d21e3880",
+      "fixed_candidate": "964c9f5516402e9425be1ec5556bd485c8c94db8",
+      "status": "CLOSED",
+      "red": "13 expected results / 2 failing duplicate-role cases; both review and PR policy erroneously accepted",
+      "green": "18 expected results / 0 failures; fixed policy unchanged in final candidate"
+    }
+  ],
+  "checks_executed": [
+    {
+      "name": "Git identity, approved application ancestry/equality and diff checks",
+      "result": "PASS"
+    },
+    {
+      "name": "Synthetic adversarial governance checks",
+      "result": "18 PASS / 0 FAIL",
+      "executed_candidate": "964c9f5516402e9425be1ec5556bd485c8c94db8",
+      "coverage_retained_by_unchanged_policy_in_final_candidate": true
+    },
+    {
+      "name": "Targeted budget, SHA, expired-approval and stale-plan checks",
+      "result": "6 PASS"
+    },
+    {
+      "name": "Immutable Git application/evidence audit",
+      "result": "PASS",
+      "application_files": 851,
+      "application_sha256": "5e19f3f4ff0db6039ebc42b2733d9dd4266e94b55c6fc8fac741c21876461e70",
+      "historical_evidence_preserved": 5,
+      "total_evidence_hashes_verified": 6
+    },
+    {
+      "name": "ReleaseReadinessTests on final candidate",
+      "result": "5 PASS"
+    }
+  ],
+  "coordinator_evidence": {
+    "policy_log_tail_read": ".work/pr161-reconciliation/policy-green.log: 111 PASS / 0 FAIL",
+    "remote_ci_receipt_read": "docs/evidence/JUP-131-pr161-reconciliation/application-acceptance.md",
+    "reported_remote_ci_candidate": "da13f069c0f92258bb2856ff33b204cc3b176e89",
+    "reported_remote_runs_success": [
+      "40187165537",
+      "40187163124",
+      "40187165282"
+    ],
+    "remote_checks_executed_or_fetched_by_reviewer": false
+  },
+  "limitations": [
+    "Agent validation report not read; only synthetic validation records used for checker tests",
+    "Remote CI success above applies to da13, not a claim of green CI on the final publication head",
+    "Offline application acceptance does not establish AWS runtime, final images, model outputs, quota or balance",
+    "No AWS, credentials, private directories, services, deployments, external messages or shared-source changes",
+    "No project commits or push; isolated synthetic repositories used for adversarial tests",
+    "Sandbox/process and import-path failures were corrected and disclosed, not counted as passes",
+    "Any later code delta requires revalidation; publication is limited to the explicit allowlist"
+  ]
+}

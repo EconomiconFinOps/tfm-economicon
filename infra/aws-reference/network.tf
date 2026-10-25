@@ -86,7 +86,7 @@ resource "aws_vpc_endpoint" "s3" {
 }
 
 resource "aws_security_group" "component" {
-  for_each    = toset(["alb", "backend", "processor", "azure-cost-api", "db", "mq", "bootstrap"])
+  for_each    = toset(["alb", "backend", "processor", "azure-cost-api", "grafana", "db", "mq", "bootstrap"])
   name_prefix = "${local.name}-${each.key}-"
   description = "Economicon ${each.key}: explicit rules only"
   vpc_id      = aws_vpc.main.id
@@ -103,6 +103,10 @@ resource "aws_vpc_security_group_ingress_rule" "edge_alb" {
 }
 locals {
   connections = {
+    alb_grafana       = { source = "alb", target = "grafana", port = 3000 }
+    grafana_db        = { source = "grafana", target = "db", port = 5432 }
+    metrics_backend   = { source = "grafana", target = "backend", port = 8000 }
+    metrics_processor = { source = "grafana", target = "processor", port = 8001 }
     alb_backend       = { source = "alb", target = "backend", port = 8000 }
     backend_chat      = { source = "backend", target = "processor", port = 8003 }
     bootstrap_db      = { source = "bootstrap", target = "db", port = 5432 }
@@ -131,7 +135,7 @@ resource "aws_vpc_security_group_egress_rule" "internal" {
   to_port                      = each.value.port
 }
 resource "aws_vpc_security_group_egress_rule" "https" {
-  for_each          = toset(["backend", "processor", "azure-cost-api", "bootstrap"])
+  for_each          = toset(["backend", "processor", "azure-cost-api", "grafana", "bootstrap"])
   security_group_id = aws_security_group.component[each.key].id
   cidr_ipv4         = "0.0.0.0/0"
   ip_protocol       = "tcp"

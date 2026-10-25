@@ -1,0 +1,53 @@
+{
+  "title": "Revision JUP-131",
+  "reviewer": "/root/pr161_code_review",
+  "date": "2026-10-24",
+  "timezone": "Europe/Paris",
+  "base": "ffb5d307772f697cffb8b1e73e6330250e093601",
+  "candidate": "e730dc15fb3feb45a3b346fc9e48332c4608b049",
+  "scope": "Original candidate plus exact local two-file fix; no new commit asserted",
+  "files_sha256": {
+    "infra/aws-reference/edge.tf": "e78050dcc2d0b4f4ce76c1e3c9b64537c25a995e4b1537915dc3e7285726e2e7",
+    "infra/aws-reference/tests/monitoring.tftest.hcl": "d215fb2d3ea7d759a6a2a276b60e7541d2ce77e7ef9031f75972437ce5864c9f"
+  },
+  "verdict": "APPROVE",
+  "original_verdict_preserved": "REQUEST CHANGES",
+  "original_reports": ["review.md", "review.json"],
+  "closed_findings": [
+    {
+      "priority": "P2",
+      "title": "Public anonymous Grafana metrics under /grafana/",
+      "resolution": "Priority 1 fixed 404 adds /grafana/metrics* before priority 10 forwarding; three condition values, two wildcards.",
+      "location": "infra/aws-reference/edge.tf:87",
+      "status": "CLOSED_BY_SOURCE_REVALIDATION"
+    }
+  ],
+  "new_findings": [],
+  "checks_executed": [
+    "Read source diff, ALB and CloudFront context, complete monitoring test",
+    "git diff --check for both changed files: PASS",
+    "metrics_revalidation.py: PASS; original route regression confirmed, 8 blocked cases and 9 preserved cases, priorities/fixed404/limits verified"
+  ],
+  "coordinator_evidence_read": {
+    "path": ".work/pr161-metrics-fix/red-monitoring.log",
+    "result": "1 PASS / 1 FAIL with original deny paths",
+    "executed_by_this_reviewer": false
+  },
+  "coordinator_green_record_read": {
+    "path": ".work/pr161-metrics-fix/verification.json",
+    "checked_at_utc": "2026-10-24T21:29:20.419996+00:00",
+    "result": "14 mocked Terraform tests PASS / 0 FAIL; fmt PASS; validate PASS",
+    "file_hashes_match": true,
+    "executed_by_this_reviewer": false,
+    "full_green_log_independently_audited": false
+  },
+  "primary_source": "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/rule-condition-types.html",
+  "limitations": [
+    "No Terraform, Docker, HTTP, SQL, AWS or broad suite executed for this revalidation",
+    "Source-only pattern checks do not reproduce live URI normalization",
+    "Validator report not consumed; GREEN known from coordinator verification JSON, without own Terraform execution or full log audit",
+    "Only exact local two-file hashes approved; original e730 review preserved",
+    "Operational acceptance, budget-policy reconciliation and cloud gates remain separate",
+    "No external review publication, merge or deployment authorization"
+  ]
+}

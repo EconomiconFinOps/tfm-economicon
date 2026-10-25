@@ -83,7 +83,8 @@ resource "aws_lb_listener_rule" "deny_metrics" {
   }
   condition {
     path_pattern {
-      values = ["/metrics", "/metrics/*"]
+      # Block the Grafana metrics prefix within ALB's three-value condition limit.
+      values = ["/metrics", "/metrics/*", "/grafana/metrics*"]
     }
   }
 }
@@ -259,6 +260,18 @@ resource "aws_cloudfront_distribution" "main" {
         event_type   = "viewer-request"
         function_arn = aws_cloudfront_function.api.arn
       }
+    }
+  }
+  dynamic "ordered_cache_behavior" {
+    for_each = ["/grafana", "/grafana/*"]
+    content {
+      path_pattern             = ordered_cache_behavior.value
+      target_origin_id         = "api"
+      allowed_methods          = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
+      cached_methods           = ["GET", "HEAD"]
+      viewer_protocol_policy   = "https-only"
+      cache_policy_id          = aws_cloudfront_cache_policy.api.id
+      origin_request_policy_id = aws_cloudfront_origin_request_policy.api.id
     }
   }
   restrictions {

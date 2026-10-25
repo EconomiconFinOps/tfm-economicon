@@ -137,6 +137,39 @@ still grants neither acceptance of review contents nor authorization to merge.
 
 A validation lists what was not validated instead of marking it as met. The Validacion section of the pull request template is the leader's own evidence; it does not replace the validation review.
 
+### One-off authorization: PR161 agent review and validation
+
+On 2026-10-24 the user explicitly authorized two independent agents to carry
+out `Revision JUP-131` and `Validacion JUP-131` for PR161. This replaces the
+assigned human verdicts only for that increment. Reports must identify their
+agent authorship, exact candidate, checks actually performed and limitations.
+The authorization, scope and results are recorded in
+[the PR161 exception](docs/evidence/JUP-131-pr161-agent-exception.md).
+It neither changes the ordinary process nor grants deployment or merge
+authorization. Platform approvals and automated checks must retain their
+actual state; agent reports must not be represented as reviews by team members.
+
+For the reconciliation authorized on 2026-10-25, `JUP reviews` accepts this
+exception only for PR161, author `Iber1to`, repository
+`EconomiconFinOps/tfm-economicon`, head `feat/JUP-131-atlas-ecs`, base `develop`,
+JUP-131 and these exact visible roles: Alejandro Aguado / Victor Mendez /
+Agente pr161_code_review (excepcion PR161) / Agente pr161_validation (excepcion PR161).
+The body must contain this visible declaration exactly once:
+
+```
+- Excepcion puntual PR161: revision y validacion por agentes independientes, autorizada por el usuario el 2026-10-24
+```
+
+The fixed manifest in `docs/evidence/JUP-131-pr161-reconciliation/` binds two
+independent, positively concluded reports to their reviewed commit. The check
+verifies their attributed agent identities, report hashes, candidate ancestry
+and the live head. After that candidate, only the exact publication paths listed
+in `tools/pr161-agent-evidence.mjs` may change. Other changes require renewed
+evidence. These records document agent verdicts, not authenticated human reviews;
+the process still depends on the coordinator publishing the real reports.
+Every unresolved GitHub request for changes still blocks. Other PRs retain the
+ordinary rules. This does not change branch protections or authorize a merge.
+
 The desired GitHub rules and their administrator activation procedure are in
 docs/governance/github-branch-protection.md.
 The approved repository lifecycle, legacy-branch audit and release flow are in

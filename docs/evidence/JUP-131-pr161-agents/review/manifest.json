@@ -1,0 +1,29 @@
+{
+  "title": "Revision JUP-131",
+  "reviewer": "/root/pr161_code_review",
+  "packaged_at": "2026-10-24T23:37:30.532594+02:00",
+  "base": "ffb5d307772f697cffb8b1e73e6330250e093601",
+  "candidate": "e730dc15fb3feb45a3b346fc9e48332c4608b049",
+  "reviewed_source_sha256": {
+    "infra/aws-reference/edge.tf": "e78050dcc2d0b4f4ce76c1e3c9b64537c25a995e4b1537915dc3e7285726e2e7",
+    "infra/aws-reference/tests/monitoring.tftest.hcl": "d215fb2d3ea7d759a6a2a276b60e7541d2ce77e7ef9031f75972437ce5864c9f",
+    "apps/azure-cost-api/app/errors.py": "389e2a7c72185d34122c89028c2147e64a0db904ac38190839e3b4844e4a4a48",
+    "apps/azure-cost-api/tests/test_errors.py": "0cbc76998fdddd661c54c5d2bdc61542507ddcf992dbfebf582a2c0683886678"
+  },
+  "package_files_sha256": {
+    "README.md": "6c31140fc44e2c2703ab730aeb676ceb2fa51be67157b333214c1abe8df769bb",
+    "azure-error-check.json": "620837874c321294161840682231cc621b47ed59086726ef671546d5023a454b",
+    "azure-review.json": "ab9a374b43c779ed7c4988b2a07d33cbed6798f3b2357614c45377bcb1a62a2d",
+    "azure-review.md": "da737ad365876cea9ea4f9002cfb9083283b27f42efaa01ea6085aca5beeb4fe",
+    "azure_error_check.py": "743e403fda34af8481c0a262daac9721d7dde9e6159d15a0bf42e6be2091fcf2",
+    "metrics-revalidation-check.json": "e6e6a1eea13a500eb7c59bd942ceb19e0f7f2807fca975d95318a3b2e7c59740",
+    "metrics_revalidation.py": "a17537f81fc57e56dea4d8f53a67be580f804dd6810dbe3366aff9d69a4ad900",
+    "revalidation.json": "381b98b4fc6510e80bb3b51dc46013fe1b93d5d642b7758ff24f6e1d3a844c12",
+    "revalidation.md": "740c331a58b5bbfd8d653eae90493215b6974139411f017a6f3c5487ca5236d2",
+    "review.json": "8d01d7d54858d007719e630140e133a25f68b07d6a3ce65c0ad156c181ce34f9",
+    "review.md": "3fd4902e564222a6babbe63e3579557688d9a023d56af65a4433f2c44b8cbc1a",
+    "static_audit.py": "77b099f642f8d7332b61737bb56607d2a92ea3598ec11ea185703fdc724925e5"
+  },
+  "copied_originals_byte_identical": true,
+  "relative_markdown_links_checked": true
+}

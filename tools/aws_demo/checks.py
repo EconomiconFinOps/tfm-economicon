@@ -294,6 +294,27 @@ def main():
         expect(outputs['buckets']['documents'].startswith('economicon-' + config['cycle_id'] + '-documents-'), 'documents-bucket')
         fixture = json.loads((ROOT / 'apps/processor/app/resources/rehearsal-v1.json').read_text(encoding='utf-8'))
         run_checks(api, fixture, identity, outputs['buckets']['documents'], record)
+        # Read-only monitoring acceptance; no second model call or data import.
+        try:
+            from .monitoring_checks import check_monitoring
+        except ImportError:
+            from monitoring_checks import check_monitoring
+        grafana_arn = outputs['runtime_secret_arns']['grafana']
+        prefix = f"arn:aws:secretsmanager:eu-west-1:{config['account_id']}:secret:economicon-{config['cycle_id']}/grafana/runtime-"
+        expect(re.fullmatch(re.escape(prefix) + r'[A-Za-z0-9]{6}', grafana_arn), 'monitoring-reference')
+        credentials = _read_secret(sdk_client('secretsmanager', 'eu-west-1'), grafana_arn, config)
+        expect(credentials['_cycle_id'] == config['cycle_id'] and credentials['_source_sha'] == config['source_sha'], 'monitoring-identity')
+        expect(re.fullmatch('[a-f0-9]{64}', credentials['GF_SECURITY_ADMIN_PASSWORD']), 'monitoring-identity')
+        manifest = json.loads((ROOT / 'apps/backend/app/aws_atlas_data/manifest.json').read_text(encoding='utf-8'))
+        dashboards = [json.loads(path.read_text(encoding='utf-8'))['uid'] for path in (ROOT / 'apps/monitoring/grafana/dashboards').glob('*.json')]
+        def exchange(method, path, body, headers):
+            reply = HTTP.exchange(config['frontend_domain'], method, path, body, headers)
+            return reply.status, json.loads(reply.body) if reply.content_type.split(';')[0] == 'application/json' else {}
+        try:
+            proof = check_monitoring(exchange, config['frontend_domain'], credentials['GF_SECURITY_ADMIN_PASSWORD'], manifest, dashboards)
+        except Exception:
+            raise CheckError('monitoring') from None
+        record('monitoring', {'status': 'PASS', **proof})
         report.update(result='SUCCESS', completed_at=datetime.now(timezone.utc).isoformat())
         save()
         print(json.dumps({'phase': 'acceptance', 'result': 'SUCCESS', 'source_sha': config['source_sha']}))

@@ -1,5 +1,5 @@
 {
-  "application_sha256": "8a47bf3d8f88fbc45652bdcbe5ecb7f71c036c3e9d3bfc0b51bb556d36cd633d",
+  "application_sha256": "5e19f3f4ff0db6039ebc42b2733d9dd4266e94b55c6fc8fac741c21876461e70",
   "evidence": {
     "postgresql": {
       "path": "docs/evidence/JUP-131-postgresql.md",
@@ -16,6 +16,14 @@
     "demo_data": {
       "path": "docs/evidence/JUP-131-aws-fixtures-checks.md",
       "sha256": "5475aa9eb7a9cfb537fd1ed24a63ca3c7150b1e535780167b53d26e193126a55"
+    },
+    "monitoring": {
+      "path": "docs/evidence/JUP-131-atlas-ecs.md",
+      "sha256": "fc5b3aee510ea5857797c902179f39d9e821c35710d2c93f91b5ab632171c059"
+    },
+    "reconciliation": {
+      "path": "docs/evidence/JUP-131-pr161-reconciliation/application-acceptance.md",
+      "sha256": "5eb418403fcf3dcc0dbccde23c7423e38f138da2cb2b206eee400f4afa87a3f0"
     }
   },
   "bootstrap": [
