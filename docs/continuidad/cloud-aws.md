@@ -17,8 +17,8 @@ lease y Scheduler exactos. A las 16:47:58 se confirma retirada de la política
 `economicon-ensayo1-cloudmap-retirement`, los dos logs RDS (0 bytes declarados),
 el Scheduler `economicon-ensayo1` y su lease. Namespace y zona privada ausentes;
 ambas bases, RabbitMQ y NAT retirados. Snapshots RDS y backups retenidos vacíos
-en lectura16:36. Se conservan bootstrap, artefactos y estado de control; una
-clave KMS y cinco secretos tienen borrado diferido30d. No se afirma coste cero.
+en lectura 16:36. Se conservan bootstrap, artefactos y estado de control; una
+clave KMS y cinco secretos tienen borrado diferido de 30 días. No se afirma coste cero.
 No reejecutar los scripts de cierre sobre este estado ya cerrado.
 
 Recibo local `.work/master-rehearsal/recovery-2/final-cleanup-manual.json` y S3
@@ -29,7 +29,7 @@ no sustituyen el informe original. La aplicación nunca llegó a estar disponibl
 PR166 añade lectura autoritativa para los tipos de residuo observados. Un error
 de permisos, timeout, identidad inesperada o recurso desconocido sigue bloqueando
 el cierre; sólo ausencia exacta o estado retirado válido permite clasificarlo como
-metadatos. Regresión roja previa, luego105 pruebas offline OK (9 integraciones
+metadatos. Regresión roja previa, luego 105 pruebas offline OK (9 integraciones
 omitidas). Revisión detectó además `NatGatewayNotFound`, corregido con regresión.
 
 La CI previa de PR166 falló dos veces en la prueba de proyección de pantalla;
@@ -38,7 +38,8 @@ probaba la base anterior. El nuevo catálogo de cantidades de pantalla aumentó 
 schema esencial y la fixture calculaba el margen sobre pantalla vacía. Base nueva
 incorporada; se adapta sólo el presupuesto sintético de esa prueba al schema real
 y se exige conservar algunas filas y omitir otras. Límites de producción, ApiError,
-Starlette1.9.0 y código de aplicación no se modifican respecto a develop.
+Starlette 1.9.0 y código de aplicación no se modifican respecto a develop.
+El fichero completo de contexto supera 35 pruebas locales con datos sintéticos.
 
 Siguiente: completar revisión y CI del nuevo candidato PR166, obtener los
 dictámenes humanos o una nueva excepción explícita antes de merge, y resolver
