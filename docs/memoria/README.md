@@ -6,7 +6,6 @@ La memoria del TFM es un entregable que se redacta fuera del repositorio. Este d
 
 - La fuente editable es un documento compartido de Google Docs llamado `Memoria_Economicon`. Su enlace está en la tarjeta de Trello «PROYECTO — Enlaces y coordinación».
 - No se copia a Git ni se mantiene una segunda versión canónica en el repositorio. Es una decisión del change `jup-062-business-memory`.
-- Las exportaciones fechadas (PDF y Markdown) y su manifiesto SHA-256 se guardan en `materiales/06-entregables/`, fuera de Git, junto al resto de entregables finales. Una exportación registrada no se edita: se vuelve a exportar al revisar o cerrar un hito, y el manifiesto lista la fecha y el SHA-256 de cada archivo, PDF y Markdown.
 
 ## Con qué criterio se corrige
 
@@ -47,7 +46,7 @@ La persona responsable de cada apartado es la que figura en su tarjeta.
 ## Para herramientas y asistentes
 
 - El enlace del documento y el del guion se buscan en la tarjeta de Trello «PROYECTO — Enlaces y coordinación», no en el repositorio.
-- La memoria no está en el repositorio: no se busca ni se regenera desde Git, y las exportaciones de `materiales/06-entregables/` son la memoria y siguen las mismas reglas que el documento.
+- La memoria no está en el repositorio: no se busca ni se regenera desde Git.
 - No se lee ni se modifica el documento sin autorización expresa de quien lidera la tarjeta del apartado afectado. Para un apartado sin tarjeta propia, autoriza quien lidera JUP-062 hasta que Trello asigne a alguien. Si falta la autorización, la herramienta la solicita y no lee ni modifica nada.
 - La autorización para leer no autoriza a modificar, y la de un apartado no se extiende a los demás: leer el apartado b no permite modificar el d. Leer el documento completo o una exportación completa exige la autorización de todos los apartados que contiene; con la de uno solo, la persona entrega a la herramienta el fragmento y no el fichero.
 - Una herramienta con acceso de lectura al documento compartido y con autorización expresa para leer el apartado prepara una propuesta de redacción de ese apartado, con cada cifra y su fuente y con `[Pendiente]` donde falte, y se la entrega a la persona. Tener acceso sin la autorización equivale a no tener acceso: la herramienta la solicita, no lee nada y trabaja solo con el texto que la persona le dé, sin buscar el documento en otro sitio.
