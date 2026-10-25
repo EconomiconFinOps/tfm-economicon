@@ -52,7 +52,7 @@
       "RAG_VERIFIED_ENABLED": "true",
       "CHAT_ENABLED": "true",
       "SUMMARY_ENABLED": "true",
-      "CHAT_MAX_ACTIVE": "2",
+      "CHAT_MAX_ACTIVE": "5",
       "CHAT_RESOURCE_DIRECTORY": "/opt/economicon/chat/v4",
       "SUMMARY_RESOURCE_DIRECTORY": "/opt/economicon/summary/v4",
       "DOCUMENT_UPLOADS_ENABLED": "true",
@@ -70,7 +70,7 @@
       "AI_EXECUTION_MODE": "evaluation",
       "CHAT_ENABLED": "true",
       "SUMMARY_ENABLED": "true",
-      "CHAT_MAX_ACTIVE": "2",
+      "CHAT_MAX_ACTIVE": "5",
       "CHAT_RESOURCE_DIRECTORY": "/app/app/agents/prompt_resources/jup035/chat/v4",
       "SUMMARY_RESOURCE_DIRECTORY": "/app/app/agents/prompt_resources/jup035/summary/v4",
       "DOCUMENT_UPLOADS_ENABLED": "true"

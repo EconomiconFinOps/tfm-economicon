@@ -90,3 +90,18 @@ class ReleaseReadinessTests(unittest.TestCase):
                 item, 'aws', side_effect=AssertionError('Unexpected AWS call')):
             with self.assertRaisesRegex(ValueError, 'application tree differs'):
                 item.recipe()
+
+    def test_chat_capacity_failure_blocks_preparation_and_runner_before_aws(self):
+        self.recipe['application_environment']['backend']['CHAT_MAX_ACTIVE'] = '2'
+        (self.root / 'infra/aws-cicd/release.json').write_text(json.dumps(self.recipe))
+        with patch.object(prepare, 'ROOT', self.root):
+            report = prepare.prepare(config(), self.root / '.work/invalid-capacity', 'a' * 40)
+        self.assertFalse(report['aws_deployable'])
+        self.assertFalse(report['aws_resources_created'])
+        self.assertTrue(any('Chat capacity' in reason for reason in report['blockers']))
+        item = object.__new__(runner.Runner)
+        item.config = config()
+        with patch.object(runner, 'ROOT', self.root), patch.object(
+                item, 'aws', side_effect=AssertionError('Unexpected AWS call')):
+            with self.assertRaisesRegex(ValueError, 'Chat capacity'):
+                item.recipe()

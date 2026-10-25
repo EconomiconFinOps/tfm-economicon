@@ -1,5 +1,24 @@
 ## ADDED Requirements
 
+### Requirement: Chat startup capacity compatibility
+When chat is enabled, the AWS release recipe SHALL use the runtime-supported
+capacity of 5 to 8 simultaneous chats. Backend and processor SHALL agree on the
+effective capacity when both enable chat. An omitted value SHALL retain the
+runtime default of 8. Preparation and the release runner SHALL reject an invalid
+recipe before making AWS calls; this does not prove live application readiness.
+
+#### Scenario: Recipe repeats the observed startup failure
+- **WHEN** chat is enabled with CHAT_MAX_ACTIVE=2 in either component
+- **THEN** preparation and the runner reject the recipe before provisioning resources
+
+#### Scenario: Enabled components disagree
+- **WHEN** backend and processor enable chat with different effective capacities
+- **THEN** the recipe is rejected even when each value is individually supported
+
+#### Scenario: Runtime contract changes
+- **WHEN** the versioned recipe is checked in CI
+- **THEN** a regression test exercises the actual runtime capacity reader with the recipe value
+
 ### Requirement: Additive Atlas evaluations
 The private bootstrap SHALL verify the exact Atlas SQL digest, load the 19 runs
 and 1688 results transactionally, preserve unrelated history, and reject identity

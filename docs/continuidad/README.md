@@ -1,5 +1,43 @@
 # Continuidad del proyecto
 
+25Oct 19:12 Europe/Paris: ensayo2 no alcanzó aceptación. Infraestructura y seis
+tareas de bootstrap correctas; backend/processor fallaron por CHAT_MAX_ACTIVE=2,
+fuera del contrato 5–8. Release detenido; lock abandonado retirado con verificación
+y revisión independiente. Retirada `dee7cab8` en curso, apagado19:57 conservado.
+Corrección local a5 y preflight preventivo: 103 pruebas PASS,9 omitidas;
+publicación/CI/revisión de la nueva PR pendientes. [Estado](cloud-aws.md).
+
+Los cortes siguientes conservan el historial previo del ensayo.
+
+25Oct 18:48 Europe/Paris: infraestructura de ensayo2 SUCCESS, 162 recursos;
+RDS privadas/Multi-AZ disponibles, RabbitMQ RUNNING y CloudFront Deployed.
+Release `fcf9baed` iniciado con fuente `92e792ce`, timeout40/cola5 y apagado
+19:57:15 conservado. Pendientes bootstrap, ECS y aceptación; aplicación todavía
+no declarada disponible. Recibos y estado en [cloud-aws.md](cloud-aws.md).
+
+Los cortes siguientes conservan el historial previo del ensayo.
+
+25Oct 18:28 Europe/Paris: importación declarativa real SUCCESS; VPC y namespace
+gestionados. Plan completo verificado: 160 altas, cero cambios/bajas. Apply
+`fe2f28b8` iniciado con fuente `92e792ce`; CI develop SUCCESS y excepción PR166
+registradas. Apagado19:57:15 verificado, lease APPLYING. Aplicación aún pendiente
+de apply, release y aceptación. Operación asistida; detalle y recibos en
+[cloud-aws.md](cloud-aws.md). Zona privada vigente `Z042108134CH6PL7JM3CQ`.
+
+Los cortes siguientes conservan el historial previo del ensayo.
+
+25Oct 18:19 Europe/Paris: PR166 integrada con la excepción y bypass autorizados
+para `96031072`, como `92e792ce`; árbol idéntico al revisado y CI develop
+`40211640718` SUCCESS. Ensayo1 cerrado; no aplicación activa. Preparación local
+de ensayo2 con VPC Terraform, Cloud Map administrativo e importación, seguida de
+plan completo. Cinco imágenes construidas; VPC creada y verificada. Import CLI
+falló por for_each sobre recursos ausentes; namespace/policy retirados correctamente.
+Alternativa declarativa reproducida offline y delta operativo en revisión.
+Apagado19:57:15 y lease APPLYING conservados. Aplicación pendiente.
+[Estado y límites del ensayo](cloud-aws.md).
+
+Los cortes siguientes conservan el historial previo del ensayo.
+
 25Oct 16:54 Europe/Paris: ensayo parcial retirado y cierre manual verificado a
 las 16:47:58: estado vacío, 39 referencias de etiquetas confirmadas retiradas por APIs
 directas, permiso temporal/logs RDS/lease/Scheduler ausentes. Bootstrap preservado;
