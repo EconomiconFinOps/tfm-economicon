@@ -670,7 +670,7 @@ class ConfigChangesRealDataTest(ViewsTestCase):
         for run_id, source, moment, provider, *values in rows:
             fields = dict(zip(columns, (None if value == absent else value for value in values)))
             runs.append({"run_id": run_id, "source": source, "run_at": moment or None, "provider": provider, **fields})
-        self.assertEqual(len(runs), 18)
+        self.assertEqual(len(runs), 20)
 
         expected = []
         for source in sorted({run["source"] for run in runs}):
@@ -796,9 +796,9 @@ class ComparableRunsTest(ViewsTestCase):
         # otras cuatro ejecuciones reales son claves únicas o no tienen fecha.
         dataset = tool.build_dataset([tool.DEFAULT_MANIFEST])
         keys = [item["run"]["comparability_key"] for item in dataset["runs"]]
-        self.assertEqual(len(set(keys)), 14)
+        self.assertEqual(len(set(keys)), 16)
         server().load_dataset(dataset, tool)
-        self.assertEqual(server().scalar("SELECT count(*) FROM evaluation.runs"), "18")
+        self.assertEqual(server().scalar("SELECT count(*) FROM evaluation.runs"), "20")
         rows = comparable_rows()
         from evaluation_fixture_support import INFRA_IDS
         self.assertEqual({row[1] for row in rows}, set(INFRA_IDS))

@@ -95,7 +95,9 @@ class CampaignDataIntegration(unittest.TestCase):
         self.assertEqual(self.panel(322,campaign=self.new_ids[-1]),self.panel(322,campaign=self.new_ids[0]))
 
     def test_measured_series_form_only_the_two_new_cohorts_and_distinct_latency_populations(self):
-        for panel,n_points,n_lines,n_single in [(2101,310,38,196),(2102,28,0,28),(4101,24,6,6)]:
+        # Las veinte proporciones del suplemento son puntos aislados: sus dos
+        # protocolos no añaden ninguna línea comparable a las cohortes históricas.
+        for panel,n_points,n_lines,n_single in [(2101,330,38,216),(2102,28,0,28),(4101,24,6,6)]:
             rows=self.panel(panel)
             series=Counter(r['metric'] for r in rows)
             with self.subTest(panel=panel):
@@ -125,7 +127,7 @@ class CampaignDataIntegration(unittest.TestCase):
         rows=self.panel(910)
         keys={(r['identidad_interna'],r['grupo_interno'],r['medida_interna'],r['variante_interna'],r['Estado']) for r in rows}
         actual=self.query('SELECT run_id,grp,metric_id,behavior,status FROM evaluation.results')
-        self.assertEqual(len(rows),1670)
+        self.assertEqual(len(rows),1800)
         self.assertEqual(keys,{(r['run_id'],r['grp'],r['metric_id'],r['behavior'],{'measured':'Medido','not_measured':'No medido','pass':'Favorable','fail':'Fallido','blocked':'Bloqueado','not_run':'Sin evaluar'}.get(r['status'],r['status'])) for r in actual})
         self.assertEqual(sum(r['grupo_interno'].startswith('agent_') for r in rows),504)
         for panel in (910,330):
