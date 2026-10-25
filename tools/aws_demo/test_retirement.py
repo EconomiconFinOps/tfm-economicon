@@ -56,6 +56,25 @@ class RetirementTests(unittest.TestCase):
                 self.assertEqual(result['active'], [])
                 self.assertEqual(result['retired_metadata'], [arn])
 
+    def test_aws_cli_error_prefix_preserves_exact_absence_classification(self):
+        result, _, arn = self.inspect('ec2', 'security-group-rule/sgr-test',
+            'describe-security-group-rules', error=(
+                'aws: [ERROR]: An error occurred (InvalidSecurityGroupRuleId.NotFound) '
+                'when calling the DescribeSecurityGroupRules operation: absent\n'))
+        self.assertEqual(result['active'], [])
+        self.assertEqual(result['retired_metadata'], [arn])
+
+    def test_prefixed_denials_wrong_operations_and_embedded_errors_abort(self):
+        errors = (
+            'aws: [ERROR]: An error occurred (AccessDenied) when calling the DescribeSubnets operation: denied',
+            'aws: [ERROR]: An error occurred (InvalidSubnetID.NotFound) when calling the OtherOperation operation: wrong',
+            'request text aws: [ERROR]: An error occurred (InvalidSubnetID.NotFound) when calling the DescribeSubnets operation: quoted',
+            'aws: [WARNING]: An error occurred (InvalidSubnetID.NotFound) when calling the DescribeSubnets operation: wrong level',
+        )
+        for error in errors:
+            with self.subTest(error=error), self.assertRaises(RuntimeError):
+                self.inspect('ec2', 'subnet/subnet-test', 'describe-subnets', error=error)
+
     def test_inactive_cluster_requires_no_tasks_or_services(self):
         arn = 'arn:aws:ecs:eu-west-1:123456789012:cluster/economicon-ensayo1'
         for count in (0, 1):
@@ -73,6 +92,49 @@ class RetirementTests(unittest.TestCase):
         for response in ({'clusters': []}, {'clusters': [], 'failures': [{'arn': arn, 'reason': 'ACCESS_DENIED'}]}):
             with self.subTest(response=response), self.assertRaises(ValueError):
                 self.inspect('ecs', 'cluster/economicon-ensayo1', 'describe-clusters', response)
+
+    def test_retired_ecs_services_and_tasks_require_exact_cycle_and_terminal_state(self):
+        cluster = 'arn:aws:ecs:eu-west-1:123456789012:cluster/economicon-ensayo1'
+        cases = [
+            ('service', 'backend', 'describe-services', 'services', 'serviceArn',
+             {'status':'INACTIVE', 'desiredCount':0, 'runningCount':0, 'pendingCount':0}),
+            ('task', 'task-id', 'describe-tasks', 'tasks', 'taskArn',
+             {'lastStatus':'STOPPED', 'desiredStatus':'STOPPED'}),
+        ]
+        for kind, name, operation, key, id_key, terminal in cases:
+            resource = f'{kind}/economicon-ensayo1/{name}'
+            arn = 'arn:aws:ecs:eu-west-1:123456789012:' + resource
+            with self.subTest(kind=kind):
+                obj = dict(terminal, clusterArn=cluster, **{id_key:arn})
+                result, calls, _ = self.inspect('ecs', resource, operation, {key:[obj]})
+                self.assertEqual(result['retired_metadata'], [arn])
+                self.assertEqual(result['active'], [])
+                self.assertEqual(calls[0][-4:-2], ('--cluster', cluster))
+                result, _, _ = self.inspect('ecs', resource, operation,
+                    {key:[], 'failures':[{'arn':arn, 'reason':'MISSING'}]})
+                self.assertEqual(result['retired_metadata'], [arn])
+                with self.assertRaises(ValueError):
+                    self.inspect('ecs', resource, operation, {key:[dict(obj, clusterArn=cluster+'-foreign')]})
+                for response in ({key:[]}, {key:[], 'failures':[{'arn':arn, 'reason':'ACCESS_DENIED'}]}):
+                    with self.assertRaises(ValueError):
+                        self.inspect('ecs', resource, operation, response)
+        with self.assertRaises(ValueError):
+            self.inspect('ecs', 'service/economicon-other/backend', 'describe-services', {'services':[]})
+
+    def test_live_ecs_service_and_task_states_remain_active(self):
+        cluster = 'arn:aws:ecs:eu-west-1:123456789012:cluster/economicon-ensayo1'
+        resource = 'service/economicon-ensayo1/backend'
+        arn = 'arn:aws:ecs:eu-west-1:123456789012:' + resource
+        for state, desired, running, pending in [('ACTIVE',0,0,0),('DRAINING',0,0,0),('INACTIVE',1,0,0),('INACTIVE',0,1,0),('INACTIVE',0,0,1)]:
+            with self.subTest(state=state, counts=(desired,running,pending)):
+                result, _, _ = self.inspect('ecs', resource, 'describe-services', {'services':[{'serviceArn':arn,'clusterArn':cluster,'status':state,'desiredCount':desired,'runningCount':running,'pendingCount':pending}]})
+                self.assertEqual(result['active'], [arn])
+        resource = 'task/economicon-ensayo1/task-id'
+        arn = 'arn:aws:ecs:eu-west-1:123456789012:' + resource
+        for actual, desired in [('RUNNING','RUNNING'),('STOPPING','STOPPED'),('STOPPED','RUNNING')]:
+            with self.subTest(actual=actual, desired=desired):
+                result, _, _ = self.inspect('ecs', resource, 'describe-tasks', {'tasks':[{'taskArn':arn,'clusterArn':cluster,'lastStatus':actual,'desiredStatus':desired}]})
+                self.assertEqual(result['active'], [arn])
 
     def test_present_and_deleting_resources_remain_active(self):
         for status in ('available', 'deleting', 'pending'):
