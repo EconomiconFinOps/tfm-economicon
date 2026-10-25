@@ -51,7 +51,7 @@ REHEARSAL = json.loads((Path(__file__).resolve().parents[3] / 'docs/demo/JUP-065
 @pytest.mark.parametrize('case', REHEARSAL['cases'], ids=lambda case: case['id'])
 def test_rehearsal_sentence_boundaries_render_and_stream(case):
     segments = [{'inference': part} for part in case['parts']]
-    expected = 'Interpretación: ' + ' '.join(case['parts'])
+    expected = ' '.join(case['parts'])
     assert render_segments(segments, []) == expected
     raw = json.dumps({'basis': 'authorized_evidence', 'answer': segments})
     for size in (1, 7, len(raw)):
@@ -77,7 +77,7 @@ def test_rehearsal_transition_must_not_be_completed_by_a_quote(text):
     (['desco', 'nocido.'], 'desconocido.'),
 ])
 def test_join_preserves_existing_whitespace_and_partial_words(parts, expected):
-    assert render_segments([{'inference': text} for text in parts], []) == 'Interpretación: ' + expected
+    assert render_segments([{'inference': text} for text in parts], []) == expected
 
 
 def test_complete_prose_keeps_documentary_passage_literal_in_stream():
@@ -103,4 +103,4 @@ def test_complete_prose_keeps_documentary_passage_literal_in_stream():
 def test_inserted_space_counts_towards_public_limit():
     segments = [{'inference': 'A.'}, {'inference': 'B.'}]
     with pytest.raises(ValueError, match='Rendered text limit'):
-        render_segments(segments, [], limit=len('\nInterpretación: A.B.\n'))
+        render_segments(segments, [], limit=len('\nA.B.\n'))
