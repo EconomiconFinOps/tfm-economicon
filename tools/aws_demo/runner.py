@@ -487,6 +487,8 @@ class Runner:
             ("ec2", "security-group-rule"): ("describe-security-group-rules", "--security-group-rule-ids", "SecurityGroupRules", "SecurityGroupRuleId", None, ("InvalidSecurityGroupRuleId.NotFound",)),
             ("ec2", "subnet"): ("describe-subnets", "--subnet-ids", "Subnets", "SubnetId", None, ("InvalidSubnetID.NotFound",)),
             ("ecs", "cluster"): ("describe-clusters", "--clusters", "clusters", "clusterArn", "status", ()),
+            ("ecs", "service"): ("describe-services", "--services", "services", "serviceArn", "status", ()),
+            ("ecs", "task"): ("describe-tasks", "--tasks", "tasks", "taskArn", "lastStatus", ()),
             ("cognito-idp", "userpool"): ("describe-user-pool", "--user-pool-id", "UserPool", "Id", None, ("ResourceNotFoundException",)),
         }
         read = reads.get((service, kind))
@@ -496,13 +498,21 @@ class Runner:
                 "Residual resource identity does not match the inspected account/region")
         operation, argument, key, id_key, state_key, missing_codes = read
         requested = arn if service == "ecs" else identity
+        cluster_args = ()
+        if service == "ecs" and kind in {"service", "task"}:
+            cluster_name = "economicon-" + self.config["cycle_id"]
+            resource_cluster, separator, resource_id = identity.partition("/")
+            require(resource_cluster == cluster_name and separator and resource_id and "/" not in resource_id,
+                    "Residual ECS resource does not belong to the inspected cycle")
+            cluster = f"arn:aws:ecs:{region}:{account}:cluster/{cluster_name}"
+            cluster_args = ("--cluster", cluster)
         try:
-            response = self.aws(service, operation, argument, requested, "--region", region, deploy=True)
+            response = self.aws(service, operation, argument, requested, *cluster_args, "--region", region, deploy=True)
         except RuntimeError:
             diagnostic = WORK / "last-error.private.txt"
             api = "".join(word.title() for word in operation.split("-"))
             if not diagnostic.is_file() or not any(re.search(
-                    r"(?m)^An error occurred \(" + re.escape(code)
+                    r"(?m)^(?:aws: \[ERROR\]: )?An error occurred \(" + re.escape(code)
                     + r"\) when calling the " + re.escape(api) + r" operation:", diagnostic.read_text()) for code in missing_codes):
                 raise  # Denials, timeouts and unrelated errors never prove absence.
             diagnostic.unlink()
@@ -517,7 +527,13 @@ class Runner:
             failures = response.get("failures", [])
             require(len(objects) + len(failures) == 1
                     and all(failure["arn"] == arn and failure["reason"] == "MISSING" for failure in failures),
-                    "Cluster absence was not confirmed")
+                    "ECS resource absence was not confirmed")
+            if cluster_args:
+                require(all(obj["clusterArn"] == cluster for obj in objects), "Unexpected residual ECS cluster")
+                if kind == "service":
+                    return all(obj["status"] == "INACTIVE" and obj["desiredCount"] == 0
+                               and obj["runningCount"] == 0 and obj["pendingCount"] == 0 for obj in objects)
+                return all(obj["lastStatus"] == "STOPPED" and obj["desiredStatus"] == "STOPPED" for obj in objects)
             return all(obj["status"] == "INACTIVE" and obj["runningTasksCount"] == 0
                        and obj["pendingTasksCount"] == 0 and obj["activeServicesCount"] == 0 for obj in objects)
         if state_key:

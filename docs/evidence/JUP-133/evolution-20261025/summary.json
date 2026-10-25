@@ -1,0 +1,116 @@
+{
+  "friday": {
+    "full": {
+      "operations": 171,
+      "completed": 158,
+      "failed": 13,
+      "attempts": 248,
+      "retried": 42,
+      "median_seconds": 19.777134999999998,
+      "p95_seconds": 148.45136300000001,
+      "max_seconds": 314.65318,
+      "observed_cost_usd": "0.5291594448"
+    },
+    "common44": {
+      "operations": 132,
+      "completed": 119,
+      "failed": 13,
+      "attempts": 201,
+      "retried": 35,
+      "median_seconds": 20.127959999999998,
+      "p95_seconds": 148.796412,
+      "max_seconds": 314.65318,
+      "observed_cost_usd": "0.4435138808"
+    },
+    "general28": {
+      "operations": 84,
+      "completed": 77,
+      "failed": 7,
+      "attempts": 122,
+      "retried": 17,
+      "median_seconds": 19.2179035,
+      "p95_seconds": 148.45136300000001,
+      "max_seconds": 186.755403,
+      "observed_cost_usd": "0.2678015080"
+    },
+    "robust16": {
+      "operations": 48,
+      "completed": 42,
+      "failed": 6,
+      "attempts": 79,
+      "retried": 18,
+      "median_seconds": 22.805484,
+      "p95_seconds": 150.92420199999998,
+      "max_seconds": 314.65318,
+      "observed_cost_usd": "0.1757123728"
+    }
+  },
+  "sunday": {
+    "full": {
+      "operations": 50,
+      "completed": 47,
+      "failed": 3,
+      "attempts": 61,
+      "retried": 5,
+      "median_seconds": 12.8565,
+      "p95_seconds": 60.719,
+      "max_seconds": 65.892,
+      "observed_cost_usd": "0.0808892056"
+    },
+    "common44": {
+      "operations": 44,
+      "completed": 41,
+      "failed": 3,
+      "attempts": 53,
+      "retried": 4,
+      "median_seconds": 12.0195,
+      "p95_seconds": 49.485,
+      "max_seconds": 65.892,
+      "observed_cost_usd": "0.0727486368"
+    },
+    "general28": {
+      "operations": 28,
+      "completed": 27,
+      "failed": 1,
+      "attempts": 32,
+      "retried": 2,
+      "median_seconds": 10.7785,
+      "p95_seconds": 27.731,
+      "max_seconds": 60.719,
+      "observed_cost_usd": "0.0433961696"
+    },
+    "robust16": {
+      "operations": 16,
+      "completed": 14,
+      "failed": 2,
+      "attempts": 21,
+      "retried": 2,
+      "median_seconds": 16.6565,
+      "p95_seconds": 65.892,
+      "max_seconds": 65.892,
+      "observed_cost_usd": "0.0293524672"
+    },
+    "reported4": {
+      "operations": 4,
+      "completed": 4,
+      "failed": 0,
+      "attempts": 6,
+      "retried": 1,
+      "median_seconds": 17.778,
+      "p95_seconds": 61.766,
+      "max_seconds": 61.766,
+      "observed_cost_usd": "0.0051467640"
+    },
+    "screen2": {
+      "operations": 2,
+      "completed": 2,
+      "failed": 0,
+      "attempts": 2,
+      "retried": 0,
+      "median_seconds": 23.671,
+      "p95_seconds": 27.541,
+      "max_seconds": 27.541,
+      "observed_cost_usd": "0.0029938048"
+    }
+  }
+}

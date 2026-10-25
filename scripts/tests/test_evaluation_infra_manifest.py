@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import evaluation_readability_support as R
 from evaluation_fixture_support import (
     ROOT, INFRA_IDS, INFRA_PATHS, INFRA_ROW_COUNTS, HISTORICAL_MANIFEST,
-    VERSIONED_RUNS, VERSIONED_RESULTS,
+    VERSIONED_RUNS, VERSIONED_RESULTS, EVOLUTION_PATHS,
 )
 
 
@@ -23,7 +23,8 @@ class FullManifestTests(unittest.TestCase):
         current = json.loads((ROOT / "docs/validation/evaluation-runs.json").read_text(encoding="utf-8"))["runs"]
         self.assertEqual(len(historical), 12)
         self.assertEqual(current, historical + current[12:])
-        self.assertEqual([entry["path"] for entry in current[12:]], list(INFRA_PATHS))
+        self.assertEqual([entry["path"] for entry in current[12:18]], list(INFRA_PATHS))
+        self.assertEqual([entry["path"] for entry in current[18:]], list(EVOLUTION_PATHS))
         self.assertTrue(all(not entry["milestone"] for entry in current[12:]))
 
     def test_full_load_has_all_reviewed_rows(self):

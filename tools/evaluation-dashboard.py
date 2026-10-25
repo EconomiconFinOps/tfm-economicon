@@ -1616,7 +1616,10 @@ def classify_run(run) -> tuple[str, ...]:
     # `sin_modelo_verificado` solo se aplica a campañas sobre el chat: JUP-078 trae varios modelos y no registra
     # ninguno en `run`, y JUP-022 y JUP-068 no generan respuestas. Allí `generation_model` nulo es lo normal y
     # marcarlas como no reales sería un falso positivo.
-    if run["source"] in CHAT_CAMPAIGN_SOURCES and run["generation_model"] is None:
+    # La proyección descriptiva JUP-133 contiene operaciones del chat, pero su
+    # modelo sigue declarado, no atestado; no elevarla a real por cambiar source.
+    chat_projection = run["source"] == "JUP-133" and run["suite"] == "descriptive-friday-sunday"
+    if (run["source"] in CHAT_CAMPAIGN_SOURCES or chat_projection) and run["generation_model"] is None:
         reasons.append("sin_modelo_verificado")
     return tuple(reasons)
 

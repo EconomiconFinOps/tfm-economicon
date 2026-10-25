@@ -400,7 +400,8 @@ class IdempotenciaTests(unittest.TestCase):
             self.assertEqual(salida.stdout, LOAD_SUMMARY)
         self.assertEqual((self.tras_la_primera["n_runs"], self.tras_la_primera["n_results"]), (VERSIONED_RUNS, VERSIONED_RESULTS))
         # El versionado tiene tres cambios anotados desde JUP-133: modelo servido de JUP-071, banco con chat real frente a plantilla y ventana de coste.
-        self.assertEqual(self.tras_la_primera["n_config_changes"], 5)
+        # Las dos proyecciones JUP-133 añaden un cambio de protocolo, no una serie comparable.
+        self.assertEqual(self.tras_la_primera["n_config_changes"], 6)
         vacia = json_de(f"SELECT jsonb_build_object('h', md5(''))")["h"]
         self.assertNotEqual(self.tras_la_primera["runs"], vacia)
         self.assertNotEqual(self.tras_la_primera["results"], vacia)
@@ -712,7 +713,7 @@ class ManifiestoLocalTests(unittest.TestCase):
         self.assertEqual(sorted(set(self.con_local["ids"]) & set(ID_LOCALES)), ID_LOCALES)
         self.assertNotEqual(self.con_local, self.solo_versionado)
         # Las vistas notan las ejecuciones nuevas (cambio de modelo y de batería entre consecutivas y dos comparables).
-        self.assertEqual((self.con_local["n_config_changes"], self.con_local["n_comparable_runs"]), (7, 8))
+        self.assertEqual((self.con_local["n_config_changes"], self.con_local["n_comparable_runs"]), (8, 8))
 
     def test_una_recarga_sin_el_manifiesto_local_lo_quita_y_deja_el_contenido_versionado_original(self):
         self.assertEqual(sorted(set(self.sin_local["ids"]) & set(ID_LOCALES)), [])

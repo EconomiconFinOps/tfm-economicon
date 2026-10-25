@@ -179,3 +179,45 @@ Origen y fecha: mismo chat `01a16421-03a0-7460-b110-24738407ccb1`, 2026-10-23.
 - Captura actual de los tres paneles JUP-133 guardada en el expediente privado; no revalida visualmente todas las campañas históricas.
 - Histórico superado: PR #150 ya está integrado. Su merge no equivale a dos juicios humanos por respuesta ni autoriza aceptar las nuevas campañas.
 - Cifras de la hoja de hechos sin origen en el repositorio (latencia 22,5/40,8 s, campañas RAG A-D); el coste 0,1806 USD de 28 operaciones sale del informe del 19/10 de Paris (véase la lista de cifras): indicar fuente antes de mantenerlas.
+
+
+## Evolución viernes 23 / domingo 25 — 25/10/2026
+
+Por petición de HAL 9000 (`01a1270c-e332-7462-9c90-706d49ade92c`), PR aditiva sobre
+`develop` 1c4eda8a. [Informe, datos y carga](../evidence/JUP-133/evolution-20261025/README.md).
+El candidato medido el domingo es 390721f9; no se atribuyen los resultados al
+`develop` posterior. Viernes conserva commit no atestado e imágenes registradas.
+DeepSeek V4.1 Flash / DeepInfra FP8 declarados, sin atestación independiente upstream.
+
+Dos proyecciones derivadas, no dos campañas nuevas: 18 representaciones / 1670
+filas previas idénticas más 130 filas. 44 IDs comunes: 132 operaciones viernes y
+44 domingo; completadas 119/132 → 41/44, reintentos 35 → 4, mediana 20,128 → 12,020 s,
+p95 148,796 → 49,485 s. Perturbaciones: 87,5 % completadas ambos días. Arnés, carga,
+repeticiones y wrapper distintos; claves de comparabilidad separadas, sin A/B causal.
+Calidad sólo para las 50 consultas del domingo: 39 conformes / 7 parciales / 4 fallos,
+47 completadas. Costes con bases distintas; domingo observado incompleto, sin ahorro
+homogéneo calculado. Los datos públicos excluyen conversaciones, preguntas y respuestas.
+
+Cuatro paneles añadidos a sección 2 del mismo UID; cinco secciones, todos los paneles
+previos (salvo posición vertical) y otros dos dashboards conservados. Bloque con fechas
+fijas e independiente de selectores. Fuente JUP-133 evita duplicar denominadores de
+JUP-070/071. `tools/evaluation-evolution.py --check` reproduce JSON/SQL. `append.sql`
+inserta sólo identidades ausentes, coteja todas las columnas y filas y aborta cualquier
+conflicto. Sin DDL permanente, borrado, roles o credenciales. No usar el loader genérico
+en la base compartida: reemplaza el dataset.
+
+Estado: implementación preparada para PR, 625 pruebas de datos/contratos/composición
+conformes y 93 elementos OpenSpec válidos. Nueve pruebas promtool no ejecutables por
+montajes Windows sobre Docker remoto; consultas Prometheus y pruebas intactas.
+El avance de develop a da43f408 sólo afecta AWS y su documentación; no modifica
+el alcance de esta PR ni se presenta como candidato medido. Revisiones humanas,
+merge, carga y comprobación visual en Grafana compartido pendientes. RC NO ACEPTADA;
+persiste 413 de captura grande. Sin nuevas inferencias, despliegue o mensaje Discord.
+
+PR169 publicada en 2ea7777c. Su primer CI expuso inventario de dependencia JUP-133
+ausente y expectativas adicionales de manifiesto; corregidos con 130 pruebas de
+inventario/normalización y 63 de atomicidad/permisos conformes. Nueva ejecución CI
+pendiente. HAL recibió orden de merge tras CI y carga en Grafana, seguida de
+«Tienes autorizacion expresa para saltar las validaciones»: excepción humana
+puntual para PR169, sin fabricar reviews ni extenderla a otras PR. No se ha
+ejecutado aún el merge/carga en este corte.

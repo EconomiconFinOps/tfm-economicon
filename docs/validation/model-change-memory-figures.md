@@ -27,3 +27,13 @@ Lista para los responsables de la memoria. La fuente de verdad es [model-change-
 ## Afirmaciones sobre el modelo por defecto (no son cifras)
 
 JUP-132 ya está integrado en `develop`: el modelo por defecto de `economicon-chat` es DeepSeek V4.1 Flash y dejó de ser GLM-5.2. Los apartados que nombran el modelo por defecto o sus precios, o que distinguen GLM-5.2, DeepSeek V4 Pro y DeepSeek V4.1 Flash, deben revisarse.
+
+
+## Evolución descriptiva del 23 y 25 de octubre
+
+Evolución descriptiva del chat entre el viernes 23 y el domingo 25 de octubre.
+
+- Referencia: 23/10/2026: 119/132 operaciones comunes completadas (90,2 %), mediana 20,128 s y p95 148,796 s.
+- Nueva observación: 25/10/2026: 41/44 operaciones comunes completadas (93,2 %), mediana 12,020 s y p95 49,485 s.
+
+Fuente descriptiva adicional para h/i; no acredita incorporación a la memoria canónica. Tres repeticiones el viernes frente a una el domingo, arnés y carga distintos: no comparación causal. La calidad del domingo (39 conformes, 7 parciales, 4 fallos de 50, por agente) carece de juicio homogéneo del viernes. No se calcula ahorro con bases de coste distintas ni se acepta la RC. Véase la [fuente y sus límites](../evidence/JUP-133/evolution-20261025/README.md).

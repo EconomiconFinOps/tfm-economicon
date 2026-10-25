@@ -1,5 +1,62 @@
 # Cloud AWS — arquitectura documental
 
+## PR167 integrada; ensayo2 retirado y verificador corregido localmente — 25/10/2026 20:03 Europe/Paris
+
+Origen: chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+La autorización del usuario cubrió sólo PR167/e1e36bc5. Integrada a las19:39:25
+local como `1c4eda8a70ddd9412238f0c2b4fdef8073a9e10d`, árbol idéntico al candidato.
+Excepción registrada en [PR167](https://github.com/EconomiconFinOps/tfm-economicon/pull/167#issuecomment-6401592009).
+[CI develop40222281653](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/40222281653)
+SUCCESS intento2: el primero falló únicamente por timeout de12s en una prueba
+aislada de managed_resolver; se repitieron los jobs fallidos sin cambiar código.
+No se presenta el primer intento como correcto ni el check de reviews como verde.
+
+La retirada original `dee7cab8` eliminó casi todo, pero encontró un servicio
+backend ajeno al estado Terraform. Tras verificar ARN, tags, definición y fuente,
+su retirada revisada dejó desired/running/pending0 e INACTIVE a las19:44:07 local.
+El reintento `f38dfed9-87dc-4808-b29b-e848f93f29ff` dejó estado0 y falló después
+al clasificar un error `InvalidSecurityGroupRuleId.NotFound`: AWS CLI añadía
+`aws: [ERROR]: ` a la cabecera esperada. No era un recurso activo.
+
+La auditoría SDK de las19:54 encontró62 referencias etiquetadas, todas retiradas
+o pendientes de borrado; la de cierre a las20:00 encontró58, por desaparición
+eventual de etiquetas. Con113 comprobaciones offline favorables del cierre,
+estado0 y ausencia de trabajo activo antes y después de retirar Scheduler,
+se eliminaron sólo el Scheduler y el lease exactos a las20:00:19. El permiso
+temporal de zona privada quedó ausente a las20:00:43. RDS, broker, origen privado,
+namespace y zona privada ausentes; sin snapshots ni backups retenidos.
+
+Los dos grupos RDS informan0 bytes pero cada uno tiene un stream con metadatos
+de eventos: se preservaron sin leer su contenido ni afirmar que estuvieran vacíos.
+No tienen retención configurada. KMS y cinco secretos quedan en borrado programado;
+bootstrap, zona pública e informes se conservan. No se afirma coste cero.
+El build de retirada sigue FAILED y no hay `retirement.json` automático:
+el cierre fue asistido y está acreditado por recibos distintos.
+
+Corrección en `fix/JUP-131-aws-cli-retirement`: admite el prefijo exacto de CLI
+y comprueba servicios/tareas ECS por identidad, clúster y estado terminal.
+Errores desconocidos, actividad y respuestas ambiguas siguen bloqueando. Regresión
+rojo/verde y suite116 pruebas:107 PASS/9 omitidas. Nueva PR/CI/revisión pendientes;
+la excepción PR167 no se extiende automáticamente. No cambian aplicaciones,
+ApiError ni starlette1.9.0. [Evidencia](../evidence/JUP-131-aws-retirement-cli.md).
+
+Ensayo3 sólo tiene borrador local en `.work/master-rehearsal/ensayo3/`, sin
+execution.json ni uploads/builds/recursos propios. Preflight de sólo lectura
+19:43 local conforme: Fargate64, CodeBuild30, GitHub AVAILABLE, DNS del máster,
+motores/modelos y metadatos del secreto válidos. Configuración y scripts deberán
+fijarse al siguiente merge/CI, regenerar caducidad y revalidarse antes del lanzamiento.
+Cloud Map continúa asistido; no equivale a CodePipeline extremo a extremo.
+
+Recibos públicos en `.work/master-rehearsal/ensayo2/`:
+`orphan-backend-retirement.json`, `final-retirement-error-public.json`,
+`authoritative-residual-audit.json`, `control-closeout-review.json`,
+`control-closeout.json`, `temporary-policy-closeout.json`,
+`retirement-inspection.json` y `retained-rds-log-metadata.json`.
+No hay aceptación de aplicación: siguen pendientes arranque, AMQP, frontend,
+Grafana público y comprobaciones funcionales del siguiente ensayo.
+
+Los cortes siguientes conservan el historial del mismo ciclo.
+
 ## Ensayo2: fallo de arranque y retirada en curso — 25/10/2026 19:12 Europe/Paris
 
 Origen: chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
