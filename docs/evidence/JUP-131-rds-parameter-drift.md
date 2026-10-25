@@ -60,8 +60,8 @@ access denials and unrelated errors abort. Expected absence requires an exact
 error code and operation. Inactive clusters must have no tasks or services;
 deleting NAT/endpoints remain active. The NAT absent-code case includes the
 provider's [NatGatewayNotFound handling](https://github.com/hashicorp/terraform-provider-aws/blob/v6.13.0/internal/service/ec2/find.go).
-Eight regression tests failed before the fix; the complete offline suite then
-passed 105 tests with nine integration skips. No real AWS mutation occurs in
+The regression suite failed before the fix; the complete offline suite then
+completed 105 tests successfully with nine integration skips. No real AWS mutation occurs in
 these tests. Live closure is separate operational evidence, not a deployment
 of the changed runner.
 

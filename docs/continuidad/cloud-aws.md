@@ -49,7 +49,9 @@ contenedores de CI conformes. Revisión independiente favorable del agente
 Se renueva la receta con huella `3c2a471c9cb35ddafaa8d9a956361f18da5dda53a6e4cb58a1223a15ee997479`,
 confirmada también en git archive limpio. [Aceptación offline](../evidence/JUP-131-pr166-application-acceptance.md)
 conserva los informes históricos y sus límites. El delta de receta/documentación
-posterior no cambia la aplicación; CI/revalidación final aún necesarias.
+posterior no cambia la aplicación. Sus dictámenes y resultados exactos de CI se
+enlazan en [PR166](https://github.com/EconomiconFinOps/tfm-economicon/pull/166);
+el recibo local de cierre de verificación es `.work/master-rehearsal/pr166-final-verification.json`.
 
 Diagnóstico adicional de Cloud Map: todas las variantes fallidas incluían la
 condición `route53:VPCs`; no se probaron CalledVia sola ni ViaAWSService sola.
