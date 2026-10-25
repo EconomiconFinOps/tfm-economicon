@@ -28,7 +28,7 @@ def test_unified_basis_derives_no_authority_and_is_removed_from_public_response(
     _validate(value,schema,schema)
     result=render_response(value,[],quantities={})
     assert 'basis' not in result and result['status']==value['status']
-    assert result['answer']==(USER_PREFIX if basis=='user_scenario' else '')+('' if basis=='greeting' else 'Interpretación: ')+'Una respuesta concreta.'
+    assert result['answer']==(USER_PREFIX if basis=='user_scenario' else '')+'Una respuesta concreta.'
     assert result['evidence']==result['metrics']==result['recommendations']==[]
 
 
@@ -104,7 +104,7 @@ def test_authorized_narrative_requires_selected_evidence_even_when_insufficient(
     value['answer'].append(excerpt(source))
     _validate(value,schema,schema)
     result=render_response(value,[],quantities=source_catalog([source]))
-    assert 'Interpretación: El coste actual refleja facturación.' in result['answer']
+    assert 'El coste actual refleja facturación.' in result['answer']
     assert 'Fuente: Guide — «Actual cost reflects billing.»' in result['answer']
     assert result['evidence']==[{key:source[key] for key in ('id','kind','title','source')}]
 
@@ -195,6 +195,6 @@ def test_literal_classification_quote_has_documentary_support_but_no_documentary
     schema=provider_response_schema(authorized_evidence=records,quantities=q)
     _validate(value,schema,schema)
     result=render_response(value,[],quantities=q)
-    assert 'Interpretación: '+sentence in result['answer']
+    assert sentence in result['answer']
     assert '«'+sentence+'»' in result['answer']
     assert result['evidence']==[{key:source[key] for key in ('id','kind','title','source')}]

@@ -29,7 +29,9 @@ def test_literal_support_stream_final_and_projection(width,basis_first):
     stream=''.join(parser.feed(raw[i:i+width]) for i in range(0,len(raw),width))
     result=render_response(value,[],quantities=catalog())
     assert stream==parser.finish()==result['answer']
-    assert 'Fuente: Guide' in stream and 'Interpretación:' in stream
+    assert 'Interpretación:' not in stream
+    # The explanation comes first and the literal excerpt is listed after it.
+    assert stream.index('Conviene comprobar')<stream.index('Fuente: Guide')
     assert type(result) is ServerRenderedResponse
     final=assemble_chat_response(result,None,authorized_evidence=[SOURCE])
     assert final['answer']==stream and final['evidence']==[{key:SOURCE[key] for key in ('id','kind','title','source')}]
@@ -206,3 +208,17 @@ def test_long_table_row_is_not_truncated_into_a_quote():
     from app.core.chat_claims import passages
     content = '| A | B | | --- | --- | | ' + 'x' * 230 + ' | value |'
     assert not any('value' in quote for quote in passages(content))
+
+
+def test_excerpts_are_listed_together_after_the_explanation():
+    # Explanation and literal excerpts no longer alternate: prose first, then every excerpt.
+    value=candidate()
+    value['answer']=[{'inference':'Primera idea.'},{'documentary':{'source_id':'guide','passage':'Costs are observations.'}},
+                     {'inference':'Segunda idea.'},{'documentary':{'source_id':'guide','passage':'Confirm the scope before comparison.'}}]
+    raw=json.dumps(value,ensure_ascii=True);parser=SegmentAnswerJSON([],quantities=catalog())
+    stream=''.join(parser.feed(raw[i:i+7]) for i in range(0,len(raw),7))
+    answer=render_response(value,[],quantities=catalog())['answer']
+    assert stream==parser.finish()==answer
+    assert 'Interpretación' not in answer
+    assert answer.index('Segunda idea.')<answer.index('Fuente: Guide — «Costs are observations.»')
+    assert answer.count('Fuente: Guide')==2

@@ -130,7 +130,7 @@ class SegmentAnswerJSON:
         from app.core.chat_expressions import ExpressionRenderer
         self.expressions=ExpressionRenderer(quantities) if quantities is not None else None
         if self.expressions is not None:self.expressions.deduplicate_excerpts=True
-        self.segment=None;self.segments=[];self.pending=[]
+        self.segment=None;self.segments=[];self.pending=[];self.sources=[]
         self.text='';self.closed=False;self.trailing='';self.rendered_size=0
         self.classified=None
         self.basis=None;self.basis_raw=None;self.array_answer=False;self.deferred=''
@@ -208,10 +208,13 @@ class SegmentAnswerJSON:
                 if 'text' in value or 'inference' in value:
                     if not self.pending:self.pending_start=len(self.segments)-1
                     self.pending.append(('inference' if 'inference' in value else 'text',value.get('inference',value.get('text'))))
+                elif 'documentary' in value:
+                    # Same order as render_segments: excerpts are listed after the explanation.
+                    output.append(self._flush());self.sources.append(rendered)
                 else:output.extend([self._flush(),rendered])
             if closing:
                 if not self.segments:raise ValueError('Invalid segment collection.')
-                output.append(self._flush());self.closed=True
+                output.extend([self._flush(),*self.sources]);self.sources=[];self.closed=True
         # Match the existing public strip_whitespace contract across chunks,
         # retaining internal spaces and withholding only a possible final tail.
         result=self.deferred+''.join(output)

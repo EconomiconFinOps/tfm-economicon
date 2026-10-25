@@ -19,7 +19,7 @@ ANSWER={'schema_version':'1.0','status':'no_data','answer':'Sin evidencia: "Azur
 
 
 SOURCE={'id':'known','kind':'corpus','title':'Synthetic','source':'Synthetic','content':'Synthetic grounding.'}
-SUPPORTED_ANSWER={**ANSWER,'limitations':['Interpretación: No hay datos.'],'answer':'Interpretación: '+ANSWER['answer']+'\n\nFuente: Synthetic — «Synthetic grounding.»','evidence':[{key:SOURCE[key] for key in ('id','kind','title','source')}]}
+SUPPORTED_ANSWER={**ANSWER,'limitations':['No hay datos.'],'answer':ANSWER['answer']+'\n\nFuente: Synthetic — «Synthetic grounding.»','evidence':[{key:SOURCE[key] for key in ('id','kind','title','source')}]}
 
 def supported_provider():
     value=_provider(ANSWER)

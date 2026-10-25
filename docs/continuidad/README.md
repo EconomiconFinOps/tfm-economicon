@@ -129,6 +129,7 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 
 | Tema | Resumen y estado documental | Actualizado |
 | --- | --- | --- |
+| [Respuestas largas del chat](respuestas-largas-chat.md) | Rama fix/chat-respuestas-largas-inc01-04 sobre develop 0edd11ef: sin rótulo «Interpretación», fuentes agrupadas al final y cifras de pantalla citables; verificado con el modelo real. Cortes de flujo del proveedor con esquema estricto reproducidos (13 de 30), decisión pendiente. PR y revisiones pendientes. | 2026-10-25 |
 | [Compatibilidad Azure Cost API](azure-cost-api-compatibilidad.md) | JUP-140/PR162: contención temporal Starlette 1.9.0; ApiError congelado, resolución limpia y 81 PASS, imagen y HTTP normal/demo comprobados localmente. Otros rangos y servicios conservados. | 2026-10-24 |
 | [Landing pública](landing-publica.md) | JUP-140/PR162:14marcadores sustituidos por viñetas violetas, textos/datos/JS conservados y Azure excluido. Landing36PASS(26+10), capturas nativas claro/oscuro/móvil/amplia; evaluaciones independientes y aprobación visual pendientes. | 2026-10-24 |
 | [Despliegue AWS](cloud-aws.md) | PR161/163 integradas; bootstrap aplicado en el máster. Segundo intento detenido por DynamoDB antes de aplicar infraestructura; controles retirados y aplicación ausente. PR165 corrige el bloqueo y permisos dependientes de Cloud Map/S3/IAM; revisión/CI del delta e integración pendientes. | 2026-10-25 |
