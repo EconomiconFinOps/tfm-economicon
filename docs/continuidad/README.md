@@ -1,5 +1,14 @@
 # Continuidad del proyecto
 
+25Oct, primer ensayo autorizado en la cuenta del máster `323188184300`:
+SSO renovada y verificada; PR161 integrada mediante el bypass puntual autorizado
+como `2087855c`, sin cambiar reglas. CI push develop `40191355921` SUCCESS.
+Bootstrap aplicado y estado S3 separado, cifrado/versionado, sin drift. Ensayo
+`0c9fb3aa` valida correctamente y se detiene en build por el contexto Docker de
+Azure; sin infraestructura de aplicación creada. Corrección de una línea con
+regresión y build real conformes; pendiente revisión, CI e integración nueva.
+Estado y recibos en [cloud-aws.md](cloud-aws.md).
+
 25Oct: PR161 reconciliada con la aplicación aprobada `0edd11ef`; ApiError
 intacto y Starlette 1.9.0, Atlas/Grafana/carga aditiva conservados. CI técnica
 completa y SQL del árbol integrado SUCCESS; aceptación offline/digest renovados.

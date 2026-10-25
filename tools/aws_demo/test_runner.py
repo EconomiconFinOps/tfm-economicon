@@ -2,6 +2,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -15,6 +16,21 @@ from test_control import config
 
 
 class RunnerTests(unittest.TestCase):
+    def test_image_build_contexts_include_dockerfile_copy_sources(self):
+        for name, image in runner.IMAGES.items():
+            context = runner.ROOT / image['context']
+            dockerfile = runner.ROOT / image['dockerfile']
+            for line in dockerfile.read_text().splitlines():
+                if not line.startswith('COPY '):
+                    continue
+                sources = shlex.split(line)[1:-1]
+                self.assertTrue(sources, 'COPY must have a source')
+                for source in sources:
+                    with self.subTest(image=name, source=source):
+                        self.assertFalse(source.startswith('--'), 'Extend test for COPY options')
+                        self.assertTrue((context / source).exists(),
+                                        f'{source} is missing from build context {image["context"]}')
+
     def test_ireland_and_paris_quotas_must_be_effective_before_provisioning(self):
         item = object.__new__(runner.Runner)
         calls = []
