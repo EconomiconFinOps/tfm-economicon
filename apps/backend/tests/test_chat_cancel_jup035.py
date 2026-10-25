@@ -13,6 +13,13 @@ def test_backend_cancel_uses_attempt_specific_signed_route_and_complete_control(
     key=b'jup035-synthetic-private-key-32-bytes-only';calls=[]
     class Handler(BaseHTTPRequestHandler):
         def log_message(self,*args): pass
+        def do_GET(self):
+            raw=json.dumps({'v':2,'boot_id':'synthetic-boot','prompt_version':'synthetic-v2','capacity':5}).encode()
+            nonce=self.headers['X-Chat-Nonce']
+            signed=f'chat-v2-response\n{nonce}\n200\n{hashlib.sha256(raw).hexdigest()}'.encode()
+            self.send_response(200);self.send_header('Content-Type','application/json');self.send_header('Content-Length',str(len(raw)))
+            self.send_header('X-Chat-Nonce',nonce);self.send_header('X-Chat-Signature',hmac.new(key,signed,hashlib.sha256).hexdigest())
+            self.end_headers();self.wfile.write(raw)
         def do_POST(self):
             raw=self.rfile.read(int(self.headers['Content-Length']))
             message=f"chat-v2\nPOST\n{self.path}\n{self.headers['X-Chat-Time']}\n{self.headers['X-Chat-Nonce']}\n{hashlib.sha256(raw).hexdigest()}".encode()

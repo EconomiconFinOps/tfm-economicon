@@ -1,6 +1,180 @@
 # Cloud AWS — arquitectura documental
 
-## PR167 integrada; ensayo2 retirado y verificador corregido localmente — 25/10/2026 20:03 Europe/Paris
+## PR171 reconciliada y CI verde; ensayo3 en retirada — 25/10/2026 22:11 Europe/Paris
+
+Origen: chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+El usuario autoriza continuar con el siguiente ensayo y fija **23:30Europe/Paris
+(22:30UTC) del25/10** para promocionar develop a main; después no se publican
+más commits de trabajo. Este hito sustituye la estimación anterior de tres horas.
+Seguimiento único programado en este chat:
+`cerrar-entrega-economicon-y-promoci-n-a-main`; comprobar promoción/autorizaciones
+y eliminarlo al concluir. No es autorización para omitir reviews de otra PR.
+
+[PR171](https://github.com/EconomiconFinOps/tfm-economicon/pull/171) publicada con
+`ee91552c`, luego reconciliada con develop `8bf61d44` como
+`f1f8cca2c9df5712fcac705356a3ad44f501030a`. El delta de develop trae PR169
+(dashboard/evaluación) y PR170(documentación); código de afinidad sin cambios.
+CI PR40233382450 y push40233377430 SUCCESS; SQL40233382359 SUCCESS.
+Backend2740PASS/369SKIP, processor2676PASS/150SKIP, Azure81PASS, frontend96
+archivos, PostgreSQL45+8 y SQL54+8. Éxito con avisos; no aceptación AWS.
+Dictamen independiente favorable, incluida revalidación de integración/receta;
+histórico publicado en comentario6403170808, suplemento local
+`.work/master-rehearsal/chat-replica-review-integration.{json,md}`.
+
+Receta renovada con huella `4a138a04e79dc34794eab05b07908327af40e2f17ddb2472afc5e7eb07ed8795`,
+igual en checkout y archivo limpio. Conserva evidencias anteriores y añade
+[aceptación offline de PR171](../evidence/JUP-131-pr171-application-acceptance.md).
+Gate estricto y29 pruebas readiness/control PASS. Estos cambios documentales y
+de receta no alteran apps; su publicación final/CI están pendientes en este corte.
+ApiError y starlette1.9.0 intactos. El check JUP reviews falla por ausencia de las
+dos reviews humanas; se requiere excepción específica si se integra por bypass.
+
+Límite de PR169: paquete Atlas AWS todavía19 runs/1688 resultados. Los nuevos
+paneles8401–8403 requieren el suplemento de evolución, aún no cargado; el panel8400
+lo explica. No atribuir a esos paneles la verificación del conjunto original.
+
+Retirada ensayo3 iniciada22:03:30 con build
+`economicon-defensa:6cd644ff-9769-43c0-a701-441dd5a493bc`, fuente/config/timeout
+inmutables y scripts revisados. Lectura22:08:38: IN_PROGRESS/BUILD,170 recursos,
+lease TEARDOWN. No cierre completo todavía. Después verificar retirement.json,
+state0, controles ausentes y ejecutar el cierre exacto del permiso temporal.
+Ensayo4 preparado sólo como borrador con placeholders de SHA/CI;54 comprobaciones
+de parametrización offline favorables, sin dictámenes ejecutables. Requiere
+integración PR171, CI develop exacta, cierre previo y preflight vigente antes
+de generar nueva ventana de2h. No trasladar IDs ni estado entre ciclos.
+
+Promoción a main: no había PR abierta develop→main; main `4aee5d78` está212
+commits detrás de develop en la lectura inicial. Revisión de preparación de
+entrega en curso con alcance explícito; no certificar revisión exhaustiva de
+2697 archivos por el dictamen de afinidad. Preparar la PR con candidato final,
+CI y autorización concreta antes de la promoción. Trello actualizado por puente
+DockerServer, comentario `6ade6c82ae4255e19bc161da`, historia/lista preservadas.
+Los cortes siguientes conservan el historial y sus límites temporales.
+
+## Ensayo3 disponible parcialmente; afinidad del chat en corrección — 25/10/2026 21:52 Europe/Paris
+
+Origen: chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+Cuenta única323188184300, fuente desplegada `da43f408`. Release
+`economicon-defensa:aae40d8c-1b12-497a-93b9-db3fb348c1c5` FAILED a21:28:52
+local en generation. Infrastructure, frontend, health, identity, tenant-isolation,
+billing e ingestion PASS; no ready.json. Cinco imágenes publicadas, seis tareas
+bootstrap terminadas con exit0, backend/processor/azure2 réplicas cada uno y
+Grafana1 activos:7 tareas,170 recursos gestionados, lease RELEASING.
+Grafana comprobado por lectura21:34:40:3 dashboards,2 datasources sanos, acceso
+anónimo rechazado; Atlas19 runs y1688 resultados. No se repitieron inferencias
+en el diagnóstico. Evidencia local pública:
+`.work/master-rehearsal/ensayo3/{release-evidence-public,application-diagnostic-public,chat-traffic-public}.json`.
+
+La operación de aceptación termina failed/provider_error, attempt_count1.
+Código confirmado: descriptor y POST resolvían Cloud Map por separado con
+boot_id distinto en cada processor. Reproducción local contra dos ASGI reales:
+descriptorA/POSTB da404 antes del gateway; A/A funciona; repetir A da409 sin
+segundo dispatch. El404 privado concreto en AWS no es observable en los logs
+actuales y se mantiene como hipótesis compatible, no como dato capturado.
+La corrección vincula boot firmado a la IP real del socket; cold recovery usa
+GETs firmados acotados y no reenvía POST. Caché y plazos/cancelación limitados.
+La revisión detectó y corrigió una espera DNS fuera de plazo en el primer diff.
+
+Rama `fix/JUP-131-chat-replica-affinity`:89 pruebas locales PASS, incluyendo
+8 casos de afinidad/plazo/cancelación; cuatro regresiones iniciales fallaban
+antes del arreglo. Revisión independiente favorable:6 HTTP y5 comprobaciones
+adicionales PASS; informes `.work/master-rehearsal/chat-replica-review.{json,md}`.
+La primera ejecución amplia tenía50 errores de fixture por tokenizers0.23.1
+global; repetida con0.22.1 en venv aislado pasó89/89. No dependencias cambiadas.
+ApiError y starlette1.9.0 conservados. PR/CI e integración aún pendientes;
+ninguna excepción anterior autoriza el bypass de la próxima PR.
+
+URL de revisión parcial: https://economicon.danteinferno.es/login . Desde esa
+entrada canónica el navegador llega al formulario Cognito sin redirect_mismatch;
+no se modificó Cognito. Login completo de navegador pendiente. Usuario recibió
+las credenciales del smoke user a petición propia; no se guardan aquí.
+El usuario comunicó unas3 horas hasta el cierre de commits; se prioriza publicar
+el arreglo verificable. La aceptación AWS del arreglo requerirá nueva fuente y
+configuración inmutables; no se cambia el candidato del ciclo en marcha.
+Apagado `2026-10-25T21:34:20Z` (22:34:20 local) conservado. Próximos pasos:
+publicar CI/revisión, retirar ensayo3 con margen, verificar estado vacío y cerrar
+su permiso temporal; integrar sólo con las revisiones o excepción específica.
+Los cortes siguientes conservan el historial del despliegue.
+
+## PR168 integrada; ensayo3 con infraestructura lista y release en curso — 25/10/2026 21:17 Europe/Paris
+
+Origen: chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+El usuario autorizó expresamente excepción y bypass sólo para PR168/a6aa4d89.
+Tras leer reviews/comentarios y verificar CI vigente, integración squash a las
+20:27:17 local como `da43f40810d81e7e0e90f10cca1825a3c48e6bd5`, árbol idéntico
+al candidato. CI PR40225437930 y [CI develop40226106663](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/40226106663)
+SUCCESS intento1; SQL40224303754 SUCCESS. El check de reviews humanas permanece
+exceptuado, no se presenta como verde ni se modifican reglas. ApiError y
+starlette1.9.0 intactos. Los pendientes de integración del corte anterior quedan
+superados por esta evidencia.
+
+Preflight de lectura20:29:32 conforme en cuenta323188184300: Fargate64,
+CodeBuild30, conexión GitHub AVAILABLE, DNS sin conflicto, secretos con versión
+actual, motores/modelos disponibles. No se consultó la cuenta original.
+Revalidación independiente20:32:45 favorable:30 comprobaciones locales del
+delta SHA/CI/autorización, sin cambios de lógica; informes en
+`.work/master-rehearsal/ensayo3/{operation-review,close-zone-permission-review}.json`.
+
+Preparación guardada20:34:23: fuente y configuración inmutables verificadas,
+config `86c4bf57864525dc0a1d3cd999d4d2fc7c1eefd537a866956bd6361f541999f5`,
+caducidad `2026-10-25T21:34:20Z` (22:34:20 local). Build
+`economicon-defensa:3db0cc04-f86c-494b-aa87-3b931fb6b86d` iniciado20:34:43,
+timeout20/cola5. Aún no hay aceptación de aplicación. Antes del VPC apply se
+verificó el Scheduler ligado a la fuente inmutable a las20:42:38. Operación asistida con
+CodeBuild; no equivale a CodePipeline extremo a extremo.
+
+Las cinco imágenes terminaron SUCCESS; plan VPC `6ec92896` y apply `bb5aaf00`
+SUCCESS. VPC `vpc-0dbda6338d9d7d9f3`; namespace `ns-kx3dyuzxbruqfspn`, zona
+privada `Z0410564148EBGBSQOP8Z`. Importación declarativa `df49141a` SUCCESS a
+las20:49:49; ambos recursos gestionados. Plan completo verificado20:51:00:
+160 altas/0 cambios/0 bajas, hash `d3807ee42fee10936506f3a07ee07bf1dc35b3217f801dd95ae302d3ed9378e9`,
+versión `SsHY3pUd2alU4rx8qAWQ4mzsL4G1zjei`. Dos RDS privadas cifradas Multi-AZ
+db.t4g.medium16.9, RabbitMQ privado CLUSTER_MULTI_AZ mq.m5.large3.13,
+3NAT, sin EC2 ni servicios ECS todavía; límites IAM conservados. Apply exacto
+`economicon-defensa:7a7e3913-9717-4bd9-99fa-793415c4046f` iniciado20:51:24,
+timeout45/cola5; apagado22:34:20 inmutable verificado de nuevo. No aceptación aún.
+
+Última lectura en vivo20:57:32 local:150 recursos gestionados, dos RDS creating,
+RabbitMQ CREATION_IN_PROGRESS, origen privado CloudFront Deploying. A continuación
+caducó el token SSO local (`TokenRetrievalError: Token has expired and refresh failed`).
+Renovación `aws sso login --profile economicon-master-audit --no-browser`
+abierta en el navegador integrado; inicio de sesión solicitado al usuario.
+Esto bloquea nuevas consultas/lanzamientos locales, no cancela el apply de AWS
+ni el apagado independiente. El estado posterior a20:57:32 es desconocido hasta
+validar nuevamente STS en la cuenta323188184300. No guardar URL ni códigos OAuth.
+Resuelto21:02:31: usuario renovó SSO, CLI confirmó login y STS verificó la cuenta
+323188184300. Apply sigue IN_PROGRESS sin reiniciarlo;150 recursos gestionados,
+RDS modifying, RabbitMQ CREATION_IN_PROGRESS y origen privado Deploying.
+Durante la modificación RDS informa MultiAZ=false; esperar el estado final y
+comprobar Multi-AZ antes de certificar disponibilidad. No es aceptación todavía.
+
+Infraestructura confirmada21:16:37: apply `7a7e3913` SUCCESS,162 recursos
+gestionados, lease INFRA_READY. Ambas RDS available, MultiAZ=true y privadas;
+RabbitMQ RUNNING; origen privado y distribución `E3KOC6ZGEIV4C9` Deployed.
+Certificados de origen y edge ISSUED con validación SUCCESS. La transición
+Multi-AZ anterior quedó completada; los metadatos intermedios no son la
+configuración final. Recibos `infra-apply-progress.json` e `infra-wait-public.json`.
+
+Release `economicon-defensa:aae40d8c-1b12-497a-93b9-db3fb348c1c5` iniciado
+21:16:51, timeout40/cola5. Fuente `da43f408` y configuración inmutable intactas;
+guardas de identidad, ausencia de trabajo activo, lease y margen de retirada
+superadas; apagado22:34:20 verificado. Pendientes publicación ECR, bootstrap,
+servicios ECS y pruebas funcionales (incluidos modelos y Grafana) antes de READY.
+La infraestructura lista no demuestra aceptación de aplicación.
+
+El usuario comunica unas3 horas hasta que no se admitan más commits. Prioridad:
+mantener `da43f408`, comprobar arranque/AMQP/funcionalidad/Grafana y retirar
+con margen. Si aparece un fallo que exige otro commit, avisar de su impacto
+sin prometer llegar. Próximos pasos: terminar release y aceptación,
+retirada y cierre exacto del permiso temporal.
+Trello actualizado por la integración DockerServer, comentario
+`6ade5e3c2370672a79b6f98d` de20:53:33; conserva historia y lista.
+Recibos públicos en `ensayo3/execution.json`, `develop-ci.json`,
+`aws-preflight.json`, `expiry-protected.json`, `namespace-preparation.json`,
+`infra-review.json` e `infra-apply-start.json`. Ensayo2 y sus logs preservados según
+el corte anterior; no se declara coste cero.
+
+## PR167 integrada; ensayo2 retirado y PR168 revisada — 25/10/2026 20:21 Europe/Paris
 
 Origen: chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
 La autorización del usuario cubrió sólo PR167/e1e36bc5. Integrada a las19:39:25
@@ -36,9 +210,27 @@ el cierre fue asistido y está acreditado por recibos distintos.
 Corrección en `fix/JUP-131-aws-cli-retirement`: admite el prefijo exacto de CLI
 y comprueba servicios/tareas ECS por identidad, clúster y estado terminal.
 Errores desconocidos, actividad y respuestas ambiguas siguen bloqueando. Regresión
-rojo/verde y suite116 pruebas:107 PASS/9 omitidas. Nueva PR/CI/revisión pendientes;
-la excepción PR167 no se extiende automáticamente. No cambian aplicaciones,
+rojo/verde y suite116 pruebas:107 PASS/9 omitidas. Publicada como
+[PR168](https://github.com/EconomiconFinOps/tfm-economicon/pull/168), candidato
+`a6aa4d891db2a6678a2e09e572f9890bed029803`. [Dictamen independiente favorable](https://github.com/EconomiconFinOps/tfm-economicon/pull/168#issuecomment-6401933408):
+12 métodos y69 casos adversariales PASS, sin bloqueantes. Comprobación real
+de sólo lectura a las20:15:06 local: método exacto del candidato y CLI real,
+una regla EC2 ausente y cuatro servicios retirados correctamente clasificados.
+Autenticación SSO del máster; no se certifica el rol desplegado ni se mutó AWS.
+No cambian aplicaciones,
 ApiError ni starlette1.9.0. [Evidencia](../evidence/JUP-131-aws-retirement-cli.md).
+
+CI push40224272849 y SQL40224303754 SUCCESS intento1; CI PR40224303745 SUCCESS
+intento2, tras repetir sólo backend por Connection reset al descargar tokenizer,
+antes de sus pruebas. [Evidencia publicada](https://github.com/EconomiconFinOps/tfm-economicon/pull/168#issuecomment-6402032992).
+Actualizar la descripción activó otra CI40225437930 para el mismo SHA; en curso
+al cierre de este corte. No editar otra vez la descripción para publicar resultados;
+usar un comentario y consultar el estado actual antes de integrar.
+No hay reviews humanas ni cambios solicitados. `JUP reviews` permanece fallido
+por las dos revisiones ausentes. El usuario autorizó expresamente la excepción
+y bypass de administrador sólo para PR168/a6aa4d89. [Autorización registrada](https://github.com/EconomiconFinOps/tfm-economicon/pull/168#issuecomment-6402087736).
+Integrar tras consultar CI vigente y todas las reviews/comentarios; no cambiar
+reglas ni extender la excepción a otro candidato.
 
 Ensayo3 sólo tiene borrador local en `.work/master-rehearsal/ensayo3/`, sin
 execution.json ni uploads/builds/recursos propios. Preflight de sólo lectura
@@ -51,7 +243,12 @@ Recibos públicos en `.work/master-rehearsal/ensayo2/`:
 `orphan-backend-retirement.json`, `final-retirement-error-public.json`,
 `authoritative-residual-audit.json`, `control-closeout-review.json`,
 `control-closeout.json`, `temporary-policy-closeout.json`,
-`retirement-inspection.json` y `retained-rds-log-metadata.json`.
+`retirement-inspection.json`, `retained-rds-log-metadata.json`,
+`candidate-retirement-live-readonly.json`, `retirement-cli-review.json`,
+`pr168-push-ci.json`, `pr168-pr-ci.json` y `pr168-sql-ci.json`.
+Trello actualizado preservando historia/lista: comentario `6ade5306d84409e9e17c96e1`;
+estado final de CI/excepción aún por añadir. Configuración de próximo ensayo
+marcada bloqueada en `ensayo3/readiness-status.json`.
 No hay aceptación de aplicación: siguen pendientes arranque, AMQP, frontend,
 Grafana público y comprobaciones funcionales del siguiente ensayo.
 

@@ -86,6 +86,9 @@ def test_bad_private_response_never_becomes_candidate_or_redispatch(summary_serv
     server,calls,_=summary_server;server.behavior=behavior;body=envelope(resources54)
     async def run():
         child=summary(f'http://127.0.0.1:{server.server_port}')
+        server.behavior='success'
+        await child.descriptor()
+        server.behavior=behavior
         with pytest.raises(ChatError):await child.submit(body)
         assert sum(x['method']=='POST' for x in calls)==1
     asyncio.run(run())
@@ -155,6 +158,12 @@ def absent_summary_server(resources54):
             self.send_header('X-Chat-Nonce',nonce);self.send_header('X-Chat-Signature',hmac.new(KEY,message,hashlib.sha256).hexdigest());self.end_headers();self.wfile.write(raw)
         def do_GET(self):
             self.read_body();job=self.path.rsplit('/',1)[1]
+            if job=='descriptor':
+                self.reply(200,{'v':2,'boot_id':'synthetic-boot','summary_version':resources54.summary_version,
+                    'manifest_sha256':hashlib.sha256(resources54.manifest_bytes).hexdigest(),
+                    'tokenizer_sha256':resources54.tokenizer_sha256,
+                    'response_schema_sha256':resources54.response_schema_sha256,'context_budget':resources54.context_budget})
+                return
             self.reply(200,markers[job]) if job in markers else self.reply(404,{'v':2,'code':'not_found'})
         def do_POST(self):
             body=self.read_body()

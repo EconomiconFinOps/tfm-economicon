@@ -35,10 +35,10 @@ class SummaryTransport:
 
     validate_output=staticmethod(validate_output)
 
-    def _exchange(self,method,path,raw,headers,deadline,holder,cancelled,limit):
+    def _exchange(self,method,path,raw,headers,deadline,holder,cancelled,limit,peer=None):
         remaining=deadline-time.time()
         if remaining<=0 or cancelled.is_set():raise TimeoutError()
-        connection=http.client.HTTPConnection(self.parent.host,self.parent.port,timeout=min(5,remaining))
+        connection=http.client.HTTPConnection(peer or self.parent.host,self.parent.port,timeout=min(5,remaining))
         holder['connection']=connection
         try:
             connection.connect()
@@ -74,9 +74,14 @@ class SummaryTransport:
         if deadline<=time.time():raise ChatError(503,'summary_deadline')
         raw=b'' if value is None else canonical(value).encode()
         if len(raw)>1048576:raise ChatError(413,'summary_input_limit')
+        try:
+            peer=await self.parent.resolve_peer(identity['boot_id'],deadline,True) if identity is not None else None
+        except asyncio.CancelledError: raise
+        except Exception:
+            raise ChatError(503,'summary_outcome_unknown') from None
         holder={};cancelled=threading.Event()
         token=object()
-        worker=asyncio.create_task(asyncio.to_thread(self._exchange,method,path,raw,self.parent.headers(method,path,raw),deadline,holder,cancelled,limit))
+        worker=asyncio.create_task(asyncio.to_thread(self._exchange,method,path,raw,self.parent.headers(method,path,raw),deadline,holder,cancelled,limit,peer))
         self.workers[token]=worker
         self.connections[token]=(holder,cancelled)
         def done(task):
@@ -109,17 +114,19 @@ class SummaryTransport:
             # Failure does not establish whether the other process dispatched.
             raise ChatError(503,'summary_outcome_unknown') from None
 
+    @staticmethod
+    def validate_descriptor(value):
+        if (not isinstance(value.get('boot_id'),str) or not value['boot_id']
+            or not isinstance(value.get('summary_version'),str) or not value['summary_version']):
+            raise ChatError(503,'summary_descriptor_invalid')
+        for field in ('manifest_sha256','tokenizer_sha256','response_schema_sha256'):
+            digest=value.get(field)
+            if not isinstance(digest,str) or len(digest)!=64 or any(c not in '0123456789abcdef' for c in digest):
+                raise ChatError(503,'summary_descriptor_invalid')
+
     async def descriptor(self):
         async with self.control:
-            value=await self._request('GET','/internal/chat/v2/summary/descriptor',None,time.time()+10,limit=16384)
-            if (not isinstance(value.get('boot_id'),str) or not value['boot_id']
-                or not isinstance(value.get('summary_version'),str) or not value['summary_version']):
-                raise ChatError(503,'summary_descriptor_invalid')
-            for field in ('manifest_sha256','tokenizer_sha256','response_schema_sha256'):
-                digest=value.get(field)
-                if not isinstance(digest,str) or len(digest)!=64 or any(c not in '0123456789abcdef' for c in digest):
-                    raise ChatError(503,'summary_descriptor_invalid')
-            return value
+            return await self.parent.read_descriptor(True)
 
     async def submit(self,envelope):
         try:
