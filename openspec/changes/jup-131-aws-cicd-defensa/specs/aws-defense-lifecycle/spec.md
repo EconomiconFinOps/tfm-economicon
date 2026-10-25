@@ -90,6 +90,13 @@ cycle resources recorded in its Terraform state, after stopping writers.
 - **WHEN** up and down executions target the same public domain
 - **THEN** the shared runner, domain lease and state locking prevent conflicting mutation
 
+#### Scenario: Tag inventory retains retired resources
+- **WHEN** the tagging API still returns a deleted resource
+- **THEN** only an authoritative terminal state or the exact supported absence error for the queried operation establishes retirement
+- **AND** the AWS CLI error prefix `aws: [ERROR]: ` is accepted without accepting denials, unrelated operations or quoted diagnostic text
+- **AND** ECS services and tasks must match the inspected account, region, cycle and cluster; services must be INACTIVE with zero desired, running and pending tasks, and tasks must have both desired and actual STOPPED state
+- **AND** unknown responses and resources with activity continue to block successful retirement
+
 ### Requirement: Offline rehearsal preparation
 The system SHALL generate local rehearsal configuration and launch requests
 without contacting AWS or claiming deployability when required inputs are missing.
