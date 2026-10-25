@@ -123,3 +123,22 @@ provisioning the disposable cycle. A pending increase SHALL NOT satisfy this gat
 #### Scenario: Cross-region configuration is supplied
 - **WHEN** the application region, CA, endpoint or Bedrock source contract differs from the reviewed Ireland configuration
 - **THEN** the corresponding validator rejects it rather than falling back to another region
+
+### Requirement: Private processor replica affinity
+The backend SHALL bind an authenticated processor boot identifier to the actual
+descriptor socket peer and configured port for chat and summary operations.
+
+#### Scenario: Cloud Map changes address order
+- **WHEN** DNS selects another processor after obtaining a valid signed descriptor
+- **THEN** the attempt and its tool results, status and cancellation target the original boot's peer
+- **AND** concurrent operations keep independent bindings without changing the configured host
+
+#### Scenario: A cold backend recovers an existing summary
+- **WHEN** its local cache does not contain the summary boot identifier
+- **THEN** it probes only configured DNS candidates with signed descriptor GETs within the control deadline
+- **AND** an unknown, restarted or unauthenticated boot never causes inference redispatch to another replica
+
+#### Scenario: Resolution exceeds its deadline or is cancelled
+- **WHEN** DNS remains blocked beyond a control deadline or caller cancellation
+- **THEN** the caller stops waiting within the deadline and preserves uncertain summary outcomes
+- **AND** late DNS completion cannot issue descriptor probes or inference requests

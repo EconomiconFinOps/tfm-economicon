@@ -34,3 +34,16 @@ y receta fijan Irlanda; TLS RDS y perfiles regionales se sustituyen con nuevos
 hashes/evidencia. Nova UE desde Irlanda solo admite cuatro destinos revisados.
 El preflight exige cuotas efectivas antes de lease/planes/alta demo; solicitudes
 pendientes no equivalen a recursos habilitados. Plan aws-ireland-transition.md.
+
+En el ensayo3 del25/10, los dos processors tienen boot_id independientes y
+Cloud Map puede resolver una IP diferente en cada conexión. El backend vincula
+el boot_id del descriptor firmado a la IP real del socket, manteniendo el puerto
+configurado. Chat, tool-result, cancelación y resúmenes usan ese vínculo sin
+cambiar el host global. Un backend sin caché busca el boot mediante GET firmados
+a un máximo de16 candidatos DNS; nunca reenvía una inferencia a otra réplica.
+La caché se limita a256 entradas durante300 segundos y rechaza reasociaciones
+de boot. La resolución participa en el deadline; cancelar impide sondas tardías
+cuando termina un DNS bloqueado. El sistema operativo puede mantener ese hilo
+DNS hasta resolver, pero el llamante no espera fuera de plazo. La búsqueda
+secuencial puede agotar los2 segundos de control antes de un segundo candidato
+sano; se conserva el resultado incierto y la recuperación existente.

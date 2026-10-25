@@ -14,12 +14,16 @@
 - [x] 1.12 Integrar Atlas aditivo privado, Grafana/Prometheus ECS, rutas, TLS y control de presupuesto30EUR; pruebas aisladas, sin AWS.
 - [x] 1.13 Corregir la capacidad de chat de la receta a 5 y rechazar valores fuera de 5–8 o desalineados antes de planificar/aprovisionar; preparación local sin AWS y regresión contra el contrato real de arranque tras el fallo de ensayo2.
 - [x] 1.14 Reconocer errores de ausencia con el prefijo observado de AWS CLI y metadatos ECS retirados mediante identidad exacta y estados terminales; conservar el bloqueo ante actividad, errores o respuestas inciertas.
+- [x] 1.15 Mantener afinidad por boot_id autenticado para chat y resúmenes con dos réplicas, sin redispatch de inferencia y con resolución acotada por cancelación/deadline; regresión HTTP local sin AWS ni modelos.
 - [ ] 2.1 Completar cuenta/DNS/saldo/motores y aceptación de aplicación antes de ensayo real.
 - [ ] 2.2 Obtener revisión/validación oficiales por roles humanos asignados.
 - [ ] 2.3 Tras autorización futura, ejecutar ensayo1 y registrar tiempos/coste/retirada.
 
-No hay autorización de despliegue en esta entrega. Las pruebas cloud y las
-adaptaciones de producto no se marcan completadas por existir el pipeline.
+El corte inicial no tenía autorización de despliegue. El usuario autorizó el
+primer ensayo el25/10 en la cuenta del máster; su estado vigente se conserva en
+docs/continuidad/cloud-aws.md. Ensayo3 alcanzó infraestructura, frontend,
+identidad, tenant, facturación e ingesta, pero falló generación; la aceptación
+completa sigue pendiente. Las pruebas locales no la sustituyen.
 
 Implementación local y revisión técnica incremental conformes el22/10/2026;
 la CI del candidato se consulta en PR146. La aceptación AWS sigue pendiente.

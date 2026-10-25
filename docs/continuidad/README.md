@@ -1,12 +1,14 @@
 # Continuidad del proyecto
 
-25Oct 20:03 Europe/Paris: PR167 integrada con la excepción autorizada; fuente
-`1c4eda8a`, CI develop SUCCESS (segundo intento por timeout aislado de backend).
-Ensayo2 retirado: estado0, sin lease/Scheduler/permiso temporal; logs RDS con
-historial preservados y borrados programados KMS/Secrets separados. El verificador
-de retirada falló por el prefijo de AWS CLI y referencias ECS ya inactivas;
-corrección local con107 PASS/9 omitidas, nueva PR y revisión pendientes.
-Ensayo3 preparado sólo localmente; no iniciado. [Estado](cloud-aws.md).
+25Oct 21:52 Europe/Paris: ensayo3/`da43f408` tiene7 tareas ECS activas y170
+recursos; release `aae40d8c` FAILED en generación tras7 etapas PASS. Grafana,
+dos datasources y Atlas19 runs/1688 resultados verificados por separado.
+Fallo de afinidad entre réplicas reproducido localmente; corrección en
+`fix/JUP-131-chat-replica-affinity`,89 pruebas PASS y revisión de agente favorable.
+Publicación/CI/integración pendientes; ApiError y starlette1.9.0 intactos.
+El usuario prueba la interfaz; credenciales temporales fuera de documentación.
+Apagado inmutable22:34:20 y retirada pendientes; no declarar READY.
+[Estado y evidencia](cloud-aws.md).
 
 Los cortes siguientes conservan el historial previo del ensayo.
 
@@ -219,7 +221,7 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 | [Respuestas largas del chat](respuestas-largas-chat.md) | Rama fix/chat-respuestas-largas-inc01-04 sobre develop 0edd11ef: sin rótulo «Interpretación», fuentes agrupadas al final y cifras de pantalla citables; verificado con el modelo real. Cortes de flujo del proveedor con esquema estricto reproducidos (13 de 30), decisión pendiente. PR y revisiones pendientes. | 2026-10-25 |
 | [Compatibilidad Azure Cost API](azure-cost-api-compatibilidad.md) | JUP-140/PR162: contención temporal Starlette 1.9.0; ApiError congelado, resolución limpia y 81 PASS, imagen y HTTP normal/demo comprobados localmente. Otros rangos y servicios conservados. | 2026-10-24 |
 | [Landing pública](landing-publica.md) | JUP-140/PR162:14marcadores sustituidos por viñetas violetas, textos/datos/JS conservados y Azure excluido. Landing36PASS(26+10), capturas nativas claro/oscuro/móvil/amplia; evaluaciones independientes y aprobación visual pendientes. | 2026-10-24 |
-| [Despliegue AWS](cloud-aws.md) | PR167 integrada con excepción, fuente `1c4eda8a`, CI develop SUCCESS. Ensayo2 retirado y controles cerrados; logs con historial conservados. Corrección del verificador CLI/ECS con107 PASS/9 omitidas; PR/CI/revisión pendientes. Ensayo3 sólo local. Aplicación aún sin aceptación; Cloud Map asistido y bootstrap separado. | 2026-10-25 |
+| [Despliegue AWS](cloud-aws.md) | PR168 integrada con excepción como `da43f408`; CI develop verde y revisión operativa favorable. Ensayo3: infraestructura SUCCESS,162 recursos; release `aae40d8c` iniciado21:16:51 con apagado22:34:20 local. Aplicación pendiente de aceptación; ensayo2 cerrado. Plazo de commits aproximado3h comunicado por el usuario. | 2026-10-25 |
 | [Cortes de respuesta del chat](cortes-respuesta-chat.md) | JUP-135 integrada por squash f224226d en PR153, con excepcion humana de merge; CI tecnica previa conforme. Agregados de medicion comunicados y pendientes documentales conservados; sin aceptacion generativa nueva. | 2026-10-22 |
 | [Reevaluación de métricas del modelo](reevaluacion-metricas-modelo.md) | JUP-133: PR156 incorporó seis repeticiones y juez IA provisional; PR158 integrada en develop93624f77 corrige fixtures y altura. Evidencia ajena Linux1998PASS/0omisiones y OpenSpec92PASS, sin aceptación de campañas. La composición139 comprueba su delta por separado. | 2026-10-23 |
 | [Composición narrativa de evaluación](dashboard-evaluacion-composicion.md) | JUP-139: entrega R8 aprobada por Paris el 24/10; revisión y validación locales favorables, 137 medidas y 19/1688 conservados. Develop idéntico a 93624f77. OpenSpec archivado 24/10 con promoción de requisitos; evaluación del delta documental y publicación pendientes. Tres dashboards intactos, publicación y etapas humanas pendientes. | 2026-10-24 |
