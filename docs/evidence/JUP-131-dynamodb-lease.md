@@ -1,4 +1,4 @@
-# JUP-131 — Bloqueo DynamoDB y dependencias DNS privadas
+# JUP-131 — Bloqueo DynamoDB y permisos dependientes del despliegue
 
 Verificado el25/10/2026. Origen: chat «Preparar despliegue en AWS»,
 `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
@@ -58,7 +58,7 @@ Referencias de AWS consultadas el25Oct2026:
 - [Cloud Map admite sesiones delegadas](https://docs.aws.amazon.com/cloud-map/latest/dg/security_iam_service-with-iam.html) y [condición CalledVia](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_forward_access_sessions.html).
 - [Condición Route53 VPCs](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/specifying-conditions-route53.html) y [CreateHostedZone admite una sola VPC](https://docs.aws.amazon.com/Route53/latest/APIReference/API_CreateHostedZone.html).
 
-La prueba opt-in `tools/aws_demo/test_cloudmap_policy.py` evalúa el documento
+La prueba opt-in `tools/aws_demo/test_deploy_policy.py` evalúa el documento
 real renderizado por Terraform con `SimulateCustomPolicy`, sin adjuntar políticas
 ni crear zonas. Cubre 14 escenarios de acceso permitido y denegado: Cloud Map,
 llamadas directas, otro servicio, región incorrecta y zona pública. La política
@@ -67,19 +67,44 @@ El contexto FAS de esta simulación es suministrado: la llamada efectiva de
 Cloud Map sigue pendiente del ensayo. No se presenta como despliegue probado.
 
 Plan bootstrap: 0 altas, 1 actualización de `aws_iam_role_policy.deploy`,
-0 bajas; aún sin aplicar. Terraform mock: 1 PASS. Suite offline ampliada:
-96 pruebas,88 PASS/8 SKIP; la nueva integración IAM es opt-in. Recibos en
+0 bajas; aún sin aplicar. Terraform mock: 1 PASS. Recibos de este corte en
 `.work/master-rehearsal/cloudmap-policy-{red,green}.log`,
 `cloudmap-policy-review.json`, `cloudmap-bootstrap-plan.log` y
 `pr165-offline-green.log`.
 
 Para repetir la evaluación con credenciales de lectura autorizadas: exportar
 sólo el documento IAM del plan a un JSON local; establecer
-`AWS_CLOUDMAP_POLICY_TEST_FILE` a ese archivo y ejecutar
-`python -m unittest tools.aws_demo.test_cloudmap_policy -v`. Nunca exportar el
+`AWS_DEPLOY_POLICY_TEST_FILE` a ese archivo y ejecutar
+`python -m unittest tools.aws_demo.test_deploy_policy -v`. Nunca exportar el
 plan completo de aplicación, que puede contener valores sensibles.
 
-Pendientes: revisión independiente del delta DNS, CI remota, integración autorizada y reintento
+## Dependencias del proveedor Terraform para S3 y retirada de roles
+
+Se contrastaron las operaciones del proveedor AWS6.13.0 fijado con la política
+desplegada. `s3:GetBucket*` y `s3:PutBucket*` no incluyen los nombres IAM de
+cifrado, aceleración, lifecycle o replicación. El recurso de bucket consulta
+estas propiedades aunque no se configuren, y el recurso SSE configura el cifrado
+KMS previsto. También faltaba la consulta de perfiles que precede al borrado
+de roles. Simulación de la política actual: las seis acciones denegadas.
+
+Se añaden cuatro lecturas S3 y `PutEncryptionConfiguration` sólo para los
+prefijos ya autorizados, y `iam:ListInstanceProfilesForRole` sólo sobre roles
+`economicon-*`. Permanecen los Deny explícitos de buckets/roles de bootstrap;
+no se conceden escritura de lifecycle, replicación, aceleración ni modificación
+de perfiles. Fuentes: [lecturas S3 del proveedor](https://github.com/hashicorp/terraform-provider-aws/blob/v6.13.0/internal/service/s3/bucket.go#L782),
+[retirada de roles](https://github.com/hashicorp/terraform-provider-aws/blob/v6.13.0/internal/service/iam/role.go#L495),
+[permiso de cifrado S3](https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketEncryption.html).
+
+La prueba IAM ampliada reproduce 10 fallos sobre la política anterior y evalúa
+32 escenarios: 14 DNS y 18 S3/IAM, incluyendo denegación de recursos ajenos y
+protección explícita del bootstrap. Recibos finales:
+`deploy-policy-{red,green}.log`, `deploy-policy-review.json`,
+`deploy-bootstrap-plan.log`. Son simulaciones; creación y retirada efectivas
+siguen pendientes del ensayo. El ajuste sigue siendo una sola política in-place.
+Resultado final: los32 escenarios PASS, Access Analyzer sin hallazgos;
+suite offline97pruebas,88PASS/9SKIP y Terraform mock1PASS.
+
+Pendientes: revisión independiente del delta final, CI remota, integración autorizada y reintento
 con nuevo SHA/CI/ventana. Las excepciones previas de PR161 y PR163 no conceden
 automáticamente bypass para esta corrección. No se ha validado aún la aplicación
 funcionando en AWS ni el desmontaje de infraestructura real.

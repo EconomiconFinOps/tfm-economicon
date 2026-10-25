@@ -1,16 +1,20 @@
 # Cloud AWS — arquitectura documental
 
-## PR165: corrección del bloqueo y permisos Cloud Map — 25/10/2026
+## PR165: corrección del bloqueo y permisos dependientes — 25/10/2026
 
 Origen: mismo chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
 PR165 <https://github.com/EconomiconFinOps/tfm-economicon/pull/165> añade alias
-DynamoDB y los permisos dependientes de Route 53 para la zona privada Cloud Map.
+DynamoDB y permisos dependientes de Route 53, S3 e IAM para el proveedor Terraform.
 El segundo fallo fue DynamoDB antes de apply; la carencia DNS se confirmó después
 mediante simulación IAM de la política actual, sin provocar un despliegue parcial.
 Sólo llamadas delegadas por Cloud Map; creación privada con VPC de Irlanda,
-DNS público directo limitado a la zona ya aprobada. Plan bootstrap0altas/1política
-actualizada/0bajas, todavía sin aplicar. IAM14casos PASS; Terraform mock1PASS;
-suite offline88PASS/8SKIP. Prueba real Cloud Map pendiente del ensayo.
+DNS público directo limitado a la zona ya aprobada. Se añaden cuatro lecturas S3
+y configuración de cifrado sólo en los prefijos del ensayo, y consulta de
+perfiles sólo para roles economicon. Deny de bootstrap conservados. La simulación
+de la política anterior reproduce diez rechazos; el ajuste final se evalúa con
+32 escenarios IAM, todos PASS; Access Analyzer sin hallazgos, suite88PASS/9SKIP
+y Terraform mock1PASS. Plan bootstrap0altas/1política/0bajas, todavía sin aplicar.
+Operaciones reales de Cloud Map/S3/retirada pendientes del ensayo.
 
 Revisión de agente favorable para `e57550e6` sólo sobre DynamoDB; CI técnica PR
 `40196473065`, push `40196469214` y SQL `40196473137` SUCCESS para ese head.

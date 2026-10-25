@@ -223,8 +223,13 @@ resource "aws_iam_role_policy" "deploy" {
     ] },
     { Effect = "Allow", Action = "route53:GetChange", Resource = "arn:aws:route53:::change/*" },
     { Effect = "Allow", Action = ["s3:CreateBucket", "s3:DeleteBucket", "s3:ListBucket", "s3:GetBucket*", "s3:PutBucket*", "s3:DeleteBucketPolicy", "s3:GetObject*", "s3:PutObject", "s3:DeleteObject*", "s3:ListBucketVersions"], Resource = ["arn:aws:s3:::economicon-ensayo*", "arn:aws:s3:::economicon-defensa*"] },
+    # IAM action names differ from these Get/PutBucket API names. Terraform
+    # reads all four properties and configures SSE-KMS on the application buckets.
+    { Effect = "Allow", Action = ["s3:GetEncryptionConfiguration", "s3:PutEncryptionConfiguration", "s3:GetAccelerateConfiguration", "s3:GetLifecycleConfiguration", "s3:GetReplicationConfiguration"], Resource = ["arn:aws:s3:::economicon-ensayo*", "arn:aws:s3:::economicon-defensa*"] },
     { Effect = "Allow", Action = ["iam:CreateRole", "iam:PutRolePermissionsBoundary"], Resource = "arn:aws:iam::${var.account_id}:role/economicon-*", Condition = { StringEquals = { "iam:PermissionsBoundary" = var.permissions_boundary_arn } } },
     { Effect = "Allow", Action = ["iam:GetRole", "iam:DeleteRole", "iam:TagRole", "iam:UntagRole", "iam:ListRolePolicies", "iam:ListAttachedRolePolicies", "iam:GetRolePolicy", "iam:PutRolePolicy", "iam:DeleteRolePolicy"], Resource = "arn:aws:iam::${var.account_id}:role/economicon-*" },
+    # Terraform checks that no instance profile references a role before deletion.
+    { Effect = "Allow", Action = "iam:ListInstanceProfilesForRole", Resource = "arn:aws:iam::${var.account_id}:role/economicon-*" },
     { Effect = "Allow", Action = "iam:PassRole", Resource = "arn:aws:iam::${var.account_id}:role/economicon-*", Condition = { StringEquals = { "iam:PassedToService" = "ecs-tasks.amazonaws.com" } } },
     { Effect = "Allow", Action = "iam:CreateServiceLinkedRole", Resource = "*", Condition = { StringLike = { "iam:AWSServiceName" = ["ecs.amazonaws.com", "rds.amazonaws.com", "elasticloadbalancing.amazonaws.com", "mq.amazonaws.com", "cloudfront.amazonaws.com", "vpcorigin.cloudfront.amazonaws.com"] } } },
     { Effect = "Deny", Action = ["iam:DeleteRolePermissionsBoundary", "iam:CreatePolicy", "iam:CreatePolicyVersion", "iam:SetDefaultPolicyVersion"], Resource = "*" },

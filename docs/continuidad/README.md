@@ -3,8 +3,9 @@
 25Oct, PR165: segundo intento detenido antes de aplicar Terraform por `cycle`
 reservado en DynamoDB; alias corregidos y prueba real conforme. Añadidos permisos
 dependientes de Cloud Map sólo por llamadas delegadas, creando zonas privadas
-en Irlanda; IAM14casos PASS y plan0altas/1política/0bajas sin aplicar. Suite
-88PASS/8SKIP. Sin aplicación, bloqueo ni Scheduler activos; bootstrap conservado.
+en Irlanda, y permisos acotados de cifrado/lectura S3 y consulta de perfiles IAM.
+Plan0altas/1política/0bajas sin aplicar. Sin aplicación, bloqueo ni Scheduler
+activos; bootstrap conservado.
 Revisión/CI del delta e integración pendientes. Detalle en [cloud-aws.md](cloud-aws.md).
 
 Los siguientes párrafos son cortes históricos, superados por el estado anterior.
@@ -130,7 +131,7 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 | --- | --- | --- |
 | [Compatibilidad Azure Cost API](azure-cost-api-compatibilidad.md) | JUP-140/PR162: contención temporal Starlette 1.9.0; ApiError congelado, resolución limpia y 81 PASS, imagen y HTTP normal/demo comprobados localmente. Otros rangos y servicios conservados. | 2026-10-24 |
 | [Landing pública](landing-publica.md) | JUP-140/PR162:14marcadores sustituidos por viñetas violetas, textos/datos/JS conservados y Azure excluido. Landing36PASS(26+10), capturas nativas claro/oscuro/móvil/amplia; evaluaciones independientes y aprobación visual pendientes. | 2026-10-24 |
-| [Despliegue AWS](cloud-aws.md) | PR161/163 integradas; bootstrap aplicado en el máster. Segundo intento detenido por DynamoDB antes de aplicar infraestructura; controles retirados y aplicación ausente. PR165 corrige el bloqueo y prepara permisos privados de Cloud Map; revisión/CI del delta e integración pendientes. | 2026-10-25 |
+| [Despliegue AWS](cloud-aws.md) | PR161/163 integradas; bootstrap aplicado en el máster. Segundo intento detenido por DynamoDB antes de aplicar infraestructura; controles retirados y aplicación ausente. PR165 corrige el bloqueo y permisos dependientes de Cloud Map/S3/IAM; revisión/CI del delta e integración pendientes. | 2026-10-25 |
 | [Cortes de respuesta del chat](cortes-respuesta-chat.md) | JUP-135 integrada por squash f224226d en PR153, con excepcion humana de merge; CI tecnica previa conforme. Agregados de medicion comunicados y pendientes documentales conservados; sin aceptacion generativa nueva. | 2026-10-22 |
 | [Reevaluación de métricas del modelo](reevaluacion-metricas-modelo.md) | JUP-133: PR156 incorporó seis repeticiones y juez IA provisional; PR158 integrada en develop93624f77 corrige fixtures y altura. Evidencia ajena Linux1998PASS/0omisiones y OpenSpec92PASS, sin aceptación de campañas. La composición139 comprueba su delta por separado. | 2026-10-23 |
 | [Composición narrativa de evaluación](dashboard-evaluacion-composicion.md) | JUP-139: entrega R8 aprobada por Paris el 24/10; revisión y validación locales favorables, 137 medidas y 19/1688 conservados. Develop idéntico a 93624f77. OpenSpec archivado 24/10 con promoción de requisitos; evaluación del delta documental y publicación pendientes. Tres dashboards intactos, publicación y etapas humanas pendientes. | 2026-10-24 |
