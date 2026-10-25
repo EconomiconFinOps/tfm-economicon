@@ -1,0 +1,59 @@
+name: Chat engineering SQL
+
+on:
+  pull_request:
+    branches: [develop]
+  push:
+    branches: [feat/JUP-122-chat-engineering]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chat-engineering-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-sql:
+    name: Chat native SQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - name: Install backend test dependencies
+        run: python -m pip install -r apps/backend/requirements-dev.txt
+      - name: Prepare pinned offline tokenizer
+        run: python apps/processor/build_tokenizer.py
+      - name: Start disposable loopback CockroachDB
+        run: |
+          docker run --detach --name jup122-sql --publish 127.0.0.1:26257:26257 cockroachdb/cockroach:v24.1.11 start-single-node --insecure --store=type=mem,size=1GiB
+          for attempt in $(seq 1 60); do
+            if docker exec jup122-sql cockroach sql --insecure --execute='CREATE DATABASE IF NOT EXISTS economicon_jup035_mock_ci'; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: Exercise migrations, stream races and SQL deadlines without inference
+        working-directory: apps/backend
+        env:
+          JUP035_COCKROACH_TEST_URL: cockroachdb+psycopg://root@127.0.0.1:26257/economicon_jup035_mock_ci?sslmode=disable
+          JUP035_REQUIRE_NATIVE_SQL: 'true'
+        run: python -m pytest tests/test_chat_cockroach_jup035.py tests/test_chat_summary_sql_deadline_jup035.py tests/test_migration_reconciliation_jup035.py -q
+      - name: Install processor test dependencies
+        run: python -m pip install -r apps/processor/requirements-dev.txt
+      - name: Exercise processor SQL cleanup without inference
+        working-directory: apps/processor
+        env:
+          JUP035_COCKROACH_TEST_URL: cockroachdb+psycopg://root@127.0.0.1:26257/economicon_jup035_mock_processor_ci?sslmode=disable
+          JUP035_REQUIRE_NATIVE_SQL: 'true'
+        run: |
+          docker exec jup122-sql cockroach sql --insecure --execute='CREATE DATABASE IF NOT EXISTS economicon_jup035_mock_processor_ci'
+          python -m pytest tests/test_chat_summary_sql_deadline_jup035.py -q
+      - name: Stop disposable database
+        if: always()
+        run: docker rm --force jup122-sql

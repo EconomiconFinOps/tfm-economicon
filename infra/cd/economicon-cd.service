@@ -1,0 +1,9 @@
+[Unit]
+Description=Economicon JUP-052 private development deployment
+
+[Service]
+Type=oneshot
+UMask=0077
+ExecStart=/usr/bin/python3 /home/danteadmin/economicon-cd/tools/cd/deploy.py --root /home/danteadmin/economicon-cd-runtime poll
+TimeoutStartSec=45min
+NoNewPrivileges=true

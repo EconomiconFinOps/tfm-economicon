@@ -1,14 +1,99 @@
+include:
+  - ./infra/litellm/docker-compose.yml
+
 services:
+  landing:
+    build:
+      context: .
+      dockerfile: apps/landing/Dockerfile
+      args:
+        SITE_ORIGIN: ${SITE_ORIGIN:-}
+    environment:
+      LANDING_VIDEO_URL: ${LANDING_VIDEO_URL:-}
+      LANDING_APP_URL: ${LANDING_APP_URL:-}
+    ports:
+      - "127.0.0.1:${LANDING_HOST_PORT:-8088}:8080"
+    networks: [landing-public]
+    volumes: ["../landing-public-media:/landing/public-media:ro"]
+    init: true
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ["no-new-privileges:true"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+
+  minio:
+    build:
+      context: .
+      dockerfile: infra/minio/Dockerfile
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?required}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?required}
+      MINIO_API_CORS_ALLOW_ORIGIN: ${DOCUMENT_CORS_ORIGINS:?required exact browser origins}
+      MINIO_BROWSER: "off"
+    ports:
+      - "127.0.0.1:${MINIO_HOST_PORT:-9000}:9000"
+    volumes:
+      - document-artifacts:/data
+    init: true
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ["no-new-privileges:true"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9000/minio/health/ready',timeout=3).close()"]
+      interval: 5s
+      timeout: 4s
+      retries: 20
+
+  minio-init:
+    build:
+      context: .
+      dockerfile: infra/minio/Dockerfile
+    entrypoint: [/bin/sh, /init/init.sh]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?required}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?required}
+      DOCUMENT_S3_BUCKET: ${DOCUMENT_S3_BUCKET:-document-ingestion}
+      DOCUMENT_S3_ACCESS_KEY: ${DOCUMENT_S3_ACCESS_KEY:?required}
+      DOCUMENT_S3_SECRET_KEY: ${DOCUMENT_S3_SECRET_KEY:?required}
+    volumes: ["./infra/minio/init.sh:/init/init.sh:ro"]
+    depends_on:
+      minio: {condition: service_healthy}
+    restart: "no"
+    init: true
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ["no-new-privileges:true"]
+
   cockroachdb:
-    image: cockroachdb/cockroach:v24.1.11
+    image: cockroachdb/cockroach:v24.1.11@sha256:89bda255c52b25f463c7a9373ffedef122a4d9f1b432aa34b897970fe864a66c
+    # This insecure node is only for an operator-confirmed disposable local stack.
+    environment:
+      RUNTIME_ENVIRONMENT: ${RUNTIME_ENVIRONMENT:-production}
+      ALLOW_INSECURE_LOCAL_DATABASE: ${ALLOW_INSECURE_LOCAL_DATABASE:-false}
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - |
+        case "$$RUNTIME_ENVIRONMENT:$$ALLOW_INSECURE_LOCAL_DATABASE" in
+          development:true|test:true) exec /cockroach/cockroach "$$@" ;;
+          *) echo "Disposable local database requires development/test and explicit opt-in." >&2; exit 1 ;;
+        esac
+      - --
     command:
       - start-single-node
       - --insecure
+      - --store=/cockroach/cockroach-data
       - --listen-addr=0.0.0.0:26257
+      - --advertise-addr=cockroachdb:26257
       - --http-addr=0.0.0.0:8080
     ports:
-      - "26257:26257"
-      - "8080:8080"
+      - "127.0.0.1:${COCKROACH_SQL_PORT:-26257}:26257"
+      - "127.0.0.1:${COCKROACH_HTTP_PORT:-8080}:8080"
     volumes:
       - cockroach-data:/cockroach/cockroach-data
     healthcheck:
@@ -19,24 +104,33 @@ services:
       start_period: 15s
 
   rabbitmq:
-    image: rabbitmq:3-management
+    image: rabbitmq:3-management@sha256:e582c0bc7766f3342496d8485efb5a1df782b5ce3886ad017e2eaae442311f69
+    # RabbitMQ stores its data per node name, which defaults to the changing container id.
+    hostname: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:?required}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:?required}
+      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE:?required}
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "127.0.0.1:${RABBITMQ_PORT:-5672}:5672"
+      - "127.0.0.1:${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      # As root, an early ping creates a root-owned Erlang cookie and the server dies with eacces.
+      test: ["CMD", "gosu", "rabbitmq", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
       timeout: 5s
       retries: 10
 
   postgres-pgvector:
-    image: pgvector/pgvector:pg17
+    image: pgvector/pgvector:pg17@sha256:cf134a767f474095eeba57e0117be8e568e011a63f33fbf252f14c9b760f8e6f
     environment:
       POSTGRES_DB: embeddings
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
     ports:
-      - "5433:5432"
+      - "127.0.0.1:${PGVECTOR_PORT:-5433}:5432"
     volumes:
       - pgvector-data:/var/lib/postgresql/data
     healthcheck:
@@ -45,21 +139,188 @@ services:
       timeout: 5s
       retries: 10
 
+  azure-cost-api:
+    build:
+      context: .
+      dockerfile: apps/azure-cost-api/Dockerfile
+    environment:
+      AZURE_COST_AUTH_ENABLED: "${AZURE_COST_AUTH_ENABLED:-true}"
+      AZURE_COST_VALID_TOKENS: "${AZURE_COST_VALID_TOKENS:-jupiter-local-token}"
+      AZURE_COST_FORBIDDEN_TOKENS: "${AZURE_COST_FORBIDDEN_TOKENS:-jupiter-forbidden-token}"
+      AZURE_COST_PAGE_SIZE: "${AZURE_COST_PAGE_SIZE:-10}"
+      AZURE_COST_SKIPTOKEN_SECRET: "${AZURE_COST_SKIPTOKEN_SECRET:-jupiter-local-skiptoken-secret}"
+      AZURE_COST_DEFAULT_SCENARIO: "${AZURE_COST_DEFAULT_SCENARIO:-normal}"
+      AZURE_COST_FAKE_TIMEOUT_SECONDS: "${AZURE_COST_FAKE_TIMEOUT_SECONDS:-2}"
+      AZURE_COST_RETRY_AFTER_SECONDS: "${AZURE_COST_RETRY_AFTER_SECONDS:-1}"
+    ports:
+      - "${AZURE_COST_API_HOST_PORT:-8002}:8002"
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health').read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Demo data (JUP-119), opt-in: `docker compose --profile demo up` loads it once; the default `up` never does.
+  azure-cost-api-demo:
+    profiles: ["demo"]
+    build:
+      context: .
+      dockerfile: apps/azure-cost-api/Dockerfile
+    environment:
+      AZURE_COST_DATASET_PATH: /demo/demo-cost.csv
+      AZURE_COST_AUTH_ENABLED: "${AZURE_COST_AUTH_ENABLED:-true}"
+      AZURE_COST_VALID_TOKENS: "${AZURE_COST_VALID_TOKENS:-jupiter-local-token}"
+      AZURE_COST_FORBIDDEN_TOKENS: "${AZURE_COST_FORBIDDEN_TOKENS:-jupiter-forbidden-token}"
+      AZURE_COST_PAGE_SIZE: "${AZURE_COST_PAGE_SIZE:-10}"
+      AZURE_COST_SKIPTOKEN_SECRET: "${AZURE_COST_SKIPTOKEN_SECRET:-jupiter-local-skiptoken-secret}"
+    volumes:
+      - ./fixtures/azure-cost/demo:/demo:ro
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health').read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  demo-data:
+    profiles: ["demo"]
+    build:
+      context: ./apps/processor
+    command: ["python", "scripts/demo_data.py", "apply"]
+    working_dir: /repo
+    healthcheck:
+      disable: true
+    environment:
+      RUNTIME_ENVIRONMENT: ${RUNTIME_ENVIRONMENT:-production}
+      ALLOW_INSECURE_LOCAL_DATABASE: ${ALLOW_INSECURE_LOCAL_DATABASE:-false}
+      DATABASE_URL: ${DATABASE_URL:?required}
+      RABBITMQ_URL: ${RABBITMQ_URL:?required}
+      VECTOR_DATABASE_URL: ${VECTOR_DATABASE_URL:?required}
+      AZURE_COST_API_BASE_URL: http://azure-cost-api-demo:8002
+      AZURE_COST_API_TOKEN: ${AZURE_COST_API_TOKEN:-jupiter-local-token}
+      PROCESSOR_APP_DIR: /app
+    volumes:
+      - ./scripts:/repo/scripts:ro
+      - ./fixtures:/repo/fixtures:ro
+    depends_on:
+      azure-cost-api-demo:
+        condition: service_healthy
+      cockroachdb:
+        condition: service_healthy
+      processor:
+        condition: service_healthy
+    restart: "no"
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+
+  backend-migrate:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    command: ["python", "-m", "app.migrate"]
+    environment:
+      RUNTIME_ENVIRONMENT: ${RUNTIME_ENVIRONMENT:-production}
+      ALLOW_INSECURE_LOCAL_DATABASE: ${ALLOW_INSECURE_LOCAL_DATABASE:-false}
+      DATABASE_URL: ${DATABASE_URL:?required}
+      RABBITMQ_URL: ${RABBITMQ_URL:?required}
+      VECTOR_DATABASE_URL: ${VECTOR_DATABASE_URL:?required}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-mock}
+      EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-8}
+      LITELLM_API_KEY: ${BACKEND_LITELLM_API_KEY:-}
+      AUTH_SECRET_KEY: ${AUTH_SECRET_KEY:?required}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS-[]}
+      DEMO_SEED_ENABLED: ${DEMO_SEED_ENABLED:-false}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-}
+    depends_on:
+      cockroachdb:
+        condition: service_healthy
+    restart: "no"
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      disable: true
+
   backend:
     build:
-      context: ./apps/backend
-    env_file:
-      - .env
+      context: .
+      dockerfile: apps/backend/Dockerfile
     environment:
-      API_PORT: ${API_PORT:-8000}
-      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://root@cockroachdb:26257/defaultdb?sslmode=disable}
-      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/%2F}
-      VECTOR_DATABASE_URL: ${VECTOR_DATABASE_URL:-postgresql+psycopg://postgres:postgres@postgres-pgvector:5432/embeddings}
+      API_PORT: 8000
+      DOCUMENT_UPLOADS_ENABLED: "true"
+      DOCUMENT_S3_ENDPOINT: ${DOCUMENT_S3_ENDPOINT:-http://minio:9000}
+      DOCUMENT_S3_PUBLIC_ENDPOINT: ${DOCUMENT_S3_PUBLIC_ENDPOINT:-http://localhost:9000}
+      DOCUMENT_S3_REGION: ${DOCUMENT_S3_REGION:-us-east-1}
+      DOCUMENT_S3_BUCKET: ${DOCUMENT_S3_BUCKET:-document-ingestion}
+      DOCUMENT_S3_ACCESS_KEY: ${DOCUMENT_S3_ACCESS_KEY:?required}
+      DOCUMENT_S3_SECRET_KEY: ${DOCUMENT_S3_SECRET_KEY:?required}
+      DOCUMENT_MAX_FILE_BYTES: ${DOCUMENT_MAX_FILE_BYTES:-20000000}
+      DOCUMENT_UPLOAD_URL_SECONDS: ${DOCUMENT_UPLOAD_URL_SECONDS:-180}
+      DOCUMENT_FAILED_RETENTION_DAYS: ${DOCUMENT_FAILED_RETENTION_DAYS:-7}
+      BACKEND_SCHEMA_MODE: verify
+      SUMMARY_TIMEOUT_SECONDS: ${SUMMARY_TIMEOUT_SECONDS:-180}
+      CHAT_MAX_ACTIVE: ${CHAT_MAX_ACTIVE:-8}
+      CHAT_ENABLED: ${CHAT_ENABLED:-false}
+      SUMMARY_ENABLED: ${SUMMARY_ENABLED:-true}
+      CHAT_CONTEXT_TOKENS: ${CHAT_CONTEXT_TOKENS:-1048576}
+      CHAT_MAX_OUTPUT_TOKENS: ${CHAT_MAX_OUTPUT_TOKENS:-3200}
+      SUMMARY_CONTEXT_TOKENS: ${SUMMARY_CONTEXT_TOKENS:-1048576}
+      CHAT_RESOURCE_DIRECTORY: /opt/economicon/chat/v4
+      SUMMARY_RESOURCE_DIRECTORY: /opt/economicon/summary/v4
+      CHAT_TOKENIZER_FILE: /opt/economicon/chat/v4/tokenizer.json
+      CHAT_LEGACY_TOKENIZER_FILE: /opt/economicon/chat/v3/tokenizer.json
+      PROCESSOR_CHAT_BASE_URL: http://processor-chat:8003
+      CHAT_SERVICE_HMAC_KEY_FILE: /run/secrets/chat-hmac
+      RUNTIME_ENVIRONMENT: ${RUNTIME_ENVIRONMENT:-production}
+      ALLOW_INSECURE_LOCAL_DATABASE: ${ALLOW_INSECURE_LOCAL_DATABASE:-false}
+      DATABASE_URL: ${DATABASE_URL:?required}
+      RABBITMQ_URL: ${RABBITMQ_URL:?required}
+      VECTOR_DATABASE_URL: ${VECTOR_DATABASE_URL:?required}
       PROCESSOR_QUEUE_NAME: ${PROCESSOR_QUEUE_NAME:-processor:jobs}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-mock}
       EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-8}
-      AUTH_SECRET_KEY: ${AUTH_SECRET_KEY:-replace-me-auth-secret}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-economicon-embedding}
+      EMBEDDING_MAPPING_SHA256: ${EMBEDDING_MAPPING_SHA256:-}
+      EMBEDDING_DEPLOYMENT_ID: ${EMBEDDING_DEPLOYMENT_ID:-}
+      RAG_VERIFIED_ENABLED: ${RAG_VERIFIED_ENABLED:-false}
+      RAG_CONTEXTUAL_ENABLED: ${RAG_CONTEXTUAL_ENABLED:-false}
+      RAG_HYBRID_ENABLED: ${RAG_HYBRID_ENABLED:-false}
+      LITELLM_BASE_URL: ${LITELLM_BASE_URL:-http://litellm:4000/v1}
+      LITELLM_API_KEY: ${BACKEND_LITELLM_API_KEY:-}
+      EMBEDDING_TIMEOUT_SECONDS: ${EMBEDDING_TIMEOUT_SECONDS:-10}
+      EMBEDDING_MAX_RETRIES: ${EMBEDDING_MAX_RETRIES:-1}
+      RETRIEVAL_TOP_K: ${RETRIEVAL_TOP_K:-4}
+      RETRIEVAL_MAX_DISTANCE: ${RETRIEVAL_MAX_DISTANCE:-}
+      AUTH_SECRET_KEY: ${AUTH_SECRET_KEY:?required}
       AUTH_TOKEN_TTL_MINUTES: ${AUTH_TOKEN_TTL_MINUTES:-480}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS-[]}
+      DEMO_SEED_ENABLED: ${DEMO_SEED_ENABLED:-false}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-}
+      COST_REFERENCE_DATE: ${COST_REFERENCE_DATE:-}
     depends_on:
+      minio-init: {condition: service_completed_successfully}
+      backend-migrate:
+        condition: service_completed_successfully
       cockroachdb:
         condition: service_healthy
       rabbitmq:
@@ -67,7 +328,18 @@ services:
       postgres-pgvector:
         condition: service_healthy
     ports:
-      - "${API_PORT:-8000}:8000"
+      - "${API_HOST_PORT:-8000}:8000"
+    secrets:
+      - chat-hmac
+    networks:
+      default: {}
+      chat-private: {}
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
       interval: 15s
@@ -78,50 +350,183 @@ services:
   processor:
     build:
       context: ./apps/processor
-    env_file:
-      - .env
     environment:
-      PROCESSOR_PORT: ${PROCESSOR_PORT:-8001}
+      PROCESSOR_PORT: 8001
+      DOCUMENT_UPLOADS_ENABLED: "true"
+      DOCUMENT_S3_ENDPOINT: ${DOCUMENT_S3_ENDPOINT:-http://minio:9000}
+      DOCUMENT_S3_PUBLIC_ENDPOINT: ${DOCUMENT_S3_PUBLIC_ENDPOINT:-http://localhost:9000}
+      DOCUMENT_S3_REGION: ${DOCUMENT_S3_REGION:-us-east-1}
+      DOCUMENT_S3_BUCKET: ${DOCUMENT_S3_BUCKET:-document-ingestion}
+      DOCUMENT_S3_ACCESS_KEY: ${DOCUMENT_S3_ACCESS_KEY:?required}
+      DOCUMENT_S3_SECRET_KEY: ${DOCUMENT_S3_SECRET_KEY:?required}
+      DOCUMENT_MAX_FILE_BYTES: ${DOCUMENT_MAX_FILE_BYTES:-20000000}
+      DOCUMENT_UPLOAD_URL_SECONDS: ${DOCUMENT_UPLOAD_URL_SECONDS:-180}
+      DOCUMENT_FAILED_RETENTION_DAYS: ${DOCUMENT_FAILED_RETENTION_DAYS:-7}
+      DOCUMENT_MAX_PAGES: ${DOCUMENT_MAX_PAGES:-100}
+      DOCUMENT_EXTRACTION_SECONDS: ${DOCUMENT_EXTRACTION_SECONDS:-180}
+      DOCUMENT_OCR_PAGE_SECONDS: ${DOCUMENT_OCR_PAGE_SECONDS:-30}
+      DOCUMENT_EXTRACTION_MEMORY_MB: ${DOCUMENT_EXTRACTION_MEMORY_MB:-1536}
+      DOCUMENT_OCR_MAX_PIXELS: ${DOCUMENT_OCR_MAX_PIXELS:-16000000}
+      DOCUMENT_EXECUTION_LEASE_SECONDS: ${DOCUMENT_EXECUTION_LEASE_SECONDS:-300}
+      SUMMARY_TIMEOUT_SECONDS: ${SUMMARY_TIMEOUT_SECONDS:-180}
+      CHAT_ENABLED: ${CHAT_ENABLED:-false}
+      SUMMARY_ENABLED: ${SUMMARY_ENABLED:-true}
+      CHAT_CONTEXT_TOKENS: ${CHAT_CONTEXT_TOKENS:-1048576}
+      CHAT_MAX_OUTPUT_TOKENS: ${CHAT_MAX_OUTPUT_TOKENS:-3200}
+      SUMMARY_CONTEXT_TOKENS: ${SUMMARY_CONTEXT_TOKENS:-1048576}
+      CHAT_MAX_ACTIVE: ${CHAT_MAX_ACTIVE:-8}
+      PROCESSOR_CHAT_BIND_HOST: ${PROCESSOR_CHAT_PRIVATE_IP:-172.30.35.3}
+      PROCESSOR_CHAT_PORT: 8003
+      CHAT_SIGNING_KEY_FILE: /run/secrets/chat-hmac
+      CHAT_RESOURCE_DIRECTORY: /app/app/agents/prompt_resources/jup035/chat/v4
+      SUMMARY_RESOURCE_DIRECTORY: /app/app/agents/prompt_resources/jup035/summary/v4
+      CHAT_TOKENIZER_FILE: /app/app/agents/prompt_resources/jup035/chat/v4/tokenizer.json
+      CHAT_LEGACY_TOKENIZER_FILE: /app/app/agents/prompt_resources/jup035/chat/v2/tokenizer.json
+      RUNTIME_ENVIRONMENT: ${RUNTIME_ENVIRONMENT:-production}
+      ALLOW_INSECURE_LOCAL_DATABASE: ${ALLOW_INSECURE_LOCAL_DATABASE:-false}
       PROCESSOR_CONCURRENCY: ${PROCESSOR_CONCURRENCY:-2}
       PROCESSOR_QUEUE_NAME: ${PROCESSOR_QUEUE_NAME:-processor:jobs}
-      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://root@cockroachdb:26257/defaultdb?sslmode=disable}
-      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/%2F}
-      VECTOR_DATABASE_URL: ${VECTOR_DATABASE_URL:-postgresql+psycopg://postgres:postgres@postgres-pgvector:5432/embeddings}
+      DATABASE_URL: ${DATABASE_URL:?required}
+      RABBITMQ_URL: ${RABBITMQ_URL:?required}
+      VECTOR_DATABASE_URL: ${VECTOR_DATABASE_URL:?required}
       EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-mock}
       EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-8}
-      EMBEDDING_CHUNK_SIZE: ${EMBEDDING_CHUNK_SIZE:-500}
-      EMBEDDING_CHUNK_OVERLAP: ${EMBEDDING_CHUNK_OVERLAP:-50}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-economicon-embedding}
+      EMBEDDING_CHUNK_TARGET_TOKENS: ${EMBEDDING_CHUNK_TARGET_TOKENS:-600}
+      EMBEDDING_MAPPING_SHA256: ${EMBEDDING_MAPPING_SHA256:-}
+      EMBEDDING_DEPLOYMENT_ID: ${EMBEDDING_DEPLOYMENT_ID:-}
+      EMBEDDING_CHUNK_MAX_TOKENS: ${EMBEDDING_CHUNK_MAX_TOKENS:-800}
+      EMBEDDING_CHUNK_OVERLAP_RATIO: ${EMBEDDING_CHUNK_OVERLAP_RATIO:-0.1}
       LLM_PROVIDER: ${LLM_PROVIDER:-mock}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-replace-me}
+      LLM_MODEL: ${LLM_MODEL:-economicon-chat}
+      AI_EXECUTION_MODE: ${AI_EXECUTION_MODE:-development}
+      LITELLM_BASE_URL: ${LITELLM_BASE_URL:-http://litellm:4000/v1}
+      LITELLM_API_KEY: ${LITELLM_API_KEY:-}
+      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-30}
+      LLM_MAX_RETRIES: ${LLM_MAX_RETRIES:-2}
+      LLM_MAX_OUTPUT_TOKENS: ${LLM_MAX_OUTPUT_TOKENS:-800}
+      AZURE_COST_API_BASE_URL: ${AZURE_COST_API_BASE_URL:-http://azure-cost-api:8002}
+      AZURE_COST_API_TOKEN: ${AZURE_COST_API_TOKEN:-jupiter-local-token}
+      AZURE_COST_API_VERSION: ${AZURE_COST_API_VERSION:-2025-03-01}
+      AZURE_COST_API_TIMEOUT_SECONDS: ${AZURE_COST_API_TIMEOUT_SECONDS:-5}
+      AZURE_COST_API_MAX_RETRIES: ${AZURE_COST_API_MAX_RETRIES:-3}
+      AZURE_COST_API_RETRY_BACKOFF_SECONDS: ${AZURE_COST_API_RETRY_BACKOFF_SECONDS:-0.25}
+      AZURE_COST_API_MAX_RETRY_AFTER_SECONDS: ${AZURE_COST_API_MAX_RETRY_AFTER_SECONDS:-30}
+      AZURE_COST_API_MAX_PAGES: ${AZURE_COST_API_MAX_PAGES:-1000}
     depends_on:
+      minio-init: {condition: service_completed_successfully}
+      azure-cost-api:
+        condition: service_healthy
       cockroachdb:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
       postgres-pgvector:
         condition: service_healthy
+      backend:
+        condition: service_healthy
     ports:
-      - "${PROCESSOR_PORT:-8001}:8001"
+      - "${PROCESSOR_HOST_PORT:-8001}:8001"
+    secrets:
+      - chat-hmac
+    networks:
+      default: {}
+      chat-private:
+        ipv4_address: ${PROCESSOR_CHAT_PRIVATE_IP:-172.30.35.3}
+        aliases:
+          - processor-chat
+    pids_limit: 256
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp:uid=10001,gid=10001,mode=0700
+    security_opt:
+      - no-new-privileges:true
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health').read()"]
       interval: 15s
       timeout: 5s
       retries: 10
-      start_period: 20s
+      # The first start applies CockroachDB migrations before serving /health (~160 s measured).
+      start_period: 300s
 
   frontend:
     build:
-      context: ./apps/frontend
-    env_file:
-      - .env
-    environment:
-      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
     depends_on:
       backend:
         condition: service_healthy
     ports:
-      - "${FRONTEND_PORT:-5173}:5173"
+      - "${FRONTEND_HOST_PORT:-5173}:5173"
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:5173').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    volumes:
+      - ./apps/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      backend:
+        condition: service_healthy
+      processor:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${PROMETHEUS_PORT:-9090}:9090"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?required}
+      GRAFANA_EVALUATION_DB_PASSWORD: ${GRAFANA_EVALUATION_DB_PASSWORD:?required}
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+    volumes:
+      - ./apps/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./apps/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${GRAFANA_PORT:-3000}:3000"
+
+secrets:
+  chat-hmac:
+    file: ${CHAT_HMAC_FILE:?required private HMAC file}
+
+networks:
+  landing-public:
+    driver: bridge
+  chat-private:
+    internal: true
+    ipam:
+      config:
+        - subnet: ${CHAT_PRIVATE_SUBNET:-172.30.35.0/24}
 
 volumes:
   cockroach-data:
   pgvector-data:
+  rabbitmq-data:
+  prometheus-data:
+  grafana-data:
+  document-artifacts:

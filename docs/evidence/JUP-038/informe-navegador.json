@@ -1,0 +1,148 @@
+{
+  "servicios": {
+    "Compute": {
+      "esperado": {
+        "service": "Compute",
+        "start_date": "2026-09-09",
+        "last_seen_date": "2026-09-20",
+        "observation": "observed",
+        "no_longer_observed_on": null,
+        "reference_daily_cost": "142.86",
+        "accumulated_impact": "2807.71",
+        "impact_day_count": 12,
+        "severity": "P1"
+      },
+      "comprobaciones": {
+        "enlace con formato": true,
+        "navega a /assistant con el parametro": true,
+        "modo activado por el enlace": true,
+        "anomalía preseleccionada = la del enlace": true,
+        "pregunta propuesta": true,
+        "CERO POST antes de pulsar Enviar": true,
+        "sin aviso de anomalía ajena": true,
+        "POST 201": true,
+        "exactamente 1 POST de mensajes": true,
+        "cuerpo del POST = {content, anomaly_query}": true,
+        "el parámetro episode desaparece de la dirección": true,
+        "referencia diaria": true,
+        "impacto y días": true,
+        "criticidad": true,
+        "servicio entrecomillado": true,
+        "causa no establecida": true,
+        "aviso de datos sintéticos": true,
+        "estado y seguimiento": true,
+        "día de apertura": true,
+        "bloque de evidencia visible": true,
+        "resumen con la criticidad": true,
+        "operandos exactos con 12 decimales": true,
+        "limitaciones listadas": true,
+        "sin desbordamiento horizontal a 390 px": true
+      },
+      "href": "/assistant?episode=anomaly-33b468f4cd0e1bc998899927f3d8b2eef5f220cedb42c23883c3b10acb91a699",
+      "status": 201,
+      "texto": "ASISTENTE\n\nAnomalía candidata en el servicio \"Compute\" (EUR).\n\nPor qué se marcó: el 2026-09-09 el coste observado fue 377.00 EUR frente a una referencia de 142.86 EUR al día (media de los 7 días anteriores a la apertura). Subió 234.14 EUR (163.90 %).\n\nRegla jup019-daily-v1: un día se marca solo si supera la referencia en más de 100.00 EUR y en más de un 20 %, las dos condiciones a la vez. Este día cumple las dos.\n\nImpacto acumulado: 2807.71 EUR en 12 días, hasta el 2026-09-20. Criticidad: Alta (P1), por encima de 2000.00 EUR.\n\nEstado: Nueva. Se sigue observando.\n\nCausa no establecida: es un candidato para investigar, no una causa demostrada ni un ahorro.\n\nLimitaciones:\n\n- Es un candidato para investigar, no una causa demostrada, un ahorro ni una confianza estadística.\n\n- No se verifica que los datos de coste estén completos; un día puede evaluarse antes de que lleguen registros tardíos.\n\n- Un servicio sin gasto previo no abre anomalía su primer día; desde el segundo la referencia es la media de 7 días, que incluye ese primer día, así que un gasto nuevo y estable puede abrir una anomalía y escalar hasta que alguien la cierre.\n\n- Los ciclos semanales pueden dar candidatas falsas y un pico reciente sube la media de 7 días.\n\n- Solo se vigila el servicio; solo se evalúan EUR y USD, con umbrales nominales.\n\nAviso: los datos de este cliente incluyen datos sintéticos de demostración.\n\nAlcance: esta explicación cubre el día de apertura y los acumulados; no hay detalle día a día.\n\nFotografía tomada el 2026-10-13T05:19:25.518738+00:00 (UTC).\n\nEvidencia: anomaly-explanation:1bf475eb797ed5e61a76cba335925f274e6295887f7ea4e2e67c54f2fef5da52.\n\nEvidencia de la anomalía — Alta (P1)",
+      "operandos": "Operandos exactos Referencia de 7 días: 1000.000000000000 Observado el día de apertura: 377.000000000000 Impacto acumulado × 7: 19654.000000000000"
+    },
+    "Database": {
+      "esperado": {
+        "service": "Database",
+        "start_date": "2026-09-16",
+        "last_seen_date": "2026-09-20",
+        "observation": "observed",
+        "no_longer_observed_on": null,
+        "reference_daily_cost": "171.43",
+        "accumulated_impact": "642.86",
+        "impact_day_count": 5,
+        "severity": "P2"
+      },
+      "comprobaciones": {
+        "enlace con formato": true,
+        "navega a /assistant con el parametro": true,
+        "modo activado por el enlace": true,
+        "anomalía preseleccionada = la del enlace": true,
+        "pregunta propuesta": true,
+        "CERO POST antes de pulsar Enviar": true,
+        "sin aviso de anomalía ajena": true,
+        "POST 201": true,
+        "exactamente 1 POST de mensajes": true,
+        "cuerpo del POST = {content, anomaly_query}": true,
+        "el parámetro episode desaparece de la dirección": true,
+        "referencia diaria": true,
+        "impacto y días": true,
+        "criticidad": true,
+        "servicio entrecomillado": true,
+        "causa no establecida": true,
+        "aviso de datos sintéticos": true,
+        "estado y seguimiento": true,
+        "día de apertura": true,
+        "bloque de evidencia visible": true,
+        "resumen con la criticidad": true,
+        "operandos exactos con 12 decimales": true,
+        "limitaciones listadas": true
+      },
+      "href": "/assistant?episode=anomaly-e11356db31378e0e46bf6397e90a6db4dd8a04802d4de01bc6e25349dc51a3b3",
+      "status": 201,
+      "texto": "ASISTENTE\n\nAnomalía candidata en el servicio \"Database\" (EUR).\n\nPor qué se marcó: el 2026-09-16 el coste observado fue 300.00 EUR frente a una referencia de 171.43 EUR al día (media de los 7 días anteriores a la apertura). Subió 128.57 EUR (75.00 %).\n\nRegla jup019-daily-v1: un día se marca solo si supera la referencia en más de 100.00 EUR y en más de un 20 %, las dos condiciones a la vez. Este día cumple las dos.\n\nImpacto acumulado: 642.86 EUR en 5 días, hasta el 2026-09-20. Criticidad: Media (P2), entre 500.00 y 2000.00 EUR, ambos incluidos.\n\nEstado: Nueva. Se sigue observando.\n\nCausa no establecida: es un candidato para investigar, no una causa demostrada ni un ahorro.\n\nLimitaciones:\n\n- Es un candidato para investigar, no una causa demostrada, un ahorro ni una confianza estadística.\n\n- No se verifica que los datos de coste estén completos; un día puede evaluarse antes de que lleguen registros tardíos.\n\n- Un servicio sin gasto previo no abre anomalía su primer día; desde el segundo la referencia es la media de 7 días, que incluye ese primer día, así que un gasto nuevo y estable puede abrir una anomalía y escalar hasta que alguien la cierre.\n\n- Los ciclos semanales pueden dar candidatas falsas y un pico reciente sube la media de 7 días.\n\n- Solo se vigila el servicio; solo se evalúan EUR y USD, con umbrales nominales.\n\nAviso: los datos de este cliente incluyen datos sintéticos de demostración.\n\nAlcance: esta explicación cubre el día de apertura y los acumulados; no hay detalle día a día.\n\nFotografía tomada el 2026-10-13T05:19:28.291186+00:00 (UTC).\n\nEvidencia: anomaly-explanation:4dab322b4b1604464353c6fe7af9805d6a3629aa77b47af9a23294fc10942c68.\n\nEvidencia de la anomalía — Media (P2)",
+      "operandos": "Operandos exactos Referencia de 7 días: 1200.000000000000 Observado el día de apertura: 300.000000000000 Impacto acumulado × 7: 4500.000000000000"
+    },
+    "Analytics": {
+      "esperado": {
+        "service": "Analytics",
+        "start_date": "2026-09-10",
+        "last_seen_date": "2026-09-10",
+        "observation": "no_longer_observed",
+        "no_longer_observed_on": "2026-09-14",
+        "reference_daily_cost": "311.14",
+        "accumulated_impact": "168.86",
+        "impact_day_count": 4,
+        "severity": "P3"
+      },
+      "comprobaciones": {
+        "enlace con formato": true,
+        "navega a /assistant con el parametro": true,
+        "modo activado por el enlace": true,
+        "anomalía preseleccionada = la del enlace": true,
+        "pregunta propuesta": true,
+        "CERO POST antes de pulsar Enviar": true,
+        "sin aviso de anomalía ajena": true,
+        "POST 201": true,
+        "exactamente 1 POST de mensajes": true,
+        "cuerpo del POST = {content, anomaly_query}": true,
+        "el parámetro episode desaparece de la dirección": true,
+        "referencia diaria": true,
+        "impacto y días": true,
+        "criticidad": true,
+        "servicio entrecomillado": true,
+        "causa no establecida": true,
+        "aviso de datos sintéticos": true,
+        "estado y seguimiento": true,
+        "día de apertura": true,
+        "bloque de evidencia visible": true,
+        "resumen con la criticidad": true,
+        "operandos exactos con 12 decimales": true,
+        "limitaciones listadas": true
+      },
+      "href": "/assistant?episode=anomaly-0abed57dd56d38f56eefa9847da1b25d1e8c3e9996e34babff8463dbfab9fc0c",
+      "status": 201,
+      "texto": "ASISTENTE\n\nAnomalía candidata en el servicio \"Analytics\" (EUR).\n\nPor qué se marcó: el 2026-09-10 el coste observado fue 480.00 EUR frente a una referencia de 311.14 EUR al día (media de los 7 días anteriores a la apertura). Subió 168.86 EUR (54.27 %).\n\nRegla jup019-daily-v1: un día se marca solo si supera la referencia en más de 100.00 EUR y en más de un 20 %, las dos condiciones a la vez. Este día cumple las dos.\n\nImpacto acumulado: 168.86 EUR en 4 días, hasta el 2026-09-13. Criticidad: Baja (P3), por debajo de 500.00 EUR.\n\nEstado: Nueva. Ya no se observa desde 2026-09-14; sigue abierta hasta que una persona la cierre.\n\nCausa no establecida: es un candidato para investigar, no una causa demostrada ni un ahorro.\n\nLimitaciones:\n\n- Es un candidato para investigar, no una causa demostrada, un ahorro ni una confianza estadística.\n\n- No se verifica que los datos de coste estén completos; un día puede evaluarse antes de que lleguen registros tardíos.\n\n- Un servicio sin gasto previo no abre anomalía su primer día; desde el segundo la referencia es la media de 7 días, que incluye ese primer día, así que un gasto nuevo y estable puede abrir una anomalía y escalar hasta que alguien la cierre.\n\n- Los ciclos semanales pueden dar candidatas falsas y un pico reciente sube la media de 7 días.\n\n- Solo se vigila el servicio; solo se evalúan EUR y USD, con umbrales nominales.\n\nAviso: los datos de este cliente incluyen datos sintéticos de demostración.\n\nAlcance: esta explicación cubre el día de apertura y los acumulados; no hay detalle día a día.\n\nFotografía tomada el 2026-10-13T05:19:30.915394+00:00 (UTC).\n\nEvidencia: anomaly-explanation:9cd5dac945dda7e191ccfab295569282ae449ed09b490553880381f8015b8686.\n\nEvidencia de la anomalía — Baja (P3)",
+      "operandos": "Operandos exactos Referencia de 7 días: 2178.000000000000 Observado el día de apertura: 480.000000000000 Impacto acumulado × 7: 1182.000000000000"
+    }
+  },
+  "consola": [],
+  "peticionesFallidas": [],
+  "generales": {
+    "clientes": [
+      "Core Finance",
+      "Growth Ops"
+    ],
+    "antesDeDetectar": false,
+    "avisoSintetico": false,
+    "resultadoDeteccion": "Ya estaba al día: no hay días completos nuevos desde el 20/09/2026.",
+    "filas": [
+      "Alta (P1) Compute +234.14 EUR/día el 09/09/2026 2807.71 EUR en 12 días 09/09/2026 → 20/09/2026 Se sigue observando Nueva Detalle",
+      "Media (P2) Database +128.57 EUR/día el 16/09/2026 642.86 EUR en 5 días 16/09/2026 → 20/09/2026 Se sigue observando Nueva Detalle",
+      "Baja (P3) Analytics +168.86 EUR/día el 10/09/2026 168.86 EUR en 4 días 10/09/2026 → 10/09/2026 Ya no se observa desde 14/09/2026 Nueva Detalle"
+    ],
+    "postsTotales": 3
+  }
+}

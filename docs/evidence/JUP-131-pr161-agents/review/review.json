@@ -1,0 +1,42 @@
+{
+  "title": "Revision JUP-131",
+  "author": "Codex independent agent /root/pr161_code_review",
+  "date": "2026-10-24",
+  "timezone": "Europe/Paris",
+  "base": "ffb5d307772f697cffb8b1e73e6330250e093601",
+  "candidate": "e730dc15fb3feb45a3b346fc9e48332c4608b049",
+  "verdict": "REQUEST CHANGES",
+  "confidence": "MEDIUM",
+  "findings": [
+    {
+      "priority": "P2",
+      "title": "Bloquear las métricas internas anónimas bajo /grafana/",
+      "path": "infra/aws-reference/monitoring.tf",
+      "line_start": 34,
+      "line_end": 34,
+      "evidence": "New ALB and CloudFront routes forward /grafana/metrics; existing deny_metrics only covers /metrics. Grafana metrics auth is separate from auth.anonymous, and metrics configuration is not overridden.",
+      "impact": "Unauthenticated public access to Grafana internal telemetry; no claim of access to dashboards, Atlas data or passwords.",
+      "basis": "Source inspection and official Grafana configuration documentation",
+      "http_reproduced_by_this_agent": false,
+      "requested_change": "Disable Grafana internal metrics, deny its public metrics paths, or configure separate authenticated metrics; add a failing anonymous regression check.",
+      "sources": [
+        "https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#metrics",
+        "https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/configure-security-hardening/#enable-auth-for-metrics"
+      ]
+    }
+  ],
+  "executed": {
+    "focused_tests_passed": 4,
+    "focused_tests_skipped": 0,
+    "sql_sha256": "b61d9ffcc04e02d8a3df9847a7b4ffe21397d44afc5dd1d7384b7c30981a6f09",
+    "canonical_runs_equal": 19,
+    "canonical_results_equal": 1688,
+    "unchanged_dashboards": 3,
+    "rolling_vcpu_calculated": 5.5,
+    "git_diff_check": "PASS"
+  },
+  "not_executed": ["Docker", "real PostgreSQL", "Terraform", "HTTP endpoint reproduction", "AWS", "cloud deployment", "models", "remote GitHub queries or writes"],
+  "operational_delta": "The human 30 EUR ceiling was withdrawn for the master account; the immutable candidate still contains the former guard and requires a later reviewed adaptation. No Pontia limits assumed.",
+  "independent_validation_report_consumed": false,
+  "published_to_github": false
+}

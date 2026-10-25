@@ -1,0 +1,79 @@
+{
+  "blocks": [
+    {
+      "bbox": [
+        113,
+        111,
+        483,
+        154
+      ],
+      "coordinate_system": "render_pixels",
+      "kind": "text",
+      "method": "ocr",
+      "page": 1,
+      "text": "Cloud costs page 1"
+    },
+    {
+      "bbox": [
+        112,
+        203,
+        523,
+        235
+      ],
+      "coordinate_system": "render_pixels",
+      "kind": "text",
+      "method": "ocr",
+      "page": 1,
+      "text": "Compute budget is 42 USD."
+    },
+    {
+      "bbox": [
+        193,
+        733,
+        1149,
+        790
+      ],
+      "coordinate_system": "render_pixels",
+      "kind": "text",
+      "method": "ocr",
+      "page": 1,
+      "text": "Scanned storage budget 73 USD"
+    }
+  ],
+  "document_id": "ece8f92f-0c9b-57b8-9ff8-4149711a3600",
+  "extraction_method": "pdfplumber+tesseract",
+  "file_metadata": {
+    "Author": "anonymous",
+    "CreationDate": "D:20261015223527+00'00'",
+    "Creator": "anonymous",
+    "Keywords": "",
+    "ModDate": "D:20261015223527+00'00'",
+    "Producer": "ReportLab PDF Library - (opensource)",
+    "Subject": "unspecified",
+    "Title": "untitled",
+    "Trapped": "False",
+    "ocr_pages": [
+      1
+    ],
+    "page_count": 1
+  },
+  "origin": {
+    "artifact_uri": null,
+    "content_hash": "b499c2cd816d211476fedcc46644ef0c63b3f3b13ef36f689985582cada597c3",
+    "file_size": 18517,
+    "filename": "hybrid.pdf",
+    "source": "document",
+    "tenant_id": "tenant-rag2-fixture",
+    "uploaded_by": "synthetic-fixture-operator"
+  },
+  "original_format": "pdf",
+  "result": "extracted",
+  "schema_version": 1,
+  "tenant_id": "tenant-rag2-fixture",
+  "text": "Cloud costs page 1\nCompute budget is 42 USD.\nScanned storage budget 73 USD",
+  "warnings": [
+    "page_1_ocr_layout_is_approximate",
+    "page_1_native_text_replaced_by_full_page_ocr",
+    "pdf_reading_order_is_extractor_order_not_semantic_guarantee"
+  ]
+}

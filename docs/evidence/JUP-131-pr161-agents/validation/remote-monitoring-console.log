@@ -1,0 +1,7 @@
+Extracto literal de .work/pr161-validation/remote-monitoring-console.log; inventario y retirada por identidad en remote/resources.jsonl.
+
+{"check": "monitoring-source", "sha256": "b38eb3040a17eacce49e843cf6045303be3fefee8278bd55d802a6dac41feb3d", "instrumentation": "test name prefix, ownership labels, build network=none and resource inventory only"}
+{"dashboards": ["economicon-assistant-evaluation", "economicon-assistant-evidence", "economicon-technical-metrics"], "atlas_runs": 19, "atlas_results": 1688, "anonymous_access": "denied", "datasources": "healthy", "browser_session": "allowed", "foreign_origin": "denied"}
+{"dashboards": ["economicon-assistant-evaluation", "economicon-assistant-evidence", "economicon-technical-metrics"], "atlas_runs": 19, "atlas_results": 1688, "anonymous_access": "denied", "datasources": "healthy", "preferences_retained": true, "browser_session": "allowed", "foreign_origin": "denied"}
+PASS: Grafana, TLS datasources, three dashboards, Atlas identities, anonymous denial and restart.
+{"check": "monitoring-smoke", "exit_code": 0}

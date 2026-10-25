@@ -9,6 +9,13 @@ import pika
 class QueueMessage:
     payload: dict
     delivery_tag: int
+    # Marca `redelivered` de RabbitMQ: falsa solo en la primera entrega y verdadera tras un
+    # `nack(requeue=True)` o tras perder la conexion sin responder. El worker la usa para
+    # acotar a una reentrega los fallos no clasificados (JUP-113). Por defecto es `False`
+    # ("primera entrega"), la rama segura (se reencola, nunca se descarta por error), de
+    # modo que las construcciones existentes `QueueMessage(job, 42)` siguen valiendo. El
+    # dataclass se mantiene mutable (sin `frozen` ni `__slots__`) como hasta ahora.
+    redelivered: bool = False
 
 
 class RabbitMQQueue:
@@ -50,9 +57,19 @@ class RabbitMQQueue:
         while time.monotonic() < deadline:
             method_frame, _, body = self.channel.basic_get(queue=self.queue_name, auto_ack=False)
             if method_frame is not None:
+                try:
+                    payload = json.loads(body)
+                except (ValueError, UnicodeError, RecursionError):
+                    self.nack(method_frame.delivery_tag, requeue=False)
+                    continue
                 return QueueMessage(
-                    payload=json.loads(body),
+                    payload=payload,
                     delivery_tag=method_frame.delivery_tag,
+                    # `getattr` con valor por defecto a proposito: un frame sin el atributo
+                    # (dobles de prueba existentes o una respuesta atipica) se trata como
+                    # primera entrega. Ante la duda se reencola, jamas se descarta por error;
+                    # `bool()` mantiene el campo estrictamente booleano.
+                    redelivered=bool(getattr(method_frame, "redelivered", False)),
                 )
             time.sleep(0.5)
 

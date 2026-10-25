@@ -1,0 +1,2183 @@
+{
+  "schema_version": 1,
+  "jup": "JUP-022",
+  "generated_at": "2026-10-15T09:21:21.046773+00:00",
+  "provider": {
+    "name": "litellm",
+    "alias": "economicon-embedding",
+    "dimension": 1536
+  },
+  "corpus": {
+    "rules": {
+      "path": "docs/assistant-corpus/business-rules/economicon-mvp-rules.md",
+      "sha256": "b186de0a4592368e651b49ff2d975e13c604990378fc2f96e3e189824c4c483e"
+    },
+    "finops": {
+      "path": "docs/assistant-corpus/finops/azure-finops-mvp.md",
+      "sha256": "5b5f9447b4ceaf71e38c4f6e32e11de256b3ffa81cf3db85f6d1d259fa6238d2"
+    },
+    "product": {
+      "path": "docs/assistant-corpus/product-architecture/economicon-product-context.md",
+      "sha256": "d29c3ec47bf19638b812d77dd9d766495d9df22395546b6671b3cb11845d4430"
+    },
+    "glossary": {
+      "path": "docs/assistant-corpus/glossary/glossary.md",
+      "sha256": "7510595f4bcfe9135f1e4fce3b6486a5ace036840409b33ce3df6c92763f398c"
+    }
+  },
+  "bank": {
+    "path": "docs/validation/JUP-069-questions.json",
+    "suite_version": "1.0.1"
+  },
+  "labels": {
+    "path": "docs/validation/JUP-022-retrieval-labels.json",
+    "cases": 28,
+    "coverage": {
+      "direct": 23,
+      "partial": 3,
+      "none": 2
+    }
+  },
+  "chunking": {
+    "size": 500,
+    "overlap": 50,
+    "chunks": 66
+  },
+  "planned_calls": 94,
+  "sweep": {
+    "top_k": [
+      3,
+      4,
+      5,
+      6
+    ],
+    "max_distance": [
+      null,
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75
+    ]
+  },
+  "points": [
+    {
+      "top_k": 3,
+      "max_distance": null,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.9,
+        "empty_rate": 0.0,
+        "section_cases": 20,
+        "section_hit_rate": 0.75
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.875,
+        "empty_rate": 0.0
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 0.6667,
+        "budgets": 1.0,
+        "costs": 1.0,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 3,
+      "max_distance": 0.5,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.5,
+        "empty_rate": 0.45,
+        "section_cases": 20,
+        "section_hit_rate": 0.4
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.125,
+        "empty_rate": 0.75
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 0.6667,
+        "budgets": 0.0,
+        "costs": 0.25,
+        "recommendations": 0.0,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 3,
+      "max_distance": 0.55,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.7,
+        "empty_rate": 0.1,
+        "section_cases": 20,
+        "section_hit_rate": 0.55
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.125,
+        "empty_rate": 0.625
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 0.6667,
+        "budgets": 0.3333,
+        "costs": 0.5,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 3,
+      "max_distance": 0.6,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.85,
+        "empty_rate": 0.05,
+        "section_cases": 20,
+        "section_hit_rate": 0.7
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.875,
+        "empty_rate": 0.0
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 0.6667,
+        "budgets": 1.0,
+        "costs": 0.75,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 3,
+      "max_distance": 0.65,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.9,
+        "empty_rate": 0.0,
+        "section_cases": 20,
+        "section_hit_rate": 0.75
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.875,
+        "empty_rate": 0.0
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 0.6667,
+        "budgets": 1.0,
+        "costs": 1.0,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 3,
+      "max_distance": 0.7,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.9,
+        "empty_rate": 0.0,
+        "section_cases": 20,
+        "section_hit_rate": 0.75
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.875,
+        "empty_rate": 0.0
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 0.6667,
+        "budgets": 1.0,
+        "costs": 1.0,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 3,
+      "max_distance": 0.75,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.9,
+        "empty_rate": 0.0,
+        "section_cases": 20,
+        "section_hit_rate": 0.75
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.875,
+        "empty_rate": 0.0
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 0.6667,
+        "budgets": 1.0,
+        "costs": 1.0,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 4,
+      "max_distance": null,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.95,
+        "empty_rate": 0.0,
+        "section_cases": 20,
+        "section_hit_rate": 0.8
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.875,
+        "empty_rate": 0.0
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 1.0,
+        "budgets": 1.0,
+        "costs": 1.0,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 4,
+      "max_distance": 0.5,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.55,
+        "empty_rate": 0.45,
+        "section_cases": 20,
+        "section_hit_rate": 0.45
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.125,
+        "empty_rate": 0.75
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 1.0,
+        "budgets": 0.0,
+        "costs": 0.25,
+        "recommendations": 0.0,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 4,
+      "max_distance": 0.55,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.75,
+        "empty_rate": 0.1,
+        "section_cases": 20,
+        "section_hit_rate": 0.6
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.125,
+        "empty_rate": 0.625
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 1.0,
+        "budgets": 0.3333,
+        "costs": 0.5,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 4,
+      "max_distance": 0.6,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.9,
+        "empty_rate": 0.05,
+        "section_cases": 20,
+        "section_hit_rate": 0.75
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.875,
+        "empty_rate": 0.0
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 1.0,
+        "budgets": 1.0,
+        "costs": 0.75,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 4,
+      "max_distance": 0.65,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.95,
+        "empty_rate": 0.0,
+        "section_cases": 20,
+        "section_hit_rate": 0.8
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.875,
+        "empty_rate": 0.0
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 1.0,
+        "budgets": 1.0,
+        "costs": 1.0,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 4,
+      "max_distance": 0.7,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.95,
+        "empty_rate": 0.0,
+        "section_cases": 20,
+        "section_hit_rate": 0.8
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.875,
+        "empty_rate": 0.0
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 1.0,
+        "budgets": 1.0,
+        "costs": 1.0,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 4,
+      "max_distance": 0.75,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.95,
+        "empty_rate": 0.0,
+        "section_cases": 20,
+        "section_hit_rate": 0.8
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.875,
+        "empty_rate": 0.0
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 1.0,
+        "budgets": 1.0,
+        "costs": 1.0,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 5,
+      "max_distance": null,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.95,
+        "empty_rate": 0.0,
+        "section_cases": 20,
+        "section_hit_rate": 0.8
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.875,
+        "empty_rate": 0.0
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 1.0,
+        "budgets": 1.0,
+        "costs": 1.0,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 5,
+      "max_distance": 0.5,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.55,
+        "empty_rate": 0.45,
+        "section_cases": 20,
+        "section_hit_rate": 0.45
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.125,
+        "empty_rate": 0.75
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 1.0,
+        "budgets": 0.0,
+        "costs": 0.25,
+        "recommendations": 0.0,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 5,
+      "max_distance": 0.55,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.75,
+        "empty_rate": 0.1,
+        "section_cases": 20,
+        "section_hit_rate": 0.6
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.125,
+        "empty_rate": 0.625
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 1.0,
+        "budgets": 0.3333,
+        "costs": 0.5,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 5,
+      "max_distance": 0.6,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.9,
+        "empty_rate": 0.05,
+        "section_cases": 20,
+        "section_hit_rate": 0.75
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.875,
+        "empty_rate": 0.0
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 1.0,
+        "budgets": 1.0,
+        "costs": 0.75,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 5,
+      "max_distance": 0.65,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.95,
+        "empty_rate": 0.0,
+        "section_cases": 20,
+        "section_hit_rate": 0.8
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.875,
+        "empty_rate": 0.0
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 1.0,
+        "budgets": 1.0,
+        "costs": 1.0,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 5,
+      "max_distance": 0.7,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.95,
+        "empty_rate": 0.0,
+        "section_cases": 20,
+        "section_hit_rate": 0.8
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.875,
+        "empty_rate": 0.0
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 1.0,
+        "budgets": 1.0,
+        "costs": 1.0,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 5,
+      "max_distance": 0.75,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.95,
+        "empty_rate": 0.0,
+        "section_cases": 20,
+        "section_hit_rate": 0.8
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.875,
+        "empty_rate": 0.0
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 1.0,
+        "budgets": 1.0,
+        "costs": 1.0,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 6,
+      "max_distance": null,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.95,
+        "empty_rate": 0.0,
+        "section_cases": 20,
+        "section_hit_rate": 0.8
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.875,
+        "empty_rate": 0.0
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 1.0,
+        "budgets": 1.0,
+        "costs": 1.0,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 6,
+      "max_distance": 0.5,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.55,
+        "empty_rate": 0.45,
+        "section_cases": 20,
+        "section_hit_rate": 0.45
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.125,
+        "empty_rate": 0.75
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 1.0,
+        "budgets": 0.0,
+        "costs": 0.25,
+        "recommendations": 0.0,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 6,
+      "max_distance": 0.55,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.75,
+        "empty_rate": 0.1,
+        "section_cases": 20,
+        "section_hit_rate": 0.6
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.125,
+        "empty_rate": 0.625
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 1.0,
+        "budgets": 0.3333,
+        "costs": 0.5,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 6,
+      "max_distance": 0.6,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.9,
+        "empty_rate": 0.05,
+        "section_cases": 20,
+        "section_hit_rate": 0.75
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.875,
+        "empty_rate": 0.0
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 1.0,
+        "budgets": 1.0,
+        "costs": 0.75,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 6,
+      "max_distance": 0.65,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.95,
+        "empty_rate": 0.0,
+        "section_cases": 20,
+        "section_hit_rate": 0.8
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.875,
+        "empty_rate": 0.0
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 1.0,
+        "budgets": 1.0,
+        "costs": 1.0,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 6,
+      "max_distance": 0.7,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.95,
+        "empty_rate": 0.0,
+        "section_cases": 20,
+        "section_hit_rate": 0.8
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.875,
+        "empty_rate": 0.0
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 1.0,
+        "budgets": 1.0,
+        "costs": 1.0,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    },
+    {
+      "top_k": 6,
+      "max_distance": 0.75,
+      "answer": {
+        "cases": 20,
+        "document_hit_rate": 0.95,
+        "empty_rate": 0.0,
+        "section_cases": 20,
+        "section_hit_rate": 0.8
+      },
+      "non_answer": {
+        "cases": 8,
+        "document_hit_rate": 0.875,
+        "empty_rate": 0.0
+      },
+      "by_category": {
+        "allocation": 1.0,
+        "anomalies": 1.0,
+        "budgets": 1.0,
+        "costs": 1.0,
+        "recommendations": 0.6667,
+        "tagging": 1.0
+      }
+    }
+  ],
+  "cases": [
+    {
+      "id": "JUP-069-001",
+      "behavior": "answer",
+      "category": "costs",
+      "coverage": "partial",
+      "best_expected_distance": 0.5699,
+      "best_other_distance": 0.5172,
+      "retrieved": [
+        {
+          "source": "glossary",
+          "section": "Amortized Cost",
+          "distance": 0.5172
+        },
+        {
+          "source": "finops",
+          "section": "Showback Y Chargeback",
+          "distance": 0.5688
+        },
+        {
+          "source": "finops",
+          "section": "Cost Management Y Cost Analysis",
+          "distance": 0.5699
+        },
+        {
+          "source": "finops",
+          "section": "Inform",
+          "distance": 0.5792
+        },
+        {
+          "source": "glossary",
+          "section": "Azure Advisor",
+          "distance": 0.5803
+        },
+        {
+          "source": "glossary",
+          "section": "Anomaly",
+          "distance": 0.5857
+        },
+        {
+          "source": "finops",
+          "section": "Conceptos FinOps Basicos",
+          "distance": 0.5877
+        },
+        {
+          "source": "finops",
+          "section": "Cost Management Y Cost Analysis",
+          "distance": 0.5925
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-002",
+      "behavior": "answer",
+      "category": "costs",
+      "coverage": "partial",
+      "best_expected_distance": 0.6096,
+      "best_other_distance": 0.623,
+      "retrieved": [
+        {
+          "source": "finops",
+          "section": "Cost Management Y Cost Analysis",
+          "distance": 0.6096
+        },
+        {
+          "source": "glossary",
+          "section": "Anomaly",
+          "distance": 0.623
+        },
+        {
+          "source": "rules",
+          "section": "Severidad",
+          "distance": 0.6315
+        },
+        {
+          "source": "finops",
+          "section": "Inform",
+          "distance": 0.6514
+        },
+        {
+          "source": "rules",
+          "section": "Servicio sin gasto previo",
+          "distance": 0.6608
+        },
+        {
+          "source": "glossary",
+          "section": "Amortized Cost",
+          "distance": 0.6624
+        },
+        {
+          "source": "finops",
+          "section": "Cost Management Y Cost Analysis",
+          "distance": 0.6688
+        },
+        {
+          "source": "rules",
+          "section": "Anomaly",
+          "distance": 0.6745
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-003",
+      "behavior": "clarify",
+      "category": "costs",
+      "coverage": "direct",
+      "best_expected_distance": 0.5627,
+      "best_other_distance": 0.5766,
+      "retrieved": [
+        {
+          "source": "finops",
+          "section": "Cost Management Y Cost Analysis",
+          "distance": 0.5627
+        },
+        {
+          "source": "glossary",
+          "section": "Anomaly",
+          "distance": 0.5766
+        },
+        {
+          "source": "finops",
+          "section": "Inform",
+          "distance": 0.6005
+        },
+        {
+          "source": "finops",
+          "section": "Anomalias De Coste",
+          "distance": 0.6252
+        },
+        {
+          "source": "finops",
+          "section": "Showback Y Chargeback",
+          "distance": 0.634
+        },
+        {
+          "source": "rules",
+          "section": "Servicio sin gasto previo",
+          "distance": 0.6345
+        },
+        {
+          "source": "rules",
+          "section": "Nota Sobre Reglas Internas",
+          "distance": 0.6423
+        },
+        {
+          "source": "rules",
+          "section": "Severidad",
+          "distance": 0.6501
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-004",
+      "behavior": "answer",
+      "category": "costs",
+      "coverage": "direct",
+      "best_expected_distance": 0.4484,
+      "best_other_distance": 0.4287,
+      "retrieved": [
+        {
+          "source": "glossary",
+          "section": "Amortized Cost",
+          "distance": 0.4287
+        },
+        {
+          "source": "glossary",
+          "section": "Allocated Cost",
+          "distance": 0.4288
+        },
+        {
+          "source": "finops",
+          "section": "Conceptos FinOps Basicos",
+          "distance": 0.4484
+        },
+        {
+          "source": "finops",
+          "section": "Coste No Asignado Y Coste Compartido",
+          "distance": 0.4512
+        },
+        {
+          "source": "finops",
+          "section": "Showback Y Chargeback",
+          "distance": 0.4743
+        },
+        {
+          "source": "rules",
+          "section": "Estados De Allocation",
+          "distance": 0.476
+        },
+        {
+          "source": "rules",
+          "section": "KPIs Minimos",
+          "distance": 0.4885
+        },
+        {
+          "source": "finops",
+          "section": "Cost Management Y Cost Analysis",
+          "distance": 0.5041
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-005",
+      "behavior": "answer",
+      "category": "allocation",
+      "coverage": "direct",
+      "best_expected_distance": 0.4891,
+      "best_other_distance": 0.5468,
+      "retrieved": [
+        {
+          "source": "rules",
+          "section": "Estados De Allocation",
+          "distance": 0.4891
+        },
+        {
+          "source": "rules",
+          "section": "KPIs Minimos",
+          "distance": 0.5468
+        },
+        {
+          "source": "finops",
+          "section": "Coste No Asignado Y Coste Compartido",
+          "distance": 0.5591
+        },
+        {
+          "source": "glossary",
+          "section": "Allocated Cost",
+          "distance": 0.5739
+        },
+        {
+          "source": "rules",
+          "section": "Reglas De Tagging",
+          "distance": 0.6003
+        },
+        {
+          "source": "finops",
+          "section": "Showback Y Chargeback",
+          "distance": 0.6096
+        },
+        {
+          "source": "product",
+          "section": "Leer el panel",
+          "distance": 0.6256
+        },
+        {
+          "source": "rules",
+          "section": "KPIs Minimos",
+          "distance": 0.6321
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-006",
+      "behavior": "answer",
+      "category": "allocation",
+      "coverage": "direct",
+      "best_expected_distance": null,
+      "best_other_distance": 0.4409,
+      "retrieved": [
+        {
+          "source": "rules",
+          "section": "Estados De Allocation",
+          "distance": 0.4409
+        },
+        {
+          "source": "finops",
+          "section": "Coste No Asignado Y Coste Compartido",
+          "distance": 0.4672
+        },
+        {
+          "source": "glossary",
+          "section": "Allocated Cost",
+          "distance": 0.4909
+        },
+        {
+          "source": "rules",
+          "section": "KPIs Minimos",
+          "distance": 0.5225
+        },
+        {
+          "source": "rules",
+          "section": "KPIs Minimos",
+          "distance": 0.5367
+        },
+        {
+          "source": "rules",
+          "section": "Reglas De Tagging",
+          "distance": 0.5396
+        },
+        {
+          "source": "finops",
+          "section": "Showback Y Chargeback",
+          "distance": 0.5399
+        },
+        {
+          "source": "finops",
+          "section": "Conceptos FinOps Basicos",
+          "distance": 0.5722
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-007",
+      "behavior": "answer",
+      "category": "allocation",
+      "coverage": "direct",
+      "best_expected_distance": null,
+      "best_other_distance": 0.4411,
+      "retrieved": [
+        {
+          "source": "finops",
+          "section": "Coste No Asignado Y Coste Compartido",
+          "distance": 0.4411
+        },
+        {
+          "source": "glossary",
+          "section": "Allocated Cost",
+          "distance": 0.4598
+        },
+        {
+          "source": "rules",
+          "section": "Estados De Allocation",
+          "distance": 0.4601
+        },
+        {
+          "source": "rules",
+          "section": "Reglas De Tagging",
+          "distance": 0.5102
+        },
+        {
+          "source": "rules",
+          "section": "KPIs Minimos",
+          "distance": 0.5195
+        },
+        {
+          "source": "finops",
+          "section": "Conceptos FinOps Basicos",
+          "distance": 0.5302
+        },
+        {
+          "source": "finops",
+          "section": "Cost Management Y Cost Analysis",
+          "distance": 0.5391
+        },
+        {
+          "source": "finops",
+          "section": "Showback Y Chargeback",
+          "distance": 0.5425
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-008",
+      "behavior": "clarify",
+      "category": "allocation",
+      "coverage": "direct",
+      "best_expected_distance": null,
+      "best_other_distance": 0.3657,
+      "retrieved": [
+        {
+          "source": "rules",
+          "section": "Estados De Allocation",
+          "distance": 0.3657
+        },
+        {
+          "source": "glossary",
+          "section": "Allocated Cost",
+          "distance": 0.4188
+        },
+        {
+          "source": "finops",
+          "section": "Coste No Asignado Y Coste Compartido",
+          "distance": 0.4235
+        },
+        {
+          "source": "finops",
+          "section": "Showback Y Chargeback",
+          "distance": 0.4714
+        },
+        {
+          "source": "rules",
+          "section": "KPIs Minimos",
+          "distance": 0.4988
+        },
+        {
+          "source": "rules",
+          "section": "Reglas De Tagging",
+          "distance": 0.5124
+        },
+        {
+          "source": "finops",
+          "section": "Cost Management Y Cost Analysis",
+          "distance": 0.5426
+        },
+        {
+          "source": "glossary",
+          "section": "Budget",
+          "distance": 0.5537
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-009",
+      "behavior": "clarify",
+      "category": "allocation",
+      "coverage": "direct",
+      "best_expected_distance": 0.6255,
+      "best_other_distance": 0.5682,
+      "retrieved": [
+        {
+          "source": "rules",
+          "section": "Reglas De Tagging",
+          "distance": 0.5682
+        },
+        {
+          "source": "glossary",
+          "section": "Allocated Cost",
+          "distance": 0.5767
+        },
+        {
+          "source": "glossary",
+          "section": "Amortized Cost",
+          "distance": 0.5773
+        },
+        {
+          "source": "finops",
+          "section": "Alcance Del MVP",
+          "distance": 0.584
+        },
+        {
+          "source": "finops",
+          "section": "Cost Management Y Cost Analysis",
+          "distance": 0.5867
+        },
+        {
+          "source": "glossary",
+          "section": "Subscription",
+          "distance": 0.5874
+        },
+        {
+          "source": "finops",
+          "section": "Azure Advisor, Rightsizing Y Commitments",
+          "distance": 0.6039
+        },
+        {
+          "source": "finops",
+          "section": "Cost Management Y Cost Analysis",
+          "distance": 0.6048
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-010",
+      "behavior": "answer",
+      "category": "tagging",
+      "coverage": "direct",
+      "best_expected_distance": 0.3825,
+      "best_other_distance": 0.388,
+      "retrieved": [
+        {
+          "source": "rules",
+          "section": "Reglas De Tagging",
+          "distance": 0.3825
+        },
+        {
+          "source": "finops",
+          "section": "Tagging Y Allocation",
+          "distance": 0.388
+        },
+        {
+          "source": "rules",
+          "section": "Alcance",
+          "distance": 0.4371
+        },
+        {
+          "source": "rules",
+          "section": "Recomendaciones",
+          "distance": 0.4645
+        },
+        {
+          "source": "product",
+          "section": "Lo Que El Asistente No Debe Exponer",
+          "distance": 0.4776
+        },
+        {
+          "source": "product",
+          "section": "Scope, Dataset Y Tenant",
+          "distance": 0.5145
+        },
+        {
+          "source": "product",
+          "section": "Vision Del Producto",
+          "distance": 0.5154
+        },
+        {
+          "source": "rules",
+          "section": "KPIs Minimos",
+          "distance": 0.522
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-011",
+      "behavior": "answer",
+      "category": "tagging",
+      "coverage": "direct",
+      "best_expected_distance": 0.463,
+      "best_other_distance": 0.4014,
+      "retrieved": [
+        {
+          "source": "finops",
+          "section": "Tagging Y Allocation",
+          "distance": 0.4014
+        },
+        {
+          "source": "finops",
+          "section": "Cost Management Y Cost Analysis",
+          "distance": 0.4397
+        },
+        {
+          "source": "rules",
+          "section": "Reglas De Tagging",
+          "distance": 0.463
+        },
+        {
+          "source": "finops",
+          "section": "Cost Management Y Cost Analysis",
+          "distance": 0.4865
+        },
+        {
+          "source": "rules",
+          "section": "KPIs Minimos",
+          "distance": 0.488
+        },
+        {
+          "source": "rules",
+          "section": "Recommendation",
+          "distance": 0.5234
+        },
+        {
+          "source": "rules",
+          "section": "Reglas De Tagging",
+          "distance": 0.5244
+        },
+        {
+          "source": "glossary",
+          "section": "Budget",
+          "distance": 0.559
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-012",
+      "behavior": "answer",
+      "category": "tagging",
+      "coverage": "direct",
+      "best_expected_distance": 0.3316,
+      "best_other_distance": 0.3815,
+      "retrieved": [
+        {
+          "source": "finops",
+          "section": "Coste No Asignado Y Coste Compartido",
+          "distance": 0.3316
+        },
+        {
+          "source": "glossary",
+          "section": "Allocated Cost",
+          "distance": 0.3815
+        },
+        {
+          "source": "rules",
+          "section": "Estados De Allocation",
+          "distance": 0.4063
+        },
+        {
+          "source": "rules",
+          "section": "Reglas De Tagging",
+          "distance": 0.4313
+        },
+        {
+          "source": "product",
+          "section": "Modelo Funcional De Datos",
+          "distance": 0.5181
+        },
+        {
+          "source": "finops",
+          "section": "Showback Y Chargeback",
+          "distance": 0.5208
+        },
+        {
+          "source": "glossary",
+          "section": "Scope",
+          "distance": 0.5265
+        },
+        {
+          "source": "finops",
+          "section": "Tagging Y Allocation",
+          "distance": 0.5486
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-013",
+      "behavior": "answer",
+      "category": "budgets",
+      "coverage": "direct",
+      "best_expected_distance": 0.5826,
+      "best_other_distance": 0.5958,
+      "retrieved": [
+        {
+          "source": "rules",
+          "section": "Budgets Y Forecast",
+          "distance": 0.5826
+        },
+        {
+          "source": "glossary",
+          "section": "Anomaly",
+          "distance": 0.5958
+        },
+        {
+          "source": "finops",
+          "section": "Budgets, Forecast Y Alertas",
+          "distance": 0.6182
+        },
+        {
+          "source": "finops",
+          "section": "Conceptos FinOps Basicos",
+          "distance": 0.6347
+        },
+        {
+          "source": "rules",
+          "section": "Severidad",
+          "distance": 0.6354
+        },
+        {
+          "source": "finops",
+          "section": "Cost Management Y Cost Analysis",
+          "distance": 0.6368
+        },
+        {
+          "source": "rules",
+          "section": "KPIs Minimos",
+          "distance": 0.644
+        },
+        {
+          "source": "finops",
+          "section": "Inform",
+          "distance": 0.6445
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-014",
+      "behavior": "answer",
+      "category": "budgets",
+      "coverage": "direct",
+      "best_expected_distance": 0.5654,
+      "best_other_distance": 0.5435,
+      "retrieved": [
+        {
+          "source": "glossary",
+          "section": "Anomaly",
+          "distance": 0.5435
+        },
+        {
+          "source": "finops",
+          "section": "Budgets, Forecast Y Alertas",
+          "distance": 0.5491
+        },
+        {
+          "source": "rules",
+          "section": "Budgets Y Forecast",
+          "distance": 0.5654
+        },
+        {
+          "source": "finops",
+          "section": "Errores Comunes",
+          "distance": 0.5715
+        },
+        {
+          "source": "finops",
+          "section": "Inform",
+          "distance": 0.6148
+        },
+        {
+          "source": "finops",
+          "section": "Conceptos FinOps Basicos",
+          "distance": 0.6192
+        },
+        {
+          "source": "rules",
+          "section": "Severidad",
+          "distance": 0.629
+        },
+        {
+          "source": "rules",
+          "section": "KPIs Minimos",
+          "distance": 0.6305
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-015",
+      "behavior": "answer",
+      "category": "budgets",
+      "coverage": "direct",
+      "best_expected_distance": 0.5113,
+      "best_other_distance": 0.5118,
+      "retrieved": [
+        {
+          "source": "finops",
+          "section": "Errores Comunes",
+          "distance": 0.5113
+        },
+        {
+          "source": "finops",
+          "section": "Budgets, Forecast Y Alertas",
+          "distance": 0.5118
+        },
+        {
+          "source": "rules",
+          "section": "Budgets Y Forecast",
+          "distance": 0.5417
+        },
+        {
+          "source": "glossary",
+          "section": "Anomaly",
+          "distance": 0.559
+        },
+        {
+          "source": "finops",
+          "section": "Conceptos FinOps Basicos",
+          "distance": 0.5735
+        },
+        {
+          "source": "finops",
+          "section": "Inform",
+          "distance": 0.5965
+        },
+        {
+          "source": "finops",
+          "section": "Idea Fundamental De FinOps",
+          "distance": 0.6011
+        },
+        {
+          "source": "finops",
+          "section": "Conceptos FinOps Basicos",
+          "distance": 0.6106
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-016",
+      "behavior": "answer",
+      "category": "anomalies",
+      "coverage": "direct",
+      "best_expected_distance": 0.4674,
+      "best_other_distance": 0.4446,
+      "retrieved": [
+        {
+          "source": "finops",
+          "section": "Anomalias De Coste",
+          "distance": 0.4446
+        },
+        {
+          "source": "product",
+          "section": "Guia Del Panel De Anomalias",
+          "distance": 0.46
+        },
+        {
+          "source": "glossary",
+          "section": "Anomaly",
+          "distance": 0.4674
+        },
+        {
+          "source": "rules",
+          "section": "Anomalias",
+          "distance": 0.4674
+        },
+        {
+          "source": "rules",
+          "section": "Alcance",
+          "distance": 0.4725
+        },
+        {
+          "source": "rules",
+          "section": "Estados De Allocation",
+          "distance": 0.4741
+        },
+        {
+          "source": "glossary",
+          "section": "Anomaly",
+          "distance": 0.4756
+        },
+        {
+          "source": "rules",
+          "section": "Budgets Y Forecast",
+          "distance": 0.4762
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-017",
+      "behavior": "answer",
+      "category": "anomalies",
+      "coverage": "direct",
+      "best_expected_distance": 0.4871,
+      "best_other_distance": 0.4714,
+      "retrieved": [
+        {
+          "source": "rules",
+          "section": "Episodio y valor esperado",
+          "distance": 0.4714
+        },
+        {
+          "source": "rules",
+          "section": "Anomalias",
+          "distance": 0.4871
+        },
+        {
+          "source": "rules",
+          "section": "Episodio y valor esperado",
+          "distance": 0.5672
+        },
+        {
+          "source": "rules",
+          "section": "Severidad",
+          "distance": 0.5954
+        },
+        {
+          "source": "rules",
+          "section": "Servicio sin gasto previo",
+          "distance": 0.6095
+        },
+        {
+          "source": "finops",
+          "section": "Cost Management Y Cost Analysis",
+          "distance": 0.6198
+        },
+        {
+          "source": "product",
+          "section": "Detectar anomalias",
+          "distance": 0.6292
+        },
+        {
+          "source": "product",
+          "section": "Detectar anomalias",
+          "distance": 0.6413
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-018",
+      "behavior": "answer",
+      "category": "anomalies",
+      "coverage": "direct",
+      "best_expected_distance": 0.4881,
+      "best_other_distance": 0.5413,
+      "retrieved": [
+        {
+          "source": "rules",
+          "section": "Anomalias",
+          "distance": 0.4881
+        },
+        {
+          "source": "rules",
+          "section": "Episodio y valor esperado",
+          "distance": 0.5413
+        },
+        {
+          "source": "rules",
+          "section": "Episodio y valor esperado",
+          "distance": 0.5623
+        },
+        {
+          "source": "rules",
+          "section": "Servicio sin gasto previo",
+          "distance": 0.6293
+        },
+        {
+          "source": "product",
+          "section": "Detectar anomalias",
+          "distance": 0.6357
+        },
+        {
+          "source": "finops",
+          "section": "Cost Management Y Cost Analysis",
+          "distance": 0.6369
+        },
+        {
+          "source": "product",
+          "section": "Detectar anomalias",
+          "distance": 0.6632
+        },
+        {
+          "source": "finops",
+          "section": "Budgets, Forecast Y Alertas",
+          "distance": 0.6746
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-019",
+      "behavior": "clarify",
+      "category": "anomalies",
+      "coverage": "partial",
+      "best_expected_distance": 0.7495,
+      "best_other_distance": 0.5242,
+      "retrieved": [
+        {
+          "source": "finops",
+          "section": "Cost Management Y Cost Analysis",
+          "distance": 0.5242
+        },
+        {
+          "source": "rules",
+          "section": "Servicio sin gasto previo",
+          "distance": 0.5556
+        },
+        {
+          "source": "finops",
+          "section": "Inform",
+          "distance": 0.6078
+        },
+        {
+          "source": "rules",
+          "section": "Estados De Allocation",
+          "distance": 0.6266
+        },
+        {
+          "source": "finops",
+          "section": "Showback Y Chargeback",
+          "distance": 0.6324
+        },
+        {
+          "source": "glossary",
+          "section": "Anomaly",
+          "distance": 0.634
+        },
+        {
+          "source": "glossary",
+          "section": "Allocated Cost",
+          "distance": 0.6459
+        },
+        {
+          "source": "finops",
+          "section": "Cost Management Y Cost Analysis",
+          "distance": 0.6476
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-020",
+      "behavior": "answer",
+      "category": "recommendations",
+      "coverage": "direct",
+      "best_expected_distance": 0.5318,
+      "best_other_distance": 0.5407,
+      "retrieved": [
+        {
+          "source": "finops",
+          "section": "Errores Comunes",
+          "distance": 0.5318
+        },
+        {
+          "source": "glossary",
+          "section": "Rightsizing",
+          "distance": 0.5407
+        },
+        {
+          "source": "finops",
+          "section": "Azure Advisor, Rightsizing Y Commitments",
+          "distance": 0.5631
+        },
+        {
+          "source": "finops",
+          "section": "Optimize",
+          "distance": 0.5923
+        },
+        {
+          "source": "product",
+          "section": "Vision Del Producto",
+          "distance": 0.6138
+        },
+        {
+          "source": "finops",
+          "section": "Recomendaciones De Optimizacion",
+          "distance": 0.6146
+        },
+        {
+          "source": "finops",
+          "section": "Referencias De Contexto",
+          "distance": 0.6157
+        },
+        {
+          "source": "glossary",
+          "section": "Subscription",
+          "distance": 0.6217
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-021",
+      "behavior": "answer",
+      "category": "recommendations",
+      "coverage": "direct",
+      "best_expected_distance": 0.6285,
+      "best_other_distance": 0.5288,
+      "retrieved": [
+        {
+          "source": "finops",
+          "section": "Errores Comunes",
+          "distance": 0.5288
+        },
+        {
+          "source": "finops",
+          "section": "Conceptos FinOps Basicos",
+          "distance": 0.5961
+        },
+        {
+          "source": "glossary",
+          "section": "Anomaly",
+          "distance": 0.599
+        },
+        {
+          "source": "finops",
+          "section": "Recomendaciones De Optimizacion",
+          "distance": 0.6032
+        },
+        {
+          "source": "finops",
+          "section": "Referencias De Contexto",
+          "distance": 0.607
+        },
+        {
+          "source": "finops",
+          "section": "Optimize",
+          "distance": 0.6109
+        },
+        {
+          "source": "glossary",
+          "section": "Azure Advisor",
+          "distance": 0.6112
+        },
+        {
+          "source": "glossary",
+          "section": "Rightsizing",
+          "distance": 0.6121
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-022",
+      "behavior": "answer",
+      "category": "recommendations",
+      "coverage": "direct",
+      "best_expected_distance": 0.5483,
+      "best_other_distance": 0.56,
+      "retrieved": [
+        {
+          "source": "finops",
+          "section": "Azure Advisor, Rightsizing Y Commitments",
+          "distance": 0.5483
+        },
+        {
+          "source": "finops",
+          "section": "Alcance Del MVP",
+          "distance": 0.56
+        },
+        {
+          "source": "glossary",
+          "section": "Subscription",
+          "distance": 0.5681
+        },
+        {
+          "source": "glossary",
+          "section": "Rightsizing",
+          "distance": 0.5721
+        },
+        {
+          "source": "finops",
+          "section": "Errores Comunes",
+          "distance": 0.5807
+        },
+        {
+          "source": "finops",
+          "section": "Conceptos FinOps Basicos",
+          "distance": 0.6134
+        },
+        {
+          "source": "glossary",
+          "section": "Amortized Cost",
+          "distance": 0.614
+        },
+        {
+          "source": "glossary",
+          "section": "Scope",
+          "distance": 0.6158
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-023",
+      "behavior": "abstain",
+      "category": "scope",
+      "coverage": "direct",
+      "best_expected_distance": 0.5056,
+      "best_other_distance": 0.4193,
+      "retrieved": [
+        {
+          "source": "finops",
+          "section": "Alcance Del MVP",
+          "distance": 0.4193
+        },
+        {
+          "source": "glossary",
+          "section": "Amortized Cost",
+          "distance": 0.4309
+        },
+        {
+          "source": "finops",
+          "section": "Conceptos FinOps Basicos",
+          "distance": 0.4438
+        },
+        {
+          "source": "glossary",
+          "section": "Azure Advisor",
+          "distance": 0.4452
+        },
+        {
+          "source": "rules",
+          "section": "Reglas De Tagging",
+          "distance": 0.486
+        },
+        {
+          "source": "glossary",
+          "section": "Proposito",
+          "distance": 0.4925
+        },
+        {
+          "source": "finops",
+          "section": "Inform",
+          "distance": 0.5031
+        },
+        {
+          "source": "product",
+          "section": "Vision Del Producto",
+          "distance": 0.5056
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-024",
+      "behavior": "clarify",
+      "category": "scope",
+      "coverage": "none",
+      "best_expected_distance": null,
+      "best_other_distance": 0.5525,
+      "retrieved": [
+        {
+          "source": "finops",
+          "section": "Showback Y Chargeback",
+          "distance": 0.5525
+        },
+        {
+          "source": "glossary",
+          "section": "Amortized Cost",
+          "distance": 0.5634
+        },
+        {
+          "source": "rules",
+          "section": "KPIs Minimos",
+          "distance": 0.5665
+        },
+        {
+          "source": "finops",
+          "section": "Cost Management Y Cost Analysis",
+          "distance": 0.5712
+        },
+        {
+          "source": "finops",
+          "section": "Conceptos FinOps Basicos",
+          "distance": 0.5795
+        },
+        {
+          "source": "glossary",
+          "section": "Allocated Cost",
+          "distance": 0.5842
+        },
+        {
+          "source": "finops",
+          "section": "Cost Management Y Cost Analysis",
+          "distance": 0.5857
+        },
+        {
+          "source": "rules",
+          "section": "Servicio sin gasto previo",
+          "distance": 0.5857
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-025",
+      "behavior": "abstain",
+      "category": "scope",
+      "coverage": "direct",
+      "best_expected_distance": 0.6196,
+      "best_other_distance": 0.5553,
+      "retrieved": [
+        {
+          "source": "finops",
+          "section": "Errores Comunes",
+          "distance": 0.5553
+        },
+        {
+          "source": "rules",
+          "section": "Reglas De Tagging",
+          "distance": 0.605
+        },
+        {
+          "source": "finops",
+          "section": "Idea Fundamental De FinOps",
+          "distance": 0.6151
+        },
+        {
+          "source": "finops",
+          "section": "Recomendaciones De Optimizacion",
+          "distance": 0.6196
+        },
+        {
+          "source": "finops",
+          "section": "Optimize",
+          "distance": 0.6249
+        },
+        {
+          "source": "finops",
+          "section": "Referencias De Contexto",
+          "distance": 0.6329
+        },
+        {
+          "source": "finops",
+          "section": "Budgets, Forecast Y Alertas",
+          "distance": 0.6331
+        },
+        {
+          "source": "product",
+          "section": "Revisar una anomalia",
+          "distance": 0.642
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-026",
+      "behavior": "clarify",
+      "category": "scope",
+      "coverage": "none",
+      "best_expected_distance": null,
+      "best_other_distance": 0.5754,
+      "retrieved": [
+        {
+          "source": "rules",
+          "section": "Servicio sin gasto previo",
+          "distance": 0.5754
+        },
+        {
+          "source": "product",
+          "section": "Detectar anomalias",
+          "distance": 0.5773
+        },
+        {
+          "source": "glossary",
+          "section": "Anomaly",
+          "distance": 0.5865
+        },
+        {
+          "source": "rules",
+          "section": "Severidad",
+          "distance": 0.6052
+        },
+        {
+          "source": "finops",
+          "section": "Inform",
+          "distance": 0.6102
+        },
+        {
+          "source": "rules",
+          "section": "KPIs Minimos",
+          "distance": 0.6227
+        },
+        {
+          "source": "glossary",
+          "section": "Amortized Cost",
+          "distance": 0.6229
+        },
+        {
+          "source": "finops",
+          "section": "Showback Y Chargeback",
+          "distance": 0.6257
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-027",
+      "behavior": "answer",
+      "category": "costs",
+      "coverage": "direct",
+      "best_expected_distance": 0.5994,
+      "best_other_distance": 0.5126,
+      "retrieved": [
+        {
+          "source": "finops",
+          "section": "Inform",
+          "distance": 0.5126
+        },
+        {
+          "source": "finops",
+          "section": "Errores Comunes",
+          "distance": 0.54
+        },
+        {
+          "source": "finops",
+          "section": "Cost Management Y Cost Analysis",
+          "distance": 0.5439
+        },
+        {
+          "source": "finops",
+          "section": "Showback Y Chargeback",
+          "distance": 0.5622
+        },
+        {
+          "source": "glossary",
+          "section": "Anomaly",
+          "distance": 0.5731
+        },
+        {
+          "source": "glossary",
+          "section": "Rightsizing",
+          "distance": 0.586
+        },
+        {
+          "source": "rules",
+          "section": "Reglas De Tagging",
+          "distance": 0.5907
+        },
+        {
+          "source": "finops",
+          "section": "Conceptos FinOps Basicos",
+          "distance": 0.5955
+        }
+      ]
+    },
+    {
+      "id": "JUP-069-028",
+      "behavior": "answer",
+      "category": "allocation",
+      "coverage": "direct",
+      "best_expected_distance": 0.3994,
+      "best_other_distance": 0.5595,
+      "retrieved": [
+        {
+          "source": "finops",
+          "section": "Showback Y Chargeback",
+          "distance": 0.3994
+        },
+        {
+          "source": "glossary",
+          "section": "Budget",
+          "distance": 0.5595
+        },
+        {
+          "source": "glossary",
+          "section": "Allocated Cost",
+          "distance": 0.6069
+        },
+        {
+          "source": "product",
+          "section": "Guia Del Panel De Anomalias",
+          "distance": 0.6117
+        },
+        {
+          "source": "rules",
+          "section": "KPIs Minimos",
+          "distance": 0.6164
+        },
+        {
+          "source": "rules",
+          "section": "Estados De Allocation",
+          "distance": 0.6172
+        },
+        {
+          "source": "product",
+          "section": "Revisar una anomalia",
+          "distance": 0.6274
+        },
+        {
+          "source": "finops",
+          "section": "Coste No Asignado Y Coste Compartido",
+          "distance": 0.6302
+        }
+      ]
+    }
+  ],
+  "gaps": [
+    "JUP-069-024",
+    "JUP-069-026"
+  ],
+  "selection": {
+    "rule": "Para cada top_k, la menor distancia maxima del barrido que conserva al menos 90% del acierto por seccion de los casos 'answer' obtenido sin umbral; no usa los casos clarify ni abstain.",
+    "min_hit_ratio": 0.9,
+    "candidates": [
+      {
+        "top_k": 3,
+        "max_distance": 0.6,
+        "section_hit_rate": 0.7,
+        "empty_rate": 0.05
+      },
+      {
+        "top_k": 4,
+        "max_distance": 0.6,
+        "section_hit_rate": 0.75,
+        "empty_rate": 0.05
+      },
+      {
+        "top_k": 5,
+        "max_distance": 0.6,
+        "section_hit_rate": 0.75,
+        "empty_rate": 0.05
+      },
+      {
+        "top_k": 6,
+        "max_distance": 0.6,
+        "section_hit_rate": 0.75,
+        "empty_rate": 0.05
+      }
+    ]
+  },
+  "limits": [
+    "Hay pocos documentos y pocas preguntas: es una calibracion inicial y el umbral puede sobreajustarse a este corpus.",
+    "El tope de llamadas cuenta las llamadas previstas; si el proveedor reintenta ante fallos transitorios, el gasto real puede ser hasta (reintentos + 1) veces mayor.",
+    "Las distancias son de un solo modelo y alias; un cambio de modelo exige repetir la medicion.",
+    "Cada fragmento se asigna a la seccion que cubre mas de su texto: una seccion mas corta que un fragmento puede no ser la principal de ninguno y quedar sin acierto por seccion aunque su contenido se recupere (el acierto por documento no tiene este efecto).",
+    "Los casos sin cobertura son huecos del corpus: se listan aparte y no cuentan en el acierto por seccion.",
+    "Los casos clarify y abstain se miden aparte y no intervienen en la seleccion del umbral.",
+    "La medicion es en memoria; el orden y el filtro SQL reales se cubren con los tests contra pgvector."
+  ]
+}

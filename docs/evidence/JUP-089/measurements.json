@@ -1,0 +1,225 @@
+{
+  "date": "2026-10-19",
+  "candidate": "feat/JUP-089-public-landing",
+  "headAndBase": "f444ba11e38203b6cfd645a098fd9946d55955e3",
+  "revisionNote": "Working tree implementation on this commit; these bytes are not committed under the base SHA",
+  "artifactManifestSha256": "e9393f135b66bc8af7f6b8c6f7f988b5d31d1641d0edd9a8ccbac0ce46c0a7f0",
+  "artifactBytes": 230138,
+  "http": {
+    "context": "Windows loopback, local Node static server, five sequential warm HTTP samples; no network/device throttling; not browser paint, Lighthouse, Core Web Vitals or field metrics",
+    "rootSamples": [
+      {
+        "firstByteMs": 6.567,
+        "totalMs": 7.221,
+        "bytes": 17015
+      },
+      {
+        "firstByteMs": 1.256,
+        "totalMs": 1.346,
+        "bytes": 17015
+      },
+      {
+        "firstByteMs": 1.184,
+        "totalMs": 1.41,
+        "bytes": 17015
+      },
+      {
+        "firstByteMs": 1.257,
+        "totalMs": 1.432,
+        "bytes": 17015
+      },
+      {
+        "firstByteMs": 0.989,
+        "totalMs": 1.1,
+        "bytes": 17015
+      }
+    ],
+    "medianResponseMs": 1.41,
+    "allPublicResourceHashesMatch": true
+  },
+  "contrast": {
+    "method": "15 computed-style samples; composed ancestor colors/opacity, declared hero brand surface; not a full WCAG audit",
+    "samples": [
+      {
+        "selector": ".hero-copy>p:first-child",
+        "ratio": 13.54,
+        "threshold": 4.5,
+        "pass": true
+      },
+      {
+        "selector": ".hero-detail",
+        "ratio": 6.61,
+        "threshold": 4.5,
+        "pass": true
+      },
+      {
+        "selector": ".prototype-strip",
+        "ratio": 11.07,
+        "threshold": 4.5,
+        "pass": true
+      },
+      {
+        "selector": ".button",
+        "ratio": 5.63,
+        "threshold": 4.5,
+        "pass": true
+      },
+      {
+        "selector": ".step-tabs>button[aria-selected=false] .step-index",
+        "ratio": 4.65,
+        "threshold": 4.5,
+        "pass": true
+      },
+      {
+        "selector": ".app-breadcrumb",
+        "ratio": 5.2,
+        "threshold": 4.5,
+        "pass": true
+      },
+      {
+        "selector": ".metric-caption",
+        "ratio": 5.42,
+        "threshold": 4.5,
+        "pass": true
+      },
+      {
+        "selector": ".chart-legend",
+        "ratio": 5.42,
+        "threshold": 4.5,
+        "pass": true
+      },
+      {
+        "selector": ".chart-y span",
+        "ratio": 5.34,
+        "threshold": 4.5,
+        "pass": true
+      },
+      {
+        "selector": ".bar-value",
+        "ratio": 18.49,
+        "threshold": 4.5,
+        "pass": true
+      },
+      {
+        "selector": ".app-status",
+        "ratio": 5.12,
+        "threshold": 4.5,
+        "pass": true
+      },
+      {
+        "selector": ".panel-label",
+        "ratio": 5.34,
+        "threshold": 4.5,
+        "pass": true
+      },
+      {
+        "selector": ".intro-layout>div>p",
+        "ratio": 17.73,
+        "threshold": 4.5,
+        "pass": true
+      },
+      {
+        "selector": ".shared-section h2 em",
+        "ratio": 3.36,
+        "threshold": 3,
+        "pass": true
+      },
+      {
+        "selector": ".project-tag",
+        "ratio": 11.07,
+        "threshold": 4.5,
+        "pass": true
+      }
+    ]
+  },
+  "browser": {
+    "viewportCSS": [
+      [
+        1440,
+        1000
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        320,
+        800
+      ]
+    ],
+    "horizontalPageOverflow": false,
+    "originalImagesAndLocalFontsLoaded": true,
+    "missingImageAlt": 0,
+    "h1": 1,
+    "sections": 7,
+    "buttonsWithoutName": 0,
+    "desktopTabOrientation": "vertical",
+    "mobileTabOrientation": "horizontal",
+    "demoThreeSteps": true,
+    "escapeAndFocusRestoration": true,
+    "mobileMenuAndAnchors": true,
+    "branded404": true,
+    "consoleWarningsOrErrors": 0
+  },
+  "reducedMotion": {
+    "source": "apps/landing/src/style.css",
+    "mediaRulePresent": true,
+    "scrollAuto": true,
+    "animationNone": true,
+    "transitionNone": true,
+    "browserPreferenceEmulation": "NOT_EXERCISED: no supported emulation capability exposed"
+  },
+  "nativeChecks": [
+    {
+      "name": "traceability-all",
+      "exit": 0,
+      "tests": null
+    },
+    {
+      "name": "pr-policy-tests",
+      "exit": 0,
+      "tests": "104"
+    },
+    {
+      "name": "ci-workflow-tests",
+      "exit": 0,
+      "tests": "19"
+    },
+    {
+      "name": "repository-governance",
+      "exit": 0,
+      "tests": "15"
+    },
+    {
+      "name": "openspec-all",
+      "exit": 0,
+      "tests": null
+    },
+    {
+      "name": "landing-test",
+      "exit": 0,
+      "tests": "7"
+    },
+    {
+      "name": "landing-build",
+      "exit": 0,
+      "tests": null
+    },
+    {
+      "name": "landing-lint",
+      "exit": 0,
+      "tests": null
+    },
+    {
+      "name": "hygiene",
+      "exit": 0,
+      "tests": null
+    }
+  ],
+  "limits": [
+    "No Lighthouse score, browser paint timing, Core Web Vitals or field performance measurements",
+    "No runtime reduced-motion emulation; stylesheet contract checked",
+    "No exhaustive WCAG or physical-device audit",
+    "No approved domain/renewal responsibility, public HTTPS, deployed host, real demo destination, remote CI or human PR reviews"
+  ]
+}

@@ -1,0 +1,114 @@
+"""Freeze a synthetic repeated campaign plan, without starting it or spending.
+
+The saved plan is NOT a result or authorization to deploy. Runtime provenance,
+retrieval snapshots and live accounting must be attached at execution time.
+"""
+import argparse
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import io
+import tarfile
+
+ROOT = Path(__file__).resolve().parents[1]
+BANK = ROOT / 'docs/validation/JUP-069-questions.json'
+# JUP-120 updates only suite/source provenance to 1.0.1. The 28 case definitions
+# are unchanged. Old campaigns keep their old checkout, bank hash and receipts;
+# this pin must never admit an old plan against the new corpus implicitly.
+EXPECTED_BANK = '15afb8db2605288d90a70761c5a8daf6787809aae13726618fcf05d98181e684'
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def git(*args):
+    return subprocess.check_output(['git', *args], cwd=ROOT, text=True, encoding='utf-8').strip()
+
+
+def campaign(bank, repetitions):
+    if repetitions not in (3, 5):
+        raise ValueError('Use N=3 baseline or N=5 confirmation; no best-of selection')
+    if len(bank['cases']) != 28 or len({c['id'] for c in bank['cases']}) != 28:
+        raise ValueError('The complete original 28-case bank is required')
+    return [{'sample_id': f"{case['id']}:r{repeat}", 'case_id': case['id'],
+             'repetition': repeat, 'initial_history': [],
+             'content': case['question'] + '\n\nContexto del escenario: ' + case['context'],
+             'state': 'NOT_RUN'}
+            for repeat in range(1, repetitions + 1) for case in bank['cases']]
+
+
+def tokenizer_artifacts(archive):
+    root = 'apps/processor/app/agents/prompt_resources/jup035/'
+    artifacts = {}
+    for version, target in ((4, 'chat/v4/tokenizer.json'), (3, 'chat/v2/tokenizer.json')):
+        pins = [json.load(archive.extractfile(root + f'{kind}/v{version}/manifest.json'))['tokenizer']
+                for kind in ('chat', 'summary')]
+        identity = {key: pins[0][key] for key in ('revision', 'sha256', 'bytes')}
+        if any({key: pin[key] for key in identity} != identity for pin in pins):
+            raise ValueError('Chat and summary tokenizer pins differ')
+        artifacts[root + target] = identity
+    return artifacts
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--repetitions', type=int, choices=[3, 5], default=3)
+    parser.add_argument('--output', type=Path, required=True)
+    args = parser.parse_args()
+    destination = args.output.resolve()
+    if destination == ROOT or ROOT in destination.parents or destination.exists():
+        raise ValueError('Use a new output file outside the repository')
+    if git('status', '--porcelain'):
+        raise ValueError('Freeze only a clean local commit')
+    if sha(BANK) != EXPECTED_BANK:
+        raise ValueError('The original bank has changed')
+    bank = json.loads(BANK.read_text(encoding='utf-8'))
+    for source in bank['sources'].values():
+        if sha(ROOT / source['path']) != source['sha256']:
+            raise ValueError('Corpus no longer matches the bank')
+    paths = git('ls-files', 'apps/backend/app', 'apps/processor/app',
+                'apps/frontend/src', 'docs/assistant-corpus',
+                'docs/validation/JUP-069-questions.json',
+                'docs/validation/JUP-035-evaluation-partition.json',
+                'docs/validation/JUP-070-evaluation-rules.json',
+                'tools/chat-receipt-eval.py', 'tools/assistant-eval.py',
+                'tools/chat-eval-*.py', 'apps/processor/build_tokenizer.py',
+                'apps/backend/Dockerfile', 'apps/processor/Dockerfile',
+                'apps/backend/requirements*.lock', 'apps/processor/requirements*.lock',
+                '.dockerignore', 'apps/processor/.dockerignore').splitlines()
+    # The transferred runtime is built from git archive, not a Windows checkout.
+    # Hash exact committed bytes; core.autocrlf may change working-tree bytes.
+    archive_bytes = subprocess.check_output(['git', 'archive', 'HEAD'], cwd=ROOT)
+    with tarfile.open(fileobj=io.BytesIO(archive_bytes)) as archive:
+        hashes = {path: hashlib.sha256(archive.extractfile(path).read()).hexdigest()
+                  for path in paths}
+        artifacts = tokenizer_artifacts(archive)
+    data = {'version': 1, 'state': 'NOT_RUN', 'commit': git('rev-parse', 'HEAD'),
+            'bank_sha256': EXPECTED_BANK, 'file_hashes': hashes,
+            'file_hash_basis': 'git-archive-committed-bytes',
+            'generated_artifacts': artifacts,
+            'repetitions': args.repetitions, 'samples': campaign(bank, args.repetitions),
+            'provider_constraint': {'provider': 'OpenRouter', 'model': 'deepseek/deepseek-v4.1-flash',
+                                    'routing': 'DeepInfra FP8 normal', 'fallbacks': False},
+            'budget': {'absolute_cumulative_cap_usd': '20.00',
+                       'last_confirmed_cumulative_usd': '0.957927619',
+                       'live_accounting_verified': False,
+                       'note': 'Historical spend is not a live balance. Include embeddings and any judge.'},
+            'execution_prerequisites': [
+                'Isolated authorized runtime must match the frozen commit and hashes.',
+                'Verify live provider and gateway accounting and reserve a bounded attempt cost before every call.',
+                'Capture actual provider/model parameters; temperature 0 only if supported; no fallback.',
+                'Save actual prompt/context manifest and retrieved chunks per attempt; never fabricate their hashes.',
+                'New conversation for each sample; preserve all attempts, failures, usage and public/history parity.',
+                'No best-of reruns and no automatic PASS from completed or absence of heuristic matches.',
+            ]}
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    print(json.dumps({'state': 'NOT_RUN', 'samples': len(data['samples']),
+                      'commit': data['commit'], 'plan_sha256': sha(destination)}))
+
+
+if __name__ == '__main__':
+    main()

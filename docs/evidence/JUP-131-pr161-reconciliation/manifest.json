@@ -1,0 +1,15 @@
+{
+  "candidate_sha": "812697387918c25e905a240fa35573091d9fdc16",
+  "reports": [
+    {
+      "kind": "revision",
+      "path": "docs/evidence/JUP-131-pr161-reconciliation/revision.json",
+      "sha256": "a53eab2bddb959853279a6e507b6be3e90646c76fab0cf00256d7628748aecdb"
+    },
+    {
+      "kind": "validacion",
+      "path": "docs/evidence/JUP-131-pr161-reconciliation/validacion.json",
+      "sha256": "7f3d73381662f8498cfefd33eb5d52086446c3460efad10356498c165aca1d11"
+    }
+  ]
+}

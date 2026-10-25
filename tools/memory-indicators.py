@@ -1,0 +1,853 @@
+#!/usr/bin/env python3
+"""Mediciones de los indicadores de la memoria (JUP-130): cada subcomando escribe un informe `rows-v1` y una tabla.
+
+Los informes se versionan en `docs/evidence/JUP-130/`, se listan en `docs/validation/evaluation-runs.json` y los
+carga el comando existente `evaluation-dashboard:load`; esta herramienta no toca la base de datos.
+"""
+from __future__ import annotations
+
+import argparse
+import csv
+import hashlib
+import importlib.util
+import json
+import os
+import re
+import subprocess
+import sys
+import urllib.error
+import urllib.parse
+import urllib.request
+from collections import defaultdict
+from dataclasses import dataclass, field
+from datetime import date, datetime, timedelta
+from decimal import ROUND_HALF_UP, Decimal, localcontext
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+# Una fuente por indicador: el dashboard anota los cambios de configuración entre ejecuciones consecutivas de una misma
+# fuente y agrupa como serie comparable las de igual configuración, y tres medidas distintas no son una serie.
+ANOMALY_SOURCE = "JUP-130-anomalies"
+DATA_SOURCE = "JUP-130-data"
+AI_COST_SOURCE = "JUP-130-ai-cost"
+SUITE_VERSION = "1"
+EVENTS_PATH = ROOT / "docs" / "validation" / "JUP-130-injected-events.json"
+DEFAULT_OUT = ROOT / "docs" / "evidence" / "JUP-130"
+DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}", re.ASCII)
+COMMIT_RE = re.compile(r"[0-9a-f]{7,40}", re.ASCII)
+ANOMALY_GROUP = "anomaly_detection"
+DATA_GROUP = "data_quality"
+ROUND_DIGITS = 6
+API_TIMEOUT_SECONDS = 15
+DEFAULT_EMAIL = "operator@example.com"
+DEFAULT_PASSWORD_ENV = "DEMO_PASSWORD"
+
+
+class IndicatorError(ValueError):
+    pass
+
+
+class ApiUnavailable(Exception):
+    """El API no respondió o rechazó la sesión; el mensaje solo lleva el tipo de fallo, nunca valores."""
+
+
+def _load(name: str, path: Path):
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+dashboard = _load("economicon_jup130_evaluation_dashboard", ROOT / "tools" / "evaluation-dashboard.py")
+dataset = _load("economicon_jup130_demo_dataset", ROOT / "scripts" / "demo_dataset.py")
+detector = _load("economicon_jup130_anomaly_episodes", ROOT / "apps" / "backend" / "app" / "services" / "anomaly_episodes.py")
+
+
+@dataclass
+class Match:
+    tp: int
+    fp: int
+    fn: int
+    delays: dict[str, int] = field(default_factory=dict)
+
+
+def read_events() -> dict:
+    return json.loads(EVENTS_PATH.read_text("utf-8"))
+
+
+def _daily_costs() -> tuple[dict, set[date]]:
+    daily: dict[tuple, dict[date, Decimal]] = defaultdict(dict)
+    observed: set[date] = set()
+    for item in dataset.anomaly_rows():
+        day = datetime.strptime(item["Date"], dataset.DATE_FORMAT).date()
+        daily[(item["BillingCurrencyCode"], item["MeterCategory"])][day] = Decimal(item["CostInBillingCurrency"])
+        observed.add(day)
+    return daily, observed
+
+
+def detect(reference: date) -> tuple[date, list]:
+    """Corre la planificación real de episodios desde un estado vacío y devuelve el último día evaluado y los episodios."""
+    daily, observed = _daily_costs()
+    window = detector.detection_window(today=reference, last_evaluated=None, latest_observed=max(observed),
+                                       earliest_observed=min(observed))
+    plan = detector.plan_detection(window, tenant_id="jup130", observed_days=observed, daily=daily, episodes=[])
+    if plan.status != "completed":
+        raise IndicatorError(f"la fecha de referencia {reference} no deja ningún día evaluable")
+    return window.last_complete_day, plan.opened
+
+
+def run_detector(reference: date) -> list:
+    return detect(reference)[1]
+
+
+def match_events(events: list[dict], episodes: list, tolerance: int) -> Match:
+    """Empareja cada evento con un episodio del mismo servicio abierto entre el día del evento y `tolerance` después."""
+    used: set[int] = set()
+    delays: dict[str, int] = {}
+    for item in sorted(events, key=lambda e: (e["start_date"], e["id"])):
+        start = date.fromisoformat(item["start_date"])
+        candidates = [(episode.start_date - start).days for episode in episodes]
+        best = None
+        for index, episode in enumerate(episodes):
+            delay = candidates[index]
+            if index not in used and episode.service == item["service"] and 0 <= delay <= tolerance:
+                if best is None or delay < best[0]:
+                    best = (delay, index)
+        if best is not None:
+            used.add(best[1])
+            delays[item["id"]] = best[0]
+    tp = len(delays)
+    return Match(tp=tp, fp=len(episodes) - tp, fn=len(events) - tp, delays=delays)
+
+
+def _row(metric_id: str, behavior: str = "all", **fields) -> dict:
+    row = {"measure_type": "A", "grp": ANOMALY_GROUP, "metric_id": metric_id, "behavior": behavior}
+    row.update(fields)
+    row["judgment"] = "automatic"
+    return row
+
+
+def _rate_row(metric_id: str, numerator: int, denominator: int) -> dict:
+    if denominator == 0:
+        return _row(metric_id, status="not_measured", unit="tasa", denominator=0)
+    return _row(metric_id, status="measured", unit="tasa", value=round(numerator / denominator, ROUND_DIGITS),
+                numerator=numerator, denominator=denominator)
+
+
+def _count_row(metric_id: str, value: int, behavior: str = "all") -> dict:
+    return _row(metric_id, behavior, status="measured", unit="recuento", value=value)
+
+
+def build_report(events: list[dict], episodes: list, *, tolerance: int, reference: date, commit: str | None,
+                 run_at: str | None) -> dict:
+    match = match_events(events, episodes, tolerance)
+    designed = [e for e in events if e["detectable_by_design"]]
+    designed_hits = sum(1 for e in designed if e["id"] in match.delays)
+    results = [
+        _rate_row("precision", match.tp, len(episodes)),
+        _rate_row("recall_all", match.tp, len(events)),
+        _rate_row("recall_designed", designed_hits, len(designed)),
+    ]
+    if match.delays:
+        results.append(_row("detection_delay_days", status="measured", unit="dias",
+                            value=round(sum(match.delays.values()) / len(match.delays), ROUND_DIGITS)))
+    else:
+        results.append(_row("detection_delay_days", status="not_measured", unit="dias"))
+    results += [_count_row("events", len(events)), _count_row("episodes", len(episodes)), _count_row("tp", match.tp),
+                _count_row("fp", match.fp), _count_row("fn", match.fn)]
+    results += [_count_row("event_detected", int(e["id"] in match.delays), e["id"]) for e in events]
+    run = {"run_id": f"jup130-anomalies-{reference.isoformat()}", "source": ANOMALY_SOURCE, "run_at": run_at, "commit": commit,
+           "suite": "jup130-anomalies", "suite_version": SUITE_VERSION,
+           "suite_sha256": hashlib.sha256(EVENTS_PATH.read_bytes()).hexdigest(), "synthetic": True}
+    document = {"contract_version": 1, "run": {k: v for k, v in run.items() if v is not None}, "results": results}
+    try:
+        dashboard.adapt_rows_v1(document)
+    except dashboard.AdapterError as error:
+        raise IndicatorError(f"el informe incumple el contrato rows-v1: {error}") from error
+    return document
+
+
+def _percent(row: dict) -> str:
+    if row["status"] != "measured":
+        return "no medido"
+    return f"{row['value'] * 100:.1f}".replace(".", ",") + f" % ({row['numerator']}/{row['denominator']})"
+
+
+def _result_by_id(report: dict, metric_id: str) -> dict:
+    return next(r for r in report["results"] if r["metric_id"] == metric_id and r["behavior"] == "all")
+
+
+def build_table(report: dict, events: list[dict], episodes: list, match: Match, reference: date, last_day: date) -> str:
+    delay = _result_by_id(report, "detection_delay_days")
+    delay_text = "no medido" if delay["status"] != "measured" else f"{delay['value']:.1f}".replace(".", ",") + " días"
+    lines = [
+        "# Calidad del detector de anomalías (JUP-130)",
+        "",
+        f"Fecha de referencia: {reference.isoformat()} (último día evaluado: {last_day.isoformat()}). "
+        f"Comando: `python tools/memory-indicators.py anomalies --reference {reference.isoformat()}`. "
+        "Con `--run-at` y `--commit` se fijan la fecha y el commit del informe.",
+        "",
+        "| Medida | Valor |",
+        "| --- | --- |",
+        f"| Precisión (episodios con evento / episodios abiertos) | {_percent(_result_by_id(report, 'precision'))} |",
+        f"| Recall de todos los eventos | {_percent(_result_by_id(report, 'recall_all'))} |",
+        f"| Recall de los eventos detectables por diseño | {_percent(_result_by_id(report, 'recall_designed'))} |",
+        f"| Retraso medio hasta la detección | {delay_text} |",
+        f"| Verdaderos positivos / falsos positivos / falsos negativos | {match.tp} / {match.fp} / {match.fn} |",
+        "",
+        "## Eventos inyectados",
+        "",
+        "| Evento | Servicio | Inicio | Naturaleza | Detectable por diseño | Resultado |",
+        "| --- | --- | --- | --- | --- | --- |",
+    ]
+    for item in events:
+        by_design = "sí" if item["detectable_by_design"] else "no detectable por diseño"
+        outcome = f"detectado, retraso {match.delays[item['id']]} d" if item["id"] in match.delays else "no detectado"
+        lines.append(f"| {item['id']} | {item['service']} | {item['start_date']} | {item['nature']} | {by_design} | {outcome} |")
+    lines += ["", "## Episodios abiertos", "", "| Servicio | Inicio |", "| --- | --- |"]
+    lines += [f"| {e.service} | {e.start_date.isoformat()} |" for e in episodes]
+    lines += [
+        "",
+        "## Qué no demuestra",
+        "",
+        f"- Son {len(events)} eventos de un conjunto de datos sintéticos: las cifras son ilustrativas y no tienen validez estadística.",
+        "- Las etiquetas las escribió quien diseñó los datos y los datos se diseñaron para esta regla, así que una precisión de 1,00 y un retraso de 0 días son en parte esperables.",
+        "- El retraso va del inicio del evento al día en que la regla diaria abre el episodio: como el episodio se abre el mismo día evaluado, vale 0 por construcción y no mide la latencia real de la detección (en producción el mínimo es de un día, porque solo se evalúan días completos).",
+        "- Un pico desde cero o la primera aparición de un servicio no se detectan por diseño: la regla exige una semana de referencia con coste positivo.",
+        "- No demuestra el comportamiento con facturas reales de Azure ni con otras reglas o umbrales.",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def anomaly_report(reference: date, *, commit: str | None, run_at: str | None) -> tuple[dict, str]:
+    last_day, episodes = detect(reference)
+    document = read_events()
+    events = [e for e in document["events"] if date.fromisoformat(e["start_date"]) <= last_day]
+    tolerance = document["tolerance_days"]
+    report = build_report(events, episodes, tolerance=tolerance, reference=reference, commit=commit, run_at=run_at)
+    match = match_events(events, episodes, tolerance)
+    return report, build_table(report, events, episodes, match, reference, last_day)
+
+
+def _source_rows(reference: date):
+    """Filas del CSV de la demo con fecha hasta la de referencia, con su inquilino según el manifiesto."""
+    manifest = json.loads(dataset.DEMO_MANIFEST_PATH.read_text("utf-8"))
+    tenant_of = {pair["subscription"]: pair["tenant"] for pair in manifest["pairs"]}
+    with dataset.DEMO_PATH.open(encoding="utf-8", newline="") as source:
+        for row in csv.DictReader(source):
+            day = datetime.strptime(row["Date"], dataset.DATE_FORMAT).date()
+            if day <= reference and row["SubscriptionId"] in tenant_of:
+                yield tenant_of[row["SubscriptionId"]], day, row["BillingCurrencyCode"], Decimal(row["CostInBillingCurrency"])
+
+
+def source_totals(reference: date) -> dict[str, dict[str, Decimal]]:
+    """Suma decimal exacta del CSV por inquilino y divisa, sin pasar por la normalización del producto."""
+    totals: dict[str, dict[str, Decimal]] = defaultdict(lambda: defaultdict(Decimal))
+    for tenant, _, currency, cost in _source_rows(reference):
+        totals[tenant][currency] += cost
+    return {tenant: dict(by_currency) for tenant, by_currency in sorted(totals.items())}
+
+
+def source_missing_days(reference: date) -> dict[str, int]:
+    """Días sin ningún registro entre el primero y el último con datos de cada inquilino; no son días de coste cero."""
+    seen: dict[str, set[date]] = defaultdict(set)
+    for tenant, day, _, _ in _source_rows(reference):
+        seen[tenant].add(day)
+    return count_missing_days(seen)
+
+
+def count_missing_days(seen: dict[str, set[date]]) -> dict[str, int]:
+    return {tenant: ((max(days) - min(days)).days + 1) - len(days) for tenant, days in sorted(seen.items())}
+
+
+def freshness_days(fetch, tenant: str, reference: date, window_start: date) -> int | None:
+    """Días entre la fecha de referencia y el último día con datos visibles, por bisección sobre el resumen."""
+    def has_data(day: date) -> bool:
+        return any(item["record_count"] > 0 for item in fetch(tenant, day, reference + timedelta(days=1)))
+    if not has_data(window_start):
+        return None
+    low, high = window_start, reference
+    while low < high:
+        middle = low + timedelta(days=((high - low).days + 1) // 2)
+        if has_data(middle):
+            low = middle
+        else:
+            high = middle - timedelta(days=1)
+    return (reference - low).days
+
+
+def round_money(value: Decimal) -> Decimal:
+    """Un único redondeo ROUND_HALF_UP a dos decimales sobre la suma exacta, como exige el contrato de costes."""
+    with localcontext() as context:
+        context.prec = max(80, len(value.as_tuple().digits) + 20)
+        rounded = value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    return Decimal("0.00") if rounded == 0 else rounded
+
+
+def reconcile(source: dict[str, Decimal], fetch, tenant: str, window_start: date, reference: date) -> dict[str, int]:
+    """Diferencia fuente menos API por divisa, en unidades menores enteras; cada divisa por separado."""
+    api: dict[str, Decimal] = defaultdict(Decimal)
+    for item in fetch(tenant, window_start, reference + timedelta(days=1)):
+        api[item["currency"]] += Decimal(item["cost"])
+    deltas = {}
+    for currency in sorted(set(source) | set(api)):
+        minor = (round_money(source.get(currency, Decimal(0))) - round_money(api.get(currency, Decimal(0)))) * 100
+        if abs(minor) > dashboard.ROW_MAX_INTEGER:
+            raise IndicatorError(f"la diferencia de {currency} supera el mayor entero seguro del contrato")
+        deltas[currency] = int(minor)
+    return deltas
+
+
+class ApiSession:
+    """Sesión de solo lectura contra el backend; la contraseña se usa para entrar y no se guarda."""
+
+    def __init__(self, base_url: str, email: str, password: str):
+        self.base = base_url.rstrip("/")
+        body = self._request("/auth/login", {"email": email, "password": password})
+        try:
+            self.token = body["access_token"]
+        except (KeyError, TypeError):
+            raise ApiUnavailable("respuesta_invalida") from None
+
+    def _request(self, path: str, payload: dict | None = None, headers: dict | None = None):
+        data = json.dumps(payload).encode("utf-8") if payload is not None else None
+        request = urllib.request.Request(self.base + path, data=data, headers={"Content-Type": "application/json", **(headers or {})})
+        try:
+            with urllib.request.urlopen(request, timeout=API_TIMEOUT_SECONDS) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as error:
+            raise ApiUnavailable(f"http_{error.code}") from None
+        except (urllib.error.URLError, OSError):
+            raise ApiUnavailable("conexion") from None
+        except ValueError:
+            raise ApiUnavailable("respuesta_invalida") from None
+
+    def _get(self, path: str, tenant: str | None = None):
+        headers = {"Authorization": "Bearer " + self.token}
+        if tenant:
+            headers["X-Tenant-Id"] = tenant
+        return self._request(path, None, headers)
+
+    def reference_date(self) -> date:
+        try:
+            return date.fromisoformat(self._get("/billing/reference-date")["reference_date"])
+        except (KeyError, TypeError, ValueError):
+            raise ApiUnavailable("respuesta_invalida") from None
+
+    def summary(self, tenant: str, start: date, end: date) -> list[dict]:
+        body = self._get(f"/billing/summary?start_date={start.isoformat()}&end_date={end.isoformat()}", tenant)
+        try:
+            return [{"currency": t["currency"], "cost": t["cost"], "record_count": t["record_count"]} for t in body["totals"]]
+        except (KeyError, TypeError):
+            raise ApiUnavailable("respuesta_invalida") from None
+
+
+def _data_row(metric_id: str, behavior: str, unit: str, value: int | None) -> dict:
+    row = {"measure_type": "B", "grp": DATA_GROUP, "metric_id": metric_id, "behavior": behavior}
+    if value is None:
+        return {**row, "status": "not_measured", "unit": unit}
+    return {**row, "status": "measured", "value": value, "unit": unit}
+
+
+def _api_measurements(fetch, tenants, source, reference: date) -> dict:
+    start = dataset.WINDOW_START
+    return {
+        "freshness": {tenant: freshness_days(fetch, tenant, reference, start) for tenant in tenants},
+        "deltas": {tenant: reconcile(source[tenant], fetch, tenant, start, reference) for tenant in tenants},
+    }
+
+
+def data_report(*, fetch, reference_date_from_api: date | None, reference: date, commit: str | None,
+                run_at: str | None) -> tuple[dict, str]:
+    source = source_totals(reference)
+    missing = source_missing_days(reference)
+    tenants = list(source)
+    measured = None
+    if fetch is not None:
+        if reference_date_from_api != reference:
+            raise IndicatorError("la fecha de referencia del API no coincide con la solicitada")
+        try:
+            measured = _api_measurements(fetch, tenants, source, reference)
+        except ApiUnavailable:
+            measured = None
+    results = []
+    for tenant in tenants:
+        results.append(_data_row("freshness_days", tenant, "dias", measured["freshness"][tenant] if measured else None))
+        results.append(_data_row("source_missing_days", tenant, "dias", missing[tenant]))
+        for currency in source[tenant]:
+            behavior = f"{tenant}/{currency}"
+            delta = measured["deltas"][tenant].get(currency) if measured else None
+            results.append(_data_row("reconciliation_delta_minor", behavior, "centimos", delta))
+            results.append(_data_row("reconciled", behavior, "recuento", None if delta is None else int(delta == 0)))
+    run = {"run_id": f"jup130-data-{reference.isoformat()}", "source": DATA_SOURCE, "run_at": run_at, "commit": commit,
+           "suite": "jup130-data", "suite_version": SUITE_VERSION, "synthetic": True}
+    document = {"contract_version": 1, "run": {k: v for k, v in run.items() if v is not None}, "results": results}
+    try:
+        dashboard.adapt_rows_v1(document)
+    except dashboard.AdapterError as error:
+        raise IndicatorError(f"el informe incumple el contrato rows-v1: {error}") from error
+    return document, build_data_table(results, reference, measured is not None)
+
+
+def _cell(row: dict) -> str:
+    return "no medido" if row["status"] != "measured" else str(row["value"])
+
+
+def build_data_table(results: list[dict], reference: date, api_measured: bool) -> str:
+    lines = [
+        "# Frescura y reconciliación de los datos de coste (JUP-130)",
+        "",
+        f"Fecha de referencia: {reference.isoformat()}. Comando: `python tools/memory-indicators.py data --reference {reference.isoformat()}`. "
+        "Con `--base-url` se mide contra el API de una pila levantada; sin ella la frescura y la reconciliación quedan como no medidas. "
+        "Con `--run-at` y `--commit` se fijan la fecha y el commit del informe.",
+        "",
+    ]
+    if not api_measured:
+        lines += ["**No se midió contra el API en esta ejecución: frescura y reconciliación figuran como no medidas.**", ""]
+    lines += ["## Por inquilino", "", "| Inquilino | Frescura (días) | Días sin registro en la fuente |", "| --- | --- | --- |"]
+    by_key = {(r["metric_id"], r["behavior"]): r for r in results}
+    tenants = sorted({r["behavior"] for r in results if r["metric_id"] == "freshness_days"})
+    for tenant in tenants:
+        lines.append(f"| {tenant} | {_cell(by_key[('freshness_days', tenant)])} | {_cell(by_key[('source_missing_days', tenant)])} |")
+    lines += ["", "## Reconciliación por inquilino y divisa", "",
+              "| Inquilino y divisa | Diferencia (unidades menores) | Reconciliado |", "| --- | --- | --- |"]
+    for row in (r for r in results if r["metric_id"] == "reconciliation_delta_minor"):
+        flag = by_key[("reconciled", row["behavior"])]
+        text = "no medido" if flag["status"] != "measured" else ("sí" if flag["value"] else "no")
+        lines.append(f"| {row['behavior']} | {_cell(row)} | {text} |")
+    lines += [
+        "",
+        "## Qué no demuestra",
+        "",
+        "- La fuente es un conjunto sintético generado por el propio proyecto: reconciliar contra él no demuestra la integridad de datos reales de Azure.",
+        "- La frescura se mide contra la fecha de referencia configurada; con una fecha simulada no demuestra puntualidad de una ingesta real.",
+        "- Un día sin registro es un hueco de datos, no un día de coste cero; los huecos se cuentan en la fuente.",
+        "- Una diferencia de cero demuestra que la suma almacenada coincide con la de la fuente, no que la fuente sea correcta.",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+AI_COST_GROUP = "ai_cost"
+GATEWAY_KEY_ENV = "LITELLM_MASTER_KEY"
+OPENROUTER_KEY_ENV = "OPENROUTER_API_KEY"
+DEFAULT_GATEWAY_URL = "http://127.0.0.1:44000"
+DEFAULT_OPENROUTER_URL = "https://openrouter.ai/api/v1"
+DEFAULT_MAX_GENERATIONS = 200
+GENERATION_PREFIX = "gen-"
+
+
+@dataclass
+class ModelSummary:
+    queries: int = 0
+    estimated: Decimal = Decimal(0)
+    confirmed: int = 0
+    billed: Decimal | None = None
+
+
+@dataclass
+class SpendSummary:
+    requests: int = 0
+    failures: int = 0
+    gateway_rejections: int = 0
+    provider_errors: int = 0
+    queries: int = 0
+    estimated_total: Decimal = Decimal(0)
+    zero_spend_queries: int = 0
+    embeddings_estimated: Decimal = Decimal(0)
+    confirmed: int = 0
+    billed_total: Decimal | None = None
+    gap: Decimal | None = None
+    billed_available: bool = False
+    billed_cause: str | None = None
+    by_model: dict[str, ModelSummary] = field(default_factory=dict)
+
+
+def _row_day(item: dict) -> date:
+    return date.fromisoformat(item["startTime"][:10])
+
+
+def _error_information(item: dict) -> dict:
+    return (item.get("metadata") or {}).get("error_information") or {}
+
+
+def _confirm(queries: list[dict], fetch, cap: int) -> tuple[dict[str, Decimal] | None, str | None]:
+    """Coste facturado por identificador de generación y causa; None si no se pudo consultar a OpenRouter."""
+    if fetch is None:
+        return None, None
+    candidates = sorted((q for q in queries if str(q["request_id"]).startswith(GENERATION_PREFIX)),
+                        key=lambda q: (q["startTime"], q["request_id"]))[:cap]
+    confirmed: dict[str, Decimal] = {}
+    try:
+        for query in candidates:
+            value = fetch(query["request_id"])
+            if value is not None:
+                confirmed[query["request_id"]] = value
+    except ApiUnavailable as error:
+        return None, f"openrouter:{error}"
+    return confirmed, None
+
+
+def summarize_spend(rows: list[dict], start: date, end: date, fetch, cap: int) -> SpendSummary:
+    window = [item for item in rows if start <= _row_day(item) < end]
+    summary = SpendSummary(requests=len(window))
+    queries = []
+    for item in window:
+        if item["status"] == "failure":
+            summary.failures += 1
+            info = _error_information(item)
+            code, klass = str(info.get("error_code")), info.get("error_class")
+            if code == "429" and klass == "ProxyRateLimitError":
+                summary.gateway_rejections += 1
+            elif klass == "APIError" and code.startswith("5"):
+                summary.provider_errors += 1
+        elif item["call_type"] == "aembedding":
+            summary.embeddings_estimated += Decimal(str(item["spend"]))
+        elif item["call_type"] == "acompletion":
+            queries.append(item)
+    for item in queries:
+        spend = Decimal(str(item["spend"]))
+        summary.queries += 1
+        summary.estimated_total += spend
+        summary.zero_spend_queries += int(spend == 0)
+        model = summary.by_model.setdefault(item["model"], ModelSummary())
+        model.queries += 1
+        model.estimated += spend
+    confirmed, summary.billed_cause = _confirm(queries, fetch, cap)
+    summary.billed_available = confirmed is not None
+    if confirmed:
+        by_id = {q["request_id"]: q for q in queries}
+        summary.confirmed = len(confirmed)
+        summary.billed_total = sum(confirmed.values(), Decimal(0))
+        summary.gap = sum((Decimal(str(by_id[i]["spend"])) for i in confirmed), Decimal(0)) - summary.billed_total
+        for identifier, value in confirmed.items():
+            model = summary.by_model[by_id[identifier]["model"]]
+            model.confirmed += 1
+            model.billed = (model.billed or Decimal(0)) + value
+    return summary
+
+
+def _ai_row(metric_id: str, unit: str, value=None, *, behavior: str = "all", numerator=None, denominator=None) -> dict:
+    row = {"measure_type": "B", "grp": AI_COST_GROUP, "metric_id": metric_id, "behavior": behavior}
+    if value is None:
+        row.update(status="not_measured", unit=unit)
+        if denominator is not None:
+            row["denominator"] = denominator
+        return row
+    row.update(status="measured", value=value, unit=unit)
+    if numerator is not None:
+        row["numerator"] = numerator
+    if denominator is not None:
+        row["denominator"] = denominator
+    return row
+
+
+def _usd(value: Decimal | None) -> float | None:
+    return None if value is None else float(round(value, 9))
+
+
+def _rate_ai(metric_id: str, count: int, total: int) -> dict:
+    if total == 0:
+        return _ai_row(metric_id, "tasa", denominator=0)
+    return _ai_row(metric_id, "tasa", round(count / total, ROUND_DIGITS), numerator=count, denominator=total)
+
+
+def _ai_rows(summary: SpendSummary) -> list[dict]:
+    per_query = None if not summary.confirmed else summary.billed_total / summary.confirmed
+    rows = [
+        _ai_row("queries", "recuento", summary.queries),
+        _ai_row("cost_estimated_total", "usd", _usd(summary.estimated_total)),
+        _ai_row("cost_billed_total", "usd", _usd(summary.billed_total)),
+        _ai_row("cost_per_query", "usd", _usd(per_query), denominator=summary.confirmed or None),
+        _ai_row("cost_gap", "usd", _usd(summary.gap)),
+        (_rate_ai("billed_coverage", summary.confirmed, summary.queries) if summary.billed_available
+         else _ai_row("billed_coverage", "tasa", denominator=summary.queries)),
+        _ai_row("cost_embeddings_estimated", "usd", _usd(summary.embeddings_estimated)),
+        _ai_row("zero_spend_queries", "recuento", summary.zero_spend_queries),
+        _ai_row("failures", "recuento", summary.failures),
+        _rate_ai("gateway_rejection_rate", summary.gateway_rejections, summary.requests),
+        _rate_ai("provider_error_rate", summary.provider_errors, summary.requests),
+    ]
+    for model, item in sorted(summary.by_model.items()):
+        per_model = None if not item.confirmed else item.billed / item.confirmed
+        rows.append(_ai_row("queries", "recuento", item.queries, behavior=model))
+        rows.append(_ai_row("cost_per_query", "usd", _usd(per_model), behavior=model, denominator=item.confirmed or None))
+    return rows
+
+
+def _unavailable_ai_rows() -> list[dict]:
+    units = (("queries", "recuento"), ("cost_estimated_total", "usd"), ("cost_billed_total", "usd"), ("cost_per_query", "usd"),
+             ("cost_gap", "usd"), ("billed_coverage", "tasa"), ("cost_embeddings_estimated", "usd"),
+             ("zero_spend_queries", "recuento"), ("failures", "recuento"), ("gateway_rejection_rate", "tasa"),
+             ("provider_error_rate", "tasa"))
+    return [_ai_row(metric, unit) for metric, unit in units]
+
+
+def ai_cost_report(rows: list[dict] | None, start: date, end: date, fetch, cap: int, *, commit: str | None,
+                   run_at: str | None, causes: tuple[str, ...] = ()) -> tuple[dict, str]:
+    summary = None if rows is None else summarize_spend(rows, start, end, fetch, cap)
+    results = _unavailable_ai_rows() if summary is None else _ai_rows(summary)
+    why = list(dict.fromkeys([*causes, *([summary.billed_cause] if summary is not None and summary.billed_cause else [])]))
+    results += [_ai_row("measurement_cause", "recuento", 1, behavior=cause) for cause in why]
+    run = {"run_id": f"jup130-ai-cost-{start.isoformat()}-to-{end.isoformat()}", "source": AI_COST_SOURCE, "run_at": run_at,
+           "commit": commit, "suite": "jup130-ai-cost", "suite_version": SUITE_VERSION}
+    document = {"contract_version": 1, "run": {k: v for k, v in run.items() if v is not None}, "results": results}
+    try:
+        dashboard.adapt_rows_v1(document)
+    except dashboard.AdapterError as error:
+        raise IndicatorError(f"el informe incumple el contrato rows-v1: {error}") from error
+    contrasted = fetch is not None and summary is not None and summary.billed_total is not None
+    return document, build_ai_cost_table(summary, start, end, contrasted, why)
+
+
+def _money(value: Decimal | None) -> str:
+    return "no medido" if value is None else f"{value:.6f}".replace(".", ",") + " USD"
+
+
+def _share(count: int, total: int) -> str:
+    return "no medido" if total == 0 else f"{count / total * 100:.1f}".replace(".", ",") + f" % ({count}/{total})"
+
+
+def build_ai_cost_table(summary: SpendSummary | None, start: date, end: date, contrasted: bool,
+                        causes: list[str] | None = None) -> str:
+    lines = [
+        "# Coste de IA por consulta (JUP-130)",
+        "",
+        f"Medición sobre la ventana {start.isoformat()} a {end.isoformat()} (inicio incluido, fin excluido, en UTC). Comando: "
+        f"`python tools/memory-indicators.py ai-cost --from {start.isoformat()} --to {end.isoformat()}`. "
+        "Con `--run-at` y `--commit` se fijan la fecha y el commit del informe.",
+        "",
+    ]
+    if causes:
+        lines += ["Causas de lo no medido: " + ", ".join(f"`{cause}`" for cause in causes) + ".", ""]
+    if summary is None:
+        lines += ["**No se pudo leer el registro del gateway en esta ejecución: todas las cifras figuran como no medidas.**", ""]
+    else:
+        if not contrasted:
+            lines += ["**El coste facturado no se contrastó con OpenRouter en esta ejecución: el coste por consulta es solo estimado y no está contrastado.**", ""]
+        per_query = None if not summary.confirmed else summary.billed_total / summary.confirmed
+        lines += [
+            "| Medida | Valor |", "| --- | --- |",
+            f"| Consultas de chat terminadas | {summary.queries} |",
+            f"| Coste estimado por el gateway | {_money(summary.estimated_total)} |",
+            f"| Coste facturado (OpenRouter, solo confirmadas) | {_money(summary.billed_total)} |",
+            f"| Coste facturado por consulta | {_money(per_query)} |",
+            f"| Diferencia estimado menos facturado | {_money(summary.gap)} |",
+            f"| Cobertura de lo facturado | {_share(summary.confirmed, summary.queries)} |",
+            f"| Consultas con gasto estimado cero | {summary.zero_spend_queries} |",
+            f"| Embeddings (solo estimado, aparte) | {_money(summary.embeddings_estimated)} |",
+            f"| Rechazos 429 del gateway | {_share(summary.gateway_rejections, summary.requests)} |",
+            f"| Errores del proveedor (5xx) | {_share(summary.provider_errors, summary.requests)} |",
+            "", "## Por modelo", "", "| Modelo | Consultas | Facturado por consulta |", "| --- | --- | --- |",
+        ]
+        for model, item in sorted(summary.by_model.items()):
+            lines.append(f"| {model} | {item.queries} | {_money(None if not item.confirmed else item.billed / item.confirmed)} |")
+    lines += [
+        "",
+        "## Qué no demuestra",
+        "",
+        "- El gasto es local a la máquina que ejecutó las consultas: no demuestra el coste de un uso real ni de otros equipos.",
+        "- El coste estimado es contabilidad derivada de una tarifa por token, no una factura; solo lo confirmado por OpenRouter es facturado.",
+        "- Una consulta que OpenRouter no devuelve no se cuenta como coste cero: reduce la cobertura.",
+        "- Los embeddings no llevan identificador de generación de OpenRouter y por eso se informan aparte como estimados.",
+        "- Los rechazos 429 son del límite por clave del propio gateway y no del proveedor; el coste de pruebas no es el de producción.",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def _http_get(url: str, headers: dict) -> object:
+    request = urllib.request.Request(url, headers=headers)
+    try:
+        with urllib.request.urlopen(request, timeout=API_TIMEOUT_SECONDS) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as error:
+        raise ApiUnavailable(f"http_{error.code}") from None
+    except (urllib.error.URLError, OSError):
+        raise ApiUnavailable("conexion") from None
+    except ValueError:
+        raise ApiUnavailable("respuesta_invalida") from None
+
+
+def read_spend_logs(gateway_url: str, key: str) -> list[dict]:
+    body = _http_get(gateway_url.rstrip("/") + "/spend/logs", {"Authorization": "Bearer " + key})
+    if not isinstance(body, list):
+        raise ApiUnavailable("respuesta_invalida")
+    return body
+
+
+def openrouter_cost(base_url: str, key: str):
+    """Devuelve la función que consulta el coste facturado de una generación; None si OpenRouter responde 404."""
+    def fetch(identifier: str) -> Decimal | None:
+        try:
+            body = _http_get(base_url.rstrip("/") + "/generation?id=" + urllib.parse.quote(identifier, safe=""),
+                             {"Authorization": "Bearer " + key})
+        except ApiUnavailable as error:
+            if str(error) == "http_404":
+                return None
+            raise
+        value = body.get("data", {}).get("total_cost") if isinstance(body, dict) and isinstance(body.get("data"), dict) else None
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or value < 0:
+            return None
+        return Decimal(str(value))
+    return fetch
+
+
+def _read_secret(env_name: str, file_path: Path | None) -> str | None:
+    if file_path is not None:
+        try:
+            return file_path.read_text(encoding="utf-8").strip() or None
+        except OSError:
+            return None
+    return os.environ.get(env_name) or None
+
+
+def _ai_cost_command(args, commit: str | None) -> tuple[dict, str]:
+    gateway_key = _read_secret(GATEWAY_KEY_ENV, args.gateway_key_file)
+    provider_key = _read_secret(OPENROUTER_KEY_ENV, args.openrouter_key_file)
+    rows, fetch, causes = None, None, []
+    if not gateway_key:
+        causes.append("gateway:clave_ausente")
+        print(f"aviso: falta {GATEWAY_KEY_ENV}; las cifras de coste de IA quedan como no medidas", file=sys.stderr)
+    else:
+        try:
+            rows = read_spend_logs(args.gateway_url, gateway_key)
+        except ApiUnavailable as error:
+            causes.append(f"gateway:{error}")
+            print(f"aviso: el gateway no está disponible ({error}); las cifras de coste de IA quedan como no medidas", file=sys.stderr)
+    if rows is not None:
+        if not provider_key:
+            causes.append("openrouter:clave_ausente")
+            print(f"aviso: falta {OPENROUTER_KEY_ENV}; el coste facturado queda como no medido", file=sys.stderr)
+        else:
+            fetch = openrouter_cost(args.openrouter_url, provider_key)
+    return ai_cost_report(rows, args.start, args.end, fetch, args.max_generations, commit=commit, run_at=args.run_at,
+                          causes=tuple(causes))
+
+
+def _git_head() -> str | None:
+    try:
+        out = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=True).stdout.strip()
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    return out if COMMIT_RE.fullmatch(out) else None
+
+
+def _write(directory: Path, name: str, text: str) -> None:
+    directory.mkdir(parents=True, exist_ok=True)
+    (directory / name).write_text(text, encoding="utf-8", newline="\n")
+
+
+def _pattern(regex: re.Pattern, what: str):
+    def check(value: str) -> str:
+        if not regex.fullmatch(value):
+            raise argparse.ArgumentTypeError(f"{what} no válido")
+        return value
+    return check
+
+
+def _iso_date(value: str) -> date:
+    if not DATE_RE.fullmatch(value):
+        raise argparse.ArgumentTypeError("la fecha debe ser AAAA-MM-DD")
+    try:
+        return date.fromisoformat(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError("la fecha no existe") from None
+
+
+def _positive_int(value: str) -> int:
+    if not re.fullmatch(r"[1-9][0-9]*", value):
+        raise argparse.ArgumentTypeError("debe ser un entero positivo")
+    return int(value)
+
+
+def _run_at(value: str) -> str:
+    if not dashboard.RUN_AT_PATTERN.fullmatch(value):
+        raise argparse.ArgumentTypeError(f"--run-at {dashboard.RUN_AT_PROBLEM}")
+    return value
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    commands = parser.add_subparsers(dest="command", required=True)
+    anomalies = commands.add_parser("anomalies", help="precisión, recall y retraso del detector de anomalías")
+    anomalies.add_argument("--reference", required=True, type=_pattern(DATE_RE, "la fecha AAAA-MM-DD"))
+    anomalies.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    anomalies.add_argument("--run-at", type=_run_at)
+    anomalies.add_argument("--commit", type=_pattern(COMMIT_RE, "el commit"))
+    data = commands.add_parser("data", help="frescura y reconciliación de los datos de coste")
+    data.add_argument("--reference", required=True, type=_pattern(DATE_RE, "la fecha AAAA-MM-DD"))
+    data.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    data.add_argument("--run-at", type=_run_at)
+    data.add_argument("--commit", type=_pattern(COMMIT_RE, "el commit"))
+    data.add_argument("--base-url", type=_pattern(re.compile(r"https?://\S+", re.ASCII), "la dirección http(s)"))
+    data.add_argument("--email", default=DEFAULT_EMAIL)
+    data.add_argument("--password-env", default=DEFAULT_PASSWORD_ENV, help="variable de entorno con la contraseña")
+    cost = commands.add_parser("ai-cost", help="coste de IA facturado frente a estimado y rechazos del gateway")
+    cost.add_argument("--from", dest="start", required=True, type=_iso_date)
+    cost.add_argument("--to", dest="end", required=True, type=_iso_date)
+    cost.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    cost.add_argument("--run-at", type=_run_at)
+    cost.add_argument("--commit", type=_pattern(COMMIT_RE, "el commit"))
+    url = re.compile(r"https?://\S+", re.ASCII)
+    cost.add_argument("--gateway-url", default=DEFAULT_GATEWAY_URL, type=_pattern(url, "la dirección http(s)"))
+    cost.add_argument("--openrouter-url", default=DEFAULT_OPENROUTER_URL, type=_pattern(url, "la dirección http(s)"))
+    cost.add_argument("--gateway-key-file", type=Path, help=f"fichero con la clave; si no, la variable {GATEWAY_KEY_ENV}")
+    cost.add_argument("--openrouter-key-file", type=Path, help=f"fichero con la clave; si no, la variable {OPENROUTER_KEY_ENV}")
+    cost.add_argument("--max-generations", type=_positive_int, default=DEFAULT_MAX_GENERATIONS,
+                      help="tope de generaciones que se consultan a OpenRouter")
+    return parser
+
+
+def _data_command(args, reference: date, commit: str | None) -> tuple[dict, str]:
+    fetch, api_reference = None, None
+    if args.base_url:
+        password = os.environ.get(args.password_env)
+        if not password:
+            print(f"aviso: la variable {args.password_env} no está definida; la medición contra el API queda como no medida", file=sys.stderr)
+        else:
+            try:
+                session = ApiSession(args.base_url, args.email, password)
+                api_reference = session.reference_date()
+                fetch = session.summary
+            except ApiUnavailable as error:
+                print(f"aviso: el API no está disponible ({error}); la medición contra el API queda como no medida", file=sys.stderr)
+    return data_report(fetch=fetch, reference_date_from_api=api_reference, reference=reference, commit=commit, run_at=args.run_at)
+
+
+def main(argv: list[str] | None = None) -> int:
+    # La consola de Windows usa cp1252 y los mensajes llevan acentos.
+    for stream in (sys.stdout, sys.stderr):
+        stream.reconfigure(encoding="utf-8")
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    if args.command == "ai-cost":
+        if not args.start < args.end:
+            parser.error("--from debe ser anterior a --to")
+    else:
+        try:
+            reference = date.fromisoformat(args.reference)
+        except ValueError:
+            parser.error("la fecha de referencia no es una fecha real")
+    commit = args.commit or _git_head()
+    try:
+        if args.command == "anomalies":
+            report, table = anomaly_report(reference, commit=commit, run_at=args.run_at)
+        elif args.command == "data":
+            report, table = _data_command(args, reference, commit)
+        else:
+            report, table = _ai_cost_command(args, commit)
+    except IndicatorError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    stem = {"anomalies": "JUP-130-anomalies", "data": "JUP-130-data", "ai-cost": "JUP-130-ai-cost"}[args.command]
+    _write(args.out, stem + ".rows.json", json.dumps(report, indent=2, ensure_ascii=False) + "\n")
+    _write(args.out, stem + ".md", table)
+    print(f"{args.command}: informe y tabla escritos en {args.out}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

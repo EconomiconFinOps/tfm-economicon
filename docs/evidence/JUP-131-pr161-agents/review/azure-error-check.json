@@ -1,0 +1,17 @@
+{
+  "reviewer": "/root/pr161_code_review",
+  "checked_at": "2026-10-24T23:35:39.123422+02:00",
+  "python": "3.14.4",
+  "head": "e730dc15fb3feb45a3b346fc9e48332c4608b049",
+  "file_sha256": {
+    "apps/azure-cost-api/app/errors.py": "389e2a7c72185d34122c89028c2147e64a0db904ac38190839e3b4844e4a4a48",
+    "apps/azure-cost-api/tests/test_errors.py": "0cbc76998fdddd661c54c5d2bdc61542507ddcf992dbfebf582a2c0683886678"
+  },
+  "result": "PASS",
+  "original_contextmanager_result": "FrozenInstanceError (expected RED)",
+  "updated_contextmanager_result": "same ApiError instance propagated (GREEN)",
+  "traceback_can_be_cleared_and_restored": true,
+  "fields_args_and_payload_unchanged": true,
+  "hash_change": "frozen dataclass generated hash -> mutable dataclass unhashable; no dependent repository consumer found by source review",
+  "limitations": "Standard-library source execution only, no ASGI, HTTP, cloud, full pytest suite or dependency installation."
+}

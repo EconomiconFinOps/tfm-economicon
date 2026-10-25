@@ -1,0 +1,7 @@
+{
+  "manifest_version": 1,
+  "runs": [
+    {"path": "docs/evidence/JUP-133/evolution-20261025/friday.rows.json", "format": "rows-v1", "milestone": false},
+    {"path": "docs/evidence/JUP-133/evolution-20261025/sunday.rows.json", "format": "rows-v1", "milestone": false}
+  ]
+}

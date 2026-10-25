@@ -1,0 +1,160 @@
+{
+  "prepared_at_utc": "2026-10-23T12:52:24.517434+00:00",
+  "base_commit": "03e97ce670286bb55d2750be7bb466deb24548c6",
+  "branch": "fix/JUP-065-frozen-demo-final10000",
+  "authorization": "Haz la pr y mergea como excepcion con aprobacion mia",
+  "authorization_date": "2026-10-23",
+  "task_title": "Levantar Jupiter en dockerDevelop",
+  "task_id": "01a16421-03a0-7460-b110-24738407ccb1",
+  "scope": "Publish and merge the existing frozen demo source; no new product adjustment or generative campaign.",
+  "draft_tokens": 1000,
+  "final_tokens": 10000,
+  "output_reserve": 11000,
+  "frozen_source_files": [
+    {
+      "path": "apps/backend/app/core/chat_resources.py",
+      "sha256": "e31fa72767169b2ae37769ef2d5e45cb417f0218369414e4f564bf13f1bfc7ac"
+    },
+    {
+      "path": "apps/backend/app/core/chat_review.py",
+      "sha256": "b1fbfc7f389d353a272b8987b967368dfd5056b71d728503e476ce54ff893adb"
+    },
+    {
+      "path": "apps/backend/app/core/context_budget.py",
+      "sha256": "fddf2e6bafcdae88999ead249fd78128af5af62939919d2e455f40bb6bfde3af"
+    },
+    {
+      "path": "apps/backend/tests/test_chat_battery_corrections_jup035.py",
+      "sha256": "a8679770ccc4d1a79322529ff83d5ec1e2220e7a9c4b8ee8e7d73c3e61aba562"
+    },
+    {
+      "path": "apps/backend/tests/test_chat_context_assembly_jup035.py",
+      "sha256": "72010da5f6f67c269d80d542d88ddf48b62350da00dba06247a2a57ae91037c1"
+    },
+    {
+      "path": "apps/backend/tests/test_chat_evidence_selection_jup035.py",
+      "sha256": "84fbc2a46187c1c44a0de38bdfe44a3e759de6777c6603aa97c9f4240604614b"
+    },
+    {
+      "path": "apps/backend/tests/test_chat_summary_scheduler_jup035.py",
+      "sha256": "89b733050f20bb356eb0f9db536bea96ae6006442c4709f6be09b14cd710be60"
+    },
+    {
+      "path": "apps/backend/tests/test_default_chat_model_jup132.py",
+      "sha256": "083594aaec217d2b2dfb53d8b60cca9d3dba87c6ab66b2eb535c2477c84c6926"
+    },
+    {
+      "path": "apps/backend/tests/test_summary_sizes_jup035.py",
+      "sha256": "6386cc91245786273653cd7048da3720a0cca4d71ec952f0f3e1a6ddda820024"
+    },
+    {
+      "path": "apps/processor/app/agents/prompt_resources/jup035/chat/v3/manifest.json",
+      "sha256": "6cbb824ed05b73ede4ad5d89400f3f8dc1ed10d4d18b9333da0976b5ba4a0852"
+    },
+    {
+      "path": "apps/processor/app/agents/prompt_resources/jup035/chat/v3/system.md",
+      "sha256": "3e0611e10218798ebf677119cd478322e16f83744cc8037df30b148a1b777884"
+    },
+    {
+      "path": "apps/processor/app/agents/prompt_resources/jup035/chat/v4/manifest.json",
+      "sha256": "0718a854afec1ba1dc13950a03cf0721ca7bc9f1d990f991f9354583e1866b91"
+    },
+    {
+      "path": "apps/processor/app/agents/prompt_resources/jup035/chat/v4/system.md",
+      "sha256": "3e0611e10218798ebf677119cd478322e16f83744cc8037df30b148a1b777884"
+    },
+    {
+      "path": "apps/processor/app/core/chat_resources.py",
+      "sha256": "0d65f7f33e4029df2d15c79c2f6de707fd128991def38b9a4287a7c8c0c41f7c"
+    },
+    {
+      "path": "apps/processor/app/core/chat_review.py",
+      "sha256": "b1fbfc7f389d353a272b8987b967368dfd5056b71d728503e476ce54ff893adb"
+    },
+    {
+      "path": "apps/processor/app/core/context_budget.py",
+      "sha256": "fddf2e6bafcdae88999ead249fd78128af5af62939919d2e455f40bb6bfde3af"
+    },
+    {
+      "path": "apps/processor/app/documents/extraction_sandbox.py",
+      "sha256": "648465c8beda16a6c11e596d14bcb93bc99174d7cb5cad5d4ad3ef10468bdcb3"
+    },
+    {
+      "path": "apps/processor/tests/test_bedrock_wiring_jup131.py",
+      "sha256": "b9587b852ec28fb3e7bedcb0e39f14157356e1c64f21e84b4cfd1e4651cd2203"
+    },
+    {
+      "path": "apps/processor/tests/test_chat_auto_jup035.py",
+      "sha256": "a90bf7fcec44212a61de15882741571d470d25cb29b0f4f1dca6668859c3629f"
+    },
+    {
+      "path": "apps/processor/tests/test_chat_battery_corrections_jup035.py",
+      "sha256": "cce5c9f62decbd2165f68ca7ab31d661045c119124550455983dcb8d4f70a6f8"
+    },
+    {
+      "path": "apps/processor/tests/test_chat_context_budget_jup035.py",
+      "sha256": "b75ed0600da86f63ec3df9a89fb1996ccd6fff88ca31b93b1c94432f1aba29d7"
+    },
+    {
+      "path": "apps/processor/tests/test_chat_gateway_jup035.py",
+      "sha256": "677e0b7c63ac7753427db23753305bcb821ac6ec9839931b1dc29fa0877ada16"
+    },
+    {
+      "path": "apps/processor/tests/test_chat_resources_jup035.py",
+      "sha256": "fb70f9042d9b0f77142916416896bb9c4396b305eac343f98d68cf63e2781e24"
+    },
+    {
+      "path": "apps/processor/tests/test_chat_review_flow_jup035.py",
+      "sha256": "edf49f7e1259d61f75a6b20d47b10285d57b5dc1cf91007c3b67524457d065d0"
+    },
+    {
+      "path": "apps/processor/tests/test_default_chat_model_jup132.py",
+      "sha256": "45c55b48e167dda53f7fa9af25d76d11fab324ba564e5056b8c9cedc127bc3ab"
+    },
+    {
+      "path": "apps/processor/tests/test_summary_sizes_jup035.py",
+      "sha256": "472bf9fd18872a87088895f8d21d082a21b46e65560c36d83419ad1a37caed04"
+    }
+  ],
+  "historical_validation": {
+    "run_id": "jup065-final10000-integral-20261023",
+    "closed_at": "2026-10-23T12:15:57.134199+00:00",
+    "verdict": "NOT_ACCEPTED",
+    "rubric_score": {
+      "passed": 4,
+      "failed": 1,
+      "total": 5
+    },
+    "checklist_counts": {
+      "PASS": 27,
+      "FAIL": 2,
+      "NOT_EVALUATED": 1
+    },
+    "technical": {
+      "backend_pass": 2732,
+      "backend_skip": 369,
+      "processor_pass": 2674,
+      "processor_skip": 150,
+      "azure_cost_api_pass": 81,
+      "frontend_pass": 1427,
+      "frontend_files": 96,
+      "lint_errors": 0,
+      "lint_warnings": 1,
+      "type_checks_pass": 3,
+      "build_pass": true,
+      "isolated_sql_pass": 36,
+      "quality_ui_pass": 7,
+      "failed_jobs": []
+    },
+    "quality_user_type": "AI_AGENT",
+    "archive": "JUP-065-cierre-integral-final10000-20261023.zip",
+    "archive_sha256": "c9e9d6cd6fc7682389f0d959d472f2a7af3dbd4a97f18633c757950ffe3b317b"
+  },
+  "fresh_application_tests": 0,
+  "fresh_model_calls": 0,
+  "runtime_changes": false,
+  "access_changes": false,
+  "budget_changes": false,
+  "budget_cap_usd": 10,
+  "warning": "Source equality and historical tests do not establish integral RC acceptance or current deployment."
+}

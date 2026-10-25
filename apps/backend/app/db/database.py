@@ -1,13 +1,29 @@
 import json
+import os
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from sqlalchemy import create_engine, text
 
-from app.core.security import hash_password
+from app.core.config import get_settings
+from app.core.runtime_secrets import DemoRotationRequired
+from app.core.security import hash_password, verify_password
 from app.db.migration_runner import MigrationRunner
+from app.services import reference_date
 
+
+LIST_READ_ATTEMPTS = 3
+
+# Criterio UNICO de "datos sinteticos de demostracion" para una ingesta de costes: la peticion lleva la marca
+# `synthetic: true` o la suscripcion usa el prefijo `synthetic-` (JUP-119 anadio el prefijo: el cargador de la demo
+# deja `subscription_id='synthetic-anomalies'` y la peticion sin marca). La lista del panel y la explicacion de un
+# episodio comparten esta constante para que no puedan volver a divergir (en JUP-038 la explicacion solo miraba la
+# marca y no avisaba). Se concatena en el SQL en lugar de duplicar el predicado en cada sentencia; el `LIKE`
+# distingue mayusculas a proposito y se mantiene tal cual, porque cambiarlo alteraria el resultado de la lista.
+SYNTHETIC_INGESTION_CONDITION = (
+    "(COALESCE(request->'synthetic' = 'true'::JSONB, false) OR subscription_id LIKE 'synthetic-%')"
+)
 
 TENANT_SEED = [
     {
@@ -26,8 +42,7 @@ TENANT_SEED = [
 
 USER_SEED = {
     "id": "user-finops-admin",
-    "email": "operator@finops.local",
-    "password": "secret",
+    "email": "operator@example.com",
     "full_name": "FinOps Operator",
     "role": "admin",
 }
@@ -43,20 +58,42 @@ class Database:
             "app.db.migrations",
             Path(__file__).with_name("migrations"),
         )
+        default='verify' if os.getenv('CHAT_ENABLED','false').lower()=='true' else 'migrate'
+        mode=os.getenv('BACKEND_SCHEMA_MODE',default)
+        if mode=='verify':
+            runner.verify()
+            return
+        if mode!='migrate':
+            from app.core.runtime_secrets import StartupError
+            raise StartupError('Invalid backend schema mode.')
         runner.run()
         self._seed_defaults()
 
     def _seed_defaults(self) -> None:
+        settings = get_settings()
         now = datetime.now(timezone.utc)
-        password_hash = hash_password(USER_SEED["password"])
 
         with self.engine.begin() as connection:
+            existing = connection.execute(
+                text("SELECT id, email, password_hash FROM users WHERE id = :id OR email = :email"),
+                {"id": USER_SEED["id"], "email": USER_SEED["email"]},
+            ).mappings().all()
+            if settings.runtime_environment != "test" and any(
+                verify_password("secret", user["password_hash"]) for user in existing
+            ):
+                raise DemoRotationRequired()
+            if not settings.demo_seed_enabled:
+                return
+            # Never attach demo associations to a different existing identity.
+            if any(user["id"] != USER_SEED["id"] or user["email"] != USER_SEED["email"] for user in existing):
+                return
             for tenant in TENANT_SEED:
                 connection.execute(
                     text(
                         """
-                        UPSERT INTO tenants (id, name, slug, plan)
+                        INSERT INTO tenants (id, name, slug, plan)
                         VALUES (:id, :name, :slug, :plan)
+                        ON CONFLICT DO NOTHING
                         """
                     ),
                     tenant,
@@ -65,14 +102,15 @@ class Database:
             connection.execute(
                 text(
                     """
-                    UPSERT INTO users (id, email, password_hash, full_name, role, created_at)
+                    INSERT INTO users (id, email, password_hash, full_name, role, created_at)
                     VALUES (:id, :email, :password_hash, :full_name, :role, :created_at)
+                    ON CONFLICT DO NOTHING
                     """
                 ),
                 {
                     "id": USER_SEED["id"],
                     "email": USER_SEED["email"],
-                    "password_hash": password_hash,
+                    "password_hash": hash_password(settings.demo_password.get_secret_value()) if not existing else existing[0]["password_hash"],
                     "full_name": USER_SEED["full_name"],
                     "role": USER_SEED["role"],
                     "created_at": now,
@@ -83,8 +121,9 @@ class Database:
                 connection.execute(
                     text(
                         """
-                        UPSERT INTO user_tenants (user_id, tenant_id, role, created_at)
+                        INSERT INTO user_tenants (user_id, tenant_id, role, created_at)
                         VALUES (:user_id, :tenant_id, :role, :created_at)
+                        ON CONFLICT DO NOTHING
                         """
                     ),
                     {
@@ -161,17 +200,225 @@ class Database:
             ).first()
         return row is not None
 
-    def fetch_billing_summary(self, tenant_id: str) -> dict:
-        with self.engine.connect() as connection:
-            job_count = connection.execute(
-                text("SELECT count(*) FROM jobs WHERE tenant_id = :tenant_id"),
-                {"tenant_id": tenant_id},
-            ).scalar_one()
+    def fetch_billing_summary(
+        self, tenant_id: str, *, start_date, end_date,
+        group_by: str = "subscription", tag_key: str | None = None,
+        selected_subscription: str | None = None, selected_value: str | None = None,
+        include_provenance: bool = False,
+    ) -> dict:
+        from decimal import Decimal, ROUND_HALF_UP, localcontext
+
+        from app.schemas.billing import AmbiguousCostSource
+
+        def present(expression: str) -> str:
+            return f"CASE WHEN {expression} ~ '^\\s*$' THEN NULL ELSE {expression} END"
+
+        project_tag = present("r.tags ->> 'project'")
+        dimensions = {
+            "subscription": present("r.subscription_id"),
+            "account": present("r.billing_account_id"),
+            "resource_group": present("r.resource_group"),
+            "service": present("r.service_name"),
+            "project": f"COALESCE({present('r.project')}, {project_tag})",
+            "tag": present("r.tags ->> :tag_key"),
+        }
+        dimension = dimensions[group_by]
+        subscription = (present("r.subscription_id") if group_by in {"subscription", "resource_group"}
+                        else "CAST(NULL AS TEXT)")
+        group_value = "lower(value)" if group_by == "resource_group" else "value"
+        display_value = "min(value)" if group_by == "resource_group" else "value"
+        # Only enum-selected expressions enter SQL; all request values are bound.
+        query = text(f"""
+            WITH completed AS (
+                SELECT r.ingestion_id, r.subscription_id, r.usage_date,
+                       r.currency, r.pretax_cost, {dimension} AS value,
+                       {subscription} AS group_subscription
+                FROM azure_cost_records r
+                JOIN azure_cost_ingestion_runs i
+                  ON i.id = r.ingestion_id AND i.tenant_id = r.tenant_id
+                 AND i.subscription_id = r.subscription_id
+                WHERE r.tenant_id = :tenant_id AND i.tenant_id = :tenant_id
+                  AND i.status = 'completed'
+                  AND (CAST(:selected_subscription AS TEXT) IS NULL OR r.subscription_id = :selected_subscription)
+            ), period_records AS (
+                SELECT * FROM completed
+                WHERE usage_date >= :start_date AND usage_date < :end_date
+            ), conflicts AS (
+                SELECT subscription_id, usage_date FROM period_records
+                GROUP BY subscription_id, usage_date
+                HAVING count(DISTINCT ingestion_id) > 1
+            ), selected_records AS (
+                SELECT * FROM period_records WHERE CAST(:selected_value AS TEXT) IS NULL OR value = :selected_value
+            ), metadata AS (
+                SELECT (SELECT count(*) FROM completed WHERE usage_date IS NULL) AS undated,
+                       (SELECT count(*) FROM selected_records WHERE value IS NULL) AS missing,
+                       (SELECT count(*) FROM conflicts) AS ambiguous,
+                       (SELECT array_agg(DISTINCT ingestion_id) FROM selected_records) AS source_ids,
+                       (SELECT min(usage_date) FROM selected_records) AS first_date,
+                       (SELECT max(usage_date) FROM selected_records) AS last_date,
+                       (SELECT count(DISTINCT usage_date) FROM selected_records) AS observed_days
+            ), aggregates AS (
+                SELECT 'total' AS kind, currency, CAST(NULL AS TEXT) AS subscription_id,
+                       CAST(NULL AS TEXT) AS value, sum(pretax_cost) AS cost,
+                       count(*) AS record_count
+                FROM selected_records WHERE NOT EXISTS (SELECT 1 FROM conflicts)
+                GROUP BY currency
+                UNION ALL
+                SELECT 'group', currency, group_subscription, {display_value}, sum(pretax_cost), count(*)
+                FROM selected_records WHERE NOT EXISTS (SELECT 1 FROM conflicts)
+                GROUP BY currency, group_subscription, {group_value}
+            )
+            SELECT a.*, m.undated, m.missing, m.ambiguous, m.source_ids, m.first_date, m.last_date, m.observed_days
+            FROM metadata m LEFT JOIN aggregates a ON TRUE
+            ORDER BY a.currency ASC NULLS LAST, a.subscription_id ASC NULLS LAST,
+                     a.value ASC NULLS LAST, a.kind
+        """)
+        with self.engine.connect().execution_options(isolation_level="SERIALIZABLE") as connection:
+            with connection.begin():
+                rows = connection.execute(query, {
+                    "tenant_id": tenant_id, "start_date": start_date,
+                    "end_date": reference_date.visible_end(end_date),
+                    "tag_key": tag_key, "selected_subscription": selected_subscription,
+                    "selected_value": selected_value,
+                }).mappings().all()
+                job_count = connection.execute(
+                    text("SELECT count(*) FROM jobs WHERE tenant_id = :tenant_id"),
+                    {"tenant_id": tenant_id},
+                ).scalar_one()
+
+        metadata = rows[0]
+        if metadata["ambiguous"]:
+            raise AmbiguousCostSource()
+
+        def money(value: Decimal) -> str:
+            with localcontext() as context:
+                context.prec = max(50, len(value.as_tuple().digits) + abs(value.as_tuple().exponent) + 2)
+                rounded = value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+                return "0.00" if rounded == 0 else format(rounded, ".2f")
+
+        totals, groups = [], []
+        for row in rows:
+            if row["kind"] is None:
+                continue
+            item = {"currency": row["currency"], "cost": money(row["cost"]),
+                    "record_count": int(row["record_count"])}
+            if row["kind"] == "total":
+                totals.append(item)
+            else:
+                groups.append({**item, "subscription_id": row["subscription_id"], "value": row["value"]})
+        missing, undated = int(metadata["missing"]), int(metadata["undated"])
+        result = {
+            "contract_version": 2,
+            "period": {"start_date": start_date.isoformat(), "end_date": end_date.isoformat(), "timezone": "UTC"},
+            "group_by": group_by, "tag_key": tag_key,
+            "data_status": "partial" if missing or undated else ("available" if totals else "empty"),
+            "totals": totals, "groups": groups,
+            "missing_dimension_count": missing, "excluded_undated_count": undated,
+            "monthly_spend": totals[0]["cost"] if len(totals) == 1 else None,
+            "currency": totals[0]["currency"] if len(totals) == 1 else None,
+            "savings_identified": None, "open_ingestions": int(job_count),
+        }
+        if include_provenance:
+            result["provenance"] = {
+                "ingestion_ids": sorted(metadata["source_ids"] or []),
+                "first_usage_date": metadata["first_date"].isoformat() if metadata["first_date"] else None,
+                "last_usage_date": metadata["last_date"].isoformat() if metadata["last_date"] else None,
+                "observed_day_count": int(metadata["observed_days"]),
+            }
+        return result
+
+    def fetch_tag_coverage(self, tenant_id: str, *, start_date, end_date) -> dict:
+        from decimal import Decimal, ROUND_HALF_UP, localcontext
+
+        from app.core.tag_policy import POLICY_VERSION, REQUIRED_TAGS, tag_rule_sql
+        from app.schemas.billing import AmbiguousCostSource
+
+        rules = {key: tag_rule_sql(key) for key in REQUIRED_TAGS}
+        compliant = " AND ".join(f"({rule})" for rule in rules.values())
+        defects = ", ".join(
+            f"sum(CASE WHEN NOT ({rule}) THEN 1 ELSE 0 END) AS invalid_{key}"
+            for key, rule in rules.items()
+        )
+        query = text(f"""
+            WITH completed AS (
+                SELECT r.ingestion_id, r.subscription_id, r.usage_date,
+                       r.currency, r.pretax_cost, r.tags
+                FROM azure_cost_records r
+                JOIN azure_cost_ingestion_runs i
+                  ON i.id = r.ingestion_id AND i.tenant_id = r.tenant_id
+                 AND i.subscription_id = r.subscription_id
+                WHERE r.tenant_id = :tenant_id AND i.tenant_id = :tenant_id
+                  AND i.status = 'completed'
+            ), period_records AS (
+                SELECT *, ({compliant}) AS compliant FROM completed
+                WHERE usage_date >= :start_date AND usage_date < :end_date
+            ), conflicts AS (
+                SELECT subscription_id, usage_date FROM period_records
+                GROUP BY subscription_id, usage_date
+                HAVING count(DISTINCT ingestion_id) > 1
+            ), metadata AS (
+                SELECT (SELECT count(*) FROM completed WHERE usage_date IS NULL) AS undated,
+                       (SELECT count(*) FROM conflicts) AS ambiguous
+            ), aggregates AS (
+                SELECT currency, count(*) AS record_count,
+                       sum(CASE WHEN compliant THEN 1 ELSE 0 END) AS compliant_count,
+                       sum(CASE WHEN pretax_cost > 0 THEN pretax_cost ELSE 0 END) AS positive,
+                       sum(CASE WHEN pretax_cost > 0 AND compliant THEN pretax_cost ELSE 0 END) AS compliant_positive,
+                       sum(CASE WHEN pretax_cost < 0 THEN pretax_cost ELSE 0 END) AS negative,
+                       sum(CASE WHEN pretax_cost < 0 AND compliant THEN pretax_cost ELSE 0 END) AS compliant_negative,
+                       {defects}
+                FROM period_records WHERE NOT EXISTS (SELECT 1 FROM conflicts)
+                GROUP BY currency
+            )
+            SELECT a.*, m.undated, m.ambiguous
+            FROM metadata m LEFT JOIN aggregates a ON TRUE
+            ORDER BY a.currency ASC NULLS LAST
+        """)
+        with self.engine.connect().execution_options(isolation_level="SERIALIZABLE") as connection:
+            with connection.begin():
+                rows = connection.execute(query, {
+                    "tenant_id": tenant_id, "start_date": start_date, "end_date": reference_date.visible_end(end_date),
+                }).mappings().all()
+        if rows[0]["ambiguous"]:
+            raise AmbiguousCostSource()
+        currencies = []
+        for row in rows:
+            if row["currency"] is None:
+                continue
+            # Retain SQL aggregate precision, including tiny costs and amounts > 2**53.
+            with localcontext() as context:
+                context.prec = max(80, *(len(row[key].as_tuple().digits) + 20
+                                        for key in ("positive", "compliant_positive", "negative", "compliant_negative")))
+                def display(value):
+                    rounded = value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+                    return "0.00" if rounded == 0 else format(rounded, ".2f")
+                p, t = row["positive"], row["compliant_positive"]
+                c, ct = row["negative"], row["compliant_negative"]
+                u, cu = p - t, c - ct
+                percent = ((100 * t / p).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+                           if p > 0 else None)
+                currencies.append({
+                    "currency": row["currency"], "record_count": int(row["record_count"]),
+                    "compliant_record_count": int(row["compliant_count"]),
+                    "noncompliant_record_count": int(row["record_count"] - row["compliant_count"]),
+                    "positive_cost": display(p), "compliant_cost": display(t),
+                    "noncompliant_cost": display(u), "negative_adjustments": display(c),
+                    "compliant_negative_adjustments": display(ct),
+                    "noncompliant_negative_adjustments": display(cu),
+                    "net_cost": display(p + c), "compliant_net_cost": display(t + ct),
+                    "noncompliant_net_cost": display(u + cu),
+                    "compliant_percent": display(percent) if percent is not None else None,
+                    "noncompliant_percent": display(Decimal(100) - percent) if percent is not None else None,
+                    "no_positive_cost_reason": (None if p > 0 else
+                        ("negative_adjustments_only" if c < 0 else "zero_cost_only")),
+                    "missing_or_invalid_tag_counts": {key: int(row[f"invalid_{key}"]) for key in REQUIRED_TAGS},
+                })
+        undated = int(rows[0]["undated"])
         return {
-            "monthly_spend": 184250,
-            "savings_identified": 23500,
-            "open_ingestions": int(job_count),
-            "currency": "USD",
+            "contract_version": 1, "policy_version": POLICY_VERSION, "required_tags": list(REQUIRED_TAGS),
+            "period": {"start_date": start_date.isoformat(), "end_date": end_date.isoformat(), "timezone": "UTC"},
+            "data_status": "partial" if undated else ("available" if currencies else "empty"),
+            "excluded_undated_count": undated, "currencies": currencies,
         }
 
     def create_job(self, payload: dict, created_by: str) -> dict:
@@ -183,8 +430,8 @@ class Database:
             "source": payload["source"],
             "artifact_uri": payload.get("artifact_uri"),
             "payload": json.dumps(payload),
-            "status": "queued",
-            "result": None,
+            "status": "publish_pending",
+            "result": json.dumps({"publication": {"outcome": "pending", "code": "awaiting_publisher"}}),
             "created_at": now,
             "updated_at": now,
         }
@@ -204,13 +451,69 @@ class Database:
         return {
             "id": job["id"],
             "tenant_id": job["tenant_id"],
+            "created_by": job["created_by"],
             "source": job["source"],
             "artifact_uri": job["artifact_uri"],
-            "status": job["status"],
+            "status": "queued",
             "payload": payload,
         }
 
+    def finalize_job_publication(
+        self, job_id: str, *, tenant_id: str, created_by: str, outcome: str, code: str
+    ) -> None:
+        targets = {
+            "confirmed": "queued", "not_sent": "publish_failed",
+            "rejected": "publish_failed", "unknown": "publish_unknown",
+        }
+        codes = {
+            "confirmed": {"confirmed"},
+            "not_sent": {"capacity", "stopping", "owner_unavailable", "deadline_before_send",
+                         "connect_failed", "serialization_failed"},
+            "rejected": {"broker_nack", "unroutable"},
+            "unknown": {"confirm_timeout", "connection_lost", "shutdown_in_flight", "cancelled_in_flight"},
+        }
+        try:
+            if outcome not in codes or code not in codes[outcome]:
+                raise ValueError()
+            scope = {"id": job_id, "tenant_id": tenant_id, "created_by": created_by}
+            with self.engine.begin() as connection:
+                updated = connection.execute(
+                    text("""
+                        UPDATE jobs SET status = :status, result = :result, updated_at = :updated_at
+                        WHERE id = :id AND tenant_id = :tenant_id AND created_by = :created_by
+                          AND status = 'publish_pending'
+                    """),
+                    {**scope, "status": targets[outcome],
+                     "result": json.dumps({"publication": {"outcome": outcome, "code": code}}),
+                     "updated_at": datetime.now(timezone.utc)},
+                )
+                if updated.rowcount == 1:
+                    return
+                if updated.rowcount != 0:
+                    raise RuntimeError()
+                row = connection.execute(
+                    text("""
+                        SELECT status, result FROM jobs
+                        WHERE id = :id AND tenant_id = :tenant_id AND created_by = :created_by
+                    """), scope,
+                ).mappings().first()
+                if row is None:
+                    raise LookupError()
+                if row["status"] in {"running", "completed", "failed"}:
+                    return
+                result = json.loads(row["result"]) if isinstance(row["result"], str) else row["result"]
+                publication = result.get("publication") if isinstance(result, dict) else None
+                if isinstance(publication, dict):
+                    previous = publication.get("outcome")
+                    if (previous in codes and publication.get("code") in codes[previous]
+                            and row["status"] == targets[previous]):
+                        return
+                raise RuntimeError()
+        except Exception:
+            raise RuntimeError("Job publication state unavailable.") from None
+
     def create_conversation(self, tenant_id: str, user_id: str, title: str) -> dict:
+        from app.db import chat_history
         now = datetime.now(timezone.utc)
         conversation = {
             "id": str(uuid.uuid4()),
@@ -224,13 +527,24 @@ class Database:
             connection.execute(
                 text(
                     """
-                    INSERT INTO conversations (id, tenant_id, user_id, title, created_at, updated_at)
-                    VALUES (:id, :tenant_id, :user_id, :title, :created_at, :updated_at)
+                    INSERT INTO conversations (id, tenant_id, user_id, title, created_at, updated_at, dialogue_history)
+                    VALUES (:id, :tenant_id, :user_id, :title, :created_at, :updated_at, :dialogue_history)
                     """
                 ),
-                conversation,
+                {**conversation, 'dialogue_history': chat_history.dumps(chat_history.empty({
+                    'tenant_id': tenant_id, 'user_id': user_id, 'conversation_id': conversation['id']}))},
             )
         return conversation
+
+    def rename_conversation(self, conversation_id: str, tenant_id: str, user_id: str, title: str) -> dict | None:
+        with self.engine.begin() as connection:
+            row = connection.execute(text("""
+                UPDATE conversations SET title = :title, updated_at = :updated_at
+                WHERE id = :conversation_id AND tenant_id = :tenant_id AND user_id = :user_id
+                RETURNING id, tenant_id, user_id, title, created_at, updated_at
+            """), {"conversation_id": conversation_id, "tenant_id": tenant_id, "user_id": user_id,
+                   "title": title, "updated_at": datetime.now(timezone.utc)}).mappings().first()
+        return dict(row) if row else None
 
     def fetch_conversations(self, tenant_id: str, user_id: str) -> list[dict]:
         with self.engine.connect() as connection:
@@ -265,78 +579,292 @@ class Database:
             ).mappings().first()
         return dict(row) if row else None
 
-    def append_message(
-        self,
-        *,
-        conversation_id: str,
-        tenant_id: str,
-        user_id: str | None,
-        role: str,
-        content: str,
-        metadata: dict | None = None,
-    ) -> dict:
+    def append_message(self, **kwargs):
+        # Removed isolated writer: callers must submit a complete atomic pair.
+        from app.db.chat_repository import ChatError
+        raise ChatError(409,'atomic_pair_required')
+
+    def prepare_message(self, *, conversation_id, tenant_id, user_id, requester_id, role, content, metadata=None):
+        if not requester_id or (user_id is not None and user_id != requester_id):
+            raise PermissionError("Conversation not found.")
+        return {"id": str(uuid.uuid4()), "conversation_id": conversation_id,
+                "tenant_id": tenant_id, "user_id": user_id, "requester_id": requester_id,
+                "role": role, "content": content, "metadata": metadata or {},
+                "created_at": datetime.now(timezone.utc)}
+
+    def _chat_writer_available(self, connection, scope):
+        from sqlalchemy import inspect
+        from app.db.chat_repository import ChatError
+        # Legacy 001 remains usable when chat has never been enabled. All 035
+        # writers require 002 readiness; absence cannot hide an open operation.
+        if inspect(connection).has_table('chat_operations'):
+            opened = connection.execute(text("SELECT operation_id FROM chat_operations "
+                "WHERE tenant_id=:tenant_id AND conversation_id=:conversation_id "
+                "AND state IN ('active','waiting','paused')"), scope).first()
+            if opened is not None:
+                raise ChatError(409,'conversation_busy')
+
+    def assert_conversation_idle(self, *, conversation_id, tenant_id, user_id):
+        from app.db.chat_repository import ChatRepository
+        scope={'conversation_id':conversation_id,'tenant_id':tenant_id,'user_id':user_id}
+        return ChatRepository(self)._transaction(scope,lambda c:self._chat_writer_available(c,scope))
+
+    def append_pair(self, *, question, assistant):
+        from app.db import chat_history
+        from app.db.chat_repository import ChatError, ChatRepository
+        scope={'conversation_id':question['conversation_id'],'tenant_id':question['tenant_id'],
+               'user_id':question['requester_id']}
+        if question['role']!='user' or question['user_id']!=scope['user_id'] or assistant['role']!='assistant':
+            raise ChatError(409,'pair_integrity')
+        if any(assistant[key]!=question[key] for key in ['conversation_id','tenant_id','requester_id']):
+            raise ChatError(409,'pair_integrity')
+        if assistant['user_id'] not in (None,scope['user_id']):
+            raise ChatError(409,'pair_integrity')
+        def persist(connection):
+            self._chat_writer_available(connection,scope)
+            chat_history.append_final(connection,scope,question,assistant)
+            return question,assistant
+        return ChatRepository(self)._transaction(scope,persist)
+
+    def fetch_messages(self, conversation_id: str, tenant_id: str, user_id: str) -> list[dict]:
+        from app.db import chat_history
+        scope = {'conversation_id': conversation_id, 'tenant_id': tenant_id, 'user_id': user_id}
+        with self.engine.connect() as connection:
+            document = chat_history.read(connection, scope)
+        return [] if document is None else chat_history.projection(document)
+
+    def fetch_dialogue_history(self, conversation_id: str, tenant_id: str, user_id: str) -> dict | None:
+        from app.db import chat_history
+        scope = {'conversation_id': conversation_id, 'tenant_id': tenant_id, 'user_id': user_id}
+        with self.engine.connect() as connection:
+            return chat_history.read(connection, scope)
+
+    _COMPLETED_COSTS = """
+        FROM azure_cost_records r
+        JOIN azure_cost_ingestion_runs i
+          ON i.id = r.ingestion_id AND i.tenant_id = r.tenant_id
+         AND i.subscription_id = r.subscription_id
+        WHERE r.tenant_id = :tenant_id AND i.tenant_id = :tenant_id
+          AND i.status = 'completed'
+    """
+
+    def observed_cost_day_range(self, connection, tenant_id: str) -> tuple:
+        row = connection.execute(
+            text("SELECT min(r.usage_date), max(r.usage_date) " + self._COMPLETED_COSTS
+                 + " AND r.usage_date < :visible_end"),
+            {"tenant_id": tenant_id, "visible_end": reference_date.visible_end(date.max)},
+        ).one()
+        return row[0], row[1]
+
+    def read_daily_service_costs(self, connection, tenant_id: str, *, start_date, end_date) -> tuple[set, dict]:
+        from app.schemas.billing import AmbiguousCostSource
+
+        scope = {"tenant_id": tenant_id, "start_date": start_date, "end_date": reference_date.visible_end(end_date)}
+        period = " AND r.usage_date >= :start_date AND r.usage_date < :end_date"
+        ambiguous = connection.execute(text(
+            "SELECT count(*) FROM (SELECT r.subscription_id, r.usage_date " + self._COMPLETED_COSTS + period
+            + " GROUP BY r.subscription_id, r.usage_date HAVING count(DISTINCT r.ingestion_id) > 1) AS conflicts"
+        ), scope).scalar_one()
+        if ambiguous:
+            raise AmbiguousCostSource()
+        rows = connection.execute(text(
+            "SELECT r.usage_date, r.currency, "
+            "CASE WHEN r.service_name ~ '^\\s*$' THEN NULL ELSE r.service_name END AS service, "
+            "sum(r.pretax_cost) AS cost " + self._COMPLETED_COSTS + period + " GROUP BY 1, 2, 3"
+        ), scope).mappings().all()
+        daily = {}
+        for row in rows:
+            daily.setdefault((row["currency"], row["service"]), {})[row["usage_date"]] = row["cost"]
+        return {row["usage_date"] for row in rows}, daily
+
+    def _anomaly_episode_rows(self, connection, tenant_id: str, episode_id: str | None = None,
+                              *, open_only: bool = False) -> list:
+        # An episode whose impact, or the day it stopped being observed, reaches the reference day would show days not complete yet.
+        query = ("SELECT * FROM anomaly_episodes WHERE tenant_id = :tenant_id AND impact_through_date < :reference_day "
+                 "AND COALESCE(no_longer_observed_on, impact_through_date) < :reference_day")
+        if episode_id is not None:
+            query += " AND id = :id"
+        if open_only:
+            query += " AND status IN ('new', 'investigating')"
+        return connection.execute(text(query), {
+            "tenant_id": tenant_id, "id": episode_id, "reference_day": reference_date.today(),
+        }).mappings().all()
+
+    def _anomaly_episodes_for_detection(self, connection, tenant_id: str) -> list:
+        # Detection only needs tracking episodes and the latest episode of each group, not the whole history.
+        return connection.execute(text(
+            "SELECT * FROM anomaly_episodes WHERE tenant_id = :tenant_id AND ("
+            "(observation = 'observed' AND status IN ('new', 'investigating')) OR id IN ("
+            "SELECT DISTINCT ON (currency, service_key) id FROM anomaly_episodes WHERE tenant_id = :tenant_id "
+            "ORDER BY currency, service_key, start_date DESC, id DESC))"
+        ), {"tenant_id": tenant_id}).mappings().all()
+
+    def run_anomaly_detection(self, tenant_id: str, *, today) -> dict:
+        from sqlalchemy import exc
+
+        from app.services import anomaly_episodes as rules
+
         now = datetime.now(timezone.utc)
-        message = {
-            "id": str(uuid.uuid4()),
-            "conversation_id": conversation_id,
-            "tenant_id": tenant_id,
-            "user_id": user_id,
-            "role": role,
-            "content": content,
-            "metadata": json.dumps(metadata or {}),
-            "created_at": now,
-        }
-        with self.engine.begin() as connection:
-            connection.execute(
-                text(
-                    """
-                    INSERT INTO messages (id, conversation_id, tenant_id, user_id, role, content, metadata, created_at)
-                    VALUES (:id, :conversation_id, :tenant_id, :user_id, :role, :content, :metadata, :created_at)
-                    """
-                ),
-                message,
-            )
-            connection.execute(
-                text(
-                    """
-                    UPDATE conversations
-                    SET updated_at = :updated_at
-                    WHERE id = :conversation_id
-                    """
-                ),
-                {"updated_at": now, "conversation_id": conversation_id},
-            )
+        try:
+            with self.engine.connect().execution_options(isolation_level="SERIALIZABLE") as connection:
+                with connection.begin():
+                    last_evaluated = connection.execute(text(
+                        "SELECT last_evaluated_date FROM anomaly_detection_state WHERE tenant_id = :tenant_id"
+                    ), {"tenant_id": tenant_id}).scalar_one_or_none()
+                    earliest, latest = self.observed_cost_day_range(connection, tenant_id)
+                    window = rules.detection_window(today=today, last_evaluated=last_evaluated, latest_observed=latest,
+                                                    earliest_observed=earliest)
+                    if window.status != "pending":
+                        return rules.run_summary(window, None)
+                    observed, daily = self.read_daily_service_costs(
+                        connection, tenant_id, start_date=window.read_start,
+                        end_date=window.last_complete_day + rules.ONE_DAY,
+                    )
+                    episodes = [rules.episode_from_row(row) for row in self._anomaly_episodes_for_detection(connection, tenant_id)]
+                    plan = rules.plan_detection(window, tenant_id=tenant_id, observed_days=observed,
+                                                daily=daily, episodes=episodes)
+                    if plan.status != "completed":
+                        return rules.run_summary(window, plan)
+                    for item in plan.opened:
+                        connection.execute(text(
+                            "INSERT INTO anomaly_episodes (id, tenant_id, currency, service, service_key, start_date, "
+                            "last_seen_date, observation, no_longer_observed_on, reference_week_cost, "
+                            "opening_observed_cost, impact_numerator, impact_day_count, impact_through_date, "
+                            "severity, status, previous_episode_id, rules_version, rules, created_at, updated_at) "
+                            "VALUES (:id, :tenant_id, :currency, :service, :service_key, :start_date, :last_seen_date, "
+                            ":observation, :no_longer_observed_on, :reference_week_cost, :opening_observed_cost, "
+                            ":impact_numerator, :impact_day_count, :impact_through_date, :severity, :status, "
+                            ":previous_episode_id, :rules_version, CAST(:rules AS JSONB), :now, :now)"
+                        ), {**rules.episode_columns(item), "tenant_id": tenant_id, "now": now})
+                    for item in plan.updated:
+                        connection.execute(text(
+                            "UPDATE anomaly_episodes SET last_seen_date = :last_seen_date, observation = :observation, "
+                            "no_longer_observed_on = :no_longer_observed_on, impact_numerator = :impact_numerator, "
+                            "impact_day_count = :impact_day_count, impact_through_date = :impact_through_date, "
+                            "severity = :severity, updated_at = :now WHERE id = :id AND tenant_id = :tenant_id"
+                        ), {**rules.episode_columns(item), "tenant_id": tenant_id, "now": now})
+                    connection.execute(text(
+                        "INSERT INTO anomaly_detection_state (tenant_id, last_evaluated_date, rules_version, updated_at) "
+                        "VALUES (:tenant_id, :day, :version, :now) ON CONFLICT (tenant_id) DO UPDATE SET "
+                        "last_evaluated_date = excluded.last_evaluated_date, rules_version = excluded.rules_version, "
+                        "updated_at = excluded.updated_at"
+                    ), {"tenant_id": tenant_id, "day": plan.new_last_evaluated, "version": rules.RULES_VERSION, "now": now})
+                    return rules.run_summary(window, plan)
+        except (exc.IntegrityError, exc.OperationalError) as error:
+            if isinstance(error, exc.OperationalError) and getattr(error.orig, "sqlstate", None) != "40001":
+                raise
+            raise rules.DetectionConflict() from None
+
+    def fetch_anomaly_episodes(self, tenant_id: str, *, scope: str = "open") -> list[dict]:
+        from app.services import anomaly_episodes as rules
+
+        with self.engine.connect() as connection:
+            rows = self._anomaly_episode_rows(connection, tenant_id, open_only=scope == "open")
+        return rules.order_payloads([rules.episode_payload(row) for row in rows])
+
+    def fetch_anomaly_episode_list(self, tenant_id: str, *, scope: str = "open") -> dict:
+        from sqlalchemy import exc
+
+        from app.services import anomaly_episodes as rules
+
+        params = {"tenant_id": tenant_id}
+        # Una lectura concurrente con una deteccion o un cambio de estado puede recibir el reintento de CockroachDB (40001).
+        # La lectura no cambia nada: se repite un numero acotado de veces antes de dejar pasar el error.
+        for attempt in range(LIST_READ_ATTEMPTS):
+            try:
+                with self.engine.connect().execution_options(isolation_level="SERIALIZABLE") as connection:
+                    with connection.begin():
+                        rows = self._anomaly_episode_rows(connection, tenant_id, open_only=scope == "open")
+                        last_evaluated = connection.execute(text(
+                            "SELECT last_evaluated_date FROM anomaly_detection_state WHERE tenant_id = :tenant_id"
+                        ), params).scalar_one_or_none()
+                        synthetic = connection.execute(text(
+                            "SELECT EXISTS (SELECT 1 FROM azure_cost_ingestion_runs WHERE tenant_id = :tenant_id "
+                            "AND status = 'completed' AND " + SYNTHETIC_INGESTION_CONDITION + ")"
+                        ), params).scalar_one()
+                break
+            except exc.OperationalError as error:
+                if getattr(error.orig, "sqlstate", None) != "40001" or attempt == LIST_READ_ATTEMPTS - 1:
+                    raise
         return {
-            "id": message["id"],
-            "role": role,
-            "content": content,
-            "metadata": metadata or {},
-            "created_at": now,
+            "episodes": rules.order_payloads([rules.episode_payload(row) for row in rows]),
+            "last_evaluated_date": None if last_evaluated is None else min(last_evaluated, reference_date.today() - timedelta(days=1)),
+            "includes_synthetic_data": bool(synthetic),
+            "open_impact_by_currency": rules.open_impact_by_currency(
+                [rules.episode_from_row(row) for row in rows if row["status"] in rules.TRACKING_STATUSES]),
         }
 
-    def fetch_messages(self, conversation_id: str) -> list[dict]:
+    def fetch_anomaly_episode(self, tenant_id: str, episode_id: str) -> dict | None:
+        from app.services import anomaly_episodes as rules
+
         with self.engine.connect() as connection:
-            rows = connection.execute(
-                text(
-                    """
-                    SELECT id, role, content, metadata, created_at
-                    FROM messages
-                    WHERE conversation_id = :conversation_id
-                    ORDER BY created_at ASC
-                    """
-                ),
-                {"conversation_id": conversation_id},
-            )
-            return [
-                {
-                    "id": row.id,
-                    "role": row.role,
-                    "content": row.content,
-                    "metadata": json.loads(row.metadata) if row.metadata else {},
-                    "created_at": row.created_at,
-                }
-                for row in rows
-            ]
+            rows = self._anomaly_episode_rows(connection, tenant_id, episode_id)
+        return rules.order_payloads([rules.episode_payload(rows[0])])[0] if rows else None
+
+    def fetch_anomaly_episode_snapshot(self, tenant_id: str, episode_id: str) -> dict | None:
+        from app.services import anomaly_episodes as rules
+
+        # Una sola sentencia SQL: la fila del episodio y la marca sintetica salen de la misma fotografia que
+        # ofrece CockroachDB por sentencia, sin transaccion explicita, nivel de aislamiento ni reintentos.
+        # Descartado: dos lecturas (episodio y marca) por separado, porque podrian ver estados distintos.
+        # El criterio de la marca sintetica es el mismo que el de fetch_anomaly_episode_list por construccion:
+        # ambas sentencias concatenan SYNTHETIC_INGESTION_CONDITION, asi que no pueden divergir.
+        # Se filtra siempre por cliente: otro cliente e inexistente son indistinguibles (ambos devuelven None).
+        with self.engine.connect() as connection:
+            row = connection.execute(text(
+                "SELECT e.*, EXISTS (SELECT 1 FROM azure_cost_ingestion_runs WHERE tenant_id = :tenant_id "
+                "AND status = 'completed' AND " + SYNTHETIC_INGESTION_CONDITION + ") "
+                "AS includes_synthetic_data FROM anomaly_episodes e WHERE e.tenant_id = :tenant_id AND e.id = :id"
+            ), {"tenant_id": tenant_id, "id": episode_id}).mappings().first()
+        if row is None:
+            return None
+        return {
+            # episode_payload solo lee las columnas que necesita, asi que la columna extra no le afecta y el
+            # payload es identico al de fetch_anomaly_episode.
+            "episode": rules.order_payloads([rules.episode_payload(row)])[0],
+            # Operandos exactos de la tabla: el payload redondea a dos decimales (100.004 se mostraria 100.00)
+            # y el explicador necesita el valor sin redondear ni normalizar para comparar con los umbrales.
+            "operands": {
+                "reference_week_cost": row["reference_week_cost"],
+                "opening_observed_cost": row["opening_observed_cost"],
+                "impact_numerator": row["impact_numerator"],
+            },
+            "includes_synthetic_data": bool(row["includes_synthetic_data"]),
+        }
+
+    def change_anomaly_episode_status(self, tenant_id: str, episode_id: str, *, status: str,
+                                      reason: str | None, actor: str) -> dict:
+        from sqlalchemy import exc
+
+        from app.services import anomaly_episodes as rules
+
+        now = datetime.now(timezone.utc)
+        closing = status in rules.CLOSED_STATUSES
+        try:
+            with self.engine.connect().execution_options(isolation_level="SERIALIZABLE") as connection:
+                with connection.begin():
+                    rows = self._anomaly_episode_rows(connection, tenant_id, episode_id)
+                    if not rows:
+                        raise rules.EpisodeNotFound()
+                    current = rows[0]["status"]
+                    rules.check_transition(current, status)
+                    changed = connection.execute(text(
+                        "UPDATE anomaly_episodes SET status = :status, status_changed_by = :actor, "
+                        "status_changed_at = :now, first_reviewed_at = COALESCE(first_reviewed_at, :now), "
+                        "first_reviewed_by = COALESCE(first_reviewed_by, :actor), "
+                        "closed_at = :closed_at, closure_reason = :reason, updated_at = :now "
+                        "WHERE id = :id AND tenant_id = :tenant_id AND status = :current"
+                    ), {"status": status, "actor": actor, "now": now, "closed_at": now if closing else None,
+                        "reason": reason if closing else None, "id": episode_id, "tenant_id": tenant_id,
+                        "current": current}).rowcount
+                    if changed != 1:
+                        raise rules.EpisodeConflict()
+                    row = self._anomaly_episode_rows(connection, tenant_id, episode_id)[0]
+        except exc.OperationalError as error:
+            if getattr(error.orig, "sqlstate", None) != "40001":
+                raise
+            raise rules.StatusChangeConflict() from None
+        return rules.order_payloads([rules.episode_payload(row)])[0]
 
     def dispose(self) -> None:
         self.engine.dispose()

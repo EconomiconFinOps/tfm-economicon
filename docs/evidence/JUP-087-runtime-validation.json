@@ -1,0 +1,405 @@
+{
+  "jup": "JUP-087",
+  "date": "2026-09-14",
+  "base_commit": "cfc6668bceb60c38045f72976b9de8e8b8337555",
+  "scope_result": "Frontend quality baseline validated; integrated history and canonical cross-origin configuration remain failing, tracked separately.",
+  "attribution": "Automated validation under explicit user authorization; Paris retains his role and pending personal audit.",
+  "backend_probe": {
+    "health_status": 200,
+    "health": {
+      "status": "ok",
+      "services": {
+        "database": "ok",
+        "rabbitmq": "ok",
+        "vector_store": "ok"
+      },
+      "checked_at": "2026-09-14T17:03:43.721280Z"
+    },
+    "login_status": 200,
+    "operator": "operator@example.com",
+    "tenants_status": 200,
+    "tenants": [
+      {
+        "id": "tenant-core",
+        "name": "Core Finance"
+      },
+      {
+        "id": "tenant-growth",
+        "name": "Growth Ops"
+      }
+    ],
+    "preflight": {
+      "status": 405,
+      "access_control_allow_origin": null,
+      "allow": "POST"
+    }
+  },
+  "browser_initial": {
+    "date": "2026-09-14T17:07:02.794Z",
+    "base": "cfc6668bceb60c38045f72976b9de8e8b8337555",
+    "topology": "isolated canonical services with explicit same-origin test proxy; mock embedding/assistant providers",
+    "cases": [
+      {
+        "name": "login initial empty password and real 401 rejection",
+        "result": "pass"
+      },
+      {
+        "name": "real login, tenants and dashboard",
+        "result": "pass"
+      },
+      {
+        "name": "tenant selection and session persist after reload",
+        "result": "pass"
+      },
+      {
+        "name": "dashboard controlled 503 visible and recovery",
+        "result": "pass"
+      },
+      {
+        "name": "ingestion real 422 validation, draft retained and real queue submission",
+        "result": "pass"
+      },
+      {
+        "name": "ingestion draft and accepted result isolated on tenant switch",
+        "result": "pass"
+      },
+      {
+        "name": "conversation list controlled 503 visible and recovery",
+        "result": "pass"
+      },
+      {
+        "name": "real conversation creation, reply and persisted history",
+        "result": "fail",
+        "error": "locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.message-bubble.assistant') to be visible\u001b[22m\n"
+      }
+    ],
+    "responses": [
+      {
+        "method": "POST",
+        "path": "/api/auth/login",
+        "status": 401
+      },
+      {
+        "method": "POST",
+        "path": "/api/auth/login",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/tenants",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/health",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/billing/summary",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/billing/summary",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/tenants",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/billing/summary",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/health",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/tenants",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/billing/summary",
+        "status": 503
+      },
+      {
+        "method": "GET",
+        "path": "/api/health",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/billing/summary",
+        "status": 503
+      },
+      {
+        "method": "GET",
+        "path": "/api/billing/summary",
+        "status": 503
+      },
+      {
+        "method": "GET",
+        "path": "/api/billing/summary",
+        "status": 503
+      },
+      {
+        "method": "GET",
+        "path": "/api/tenants",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/billing/summary",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/health",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "path": "/api/jobs/ingest",
+        "status": 422
+      },
+      {
+        "method": "POST",
+        "path": "/api/jobs/ingest",
+        "status": 202
+      },
+      {
+        "method": "GET",
+        "path": "/api/assistant/conversations",
+        "status": 503
+      },
+      {
+        "method": "GET",
+        "path": "/api/assistant/conversations",
+        "status": 503
+      },
+      {
+        "method": "GET",
+        "path": "/api/assistant/conversations",
+        "status": 503
+      },
+      {
+        "method": "GET",
+        "path": "/api/assistant/conversations",
+        "status": 503
+      },
+      {
+        "method": "GET",
+        "path": "/api/tenants",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/billing/summary",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/health",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/assistant/conversations",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "path": "/api/assistant/conversations",
+        "status": 201
+      },
+      {
+        "method": "GET",
+        "path": "/api/assistant/conversations",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/assistant/conversations/61e3e2f3-b061-429b-8281-5db57286a7eb",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/assistant/conversations/61e3e2f3-b061-429b-8281-5db57286a7eb",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "path": "/api/assistant/conversations/61e3e2f3-b061-429b-8281-5db57286a7eb/messages",
+        "status": 201
+      },
+      {
+        "method": "GET",
+        "path": "/api/assistant/conversations",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/assistant/conversations/61e3e2f3-b061-429b-8281-5db57286a7eb",
+        "status": 500
+      },
+      {
+        "method": "GET",
+        "path": "/api/assistant/conversations/61e3e2f3-b061-429b-8281-5db57286a7eb",
+        "status": 500
+      },
+      {
+        "method": "GET",
+        "path": "/api/assistant/conversations/61e3e2f3-b061-429b-8281-5db57286a7eb",
+        "status": 500
+      },
+      {
+        "method": "GET",
+        "path": "/api/assistant/conversations/61e3e2f3-b061-429b-8281-5db57286a7eb",
+        "status": 500
+      }
+    ],
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)",
+      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    ],
+    "tenants": [
+      {
+        "id": "tenant-core",
+        "name": "Core Finance"
+      },
+      {
+        "id": "tenant-growth",
+        "name": "Growth Ops"
+      }
+    ],
+    "jobId": "17898355-5bed-4836-94f1-0a0ccc4fc060",
+    "result": "fail",
+    "error": "locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.message-bubble.assistant') to be visible\u001b[22m\n"
+  },
+  "browser_followup": {
+    "date": "2026-09-14T17:09:36.348Z",
+    "cases": [
+      {
+        "name": "real backend history error remains visible without crash",
+        "result": "pass"
+      },
+      {
+        "name": "real conversation list and draft isolated between tenants",
+        "result": "pass"
+      },
+      {
+        "name": "send controlled 503 preserves draft in a real empty conversation",
+        "result": "pass"
+      },
+      {
+        "name": "logout clears session and tenant",
+        "result": "pass"
+      },
+      {
+        "name": "tenant controlled 503 offers reset-session recovery",
+        "result": "pass"
+      },
+      {
+        "name": "malformed persisted session recovers with no JavaScript error",
+        "result": "pass"
+      }
+    ],
+    "pageErrors": [],
+    "knownBlockedJourney": "Existing backend GET conversation history returns 500 after a real message is persisted; initial run retained separately.",
+    "result": "pass"
+  },
+  "job_persistence": {
+    "job_count": 1,
+    "jobs": [
+      {
+        "job_id": "17898355-5bed-4836-94f1-0a0ccc4fc060",
+        "tenant_id": "tenant-growth",
+        "status": "completed",
+        "source": "jup087-validation",
+        "document": {
+          "id": "17898355-5bed-4836-94f1-0a0ccc4fc060",
+          "tenant_id": "tenant-growth",
+          "chunk_count": 1
+        },
+        "chunk_count": 1,
+        "embedding_count": 1,
+        "dimensions": [
+          {
+            "dimension": 8,
+            "stored_dimension": 8
+          }
+        ]
+      }
+    ],
+    "read_only": true
+  },
+  "history_diagnostic": {
+    "conversation_id": "61e3e2f3-b061-429b-8281-5db57286a7eb",
+    "driver_versions": {
+      "sqlalchemy": "2.0.52",
+      "psycopg": "3.3.5"
+    },
+    "messages": [
+      {
+        "id": "170613f0-79ae-4ef9-be5c-9325fd8c54ed",
+        "role": "user",
+        "content_sha256": "ed62fe6fd3680345702804ebce3e395c3f06d35e22082e89c5f1d4819cdb5a6a",
+        "metadata_python_type": "dict",
+        "metadata_keys": [],
+        "metadata_truthy": false
+      },
+      {
+        "id": "3da46318-1adf-4eaa-895d-500dc4cfb350",
+        "role": "assistant",
+        "content_sha256": "e730e3df15a4fdd6521f8abce42ae68fa0d150d2d18e27aef8a2338b2e143da7",
+        "metadata_python_type": "dict",
+        "metadata_keys": [
+          "citations"
+        ],
+        "metadata_truthy": true
+      }
+    ],
+    "direct_database_failure": {
+      "type": "TypeError",
+      "message": "the JSON object must be str, bytes or bytearray, not dict",
+      "traceback": "Traceback (most recent call last):\n  File \"<stdin>\", line 13, in <module>\n  File \"/app/app/db/database.py\", line 352, in fetch_messages\n    \"metadata\": json.loads(row.metadata) if row.metadata else {},\n                ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/json/__init__.py\", line 339, in loads\n    raise TypeError(f'the JSON object must be str, bytes or bytearray, '\nTypeError: the JSON object must be str, bytes or bytearray, not dict\n"
+    },
+    "direct_http_without_proxy": [
+      {
+        "tenant_id": "tenant-growth",
+        "status": 500,
+        "request_id": null,
+        "body": "{\"detail\":\"Internal server error\"}"
+      },
+      {
+        "tenant_id": "tenant-core",
+        "status": 404,
+        "request_id": null,
+        "body": "{\"detail\":\"Conversation not found.\"}"
+      }
+    ],
+    "database_source_sha256": "16659b48dccbbdb28b2ae951f77712953fc4f8de5999e32f24f7a2e3d919c0ff",
+    "read_only": true
+  }
+}

@@ -1,0 +1,197 @@
+{
+  "base": "3b8e95288000b1f14513cbc5158324017554f514",
+  "source_hash_matches_current_develop": {
+    "fixtures/azure-cost/EA-Cost-Actual.sample.csv": true,
+    "fixtures/azure-cost/LICENSE.microsoft-finops-toolkit.txt": true,
+    "fixtures/azure-cost/manifest.json": true,
+    "docs/validation/JUP-069-questions.json": true,
+    "docs/assistant-corpus/manifest.yaml": true,
+    "tools/validation-questions.mjs": true,
+    "docs/assistant-corpus/business-rules/economicon-mvp-rules.md": true,
+    "docs/assistant-corpus/finops/azure-finops-mvp.md": true,
+    "docs/assistant-corpus/product-architecture/economicon-product-context.md": true,
+    "docs/assistant-corpus/glossary/glossary.md": true
+  },
+  "default_definition_equal": true,
+  "csv_month_equals_fixed_period": true,
+  "csv_rows": 40,
+  "exact_sum": "0.060113199075769",
+  "fixed_artifacts_and_scripts_unchanged": true,
+  "product_and_configuration_equal_develop": true,
+  "ci_retains_commands_of_both_parents": true,
+  "scope": "static/offline; no runtime, SQL or generative validation",
+  "date": "2026-10-11",
+  "previous_head": "af132c11019319258233f00523cb1d12453da122",
+  "governance_commands": [
+    {
+      "command": "corepack pnpm jup:check:test",
+      "exit_code": 0,
+      "log": "01.log"
+    },
+    {
+      "command": "corepack pnpm pr:check:test",
+      "exit_code": 0,
+      "log": "02.log"
+    },
+    {
+      "command": "corepack pnpm ci:check:test",
+      "exit_code": 0,
+      "log": "03.log"
+    },
+    {
+      "command": "corepack pnpm roadmap:test",
+      "exit_code": 0,
+      "log": "04.log"
+    },
+    {
+      "command": "corepack pnpm repository:governance:test",
+      "exit_code": 0,
+      "log": "05.log"
+    },
+    {
+      "command": "corepack pnpm jup:check:all",
+      "exit_code": 0,
+      "log": "06.log"
+    },
+    {
+      "command": "corepack pnpm jup:cleanup:test",
+      "exit_code": 0,
+      "log": "07.log"
+    },
+    {
+      "command": "corepack pnpm jup:cleanup:check",
+      "exit_code": 0,
+      "log": "08.log"
+    },
+    {
+      "command": "corepack pnpm assistant-corpus:test",
+      "exit_code": 0,
+      "log": "09.log"
+    },
+    {
+      "command": "corepack pnpm assistant-corpus:validate",
+      "exit_code": 0,
+      "log": "10.log"
+    },
+    {
+      "command": "corepack pnpm validation-questions:validate",
+      "exit_code": 0,
+      "log": "11.log"
+    },
+    {
+      "command": "corepack pnpm validation-questions:test",
+      "exit_code": 0,
+      "log": "12.log"
+    },
+    {
+      "command": "python docs/demo/JUP-065/verificar.py --repo .",
+      "exit_code": 0,
+      "log": "13.log"
+    },
+    {
+      "command": "python -m unittest discover -s docs/demo/JUP-065 -p 'test_*.py' -v",
+      "exit_code": 0,
+      "log": "14.log"
+    },
+    {
+      "command": "node docs/demo/JUP-065/generado/sources/tools/validation-questions.mjs validate",
+      "exit_code": 0,
+      "log": "15.log"
+    },
+    {
+      "command": "corepack pnpm business-metrics:validate",
+      "exit_code": 0,
+      "log": "16.log"
+    },
+    {
+      "command": "corepack pnpm business-metrics:test",
+      "exit_code": 0,
+      "log": "17.log"
+    },
+    {
+      "command": "corepack pnpm retrieval-labels:validate",
+      "exit_code": 0,
+      "log": "18.log"
+    },
+    {
+      "command": "corepack pnpm retrieval-labels:test",
+      "exit_code": 0,
+      "log": "19.log"
+    },
+    {
+      "command": "corepack pnpm retrieval-calibration:test",
+      "exit_code": 0,
+      "log": "20.log"
+    },
+    {
+      "command": "corepack pnpm assistant-metrics:test",
+      "exit_code": 0,
+      "log": "21.log"
+    },
+    {
+      "command": "corepack pnpm assistant-eval:test",
+      "exit_code": 0,
+      "log": "22.log"
+    },
+    {
+      "command": "corepack pnpm synthetic-costs:test",
+      "exit_code": 0,
+      "log": "23.log"
+    },
+    {
+      "command": "corepack pnpm llm-gateway:test",
+      "exit_code": 0,
+      "log": "24.log"
+    },
+    {
+      "command": "python -m unittest discover -s tools -p test_litellm_product_keys.py -v",
+      "exit_code": 0,
+      "log": "25.log"
+    },
+    {
+      "command": "corepack pnpm docker:validate",
+      "exit_code": 0,
+      "log": "26.log"
+    },
+    {
+      "command": "corepack pnpm local:test",
+      "exit_code": 0,
+      "log": "27.log"
+    },
+    {
+      "command": "corepack pnpm cd:test",
+      "exit_code": 0,
+      "log": "28.log"
+    },
+    {
+      "command": "corepack pnpm collaboration:test",
+      "exit_code": 0,
+      "log": "29.log"
+    },
+    {
+      "command": "corepack pnpm contributions:test",
+      "exit_code": 0,
+      "log": "30.log"
+    },
+    {
+      "command": "corepack pnpm openspec:validate",
+      "exit_code": 0,
+      "log": "31.log"
+    }
+  ],
+  "offline_files": 15,
+  "integrity_tests": 2,
+  "questions": 28,
+  "categories": 7,
+  "governance_tests": 99,
+  "openspec_passed": 63,
+  "active_changes": 6,
+  "known_skips": {
+    "retrieval_calibration": 1,
+    "synthetic_costs_sql": 8,
+    "cd_posix_linux": 2
+  },
+  "runtime": "not_run",
+  "generative": "not_run",
+  "rehearsal": "not_run"
+}

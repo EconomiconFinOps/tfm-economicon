@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-21",
+  "scope": "Local laboratory, one capture per profile; no public deployment",
+  "candidate_head": "c22713a2dd070b583c869025dbc63e44d7679647",
+  "merge_base": "bc94a4daea98e97b574d00f019d347fc61c2f915",
+  "candidate_has_uncommitted_delta": true,
+  "lighthouse_version": "13.5.0",
+  "node_version": "24.17.0",
+  "browser": "Microsoft Edge headless",
+  "desktop": {
+    "performance": 100, "accessibility": 100, "seo": 92,
+    "fcp_ms": 404.1409, "lcp_ms": 484.1409,
+    "cls": 0.0035539227240453386, "tbt_ms": 0
+  },
+  "mobile": {
+    "css_width": 390, "css_height": 844, "device_scale_factor": 1,
+    "performance": 97, "accessibility": 100, "seo": 92,
+    "fcp_ms": 1653.5772, "lcp_ms": 2403.5772,
+    "cls": 0.003087158068844205, "tbt_ms": 0,
+    "reduced_motion_launch_flag": true,
+    "effective_preference_read_back": false
+  },
+  "limitations": [
+    "Robots audit fetch blocked by CSP; direct HTTP robots check passed.",
+    "Synthetic HTTPS origin config served over loopback HTTP, not public HTTPS.",
+    "No complete WCAG audit, physical touch-device test or field Core Web Vitals.",
+    "Domain, hosting, approved video and genuine demo destination remain pending."
+  ]
+}

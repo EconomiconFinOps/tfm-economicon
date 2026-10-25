@@ -1,0 +1,2214 @@
+{
+  "version": 1,
+  "jup": "JUP-133",
+  "accepted": false,
+  "purpose": "Descriptive evolution of existing operations; derived projections, not new campaigns.",
+  "identity": {
+    "generation_model_id": "openrouter/deepseek/deepseek-v4.1-flash",
+    "generation_provider": "deepinfra",
+    "generation_quantization": "fp8",
+    "upstream_independently_verified": false
+  },
+  "friday": {
+    "started_at": "2026-10-23T13:41:51.194139+00:00",
+    "ended_at": "2026-10-23T16:32:09.606881+00:00",
+    "commit": null,
+    "runtime_images": {
+      "backend": "sha256:25243cf661e408ebfa4193d00416a61bc4a9e5e82d9ed07a511ce73a9d2902c9",
+      "processor": "sha256:5174de6f0f9bb8dc4f7a76dfd11024b3f50a58219ea172814f83acbb8f616494"
+    },
+    "latency_method": "Generation POST to terminal polling observation, including retries.",
+    "cost_basis": "Settled gateway attribution including embeddings; not an invoice.",
+    "repetitions": 3,
+    "cases": [
+      {
+        "case_id": "JUP-069-001",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 17.776164,
+        "attempts": 1,
+        "cost_usd": "0.0017407008"
+      },
+      {
+        "case_id": "JUP-069-002",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 17.400330999999998,
+        "attempts": 1,
+        "cost_usd": "0.0019996424"
+      },
+      {
+        "case_id": "JUP-069-003",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 21.684183,
+        "attempts": 1,
+        "cost_usd": "0.0020673032"
+      },
+      {
+        "case_id": "JUP-069-004",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 20.598228,
+        "attempts": 1,
+        "cost_usd": "0.0019599032"
+      },
+      {
+        "case_id": "JUP-069-005",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 63.281596,
+        "attempts": 4,
+        "cost_usd": "0.0077655464"
+      },
+      {
+        "case_id": "JUP-069-006",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 33.892576999999996,
+        "attempts": 2,
+        "cost_usd": "0.0035254856"
+      },
+      {
+        "case_id": "JUP-069-007",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 28.645498,
+        "attempts": 2,
+        "cost_usd": "0.0036885320"
+      },
+      {
+        "case_id": "JUP-069-008",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 14.169632,
+        "attempts": 1,
+        "cost_usd": "0.0014816768"
+      },
+      {
+        "case_id": "JUP-069-009",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 92.600543,
+        "attempts": 3,
+        "cost_usd": "0.0078187864"
+      },
+      {
+        "case_id": "JUP-069-010",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 17.719690999999997,
+        "attempts": 1,
+        "cost_usd": "0.0015066176"
+      },
+      {
+        "case_id": "JUP-069-011",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 14.816104,
+        "attempts": 1,
+        "cost_usd": "0.0018401512"
+      },
+      {
+        "case_id": "JUP-069-012",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 19.376059,
+        "attempts": 1,
+        "cost_usd": "0.0016673912"
+      },
+      {
+        "case_id": "JUP-069-013",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 15.455022999999999,
+        "attempts": 1,
+        "cost_usd": "0.0018762992"
+      },
+      {
+        "case_id": "JUP-069-014",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 15.843771,
+        "attempts": 1,
+        "cost_usd": "0.0019955392"
+      },
+      {
+        "case_id": "JUP-069-015",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 15.654836999999999,
+        "attempts": 1,
+        "cost_usd": "0.0017297568"
+      },
+      {
+        "case_id": "JUP-069-016",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 15.250395000000001,
+        "attempts": 1,
+        "cost_usd": "0.0013952560"
+      },
+      {
+        "case_id": "JUP-069-017",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 13.953909,
+        "attempts": 1,
+        "cost_usd": "0.0014880560"
+      },
+      {
+        "case_id": "JUP-069-018",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 15.219605,
+        "attempts": 1,
+        "cost_usd": "0.0015061760"
+      },
+      {
+        "case_id": "JUP-069-019",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 16.387591,
+        "attempts": 1,
+        "cost_usd": "0.0020215792"
+      },
+      {
+        "case_id": "JUP-069-020",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 16.290582,
+        "attempts": 1,
+        "cost_usd": "0.0017196968"
+      },
+      {
+        "case_id": "JUP-069-021",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 16.81331,
+        "attempts": 1,
+        "cost_usd": "0.0016018768"
+      },
+      {
+        "case_id": "JUP-069-022",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 20.104015999999998,
+        "attempts": 1,
+        "cost_usd": "0.0022386792"
+      },
+      {
+        "case_id": "JUP-069-023",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 38.110199,
+        "attempts": 2,
+        "cost_usd": "0.0042852088"
+      },
+      {
+        "case_id": "JUP-069-024",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 19.955229,
+        "attempts": 1,
+        "cost_usd": "0.0017560232"
+      },
+      {
+        "case_id": "JUP-069-025",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 144.176595,
+        "attempts": 3,
+        "cost_usd": "0.0106009272"
+      },
+      {
+        "case_id": "JUP-069-026",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "failed",
+        "seconds": 148.45136300000001,
+        "attempts": 4,
+        "cost_usd": "0.0148231584"
+      },
+      {
+        "case_id": "JUP-069-027",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 20.264961,
+        "attempts": 1,
+        "cost_usd": "0.0019454856"
+      },
+      {
+        "case_id": "JUP-069-028",
+        "campaign": "jup070-a",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 15.530847,
+        "attempts": 1,
+        "cost_usd": "0.0015369368"
+      },
+      {
+        "case_id": "JUP-069-001",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 18.756913,
+        "attempts": 1,
+        "cost_usd": "0.0017773808"
+      },
+      {
+        "case_id": "JUP-069-002",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 13.963019000000001,
+        "attempts": 1,
+        "cost_usd": "0.0019437600"
+      },
+      {
+        "case_id": "JUP-069-003",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 22.537036,
+        "attempts": 1,
+        "cost_usd": "0.0019719632"
+      },
+      {
+        "case_id": "JUP-069-004",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 26.542478,
+        "attempts": 1,
+        "cost_usd": "0.0020696632"
+      },
+      {
+        "case_id": "JUP-069-005",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "failed",
+        "seconds": 69.14571600000001,
+        "attempts": 4,
+        "cost_usd": "0.0093631872"
+      },
+      {
+        "case_id": "JUP-069-006",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "failed",
+        "seconds": 65.072243,
+        "attempts": 4,
+        "cost_usd": "0.0095713744"
+      },
+      {
+        "case_id": "JUP-069-007",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 15.699047,
+        "attempts": 1,
+        "cost_usd": "0.0015242344"
+      },
+      {
+        "case_id": "JUP-069-008",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 15.352825000000001,
+        "attempts": 1,
+        "cost_usd": "0.0014869744"
+      },
+      {
+        "case_id": "JUP-069-009",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 22.542846,
+        "attempts": 1,
+        "cost_usd": "0.0019148600"
+      },
+      {
+        "case_id": "JUP-069-010",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 23.207789000000002,
+        "attempts": 1,
+        "cost_usd": "0.0016429776"
+      },
+      {
+        "case_id": "JUP-069-011",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 19.197558,
+        "attempts": 1,
+        "cost_usd": "0.0018779288"
+      },
+      {
+        "case_id": "JUP-069-012",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 17.688549,
+        "attempts": 1,
+        "cost_usd": "0.0016668088"
+      },
+      {
+        "case_id": "JUP-069-013",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 18.300435,
+        "attempts": 1,
+        "cost_usd": "0.0020122168"
+      },
+      {
+        "case_id": "JUP-069-014",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 18.339257,
+        "attempts": 1,
+        "cost_usd": "0.0020134368"
+      },
+      {
+        "case_id": "JUP-069-015",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 19.145497,
+        "attempts": 1,
+        "cost_usd": "0.0017269568"
+      },
+      {
+        "case_id": "JUP-069-016",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 16.563173,
+        "attempts": 1,
+        "cost_usd": "0.0014023736"
+      },
+      {
+        "case_id": "JUP-069-017",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 13.018198,
+        "attempts": 1,
+        "cost_usd": "0.0012980536"
+      },
+      {
+        "case_id": "JUP-069-018",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 12.79497,
+        "attempts": 1,
+        "cost_usd": "0.0013730136"
+      },
+      {
+        "case_id": "JUP-069-019",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 19.777134999999998,
+        "attempts": 1,
+        "cost_usd": "0.0019966368"
+      },
+      {
+        "case_id": "JUP-069-020",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 19.795057,
+        "attempts": 1,
+        "cost_usd": "0.0018250944"
+      },
+      {
+        "case_id": "JUP-069-021",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 14.462067999999999,
+        "attempts": 1,
+        "cost_usd": "0.0015060944"
+      },
+      {
+        "case_id": "JUP-069-022",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 25.379956999999997,
+        "attempts": 1,
+        "cost_usd": "0.0022949368"
+      },
+      {
+        "case_id": "JUP-069-023",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 148.796412,
+        "attempts": 3,
+        "cost_usd": "0.0108097320"
+      },
+      {
+        "case_id": "JUP-069-024",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 16.568079,
+        "attempts": 1,
+        "cost_usd": "0.0016708808"
+      },
+      {
+        "case_id": "JUP-069-025",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 59.869021999999994,
+        "attempts": 2,
+        "cost_usd": "0.0042961472"
+      },
+      {
+        "case_id": "JUP-069-026",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "failed",
+        "seconds": 186.755403,
+        "attempts": 4,
+        "cost_usd": "0.0135724880"
+      },
+      {
+        "case_id": "JUP-069-027",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 23.181870999999997,
+        "attempts": 1,
+        "cost_usd": "0.0018369632"
+      },
+      {
+        "case_id": "JUP-069-028",
+        "campaign": "jup070-a",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 24.654484,
+        "attempts": 1,
+        "cost_usd": "0.0014949144"
+      },
+      {
+        "case_id": "JUP-069-001",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 16.083015,
+        "attempts": 1,
+        "cost_usd": "0.0016590808"
+      },
+      {
+        "case_id": "JUP-069-002",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 18.78168,
+        "attempts": 1,
+        "cost_usd": "0.0020654200"
+      },
+      {
+        "case_id": "JUP-069-003",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 26.017616999999998,
+        "attempts": 1,
+        "cost_usd": "0.0019679032"
+      },
+      {
+        "case_id": "JUP-069-004",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 30.733064,
+        "attempts": 1,
+        "cost_usd": "0.0018815032"
+      },
+      {
+        "case_id": "JUP-069-005",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 17.485037000000002,
+        "attempts": 1,
+        "cost_usd": "0.0013490536"
+      },
+      {
+        "case_id": "JUP-069-006",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "failed",
+        "seconds": 95.267463,
+        "attempts": 4,
+        "cost_usd": "0.0097330744"
+      },
+      {
+        "case_id": "JUP-069-007",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "failed",
+        "seconds": 73.769556,
+        "attempts": 4,
+        "cost_usd": "0.0100089968"
+      },
+      {
+        "case_id": "JUP-069-008",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 21.058001,
+        "attempts": 1,
+        "cost_usd": "0.0015286944"
+      },
+      {
+        "case_id": "JUP-069-009",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 18.436550999999998,
+        "attempts": 1,
+        "cost_usd": "0.0017269800"
+      },
+      {
+        "case_id": "JUP-069-010",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 20.945705,
+        "attempts": 1,
+        "cost_usd": "0.0016230976"
+      },
+      {
+        "case_id": "JUP-069-011",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 17.826922999999997,
+        "attempts": 1,
+        "cost_usd": "0.0018570688"
+      },
+      {
+        "case_id": "JUP-069-012",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 19.238249,
+        "attempts": 1,
+        "cost_usd": "0.0016158488"
+      },
+      {
+        "case_id": "JUP-069-013",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 20.460767,
+        "attempts": 1,
+        "cost_usd": "0.0019452968"
+      },
+      {
+        "case_id": "JUP-069-014",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 26.447885,
+        "attempts": 1,
+        "cost_usd": "0.0020190368"
+      },
+      {
+        "case_id": "JUP-069-015",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 18.549681,
+        "attempts": 1,
+        "cost_usd": "0.0016702568"
+      },
+      {
+        "case_id": "JUP-069-016",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 17.472765,
+        "attempts": 1,
+        "cost_usd": "0.0014403136"
+      },
+      {
+        "case_id": "JUP-069-017",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 18.02175,
+        "attempts": 1,
+        "cost_usd": "0.0014656336"
+      },
+      {
+        "case_id": "JUP-069-018",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 16.619173,
+        "attempts": 1,
+        "cost_usd": "0.0014035336"
+      },
+      {
+        "case_id": "JUP-069-019",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 19.271580999999998,
+        "attempts": 1,
+        "cost_usd": "0.0019724168"
+      },
+      {
+        "case_id": "JUP-069-020",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 24.040633000000003,
+        "attempts": 1,
+        "cost_usd": "0.0018547744"
+      },
+      {
+        "case_id": "JUP-069-021",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 18.16243,
+        "attempts": 1,
+        "cost_usd": "0.0015317144"
+      },
+      {
+        "case_id": "JUP-069-022",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 25.823475,
+        "attempts": 1,
+        "cost_usd": "0.0023258768"
+      },
+      {
+        "case_id": "JUP-069-023",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 117.58977499999999,
+        "attempts": 2,
+        "cost_usd": "0.0064662520"
+      },
+      {
+        "case_id": "JUP-069-024",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 16.926366,
+        "attempts": 1,
+        "cost_usd": "0.0016412008"
+      },
+      {
+        "case_id": "JUP-069-025",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "failed",
+        "seconds": 163.013462,
+        "attempts": 4,
+        "cost_usd": "0.0115078896"
+      },
+      {
+        "case_id": "JUP-069-026",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 151.506121,
+        "attempts": 4,
+        "cost_usd": "0.0125795464"
+      },
+      {
+        "case_id": "JUP-069-027",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 18.951703000000002,
+        "attempts": 1,
+        "cost_usd": "0.0018602032"
+      },
+      {
+        "case_id": "JUP-069-028",
+        "campaign": "jup070-a",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 15.122179000000001,
+        "attempts": 1,
+        "cost_usd": "0.0015773968"
+      },
+      {
+        "case_id": "JUP-069-002",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 12.295058000000001,
+        "attempts": 1,
+        "cost_usd": "0.0013193464"
+      },
+      {
+        "case_id": "JUP-069-003",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 16.941135,
+        "attempts": 1,
+        "cost_usd": "0.0016820320"
+      },
+      {
+        "case_id": "JUP-069-005",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 9.970298000000001,
+        "attempts": 1,
+        "cost_usd": "0.0013779360"
+      },
+      {
+        "case_id": "JUP-069-008",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 35.725339999999996,
+        "attempts": 2,
+        "cost_usd": "0.0039062096"
+      },
+      {
+        "case_id": "JUP-069-009",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 19.787382,
+        "attempts": 1,
+        "cost_usd": "0.0021381968"
+      },
+      {
+        "case_id": "JUP-069-010",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 37.235853000000006,
+        "attempts": 2,
+        "cost_usd": "0.0022055592"
+      },
+      {
+        "case_id": "JUP-069-011",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 14.019183000000002,
+        "attempts": 1,
+        "cost_usd": "0.0017837512"
+      },
+      {
+        "case_id": "JUP-069-012",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 16.885143,
+        "attempts": 1,
+        "cost_usd": "0.0017169768"
+      },
+      {
+        "case_id": "JUP-069-016",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 18.535156999999998,
+        "attempts": 1,
+        "cost_usd": "0.0015446168"
+      },
+      {
+        "case_id": "JUP-069-023",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 19.970594000000002,
+        "attempts": 1,
+        "cost_usd": "0.0017342024"
+      },
+      {
+        "case_id": "JUP-069-024",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 16.002477000000003,
+        "attempts": 1,
+        "cost_usd": "0.0015973952"
+      },
+      {
+        "case_id": "JUP-069-026",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 46.635870000000004,
+        "attempts": 2,
+        "cost_usd": "0.0033668064"
+      },
+      {
+        "case_id": "JUP-069-027",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 22.588188,
+        "attempts": 1,
+        "cost_usd": "0.0017657568"
+      },
+      {
+        "case_id": "JUP-071-001",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 22.714413,
+        "attempts": 1,
+        "cost_usd": "0.0017661544"
+      },
+      {
+        "case_id": "JUP-071-002",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 15.027145,
+        "attempts": 1,
+        "cost_usd": "0.0015308888"
+      },
+      {
+        "case_id": "JUP-071-003",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 16.570361000000002,
+        "attempts": 1,
+        "cost_usd": "0.0020161112"
+      },
+      {
+        "case_id": "JUP-071-004",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 106.865505,
+        "attempts": 2,
+        "cost_usd": "0.0064174928"
+      },
+      {
+        "case_id": "JUP-071-005",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 57.519055,
+        "attempts": 2,
+        "cost_usd": "0.0051121384"
+      },
+      {
+        "case_id": "JUP-071-006",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 20.151904,
+        "attempts": 1,
+        "cost_usd": "0.0021234168"
+      },
+      {
+        "case_id": "JUP-071-007",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 42.034371,
+        "attempts": 2,
+        "cost_usd": "0.0042497936"
+      },
+      {
+        "case_id": "JUP-071-008",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 16.581435000000003,
+        "attempts": 1,
+        "cost_usd": "0.0016137968"
+      },
+      {
+        "case_id": "JUP-071-009",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 38.649824,
+        "attempts": 2,
+        "cost_usd": "0.0039541496"
+      },
+      {
+        "case_id": "JUP-071-010",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 15.432357,
+        "attempts": 1,
+        "cost_usd": "0.0004639992"
+      },
+      {
+        "case_id": "JUP-071-011",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 30.889851,
+        "attempts": 1,
+        "cost_usd": "0.0010399216"
+      },
+      {
+        "case_id": "JUP-071-012",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 17.184972000000002,
+        "attempts": 1,
+        "cost_usd": "0.0017857552"
+      },
+      {
+        "case_id": "JUP-071-013",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 22.118168,
+        "attempts": 1,
+        "cost_usd": "0.0017841752"
+      },
+      {
+        "case_id": "JUP-071-014",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "failed",
+        "seconds": 74.791803,
+        "attempts": 4,
+        "cost_usd": "0.0093380496"
+      },
+      {
+        "case_id": "JUP-071-015",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "failed",
+        "seconds": 150.92420199999998,
+        "attempts": 4,
+        "cost_usd": "0.0123538312"
+      },
+      {
+        "case_id": "JUP-071-016",
+        "campaign": "jup071",
+        "repetition": 1,
+        "state": "completed",
+        "seconds": 85.23128200000001,
+        "attempts": 2,
+        "cost_usd": "0.0051604744"
+      },
+      {
+        "case_id": "JUP-069-002",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 13.71869,
+        "attempts": 1,
+        "cost_usd": "0.0013558864"
+      },
+      {
+        "case_id": "JUP-069-003",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 22.568202,
+        "attempts": 1,
+        "cost_usd": "0.0019369720"
+      },
+      {
+        "case_id": "JUP-069-005",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 13.406838,
+        "attempts": 1,
+        "cost_usd": "0.0013980736"
+      },
+      {
+        "case_id": "JUP-069-008",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 17.383661,
+        "attempts": 1,
+        "cost_usd": "0.0015455368"
+      },
+      {
+        "case_id": "JUP-069-009",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 67.15868499999999,
+        "attempts": 2,
+        "cost_usd": "0.0050240272"
+      },
+      {
+        "case_id": "JUP-069-010",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 19.462826,
+        "attempts": 1,
+        "cost_usd": "0.0015633376"
+      },
+      {
+        "case_id": "JUP-069-011",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 17.266023,
+        "attempts": 1,
+        "cost_usd": "0.0018124288"
+      },
+      {
+        "case_id": "JUP-069-012",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 20.855215,
+        "attempts": 1,
+        "cost_usd": "0.0017400768"
+      },
+      {
+        "case_id": "JUP-069-016",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 16.672296,
+        "attempts": 1,
+        "cost_usd": "0.0015251344"
+      },
+      {
+        "case_id": "JUP-069-023",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 238.113623,
+        "attempts": 3,
+        "cost_usd": "0.0087413816"
+      },
+      {
+        "case_id": "JUP-069-024",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 18.605332999999998,
+        "attempts": 1,
+        "cost_usd": "0.0015840952"
+      },
+      {
+        "case_id": "JUP-069-026",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 111.70788499999999,
+        "attempts": 2,
+        "cost_usd": "0.0059165872"
+      },
+      {
+        "case_id": "JUP-069-027",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 19.554681000000002,
+        "attempts": 1,
+        "cost_usd": "0.0015751944"
+      },
+      {
+        "case_id": "JUP-071-001",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 24.750017,
+        "attempts": 1,
+        "cost_usd": "0.0017735520"
+      },
+      {
+        "case_id": "JUP-071-002",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 18.406043,
+        "attempts": 1,
+        "cost_usd": "0.0014758464"
+      },
+      {
+        "case_id": "JUP-071-003",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 21.411119,
+        "attempts": 1,
+        "cost_usd": "0.0020314888"
+      },
+      {
+        "case_id": "JUP-071-004",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 18.918055,
+        "attempts": 1,
+        "cost_usd": "0.0016119064"
+      },
+      {
+        "case_id": "JUP-071-005",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 22.101833,
+        "attempts": 1,
+        "cost_usd": "0.0021115888"
+      },
+      {
+        "case_id": "JUP-071-006",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "failed",
+        "seconds": 314.65318,
+        "attempts": 4,
+        "cost_usd": "0.0170379568"
+      },
+      {
+        "case_id": "JUP-071-007",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 126.684978,
+        "attempts": 2,
+        "cost_usd": "0.0064714592"
+      },
+      {
+        "case_id": "JUP-071-008",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 17.726174,
+        "attempts": 1,
+        "cost_usd": "0.0016564744"
+      },
+      {
+        "case_id": "JUP-071-009",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 18.379558,
+        "attempts": 1,
+        "cost_usd": "0.0015983944"
+      },
+      {
+        "case_id": "JUP-071-010",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 10.241592,
+        "attempts": 1,
+        "cost_usd": "0.0004247768"
+      },
+      {
+        "case_id": "JUP-071-011",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 14.869123,
+        "attempts": 1,
+        "cost_usd": "0.0010544592"
+      },
+      {
+        "case_id": "JUP-071-012",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 20.00932,
+        "attempts": 1,
+        "cost_usd": "0.0017619328"
+      },
+      {
+        "case_id": "JUP-071-013",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 29.466825,
+        "attempts": 1,
+        "cost_usd": "0.0016134928"
+      },
+      {
+        "case_id": "JUP-071-014",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "failed",
+        "seconds": 74.56453599999999,
+        "attempts": 4,
+        "cost_usd": "0.0092832872"
+      },
+      {
+        "case_id": "JUP-071-015",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "failed",
+        "seconds": 174.115711,
+        "attempts": 4,
+        "cost_usd": "0.0123308488"
+      },
+      {
+        "case_id": "JUP-071-016",
+        "campaign": "jup071",
+        "repetition": 2,
+        "state": "completed",
+        "seconds": 24.55256,
+        "attempts": 1,
+        "cost_usd": "0.0021819344"
+      },
+      {
+        "case_id": "JUP-069-002",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 15.652049000000002,
+        "attempts": 1,
+        "cost_usd": "0.0013623264"
+      },
+      {
+        "case_id": "JUP-069-003",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 23.351071,
+        "attempts": 1,
+        "cost_usd": "0.0017980920"
+      },
+      {
+        "case_id": "JUP-069-005",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 14.541084999999999,
+        "attempts": 1,
+        "cost_usd": "0.0013717536"
+      },
+      {
+        "case_id": "JUP-069-008",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 15.767620999999998,
+        "attempts": 1,
+        "cost_usd": "0.0014623768"
+      },
+      {
+        "case_id": "JUP-069-009",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 19.23903,
+        "attempts": 1,
+        "cost_usd": "0.0020601944"
+      },
+      {
+        "case_id": "JUP-069-010",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 19.528525000000002,
+        "attempts": 1,
+        "cost_usd": "0.0015830776"
+      },
+      {
+        "case_id": "JUP-069-011",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 15.0644,
+        "attempts": 1,
+        "cost_usd": "0.0017904488"
+      },
+      {
+        "case_id": "JUP-069-012",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 22.947243999999998,
+        "attempts": 1,
+        "cost_usd": "0.0018723768"
+      },
+      {
+        "case_id": "JUP-069-016",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 16.423075,
+        "attempts": 1,
+        "cost_usd": "0.0015947144"
+      },
+      {
+        "case_id": "JUP-069-023",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 47.90821,
+        "attempts": 2,
+        "cost_usd": "0.0043240232"
+      },
+      {
+        "case_id": "JUP-069-024",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 16.056555,
+        "attempts": 1,
+        "cost_usd": "0.0015765352"
+      },
+      {
+        "case_id": "JUP-069-026",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 15.983584,
+        "attempts": 1,
+        "cost_usd": "0.0013378328"
+      },
+      {
+        "case_id": "JUP-069-027",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 21.921456,
+        "attempts": 1,
+        "cost_usd": "0.0016542944"
+      },
+      {
+        "case_id": "JUP-071-001",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 33.671870000000006,
+        "attempts": 2,
+        "cost_usd": "0.0023840120"
+      },
+      {
+        "case_id": "JUP-071-002",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 18.828554,
+        "attempts": 1,
+        "cost_usd": "0.0015234464"
+      },
+      {
+        "case_id": "JUP-071-003",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 20.794528999999997,
+        "attempts": 1,
+        "cost_usd": "0.0020460488"
+      },
+      {
+        "case_id": "JUP-071-004",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 53.490525,
+        "attempts": 2,
+        "cost_usd": "0.0042121736"
+      },
+      {
+        "case_id": "JUP-071-005",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 62.960419,
+        "attempts": 2,
+        "cost_usd": "0.0051448760"
+      },
+      {
+        "case_id": "JUP-071-006",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 21.882119,
+        "attempts": 1,
+        "cost_usd": "0.0020533944"
+      },
+      {
+        "case_id": "JUP-071-007",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 51.470803999999994,
+        "attempts": 2,
+        "cost_usd": "0.0042038512"
+      },
+      {
+        "case_id": "JUP-071-008",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 25.052576000000002,
+        "attempts": 1,
+        "cost_usd": "0.0017522344"
+      },
+      {
+        "case_id": "JUP-071-009",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 33.001568,
+        "attempts": 2,
+        "cost_usd": "0.0038438072"
+      },
+      {
+        "case_id": "JUP-071-010",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 12.60857,
+        "attempts": 1,
+        "cost_usd": "0.0004617368"
+      },
+      {
+        "case_id": "JUP-071-011",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 13.746253000000001,
+        "attempts": 1,
+        "cost_usd": "0.0010484392"
+      },
+      {
+        "case_id": "JUP-071-012",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 16.564313,
+        "attempts": 1,
+        "cost_usd": "0.0016959928"
+      },
+      {
+        "case_id": "JUP-071-013",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 82.97510700000001,
+        "attempts": 3,
+        "cost_usd": "0.0068945696"
+      },
+      {
+        "case_id": "JUP-071-014",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "failed",
+        "seconds": 60.515378,
+        "attempts": 4,
+        "cost_usd": "0.0092330272"
+      },
+      {
+        "case_id": "JUP-071-015",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 18.272275,
+        "attempts": 1,
+        "cost_usd": "0.0019410808"
+      },
+      {
+        "case_id": "JUP-071-016",
+        "campaign": "jup071",
+        "repetition": 3,
+        "state": "completed",
+        "seconds": 22.896555,
+        "attempts": 1,
+        "cost_usd": "0.0021441344"
+      }
+    ]
+  },
+  "sunday": {
+    "started_at": "2026-10-25T15:40:34.534917+00:00",
+    "ended_at": "2026-10-25T16:11:40.224616+00:00",
+    "commit": "390721f92d60d29358de62e9cebf99ee028190a2",
+    "runtime_images": {
+      "backend": "sha256:a0aa4160be070c17e1065a3da8b65aadba9390342aea5cae56f27f6214292339",
+      "processor": "sha256:15b1935459ea1aa4532cd7513fa0944e5a33eee7c7d9a46cce185fd17642d43e"
+    },
+    "latency_method": "Client total including conversation creation and evidence capture, including retries.",
+    "cost_basis": "Observed own chat usage, incomplete attempts, no separately allocated embeddings; not an invoice.",
+    "repetitions": 1,
+    "quality_method": "Functional review by agents; PASS/PARTIAL/FAIL, not human acceptance.",
+    "cases": [
+      {
+        "case_id": "JUP-069-001",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:43:24.614640+00:00",
+        "ended_at": "2026-10-25T15:43:33.802910+00:00",
+        "seconds": 9.188,
+        "attempts": 1,
+        "cost_usd": "0.0015858528",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-002",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:44:00.672446+00:00",
+        "ended_at": "2026-10-25T15:44:10.268649+00:00",
+        "seconds": 9.596,
+        "attempts": 1,
+        "cost_usd": "0.0003857616",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-003",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:44:36.725728+00:00",
+        "ended_at": "2026-10-25T15:44:53.603812+00:00",
+        "seconds": 16.878,
+        "attempts": 1,
+        "cost_usd": "0.001694532",
+        "usage_complete": true,
+        "functional_verdict": "PARTIAL"
+      },
+      {
+        "case_id": "JUP-069-004",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:45:12.787153+00:00",
+        "ended_at": "2026-10-25T15:45:40.518613+00:00",
+        "seconds": 27.731,
+        "attempts": 2,
+        "cost_usd": "0.0020340376",
+        "usage_complete": false,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-005",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:45:48.850995+00:00",
+        "ended_at": "2026-10-25T15:45:57.898834+00:00",
+        "seconds": 9.048,
+        "attempts": 1,
+        "cost_usd": "0.0013521536",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-006",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:46:24.912947+00:00",
+        "ended_at": "2026-10-25T15:46:34.398236+00:00",
+        "seconds": 9.485,
+        "attempts": 1,
+        "cost_usd": "0.001321656",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-007",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:47:00.969850+00:00",
+        "ended_at": "2026-10-25T15:47:11.152148+00:00",
+        "seconds": 10.182,
+        "attempts": 1,
+        "cost_usd": "0.001364636",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-008",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:47:37.022501+00:00",
+        "ended_at": "2026-10-25T15:47:46.993674+00:00",
+        "seconds": 9.971,
+        "attempts": 1,
+        "cost_usd": "0.0015260168",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-009",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:48:13.074876+00:00",
+        "ended_at": "2026-10-25T15:48:24.337228+00:00",
+        "seconds": 11.262,
+        "attempts": 1,
+        "cost_usd": "0.0016198000",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-010",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:48:49.140474+00:00",
+        "ended_at": "2026-10-25T15:48:59.485044+00:00",
+        "seconds": 10.345,
+        "attempts": 1,
+        "cost_usd": "0.0010914176",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-011",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:49:25.202775+00:00",
+        "ended_at": "2026-10-25T15:49:37.364674+00:00",
+        "seconds": 12.162,
+        "attempts": 1,
+        "cost_usd": "0.0017294088",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-012",
+        "bank": "JUP-069",
+        "state": "failed",
+        "started_at": "2026-10-25T15:50:01.258393+00:00",
+        "ended_at": "2026-10-25T15:51:01.977030+00:00",
+        "seconds": 60.719,
+        "attempts": 4,
+        "cost_usd": "0.0031837400",
+        "usage_complete": true,
+        "functional_verdict": "FAIL"
+      },
+      {
+        "case_id": "JUP-069-013",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:51:02.115049+00:00",
+        "ended_at": "2026-10-25T15:51:20.963098+00:00",
+        "seconds": 18.848,
+        "attempts": 1,
+        "cost_usd": "0.0019101768",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-014",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:51:38.180615+00:00",
+        "ended_at": "2026-10-25T15:51:48.225810+00:00",
+        "seconds": 10.045,
+        "attempts": 1,
+        "cost_usd": "0.0019289368",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-015",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:52:14.231334+00:00",
+        "ended_at": "2026-10-25T15:52:25.545534+00:00",
+        "seconds": 11.314,
+        "attempts": 1,
+        "cost_usd": "0.0015814568",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-016",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:52:50.289051+00:00",
+        "ended_at": "2026-10-25T15:53:01.129884+00:00",
+        "seconds": 10.841,
+        "attempts": 1,
+        "cost_usd": "0.0013167336",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-017",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:53:26.363725+00:00",
+        "ended_at": "2026-10-25T15:53:36.283399+00:00",
+        "seconds": 9.92,
+        "attempts": 1,
+        "cost_usd": "0.0012472936",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-018",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:54:02.424191+00:00",
+        "ended_at": "2026-10-25T15:54:11.363417+00:00",
+        "seconds": 8.939,
+        "attempts": 1,
+        "cost_usd": "0.0011991336",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-019",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:54:38.477247+00:00",
+        "ended_at": "2026-10-25T15:54:49.934173+00:00",
+        "seconds": 11.457,
+        "attempts": 1,
+        "cost_usd": "0.0019818792",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-020",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:55:14.533922+00:00",
+        "ended_at": "2026-10-25T15:55:25.250026+00:00",
+        "seconds": 10.716,
+        "attempts": 1,
+        "cost_usd": "0.0011379872",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-021",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:55:50.597754+00:00",
+        "ended_at": "2026-10-25T15:56:02.474729+00:00",
+        "seconds": 11.877,
+        "attempts": 1,
+        "cost_usd": "0.0013487936",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-022",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:56:26.653571+00:00",
+        "ended_at": "2026-10-25T15:56:39.898194+00:00",
+        "seconds": 13.245,
+        "attempts": 1,
+        "cost_usd": "0.0017164896",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-023",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:57:02.710866+00:00",
+        "ended_at": "2026-10-25T15:57:19.406481+00:00",
+        "seconds": 16.696,
+        "attempts": 1,
+        "cost_usd": "0.0018103176",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-024",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:57:38.773304+00:00",
+        "ended_at": "2026-10-25T15:57:49.270713+00:00",
+        "seconds": 10.497,
+        "attempts": 1,
+        "cost_usd": "0.0016030728",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-025",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:58:14.826880+00:00",
+        "ended_at": "2026-10-25T15:58:28.798573+00:00",
+        "seconds": 13.972,
+        "attempts": 1,
+        "cost_usd": "0.0014404936",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-026",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:58:50.881204+00:00",
+        "ended_at": "2026-10-25T15:59:01.194970+00:00",
+        "seconds": 10.314,
+        "attempts": 1,
+        "cost_usd": "0.0012039328",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-027",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T15:59:26.936102+00:00",
+        "ended_at": "2026-10-25T15:59:36.933834+00:00",
+        "seconds": 9.998,
+        "attempts": 1,
+        "cost_usd": "0.0016024624",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-069-028",
+        "bank": "JUP-069",
+        "state": "completed",
+        "started_at": "2026-10-25T16:00:02.990835+00:00",
+        "ended_at": "2026-10-25T16:00:18.246754+00:00",
+        "seconds": 15.256,
+        "attempts": 1,
+        "cost_usd": "0.0014779968",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-071-001",
+        "bank": "JUP-071",
+        "state": "completed",
+        "started_at": "2026-10-25T16:00:39.044973+00:00",
+        "ended_at": "2026-10-25T16:00:59.696401+00:00",
+        "seconds": 20.651,
+        "attempts": 1,
+        "cost_usd": "0.0017628520",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-071-002",
+        "bank": "JUP-071",
+        "state": "completed",
+        "started_at": "2026-10-25T16:01:15.099803+00:00",
+        "ended_at": "2026-10-25T16:01:34.802041+00:00",
+        "seconds": 19.702,
+        "attempts": 1,
+        "cost_usd": "0.0019640488",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-071-003",
+        "bank": "JUP-071",
+        "state": "completed",
+        "started_at": "2026-10-25T16:01:51.152247+00:00",
+        "ended_at": "2026-10-25T16:02:09.622084+00:00",
+        "seconds": 18.47,
+        "attempts": 1,
+        "cost_usd": "0.0019167288",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-071-004",
+        "bank": "JUP-071",
+        "state": "completed",
+        "started_at": "2026-10-25T16:02:27.217159+00:00",
+        "ended_at": "2026-10-25T16:02:49.527784+00:00",
+        "seconds": 22.311,
+        "attempts": 1,
+        "cost_usd": "0.0022059968",
+        "usage_complete": true,
+        "functional_verdict": "PARTIAL"
+      },
+      {
+        "case_id": "JUP-071-005",
+        "bank": "JUP-071",
+        "state": "completed",
+        "started_at": "2026-10-25T16:03:03.276210+00:00",
+        "ended_at": "2026-10-25T16:03:23.269202+00:00",
+        "seconds": 19.993,
+        "attempts": 1,
+        "cost_usd": "0.0018635344",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-071-006",
+        "bank": "JUP-071",
+        "state": "completed",
+        "started_at": "2026-10-25T16:03:39.331085+00:00",
+        "ended_at": "2026-10-25T16:03:54.395272+00:00",
+        "seconds": 15.064,
+        "attempts": 1,
+        "cost_usd": "0.0020217344",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-071-007",
+        "bank": "JUP-071",
+        "state": "completed",
+        "started_at": "2026-10-25T16:04:15.383925+00:00",
+        "ended_at": "2026-10-25T16:04:33.449383+00:00",
+        "seconds": 18.065,
+        "attempts": 1,
+        "cost_usd": "0.0016245544",
+        "usage_complete": true,
+        "functional_verdict": "PARTIAL"
+      },
+      {
+        "case_id": "JUP-071-008",
+        "bank": "JUP-071",
+        "state": "completed",
+        "started_at": "2026-10-25T16:04:51.441510+00:00",
+        "ended_at": "2026-10-25T16:05:40.926576+00:00",
+        "seconds": 49.485,
+        "attempts": 3,
+        "cost_usd": "0.0022994048",
+        "usage_complete": false,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-071-009",
+        "bank": "JUP-071",
+        "state": "completed",
+        "started_at": "2026-10-25T16:05:41.074093+00:00",
+        "ended_at": "2026-10-25T16:05:53.542115+00:00",
+        "seconds": 12.468,
+        "attempts": 1,
+        "cost_usd": "0.0015397144",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-071-010",
+        "bank": "JUP-071",
+        "state": "completed",
+        "started_at": "2026-10-25T16:06:17.135068+00:00",
+        "ended_at": "2026-10-25T16:06:26.286100+00:00",
+        "seconds": 9.151,
+        "attempts": 1,
+        "cost_usd": "0.0009352392",
+        "usage_complete": true,
+        "functional_verdict": "PARTIAL"
+      },
+      {
+        "case_id": "JUP-071-011",
+        "bank": "JUP-071",
+        "state": "completed",
+        "started_at": "2026-10-25T16:06:53.229431+00:00",
+        "ended_at": "2026-10-25T16:07:03.671981+00:00",
+        "seconds": 10.443,
+        "attempts": 1,
+        "cost_usd": "0.0009828392",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-071-012",
+        "bank": "JUP-071",
+        "state": "completed",
+        "started_at": "2026-10-25T16:07:29.289563+00:00",
+        "ended_at": "2026-10-25T16:07:44.537337+00:00",
+        "seconds": 15.248,
+        "attempts": 1,
+        "cost_usd": "0.0018951968",
+        "usage_complete": true,
+        "functional_verdict": "PARTIAL"
+      },
+      {
+        "case_id": "JUP-071-013",
+        "bank": "JUP-071",
+        "state": "completed",
+        "started_at": "2026-10-25T16:08:05.344146+00:00",
+        "ended_at": "2026-10-25T16:08:18.914546+00:00",
+        "seconds": 13.57,
+        "attempts": 1,
+        "cost_usd": "0.0016363928",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "JUP-071-014",
+        "bank": "JUP-071",
+        "state": "failed",
+        "started_at": "2026-10-25T16:08:41.410704+00:00",
+        "ended_at": "2026-10-25T16:09:47.303107+00:00",
+        "seconds": 65.892,
+        "attempts": 4,
+        "cost_usd": "0.0035476280",
+        "usage_complete": false,
+        "functional_verdict": "FAIL"
+      },
+      {
+        "case_id": "JUP-071-015",
+        "bank": "JUP-071",
+        "state": "failed",
+        "started_at": "2026-10-25T16:09:47.454214+00:00",
+        "ended_at": "2026-10-25T16:09:55.715587+00:00",
+        "seconds": 8.261,
+        "attempts": 1,
+        "cost_usd": "0.0013622896",
+        "usage_complete": false,
+        "functional_verdict": "FAIL"
+      },
+      {
+        "case_id": "JUP-071-016",
+        "bank": "JUP-071",
+        "state": "completed",
+        "started_at": "2026-10-25T16:10:23.508934+00:00",
+        "ended_at": "2026-10-25T16:10:38.370927+00:00",
+        "seconds": 14.862,
+        "attempts": 1,
+        "cost_usd": "0.0017943128",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "reported-analytics",
+        "bank": "reported",
+        "state": "completed",
+        "started_at": "2026-10-25T15:40:34.534917+00:00",
+        "ended_at": "2026-10-25T15:40:48.698716+00:00",
+        "seconds": 14.164,
+        "attempts": 1,
+        "cost_usd": "0.0016953944",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "reported-capabilities",
+        "bank": "reported",
+        "state": "completed",
+        "started_at": "2026-10-25T15:41:46.648604+00:00",
+        "ended_at": "2026-10-25T15:42:48.414348+00:00",
+        "seconds": 61.766,
+        "attempts": 3,
+        "cost_usd": "0.0010161312",
+        "usage_complete": false,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "reported-tagging",
+        "bank": "reported",
+        "state": "completed",
+        "started_at": "2026-10-25T15:42:48.556690+00:00",
+        "ended_at": "2026-10-25T15:43:09.948630+00:00",
+        "seconds": 21.392,
+        "attempts": 1,
+        "cost_usd": "0.0019446168",
+        "usage_complete": true,
+        "functional_verdict": "PARTIAL"
+      },
+      {
+        "case_id": "reported-variation",
+        "bank": "reported",
+        "state": "completed",
+        "started_at": "2026-10-25T15:41:10.588414+00:00",
+        "ended_at": "2026-10-25T15:41:20.171614+00:00",
+        "seconds": 9.583,
+        "attempts": 1,
+        "cost_usd": "0.0004906216",
+        "usage_complete": true,
+        "functional_verdict": "PASS"
+      },
+      {
+        "case_id": "screen-analytics",
+        "bank": "screen-control",
+        "state": "completed",
+        "started_at": "2026-10-25T16:10:44.362498+00:00",
+        "ended_at": "2026-10-25T16:11:11.903365+00:00",
+        "seconds": 27.541,
+        "attempts": 1,
+        "cost_usd": "0.0018311888",
+        "usage_complete": true,
+        "functional_verdict": "PARTIAL"
+      },
+      {
+        "case_id": "screen-variation",
+        "bank": "screen-control",
+        "state": "completed",
+        "started_at": "2026-10-25T16:11:20.423623+00:00",
+        "ended_at": "2026-10-25T16:11:40.224616+00:00",
+        "seconds": 19.801,
+        "attempts": 1,
+        "cost_usd": "0.001162616",
+        "usage_complete": true,
+        "functional_verdict": "FAIL"
+      }
+    ]
+  },
+  "matching": {
+    "unique_case_ids": 44,
+    "friday_selected": 132,
+    "sunday_selected": 44,
+    "question_scenario_equal": 132,
+    "exact_prompt_equal": 0,
+    "screen_data": false,
+    "excluded_friday_repeated_reference_cases": 39,
+    "excluded_sunday_additional_cases": 6
+  },
+  "limitations": [
+    "Three Friday repetitions versus one Sunday repetition, not a controlled A/B.",
+    "Questions and scenario text match; prompt wrapper/order differs. No screen datasets in the selected44.",
+    "Semantic-point all-pass on Friday is a derived review-only measure; current functional labels are not an identical scoring instrument. Do not compare old automatic numeric-parser pass counts to new semantic verdicts.",
+    "Friday cost includes embeddings and settled gateway attribution; current cost is incomplete observed chat usage. No causal cost saving established.",
+    "Friday latency POST-to-terminal; current client totals also include conversation creation/evidence capture. Different harness/load, not benchmark.",
+    "Friday full app source commit not attested by JUP133; runtime image IDs retained. The same-assistant-code conclusion of the earlier Sunday comparison does not apply to Friday.",
+    "RC NOT_ACCEPTED. HTTP413 on large screen capture persists in the backend technical suite.",
+    "Private DockerDevelop route only; no authenticated public/local A/B.",
+    "No new model calls, deployments, database loads or additional scoring for this publication.",
+    "Friday semantic rubric and Sunday functional verdicts are different instruments; no quality delta or cost saving calculated."
+  ],
+  "source_sha256": {
+    "materiales/07-evidencias/validacion-integral-postmerge-pr164-20261025/handoff-root/friday-comparison-audit.json": "d1cc79766669a459323320fcd9edab6f190d23b741b74c4d8bbf3422c8a8c504",
+    "tfm-economicon-jup133-evolution/docs/evidence/JUP-133/JUP-133-infra-jup070-a-r1-report.json": "5f32b2fcc6373a38fdf9a7a6609d4683a2882882c6270c0e3b2290ac3004bd92",
+    "tfm-economicon-jup133-evolution/docs/evidence/JUP-133/JUP-133-infra-jup070-a-r2-report.json": "bad1982d40b2d0860a839eb42434e5debad445b0d480a6e925de9966765b83ed",
+    "tfm-economicon-jup133-evolution/docs/evidence/JUP-133/JUP-133-infra-jup070-a-r3-report.json": "c2ddb57de89ece88a8f6b52c99f4700487f49064e1eff4618c67e8c77d8e2202",
+    "tfm-economicon-jup133-evolution/docs/evidence/JUP-133/JUP-133-infra-jup071-r1-report.json": "0b8ecda107553226e1ff9e995530019dbe98a48b181b35ca0e0c9517f69f7da0",
+    "tfm-economicon-jup133-evolution/docs/evidence/JUP-133/JUP-133-infra-jup071-r2-report.json": "6aec0f2fcd2bdffe0571ad9b11c6d34fa98a15c86d155d4d7a4a1f9de4513098",
+    "tfm-economicon-jup133-evolution/docs/evidence/JUP-133/JUP-133-infra-jup071-r3-report.json": "c88df2feb4987b1a0606e04e16562a81e9626ffd548c5e9deba9b574567f4cd7",
+    "materiales/07-evidencias/validacion-integral-postmerge-pr164-20261025/results.json": "8fb36750c4d8860563a3c7a2a271b5ad474e6d0876519249cbdf7bc7eab741b8",
+    "materiales/07-evidencias/validacion-integral-postmerge-pr164-20261025/before.json": "5fca8a43437806d70bcc0df3c5e4dc6f250ce5546d453999b6725bf587f6e98c"
+  },
+  "sealed_latest_package_sha256": "d182fedcd92226acfea6369515429284f15d35b7a8eb679e7c24eba5a908e7ff"
+}

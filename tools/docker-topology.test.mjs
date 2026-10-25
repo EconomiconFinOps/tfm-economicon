@@ -1,0 +1,407 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import test from "node:test";
+import { fileURLToPath } from "node:url";
+import vm from "node:vm";
+
+import { parse } from "yaml";
+
+const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const compose = parse(fs.readFileSync(path.join(root, "docker-compose.yml"), "utf8"));
+const gatewayCompose = parse(fs.readFileSync(path.join(root, "infra/litellm/docker-compose.yml"), "utf8"));
+
+const applicationServices = ["azure-cost-api", "backend", "processor", "frontend", "landing"];
+const infrastructureServices = ["cockroachdb", "rabbitmq", "postgres-pgvector"];
+const monitoringServices = ["prometheus", "grafana"];
+const demoServices = ["azure-cost-api-demo", "demo-data"];
+
+test("declares every MVP application, infrastructure and monitoring service", () => {
+  assert.deepEqual(
+    Object.keys(compose.services).sort(),
+    [...applicationServices, ...infrastructureServices, ...monitoringServices, ...demoServices, "backend-migrate", "minio", "minio-init"].sort(),
+  );
+  assert.deepEqual(
+    Object.keys(compose.volumes).sort(),
+    ["cockroach-data", "pgvector-data", "rabbitmq-data", "prometheus-data", "grafana-data", "document-artifacts"].sort(),
+  );
+});
+
+test("demo data services are opt-in, read-only and never part of the default startup (JUP-119)", () => {
+  for (const serviceName of demoServices) {
+    const service = compose.services[serviceName];
+    assert.deepEqual(service.profiles, ["demo"], `${serviceName} must belong to the demo profile only`);
+    assert.equal(service.init, true, `${serviceName} must use an init process`);
+    assert.equal(service.read_only, true, `${serviceName} must use a read-only root filesystem`);
+    assert.ok(service.tmpfs.some(mount => mount.split(":", 1)[0] === "/tmp"), `${serviceName} must provide a writable /tmp`);
+    assert.ok(service.security_opt.includes("no-new-privileges:true"), `${serviceName} must disable privilege escalation`);
+    assert.equal(service.ports, undefined, `${serviceName} must not publish ports`);
+    assert.ok((service.volumes ?? []).every((volume) => volume.endsWith(":ro")), `${serviceName} must mount read-only`);
+  }
+  const demoApi = compose.services["azure-cost-api-demo"];
+  assert.ok(demoApi.healthcheck);
+  assert.equal(demoApi.environment.AZURE_COST_DATASET_PATH, "/demo/demo-cost.csv");
+  assert.deepEqual(demoApi.volumes, ["./fixtures/azure-cost/demo:/demo:ro"]);
+  const loader = compose.services["demo-data"];
+  assert.deepEqual(loader.command, ["python", "scripts/demo_data.py", "apply"]);
+  assert.equal(loader.working_dir, "/repo");
+  assert.deepEqual(loader.healthcheck, { disable: true });
+  assert.equal(loader.restart, "no");
+  assert.equal(loader.environment.AZURE_COST_API_BASE_URL, "http://azure-cost-api-demo:8002");
+  assert.equal(loader.environment.RUNTIME_ENVIRONMENT, "${RUNTIME_ENVIRONMENT:-production}");
+  for (const dependency of ["azure-cost-api-demo", "cockroachdb", "processor"]) {
+    assert.equal(loader.depends_on[dependency]?.condition, "service_healthy", dependency);
+  }
+  for (const [name, service] of Object.entries(compose.services)) {
+    if (demoServices.includes(name)) continue;
+    assert.equal(service.profiles, undefined, `${name} must start with the default up`);
+    for (const dependency of Object.keys(service.depends_on ?? {})) {
+      assert.ok(!demoServices.includes(dependency), `${name} must not depend on a demo service`);
+    }
+  }
+});
+
+test("builds every application from a versioned Dockerfile", () => {
+  for (const serviceName of applicationServices) {
+    const service = compose.services[serviceName];
+    assert.ok(service.build, `${serviceName} must define a build`);
+    assert.ok(service.healthcheck, `${serviceName} must define a healthcheck`);
+    assert.equal(service.init, true, `${serviceName} must use an init process`);
+    assert.equal(service.read_only, true, `${serviceName} must use a read-only root filesystem`);
+    assert.ok(service.tmpfs.some(mount => mount.split(":", 1)[0] === "/tmp"), `${serviceName} must provide a writable /tmp`);
+    assert.ok(
+      service.security_opt.includes("no-new-privileges:true"),
+      `${serviceName} must disable privilege escalation`,
+    );
+
+    const dockerfile = path.join(
+      root,
+      typeof service.build === "string"
+        ? path.join(service.build, "Dockerfile")
+        : service.build.dockerfile ?? path.join(service.build.context, "Dockerfile"),
+    );
+    const source = fs.readFileSync(dockerfile, "utf8");
+    assert.match(source, /^FROM .+@sha256:[a-f0-9]{64}/m);
+    assert.match(source, /^USER (?!root$).+/m);
+    assert.match(source, /^HEALTHCHECK /m);
+  }
+});
+
+test("pins infrastructure images by immutable digest and checks their health", () => {
+  for (const serviceName of infrastructureServices) {
+    const service = compose.services[serviceName];
+    assert.match(service.image, /^[^\s]+:[^\s]+@sha256:[a-f0-9]{64}$/);
+    assert.ok(service.healthcheck, `${serviceName} must define a healthcheck`);
+  }
+});
+
+function seconds(duration) {
+  const match = /^(?:(\d+)m)?(?:(\d+)s)?$/.exec(String(duration));
+  assert.ok(match && (match[1] || match[2]), `unsupported duration ${duration}`);
+  return Number(match[1] ?? 0) * 60 + Number(match[2] ?? 0);
+}
+
+test("keeps the state of every stateful infrastructure service on its named volume", () => {
+  const expected = {
+    cockroachdb: "cockroach-data:/cockroach/cockroach-data",
+    minio: "document-artifacts:/data",
+    "postgres-pgvector": "pgvector-data:/var/lib/postgresql/data",
+    rabbitmq: "rabbitmq-data:/var/lib/rabbitmq",
+  };
+  for (const [serviceName, volume] of Object.entries(expected)) {
+    assert.deepEqual(compose.services[serviceName].volumes, [volume], serviceName);
+  }
+  // RabbitMQ stores its data per node name, which defaults to the container hostname.
+  assert.equal(compose.services.rabbitmq.hostname, "rabbitmq");
+});
+
+test("runs the RabbitMQ healthcheck as the rabbitmq user", () => {
+  const command = compose.services.rabbitmq.healthcheck.test;
+  assert.deepEqual(command.slice(0, 3), ["CMD", "gosu", "rabbitmq"]);
+  assert.ok(command.includes("rabbitmq-diagnostics"));
+});
+
+test("gives the processor a health window that covers its first migrations", () => {
+  const { start_period: startPeriod } = compose.services.processor.healthcheck;
+  assert.ok(seconds(startPeriod) >= 300, `processor start_period is ${startPeriod}`);
+});
+
+test("waits for healthy dependencies instead of container start only", () => {
+  for (const serviceName of ["backend", "processor", "frontend", ...monitoringServices]) {
+    for (const [name, dependency] of Object.entries(compose.services[serviceName].depends_on)) {
+      assert.equal(dependency.condition, ["backend-migrate", "minio-init"].includes(name) ? "service_completed_successfully" : "service_healthy");
+    }
+  }
+});
+
+test("starts the processor only after the backend owns the shared schema", () => {
+  assert.equal(compose.services.processor.depends_on.backend?.condition, "service_healthy");
+  assert.equal(compose.services.backend.depends_on.processor, undefined);
+});
+
+test("binds infrastructure and monitoring ports to loopback and permits isolated overrides", () => {
+  const expectedVariables = {
+    cockroachdb: ["COCKROACH_SQL_PORT", "COCKROACH_HTTP_PORT"],
+    minio: ["MINIO_HOST_PORT"],
+    rabbitmq: ["RABBITMQ_PORT", "RABBITMQ_MANAGEMENT_PORT"],
+    "postgres-pgvector": ["PGVECTOR_PORT"],
+    prometheus: ["PROMETHEUS_PORT"],
+    grafana: ["GRAFANA_PORT"],
+  };
+
+  for (const [serviceName, variables] of Object.entries(expectedVariables)) {
+    const ports = compose.services[serviceName].ports.map(String);
+    assert.ok(ports.every((port) => port.startsWith("127.0.0.1:")));
+    for (const variable of variables) {
+      assert.ok(ports.some((port) => port.includes(`\${${variable}:-`)));
+    }
+  }
+});
+
+test("preserves monitoring configuration, persistence and health dependencies", () => {
+  const expectedVolumes = {
+    prometheus: [
+      "./apps/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro",
+      "prometheus-data:/prometheus",
+    ],
+    grafana: [
+      "./apps/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro",
+      "./apps/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro",
+      "grafana-data:/var/lib/grafana",
+    ],
+  };
+
+  for (const [serviceName, volumes] of Object.entries(expectedVolumes)) {
+    assert.deepEqual([...compose.services[serviceName].volumes].sort(), [...volumes].sort());
+    for (const volume of volumes.filter((volume) => volume.startsWith("./"))) {
+      assert.ok(fs.existsSync(path.join(root, volume.split(":")[0])), `${serviceName} configuration must exist`);
+    }
+  }
+
+  assert.ok(compose.services.prometheus.healthcheck);
+  assert.deepEqual(Object.keys(compose.services.prometheus.depends_on).sort(), ["backend", "processor"]);
+  assert.deepEqual(Object.keys(compose.services.grafana.depends_on), ["prometheus"]);
+  assert.equal(compose.services.grafana.environment.GF_AUTH_ANONYMOUS_ENABLED, "false");
+});
+
+test("separates published application ports from fixed container ports", () => {
+  const expected = {
+    landing: ["LANDING_HOST_PORT", "8080", null],
+    backend: ["API_HOST_PORT", "8000", "API_PORT"],
+    processor: ["PROCESSOR_HOST_PORT", "8001", "PROCESSOR_PORT"],
+    frontend: ["FRONTEND_HOST_PORT", "5173", null],
+    "azure-cost-api": ["AZURE_COST_API_HOST_PORT", "8002", null],
+  };
+
+  for (const [serviceName, [hostVariable, containerPort, internalVariable]] of Object.entries(expected)) {
+    const ports = compose.services[serviceName].ports.map(String);
+    assert.ok(ports.some((port) => port.includes(`\${${hostVariable}:-`) && port.endsWith(`:${containerPort}`)));
+    if (internalVariable) {
+      assert.equal(String(compose.services[serviceName].environment[internalVariable]), containerPort);
+    }
+  }
+});
+
+test("pins pnpm 9 and builds the frontend before running its preview server", () => {
+  const source = fs.readFileSync(path.join(root, "apps", "frontend", "Dockerfile"), "utf8");
+  assert.match(source, /corepack prepare pnpm@9\.0\.0 --activate/);
+  assert.match(source, /pnpm install --frozen-lockfile/);
+  assert.match(source, /pnpm --filter @finops\/frontend build/);
+  assert.ok(fs.existsSync(path.join(root, "apps", "frontend", "vite.config.ts")));
+  assert.match(source, /cp vite\.config\.ts \/tmp\/vite\.config\.ts/);
+  assert.match(source, /preview --config \/tmp\/vite\.config\.ts/);
+  assert.match(source, /NODE_PATH=\/workspace\/apps\/frontend\/node_modules/);
+  assert.match(source, /node .*node_modules\/vite\/bin\/vite\.js preview/);
+});
+
+// JUP-053 declarative checks. Actual context/image-layer and browser-bundle
+// sentinel exclusion, scanner controls, and credential relocation require QA.
+for (const [service, field, variable] of [
+  ["backend", "AUTH_SECRET_KEY", "AUTH_SECRET_KEY"],
+  ...["backend", "processor"].flatMap((service) =>
+    ["DATABASE_URL", "RABBITMQ_URL", "VECTOR_DATABASE_URL"].map((field) => [service, field, field]),
+  ),
+  ["rabbitmq", "RABBITMQ_DEFAULT_USER", "RABBITMQ_DEFAULT_USER"],
+  ["rabbitmq", "RABBITMQ_DEFAULT_PASS", "RABBITMQ_DEFAULT_PASS"],
+  ["rabbitmq", "RABBITMQ_ERLANG_COOKIE", "RABBITMQ_ERLANG_COOKIE"],
+  ["postgres-pgvector", "POSTGRES_PASSWORD", "POSTGRES_PASSWORD"],
+  ["grafana", "GF_SECURITY_ADMIN_PASSWORD", "GRAFANA_ADMIN_PASSWORD"],
+]) {
+  test(`JUP-053 ${service}.${field} requires an external nonempty input`, () => {
+    const value = compose.services[service].environment?.[field];
+    assert.equal(typeof value, "string", "Required Compose input is absent");
+    assert.ok(value.startsWith("${" + variable + ":?") && value.endsWith("}"),
+      "Required Compose input must reject both unset and empty values");
+  });
+}
+
+test("JUP-022 backend reads its own virtual key, never the processor key or upstream credentials", () => {
+  const environment = compose.services.backend.environment;
+  assert.equal(environment.LITELLM_API_KEY, "${BACKEND_LITELLM_API_KEY:-}");
+  assert.notEqual(environment.LITELLM_API_KEY, compose.services.processor.environment.LITELLM_API_KEY);
+  assert.equal(environment.EMBEDDING_PROVIDER, "${EMBEDDING_PROVIDER:-mock}");
+  assert.equal(environment.RETRIEVAL_TOP_K, "${RETRIEVAL_TOP_K:-4}");
+  const example = fs.readFileSync(path.join(root, ".env.example"), "utf8");
+  assert.match(example, /^BACKEND_LITELLM_API_KEY=\s*$/m);
+});
+
+test("JUP-053 mock providers do not require a gateway key or receive upstream credentials", () => {
+  const environment = compose.services.processor.environment;
+  assert.equal(environment.LITELLM_API_KEY, "${LITELLM_API_KEY:-}");
+  for (const name of ["backend", "processor", "frontend"]) {
+    for (const field of ["OPENROUTER_API_KEY", "LITELLM_MASTER_KEY"]) {
+      assert.equal(compose.services[name].environment?.[field], undefined);
+      assert.equal(compose.services[name].build.args?.[field], undefined);
+    }
+  }
+});
+
+test("JUP-108 includes the pinned gateway only in the optional ai profile", () => {
+  assert.deepEqual(compose.include, ["./infra/litellm/docker-compose.yml"]);
+  for (const name of ["litellm", "litellm-db"]) {
+    const service = gatewayCompose.services[name];
+    assert.deepEqual(service.profiles, ["ai"], name);
+    assert.match(service.image, /@sha256:[a-f0-9]{64}$/);
+    assert.ok(service.healthcheck, `${name} must have a healthcheck`);
+  }
+  assert.deepEqual(gatewayCompose.services["litellm-db"].volumes, ["gateway-data:/var/lib/postgresql/data"]);
+  assert.equal(gatewayCompose.services["litellm-db"].ports, undefined);
+  assert.ok(gatewayCompose.services.litellm.ports.every((port) => String(port).startsWith("127.0.0.1:")));
+  assert.deepEqual(Object.keys(gatewayCompose.volumes), ["gateway-data"]);
+});
+
+test("JUP-108 lets mock consumers start without a gateway and gates real startup on health", () => {
+  for (const name of ["backend", "processor"]) {
+    assert.equal(compose.services[name].depends_on.litellm, undefined);
+    const ai = parse(fs.readFileSync(path.join(root, "infra/litellm/compose.ai.yml"), "utf8"));
+    assert.deepEqual(ai.services[name].depends_on.litellm, {
+      condition: "service_healthy",
+      required: true,
+    });
+  }
+  assert.equal(compose.services.backend.environment.LITELLM_API_KEY, "${BACKEND_LITELLM_API_KEY:-}");
+  assert.equal(compose.services.processor.environment.LITELLM_API_KEY, "${LITELLM_API_KEY:-}");
+});
+
+test("JUP-108 never requires gateway secrets while parsing the mock profile", () => {
+  const gateway = gatewayCompose.services.litellm.environment;
+  const guard = gatewayCompose.services.litellm.entrypoint[2];
+  for (const name of ["OPENROUTER_API_KEY", "LITELLM_MASTER_KEY", "LITELLM_DATABASE_PASSWORD"]) {
+    assert.match(guard, new RegExp(`\\$\\$\\{${name}:\\?`), `${name} must fail closed at runtime`);
+  }
+  assert.equal(gateway.OPENROUTER_API_KEY, "${OPENROUTER_API_KEY:-}");
+  assert.equal(gateway.LITELLM_MASTER_KEY, "${LITELLM_MASTER_KEY:-}");
+  assert.match(gateway.DATABASE_URL, /\$\{LITELLM_DATABASE_PASSWORD:-\}/);
+  assert.equal(gatewayCompose.services["litellm-db"].environment.POSTGRES_PASSWORD,
+    "${LITELLM_DATABASE_PASSWORD:-}");
+  assert.ok(gatewayCompose.services.litellm.networks.includes("default"));
+  assert.deepEqual(gatewayCompose.services["litellm-db"].networks, ["gateway"]);
+});
+
+for (const serviceName of applicationServices) {
+  test(`JUP-053 ${serviceName} context declares root and nested dotenv exclusions`, () => {
+    const build = compose.services[serviceName].build;
+    const context = typeof build === "string" ? build : build.context;
+    const ignore = fs.readFileSync(path.join(root, context, ".dockerignore"), "utf8");
+    const rules = ignore.split(/\r?\n/).map((line) => line.trim()).filter((line) => line && !line.startsWith("#"));
+    assert.ok(rules.includes(".env") || rules.includes(".env*") || rules.includes("**/.env*"));
+    assert.ok(rules.includes(".env.*") || rules.includes(".env*") || rules.includes("**/.env*"),
+      "Root dotenv variants must be excluded");
+    assert.ok(rules.includes("**/.env") || rules.includes("**/.env*"), "Nested dotenv files must be excluded");
+    assert.ok(rules.includes("**/.env.*") || rules.includes("**/.env*"), "Nested dotenv variants must be excluded");
+    assert.ok(!rules.some((rule) => rule.startsWith("!") && rule.includes(".env") && !rule.includes("example")),
+      "A later inclusion must not restore secret dotenv variants");
+  });
+}
+
+test("JUP-053 credential examples leave real secret fields empty", () => {
+  const source = fs.readFileSync(path.join(root, ".env.example"), "utf8");
+  const fields = new Map(source.split(/\r?\n/).filter((line) => /^[A-Z][A-Z0-9_]*=/.test(line))
+    .map((line) => { const split = line.indexOf("="); return [line.slice(0, split), line.slice(split + 1).trim()]; }));
+  for (const field of ["AUTH_SECRET_KEY", "DATABASE_URL", "RABBITMQ_URL", "VECTOR_DATABASE_URL",
+    "POSTGRES_PASSWORD", "RABBITMQ_DEFAULT_PASS", "RABBITMQ_ERLANG_COOKIE", "DEMO_PASSWORD", "GRAFANA_ADMIN_PASSWORD",
+    "OPENROUTER_API_KEY", "LITELLM_MASTER_KEY", "LITELLM_DATABASE_PASSWORD"]) {
+    assert.ok(fields.has(field), `Missing inventory field: ${field}`);
+    assert.ok(["", '""', "''"].includes(fields.get(field)), `Example field must be empty: ${field}`);
+  }
+});
+
+test("JUP-122 root and processor contexts exclude nested private files and generated tokenizer", () => {
+  for (const context of [".", "apps/processor"]) {
+    const rules = fs.readFileSync(path.join(root, context, ".dockerignore"), "utf8")
+      .split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+    assert.ok(rules.includes(".secrets") && rules.includes("**/.secrets"));
+    assert.ok(rules.some((rule) => rule.endsWith("chat/v2/tokenizer.json")));
+    assert.ok(!rules.some((rule) => rule.startsWith("!") && rule.includes(".secrets")));
+  }
+});
+
+test("JUP-053 login form initializes with the unchanged email and a blank password", () => {
+  const source = fs.readFileSync(path.join(root, "apps/frontend/src/pages/LoginPage.tsx"), "utf8");
+  const initializer = source.match(/useState\((\{[\s\S]*?\})\)/);
+  assert.ok(initializer, "Locate the existing login form state initializer");
+  const form = vm.runInNewContext("(" + initializer[1] + ")", {}, { timeout: 1000 });
+  assert.equal(form.email, "operator@example.com");
+  assert.equal(form.password, "");
+});
+
+
+test("document storage starts in the general stack with private initialized bucket and bounded browser access", () => {
+  const storage = compose.services.minio;
+  const init = compose.services["minio-init"];
+  assert.equal(storage.build.dockerfile, "infra/minio/Dockerfile");
+  assert.equal(storage.environment.MINIO_BROWSER, "off");
+  assert.match(storage.environment.MINIO_API_CORS_ALLOW_ORIGIN, /DOCUMENT_CORS_ORIGINS.*required/);
+  assert.ok(storage.healthcheck);
+  for (const service of [storage, init]) {
+    assert.equal(service.profiles, undefined);
+    assert.equal(service.read_only, true);
+    assert.equal(service.init, true);
+    assert.ok(service.security_opt.includes("no-new-privileges:true"));
+  }
+  assert.equal(init.depends_on.minio.condition, "service_healthy");
+  for (const name of ["backend", "processor"]) {
+    assert.equal(compose.services[name].depends_on["minio-init"].condition, "service_completed_successfully");
+    assert.equal(compose.services[name].environment.DOCUMENT_UPLOADS_ENABLED, "true");
+    assert.equal(compose.services[name].environment.MINIO_ROOT_PASSWORD, undefined);
+  }
+  assert.equal(compose.services.processor.pids_limit,256);
+  for (const key of ["DOCUMENT_MAX_PAGES","DOCUMENT_EXTRACTION_SECONDS","DOCUMENT_OCR_PAGE_SECONDS",
+    "DOCUMENT_EXTRACTION_MEMORY_MB","DOCUMENT_OCR_MAX_PIXELS","DOCUMENT_EXECUTION_LEASE_SECONDS"]) {
+    assert.ok(compose.services.processor.environment[key],key);
+    assert.equal(compose.services.backend.environment[key],undefined,key);
+  }
+  const dockerfile=fs.readFileSync(path.join(root,"infra/minio/Dockerfile"),"utf8");
+  assert.equal((dockerfile.match(/ADD --checksum=sha256:[a-f0-9]{64} https:\/\/codeload.github.com\/minio\//g) ?? []).length,2);
+  assert.match(dockerfile,/^USER storage$/m);
+  const initialization=fs.readFileSync(path.join(root,"infra/minio/init.sh"),"utf8");
+  assert.match(initialization,/mc anonymous set none/);
+  assert.match(initialization,/document-staging-expiration-v1/);
+  assert.match(initialization,/"Prefix":"staging\/"/);
+});
+
+
+test("landing has only public startup configuration and its own network", () => {
+ const service=compose.services.landing;
+ assert.deepEqual(Object.keys(service.environment).sort(),['LANDING_APP_URL','LANDING_VIDEO_URL']);
+ assert.deepEqual(service.build.args,{SITE_ORIGIN:'${SITE_ORIGIN:-}'});
+ assert.deepEqual(service.networks,['landing-public']);
+ assert.equal(service.depends_on,undefined);
+ assert.deepEqual(service.volumes,["../landing-public-media:/landing/public-media:ro"]);
+ assert.equal(service.secrets,undefined);
+ assert.equal(service.profiles,undefined);
+ assert.deepEqual(compose.networks['landing-public'],{driver:'bridge'});
+ assert.match(String(service.ports[0]),/^127\.0\.0\.1:/);
+ assert.ok(service.healthcheck.test.at(-1).includes('/healthz'));
+ for(const [name,other] of Object.entries(compose.services))if(name!=='landing')assert.ok(!(Array.isArray(other.networks)?other.networks:Object.keys(other.networks||{})).includes('landing-public'));
+});
+
+
+test("processor owns its private writable temporary workspace as its existing image user", () => {
+ assert.deepEqual(compose.services.processor.tmpfs,['/tmp:uid=10001,gid=10001,mode=0700']);
+ assert.equal(compose.services.processor.read_only,true);
+ assert.ok(compose.services.processor.security_opt.includes('no-new-privileges:true'));
+ const dockerfile=fs.readFileSync(path.join(root,'apps/processor/Dockerfile'),'utf8');
+ assert.match(dockerfile,/useradd .*--uid 10001 economicon/);
+ assert.match(dockerfile,/^USER economicon$/m);
+});

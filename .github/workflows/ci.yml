@@ -1,0 +1,334 @@
+name: CI
+
+"on":
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+      - develop
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - edited
+      - ready_for_review
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  aws-postgresql:
+    name: AWS PostgreSQL application
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      AWS_EC2_METADATA_DISABLED: 'true'
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16@sha256:7b822b0aac60967beb1ea5e576b8602c94c300a157d187f385ae3e0da199b90a
+        env:
+          POSTGRES_USER: jup131
+          POSTGRES_PASSWORD: jup131-disposable-synthetic-pass
+          POSTGRES_DB: postgres
+        ports:
+          - 25432:5432
+        options: >-
+          --health-cmd "pg_isready -U jup131 -d postgres"
+          --health-interval 5s --health-timeout 3s --health-retries 12
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Install application dependencies
+        run: python -m pip install -r apps/backend/requirements-dev.txt -r apps/processor/requirements-dev.txt
+      - name: Prepare pinned embedding tokenizer outside the repository
+        run: python apps/processor/build_tokenizer.py --embedding-only --embedding-output /tmp/economicon-aws/cl100k_base.tiktoken
+      - name: Exercise native vector dimensions and preserve existing generations
+        working-directory: apps/processor
+        env:
+          JUP102_VECTOR_TEST_URL: postgresql+psycopg://jup131:jup131-disposable-synthetic-pass@127.0.0.1:25432/postgres
+          EMBEDDING_TOKENIZER_FILE: /tmp/economicon-aws/cl100k_base.tiktoken
+        run: python -m pytest tests/test_bedrock_generations_pgvector_jup131.py tests/test_embedding_generations_pgvector.py tests/test_schema_verify_pgvector_jup131.py tests/test_rehearsal_fixtures_pgvector_jup131.py -q
+      - name: Create the disposable operational test entrypoint
+        run: |
+          python - <<'PY'
+          from sqlalchemy import create_engine, text
+          engine = create_engine('postgresql+psycopg://jup131:jup131-disposable-synthetic-pass@127.0.0.1:25432/postgres', isolation_level='AUTOCOMMIT')
+          with engine.connect() as connection:
+              connection.execute(text('CREATE DATABASE economicon_jup131_test'))
+          engine.dispose()
+          PY
+      - name: Exercise native PostgreSQL migrations, restart and billing isolation
+        env:
+          AWS_POSTGRES_TEST_URL: postgresql+psycopg://jup131:jup131-disposable-synthetic-pass@127.0.0.1:25432/economicon_jup131_test?sslmode=disable
+        run: python -m unittest tools.aws_demo.test_postgresql tools.aws_demo.test_atlas_postgresql -v
+
+  aws-monitoring:
+    name: AWS monitoring isolated
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Grafana TLS, authentication, dashboards and restart without AWS
+        run: python tools/aws_demo/monitoring_smoke.py
+
+  aws-demo-offline:
+    name: AWS demo offline
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      AWS_EC2_METADATA_DISABLED: 'true'
+      TF_IN_AUTOMATION: 'true'
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+      - name: Install pinned Terraform
+        run: |
+          python tools/aws_demo/install_terraform.py
+          echo "$GITHUB_WORKSPACE/.work/bin" >> "$GITHUB_PATH"
+      - name: Test CI/CD controller without AWS
+        run: |
+          python -m pip install --require-hashes -r tools/aws_demo/requirements.lock
+          python -m unittest discover -s tools/aws_demo -p 'test_*.py' -v
+          python tools/aws_demo/prepare.py --allow-incomplete
+          node infra/aws-reference/tests/edge-functions.test.cjs
+      - name: Validate both Terraform roots with mock providers
+        run: |
+          terraform fmt -check -recursive infra/aws-bootstrap infra/aws-reference
+          for root in infra/aws-bootstrap infra/aws-reference; do
+            terraform -chdir="$root" init -backend=false -input=false -lockfile=readonly
+            terraform -chdir="$root" validate
+            terraform -chdir="$root" test
+          done
+
+  pr-policy:
+    name: JUP policy
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out the pull request
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate JUP traceability and rotating roles
+        run: node tools/pr-policy.mjs --event "$GITHUB_EVENT_PATH"
+
+  governance:
+    name: OpenSpec
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+      - name: Set up Python for collaboration bridge
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Install workspace dependencies
+        run: |
+          corepack enable
+          corepack pnpm install --frozen-lockfile
+      - name: Validate governance tooling
+        run: |
+          corepack pnpm jup:check:test
+          corepack pnpm pr:check:test
+          corepack pnpm ci:check:test
+          node --test tools/landing-turbo.test.mjs
+          corepack pnpm roadmap:test
+          corepack pnpm repository:governance:test
+          corepack pnpm jup:check:all
+          corepack pnpm jup:cleanup:test
+          corepack pnpm jup:cleanup:check
+          corepack pnpm assistant-corpus:test
+          corepack pnpm assistant-corpus:validate
+          corepack pnpm validation-questions:validate
+          corepack pnpm validation-questions:test
+          python docs/demo/JUP-065/verificar.py --repo .
+          python -m unittest discover -s docs/demo/JUP-065 -p 'test_*.py' -v
+          node docs/demo/JUP-065/generado/sources/tools/validation-questions.mjs validate
+          corepack pnpm business-metrics:validate
+          corepack pnpm business-metrics:test
+          corepack pnpm retrieval-labels:validate
+          corepack pnpm retrieval-labels:test
+          corepack pnpm retrieval-calibration:test
+          corepack pnpm assistant-metrics:test
+          corepack pnpm assistant-eval:test
+          corepack pnpm chat-collector:test
+          corepack pnpm assistant-robustness:validate
+          corepack pnpm assistant-robustness:test
+          corepack pnpm evaluation-dashboard:test
+          corepack pnpm synthetic-demo:test
+          corepack pnpm demo-dataset:test
+          corepack pnpm demo-data:test
+          corepack pnpm llm-gateway:test
+          corepack pnpm gateway-config-hash:test
+          python -m unittest discover -s tools -p test_litellm_product_keys.py -v
+          corepack pnpm docker:validate
+          corepack pnpm local:test
+          corepack pnpm cd:test
+          corepack pnpm tokenizer:test
+          corepack pnpm collaboration:test
+          corepack pnpm contributions:test
+          corepack pnpm openspec:validate
+      - name: Build landing through the root workspace task
+        env:
+          SITE_ORIGIN: https://landing.example.test
+          LANDING_OUT_DIR: ${{ runner.temp }}/economicon-landing-ci/dist
+        run: corepack pnpm build --filter=@finops/landing
+
+  python-tests:
+    name: Python tests (${{ matrix.service.name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - name: azure-cost-api
+            path: apps/azure-cost-api
+          - name: backend
+            path: apps/backend
+          - name: processor
+            path: apps/processor
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Install test dependencies
+        working-directory: ${{ matrix.service.path }}
+        run: python -m pip install -r requirements-dev.txt
+      - name: Install local document extraction tools
+        if: matrix.service.name == 'processor'
+        timeout-minutes: 8
+        run: |
+          apt_options=(-o Acquire::Retries=5 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30)
+          sudo apt-get "${apt_options[@]}" update
+          sudo apt-get "${apt_options[@]}" install -y --no-install-recommends libreoffice-writer tesseract-ocr tesseract-ocr-eng tesseract-ocr-spa libseccomp2 fonts-dejavu-core
+      - name: Check Python syntax (lint/build)
+        working-directory: ${{ matrix.service.path }}
+        run: python -m compileall -q app
+      - name: Prepare pinned offline tokenizer
+        if: matrix.service.name != 'azure-cost-api'
+        run: python apps/processor/build_tokenizer.py
+      - name: Prepare pinned offline embedding tokenizer
+        if: matrix.service.name == 'processor'
+        run: python apps/processor/build_tokenizer.py --embedding-only
+      - name: Run tests
+        working-directory: ${{ matrix.service.path }}
+        run: python -m pytest tests -q
+
+  landing-static:
+    name: Landing static checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+      - name: Check landing JavaScript syntax
+        working-directory: apps/landing
+        run: node --check src/app.js && node --check scripts/build.mjs && node --check scripts/serve.mjs
+      - name: Test public artifact and static server
+        working-directory: apps/landing
+        run: node --test tests/build.test.mjs tests/server.test.mjs tests/llms.test.mjs tests/signal-loop.test.mjs
+      - name: Build non-indexable public artifact
+        working-directory: apps/landing
+        run: node scripts/build.mjs
+
+  frontend-build:
+    name: Frontend build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+      - name: Install workspace dependencies
+        run: |
+          corepack enable
+          corepack pnpm install --frozen-lockfile
+      - name: Lint frontend
+        run: corepack pnpm lint --filter=@finops/frontend
+      - name: Test frontend journeys
+        run: corepack pnpm --filter @finops/frontend test
+      - name: Build frontend
+        run: corepack pnpm --filter @finops/frontend build
+
+  # JUP-093: septimo check obligatorio (ADR-0003, decision 3). Se replica el patron exacto
+  # de "frontend-build" (mismo runner, timeout, checkout y setup-node ya pineados por SHA)
+  # para no introducir variaciones que el test de permisos/pineado tendria que volver a validar;
+  # solo cambia el ultimo paso, que ejecuta el script "typecheck" en vez de "build".
+  frontend-typecheck:
+    name: Frontend type check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+      - name: Install workspace dependencies
+        run: |
+          corepack enable
+          corepack pnpm install --frozen-lockfile
+      - name: Type-check frontend
+        run: corepack pnpm --filter @finops/frontend typecheck

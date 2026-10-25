@@ -1,0 +1,277 @@
+"""Real bearer/session/membership and repositories; doubles only at external sinks."""
+import json
+from types import SimpleNamespace
+from datetime import datetime, timezone
+from unittest.mock import MagicMock
+
+import pytest
+
+from app.core.logging import configure_logging
+from app.core.security import create_access_token
+from app.services.assistant import AssistantService
+from app.services.rabbitmq_queue import PublishResult
+from conftest import SYNTHETIC_ENV
+from tenant_isolation_support import populated_database, rows, tenant_database, tenant_cockroach_database
+from test_secret_boundaries import main_module, request, resource_mocks, restore_logging
+from billing_support import billing_schema, summary
+
+
+@pytest.fixture
+def api(main_module, populated_database, monkeypatch):
+    db = populated_database
+    spies = {}
+    for name in ("user_has_tenant", "fetch_conversations", "fetch_conversation", "fetch_messages", "fetch_billing_summary", "create_job", "create_conversation", "append_pair"):
+        spies[name] = MagicMock(wraps=getattr(db, name))
+        monkeypatch.setattr(db, name, spies[name])
+    queue = MagicMock(spec_set=["queue_name", "reserve", "publish", "cancel"], queue_name="jup086-test")
+    queue.reserve.return_value = object()
+    queue.publish.return_value = PublishResult("confirmed", "confirmed")
+    vector = MagicMock()
+    vector.search_chunks.return_value = []
+    embedding = MagicMock()
+    embedding.embed.return_value = [1.0] + [0.0] * 7
+    embedding.dimension = 8
+    embedding.name = "mock"
+    for name, value in {"database": db, "queue": queue, "vector_store": vector, "embedding_provider": embedding, "assistant_service": AssistantService()}.items():
+        monkeypatch.setattr(main_module.app.state, name, value, raising=False)
+    return SimpleNamespace(app=main_module.app, db=db, spies=spies, queue=queue, vector=vector, embedding=embedding)
+
+
+def headers(user="alice", tenant="tenant-a"):
+    token = create_access_token(user, SYNTHETIC_ENV["AUTH_SECRET_KEY"], 5)
+    return [("Authorization", "Bearer " + token)] + ([] if tenant is None else [("X-Tenant-Id", tenant)])
+
+
+def citation_record():
+    return {"chunk_id": "chunk-1", "document_id": "doc-1", "tenant_id": "tenant-a",
+            "title": "Guía Azure", "source": "FinOps", "content": "# Costes\nEvidencia",
+            "section": "Costes", "chunk_index": 0, "distance": 0.1}
+
+
+@pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
+@pytest.mark.parametrize("document", ["# \r\nLos costes observados.\r\n", "#  \nLos costes observados."])
+def test_empty_markdown_headings_return_valid_citations_not_500(api, document):
+    from app.services.citations import DocumentCitations
+    locations = DocumentCitations(document)
+    record = citation_record()
+    record.update(content="Los costes observados.", title=locations.title or record["source"],
+                  section=locations.section("Los costes observados."))
+    api.vector.search_chunks.return_value = [record]
+    response = call(api, "POST", "/assistant/conversations/own/messages", headers=headers(), json={"content": "Costes"})
+    assert response.status_code == 201
+    [citation] = response.json()["assistant_message"]["metadata"]["source_citations"]
+    assert citation["title"] == "FinOps"
+    assert citation["section"] is None
+
+
+@pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
+def test_citations_persist_and_reopen_with_authorized_conversation(api):
+    api.vector.search_chunks.return_value = [citation_record()]
+    response = call(api, "POST", "/assistant/conversations/own/messages", headers=headers(), json={"content": "Costes"})
+    assert response.status_code == 201
+    message = response.json()["assistant_message"]
+    assert message["metadata"]["generation"]["question_message_id"] == response.json()["user_message"]["id"]
+    [citation] = message["metadata"]["source_citations"]
+    assert citation["evidence_id"] == "chunk-1"
+    assert citation["excerpt"] == "# Costes\nEvidencia"
+    assert citation["section"] == "Costes"
+    assert "tenant_id" not in response.json()["retrieved_context"][0]
+    reopened = call(api, "GET", "/assistant/conversations/own", headers=headers())
+    assert reopened.status_code == 200
+    assert reopened.json()["messages"][-1]["metadata"] == message["metadata"]
+    assert call(api, "GET", "/assistant/conversations/own", headers=headers("bob", "tenant-b")).status_code == 404
+
+
+@pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=True)
+@pytest.mark.parametrize("case", ["missing", "duplicate", "foreign"])
+def test_invalid_citations_never_persist_an_assistant_answer(api, case, monkeypatch):
+    record = citation_record()
+    if case == "foreign":
+        record.update(tenant_id="tenant-b", content="foreign-secret-marker")
+    api.vector.search_chunks.return_value = [record]
+    service = MagicMock()
+    service.answer.return_value = {"content": "untrusted-answer", "citations": ["missing"] if case == "missing" else ["chunk-1", "chunk-1"]}
+    monkeypatch.setattr(api.app.state, "assistant_service", service)
+    before = (rows(api.db, "conversations"), rows(api.db, "messages"))
+    response = call(api, "POST", "/assistant/conversations/own/messages", headers=headers(), json={"content": "Costes"})
+    assert response.status_code == 502
+    assert response.json() == {"detail": "Invalid response evidence."}
+    api.spies["append_pair"].assert_not_called()
+    assert (rows(api.db, "conversations"), rows(api.db, "messages")) == before
+    if case == "foreign":
+        service.answer.assert_not_called()
+
+
+def call(api, method, path, **kwargs):
+    configure_logging()
+    return request(api.app, method, path, **kwargs)
+
+
+def no_effects(api, *, resource_reads=True):
+    for name in ("create_job", "create_conversation", "append_pair"):
+        api.spies[name].assert_not_called()
+    if resource_reads:
+        for name in ("fetch_conversations", "fetch_conversation", "fetch_messages", "fetch_billing_summary"):
+            api.spies[name].assert_not_called()
+    api.queue.publish.assert_not_called()
+    api.queue.reserve.assert_not_called()
+    api.vector.search_chunks.assert_not_called()
+    api.embedding.embed.assert_not_called()
+
+
+
+
+@pytest.mark.parametrize(
+    'tenant_database,auth,tenant,body,expected',
+    [
+        pytest.param('sqlite', True, 'tenant-b', {}, 403, id='sqlite-True-tenant-b-body3-403'),
+        pytest.param('sqlite', True, 'tenant-a', {'tenant_id': 'tenant-b', 'source': 'test', 'text_content': 'ok'}, 400, id='sqlite-True-tenant-a-body7-400'),
+    ],
+    indirect=['tenant_database'],
+)
+def test_ingest_error_precedence_without_effects(api, auth, tenant, body, expected):
+    response = call(api, "POST", "/jobs/ingest", headers=headers(tenant=tenant) if auth else [], json=body)
+    assert response.status_code == expected
+    no_effects(api)
+
+
+@pytest.mark.parametrize(
+    "tenant_database,source",
+    [("sqlite", ""), ("sqlite", " \t\n ")],
+    indirect=["tenant_database"],
+    ids=["empty", "whitespace"],
+)
+def test_ingest_blank_source_is_rejected_without_effects(api, source):
+    before = rows(api.db, "jobs")
+    response = call(api, "POST", "/jobs/ingest", headers=headers(), json={
+        "tenant_id": "tenant-a", "source": source, "text_content": "ok",
+    })
+    assert response.status_code == 422
+    assert response.json() == {"detail": [{"type": "validation_error", "msg": "Invalid request value"}]}
+    no_effects(api)
+    assert rows(api.db, "jobs") == before
+
+
+@pytest.mark.parametrize("tenant_database", ["sqlite"], indirect=["tenant_database"])
+def test_ingest_padded_source_is_preserved(api):
+    source = " azure "
+    response = call(api, "POST", "/jobs/ingest", headers=headers(), json={
+        "tenant_id": "tenant-a", "source": source, "text_content": "ok",
+    })
+    assert response.status_code == 202
+    [job] = rows(api.db, "jobs")
+    assert job["id"] == response.json()["job_id"]
+    assert job["source"] == source
+    assert json.loads(job["payload"])["source"] == source
+    api.queue.publish.assert_called_once()
+    published = api.queue.publish.call_args.args[0]
+    assert published["id"] == job["id"]
+    assert published["source"] == source
+    assert published["payload"]["source"] == source
+
+
+
+
+
+
+@pytest.mark.parametrize(
+    'tenant_database,method,body,status',
+    [
+        pytest.param('sqlite', 'GET', None, 404, id='sqlite-GET-None-404'),
+        pytest.param('sqlite', 'POST', {'content': 'hello'}, 404, id='sqlite-POST-body1-404'),
+    ],
+    indirect=['tenant_database'],
+)
+def test_foreign_other_owner_and_missing_ids_are_indistinguishable(api, method, body, status, capsys, caplog):
+    responses = []
+    for identifier in ("foreign-marker", "other-owner", "nonexistent"):
+        path = "/assistant/conversations/" + identifier + ("/messages" if method == "POST" else "")
+        responses.append(call(api, method, path, headers=headers(), **({"json": body} if body is not None else {})))
+    assert [response.status_code for response in responses] == [status] * 3
+    assert responses[0].json() == responses[1].json() == responses[2].json()
+    no_effects(api, resource_reads=status == 422)
+    captured = capsys.readouterr()
+    assert "foreign-marker" not in captured.out + captured.err + caplog.text + responses[0].text
+
+
+@pytest.mark.parametrize(
+    'tenant_database,path,body,field,value',
+    [
+        pytest.param('sqlite', '/assistant/conversations', {'title': 'new'}, 'user_id', 'bob', id='sqlite-/assistant/conversations-body0-user_id-bob'),
+        pytest.param('sqlite', '/assistant/conversations/own/messages', {'content': 'hello'}, 'tenant_id', 'tenant-b', id='sqlite-/assistant/conversations/own/messages-body1-tenant_id-tenant-b'),
+    ],
+    indirect=['tenant_database'],
+)
+def test_authority_fields_are_forbidden_not_ignored(api, field, value, path, body):
+    response = call(api, "POST", path, headers=headers(), json={**body, field: value})
+    assert response.status_code == 422
+    assert response.json() == {"detail": [{"type": "validation_error", "msg": "Invalid request value"}]}
+    no_effects(api)
+
+
+@pytest.mark.parametrize(
+    'tenant_database,user,tenant,expected',
+    [
+        pytest.param('cockroach', 'multi', 'tenant-a', [], id='cockroach-multi-tenant-a-expected1'),
+    ],
+    indirect=['tenant_database'],
+)
+def test_conversation_list_is_private_even_for_multitenant_user(api, user, tenant, expected):
+    response = call(api, "GET", "/assistant/conversations", headers=headers(user, tenant))
+    assert response.status_code == 200
+    assert [item["id"] for item in response.json()["items"]] == expected
+
+
+
+
+@pytest.mark.parametrize(
+    'tenant_database',
+    [
+        pytest.param('cockroach', id='cockroach'),
+    ],
+    indirect=['tenant_database'],
+)
+def test_billing_counts_only_selected_tenant_and_returns_current_utc_month(billing_schema, api):
+    for tenant, creator in (("tenant-a", "alice"), ("tenant-b", "bob"), ("tenant-b", "bob")):
+        api.db.create_job({"tenant_id": tenant, "source": "test", "text_content": "test"}, creator)
+    with api.db.engine.begin() as connection:
+        from sqlalchemy import text
+        connection.execute(text("UPDATE jobs SET status = 'completed', created_at = '2020-01-01' WHERE tenant_id = 'tenant-a'"))
+    now = datetime.now(timezone.utc)
+    start = now.date().replace(day=1)
+    end = start.replace(year=start.year + 1, month=1) if start.month == 12 else start.replace(month=start.month + 1)
+    response = call(api, "GET", "/billing/summary", headers=headers())
+    assert response.status_code == 200
+    assert response.json()["open_ingestions"] == 1
+    assert response.json() == summary(
+        period={"start_date": start.isoformat(), "end_date": end.isoformat(), "timezone": "UTC"},
+        group_by="subscription", data_status="empty", totals=[], missing_dimension_count=0,
+        excluded_undated_count=0, open_ingestions=1,
+    )
+
+
+
+
+
+
+
+
+
+
+@pytest.mark.parametrize(
+    'tenant_database',
+    [
+        pytest.param('sqlite', id='sqlite'),
+    ],
+    indirect=['tenant_database'],
+)
+def test_resource_dependency_failure_never_leaks_business_markers(api, capsys, caplog):
+    def fail(*args):
+        raise RuntimeError("foreign-query-marker SELECT private FROM foreign-tenant-marker")
+    api.spies["fetch_conversations"].side_effect = fail
+    response = call(api, "GET", "/assistant/conversations", headers=headers())
+    assert response.status_code == 500
+    captured = capsys.readouterr()
+    rendered = response.text + captured.out + captured.err + caplog.text
+    for marker in ("foreign-query-marker", "foreign-tenant-marker", "SELECT private"):
+        assert marker not in rendered

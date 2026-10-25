@@ -1,2 +1,10 @@
 -r requirements.txt
+# JUP-054 runs the Azure simulator's real HTTP app in a separate process.
+-r ../azure-cost-api/requirements.txt
 pytest>=8.2.2
+jsonschema==4.25.1
+# The ingestion contract regression also imports the backend's real producer.
+PyJWT>=2.8.0
+
+# Real synthetic PDF fixtures for local OCR/extraction integration tests.
+reportlab>=4.4,<5

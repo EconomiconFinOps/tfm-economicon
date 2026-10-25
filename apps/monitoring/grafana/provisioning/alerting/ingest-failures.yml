@@ -1,0 +1,51 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: ingest-failures
+    folder: Economicon
+    interval: 1m
+    rules:
+      - uid: ingest-failures-rate
+        title: Fallos de ingesta por encima del umbral
+        condition: C
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Se han detectado varios fallos de ingesta recientes"
+          description: >-
+            Más de 2 jobs de ingesta han fallado en los últimos 5 minutos.
+            Revisa los logs del processor (correlados por request_id, JUP-044)
+            para identificar la fuente afectada.
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange:
+              from: 600
+              to: 0
+            model:
+              editorMode: code
+              expr: increase(processor_ingest_jobs_failed_total[5m])
+              instant: true
+              range: false
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              refId: C
+              expression: A
+              conditions:
+                - evaluator:
+                    params:
+                      - 2
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    type: last
+                  type: query

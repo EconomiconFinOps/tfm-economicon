@@ -1,0 +1,122 @@
+{
+  "release": "ffb5d307772f697cffb8b1e73e6330250e093601",
+  "runs": 19,
+  "results": 1688,
+  "source": "Versioned manifests only; no model calls",
+  "entries": [
+    {
+      "run_id": "jup-070-20261008T201354Z-37175957",
+      "report_path": "docs/evidence/JUP-070-run-1-report.json",
+      "report_sha256": "371759579532d4789475da74317d3d18aa7bfa3b6b6a64760cc0a93f8f89e495",
+      "results": 48
+    },
+    {
+      "run_id": "jup-070-20261008T210144Z-b64cca76",
+      "report_path": "docs/evidence/JUP-070-run-2-report.json",
+      "report_sha256": "b64cca76a96b62d518675b71209febfa28b96ed17a97f8334573830806fb1c53",
+      "results": 48
+    },
+    {
+      "run_id": "jup-078-undated-7ea00edf",
+      "report_path": "docs/evidence/JUP-078-benchmark-results.json",
+      "report_sha256": "7ea00edf37c3266ab8d87c860488a4028a3200a60ab966db3feea0dd953c26a5",
+      "results": 10
+    },
+    {
+      "run_id": "jup-022-20261015T092121Z-1d88198f",
+      "report_path": "docs/spikes/JUP-022-retrieval-calibration.json",
+      "report_sha256": "1d88198fe452ffa199d1baab670b9d6e5807ed8f3ab1886725abdac89c6e8b95",
+      "results": 140
+    },
+    {
+      "run_id": "JUP-068-synthetic-example-v1",
+      "report_path": "docs/validation/JUP-068-example.json",
+      "report_sha256": "0d8641661c5b0f5df9b20c6a05c7ce104c1cd82f45821b159f4a77333dfd7834",
+      "results": 23
+    },
+    {
+      "run_id": "jup130-anomalies-2026-10-30",
+      "report_path": "docs/evidence/JUP-130/JUP-130-anomalies.rows.json",
+      "report_sha256": "6ccaa80644ce61ad3c3cc286480a00e710cabc22e827e5ec86a59ba638485427",
+      "results": 16
+    },
+    {
+      "run_id": "jup130-data-2026-10-30",
+      "report_path": "docs/evidence/JUP-130/JUP-130-data.rows.json",
+      "report_sha256": "2dd79677cf518d9232a4edc70d10fb9881d05eeb8fcf57708ba3ae0581433464",
+      "results": 10
+    },
+    {
+      "run_id": "jup130-ai-cost-2026-10-09-to-2026-10-21",
+      "report_path": "docs/evidence/JUP-130/JUP-130-ai-cost.rows.json",
+      "report_sha256": "84f53f6116f8eef9086b23e2dfda76cd947cd20a784d8f5538e868fb02609d5f",
+      "results": 13
+    },
+    {
+      "run_id": "JUP-071-a543144c9a55",
+      "report_path": "docs/evidence/JUP-071-live-r1-rows.json",
+      "report_sha256": "3901a634e7df7e1d9732604a65b7852786370a5f3914f4d6364a35ae8846512b",
+      "results": 136
+    },
+    {
+      "run_id": "JUP-071-864a0d6dc666",
+      "report_path": "docs/evidence/JUP-071-live-flash-r1-rows.json",
+      "report_sha256": "c212f95f64100f8a5aedfa80d1adb0eb168d06182aa43febdd6f1adc87e59126",
+      "results": 136
+    },
+    {
+      "run_id": "jup130-ai-cost-2026-10-21-to-2026-10-22",
+      "report_path": "docs/evidence/JUP-133/JUP-133-ai-cost.rows.json",
+      "report_sha256": "e4f277b67c3ed5a3f0c628a9d84c860f64afe583db481db93a681b8602dc0e28",
+      "results": 15
+    },
+    {
+      "run_id": "jup-070-20261022T000000Z-2c5c6500",
+      "report_path": "docs/evidence/JUP-133/JUP-133-bank28-report.json",
+      "report_sha256": "2c5c65009bb8fc588903702d81c5738fe654476c47a795a8c1004e8ee7f71e34",
+      "results": 52
+    },
+    {
+      "run_id": "jup133-infra-jup070-a-r1-20261023",
+      "report_path": "docs/evidence/JUP-133/JUP-133-infra-jup070-a-r1.rows.json",
+      "report_sha256": "b2282201cc749313ec386c7c8c72dac5eab8ef916117b09aa4670becb2edb06d",
+      "results": 73
+    },
+    {
+      "run_id": "jup133-infra-jup070-a-r2-20261023",
+      "report_path": "docs/evidence/JUP-133/JUP-133-infra-jup070-a-r2.rows.json",
+      "report_sha256": "ed641797466d23bca6b085174608e82f486b22d1c4dd397847f70217271190f5",
+      "results": 73
+    },
+    {
+      "run_id": "jup133-infra-jup070-a-r3-20261023",
+      "report_path": "docs/evidence/JUP-133/JUP-133-infra-jup070-a-r3.rows.json",
+      "report_sha256": "0030a274d4525933b1f5de5209c2927698a20312f127ac6d825c4358f1c3b87c",
+      "results": 73
+    },
+    {
+      "run_id": "jup133-infra-jup071-r1-20261023",
+      "report_path": "docs/evidence/JUP-133/JUP-133-infra-jup071-r1.rows.json",
+      "report_sha256": "d0cddb4c3c4fe04909c1e845846aad00416ed7645d1fb806b62b20d332119464",
+      "results": 268
+    },
+    {
+      "run_id": "jup133-infra-jup071-r2-20261023",
+      "report_path": "docs/evidence/JUP-133/JUP-133-infra-jup071-r2.rows.json",
+      "report_sha256": "1b73b14ef40e7241890c3bd70b9541847589124e6f10addd73a07866eede884f",
+      "results": 268
+    },
+    {
+      "run_id": "jup133-infra-jup071-r3-20261023",
+      "report_path": "docs/evidence/JUP-133/JUP-133-infra-jup071-r3.rows.json",
+      "report_sha256": "e32b4efcad616569d29973475297ca6d7cc9a19ce0cc3a073dcbb75e3dc8a1d4",
+      "results": 268
+    },
+    {
+      "run_id": "jup-063-undated-1df92bdb",
+      "report_path": "docs/evidence/JUP-063/glm-deepseek-20261016/comparison.json",
+      "report_sha256": "1df92bdb492ddab8931c0d94819bee44c881c0133683a02ac3d78fe7dc547796",
+      "results": 18
+    }
+  ]
+}

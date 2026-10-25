@@ -1,0 +1,84 @@
+{
+  "date": "2026-10-23",
+  "scope": "Local R4 HTTP evidence, not public deployment or indexing",
+  "image_id": "sha256:a0f7852911da0e1874a32b64a8b62e8d12c0ad8713ea7fb5d8e37af22ecd4f83",
+  "build_origin": "https://landing-demo-jupiter.danteinferno.es",
+  "build_manifest_raw_sha256": "d9892d9f5661b503678af82bb2bccc1f02186507b2a909214bf13d4ea0c6bc35",
+  "build_entries": 15,
+  "static_assets_per_stage": 13,
+  "distinct_container_ids": 3,
+  "rebuilds_for_destination_changes": 0,
+  "stages": [
+    {
+      "stage": "A1",
+      "container_id": "74c78434e301fd848fe66a1d3d152a6868188fed11e9c2d184780df01337ebc2",
+      "runtime": {
+        "videoUrl": "/media/presentation.mp4",
+        "appUrl": "https://demo-jupiter.danteinferno.es/"
+      },
+      "llms": {
+        "status": 200,
+        "content_type": "text/plain; charset=utf-8",
+        "etag": null,
+        "cache_control": "no-store",
+        "bytes": 1255,
+        "no_public_indexing_claim": true,
+        "head": 200
+      },
+      "video": {
+        "head": 200,
+        "unsatisfiable": 416,
+        "range_bytes": 32,
+        "range": 206
+      }
+    },
+    {
+      "stage": "B",
+      "container_id": "2304a54aaf02aa4eeef16026c9acab134179eebb186d9989160e01af2f595799",
+      "runtime": {
+        "videoUrl": "/media/presentation.mp4",
+        "appUrl": "https://demo-jupiter.danteinferno.es/#r4-runtime-b"
+      },
+      "llms": {
+        "status": 200,
+        "content_type": "text/plain; charset=utf-8",
+        "etag": null,
+        "cache_control": "no-store",
+        "bytes": 1268,
+        "no_public_indexing_claim": true,
+        "head": 200
+      },
+      "video": {
+        "head": 200,
+        "unsatisfiable": 416,
+        "range_bytes": 32,
+        "range": 206
+      }
+    },
+    {
+      "stage": "A2",
+      "container_id": "804df54233c36df133a677f139431ecfc037ee636c5b435ca0ca5c5047efdd7e",
+      "runtime": {
+        "videoUrl": "/media/presentation.mp4",
+        "appUrl": "https://demo-jupiter.danteinferno.es/"
+      },
+      "llms": {
+        "status": 200,
+        "content_type": "text/plain; charset=utf-8",
+        "etag": null,
+        "cache_control": "no-store",
+        "bytes": 1255,
+        "no_public_indexing_claim": true,
+        "head": 200
+      },
+      "video": {
+        "head": 200,
+        "unsatisfiable": 416,
+        "range_bytes": 32,
+        "range": 206
+      }
+    }
+  ],
+  "private_environment_included": false,
+  "external_visits": 0
+}

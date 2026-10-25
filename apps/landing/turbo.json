@@ -1,0 +1,24 @@
+{
+  "extends": [
+    "//"
+  ],
+  "tasks": {
+    "build": {
+      "env": [
+        "SITE_ORIGIN",
+        "LANDING_OUT_DIR"
+      ],
+      "cache": false,
+      "outputs": []
+    },
+    "dev": {
+      "env": [
+        "SITE_ORIGIN",
+        "LANDING_OUT_DIR",
+        "PORT",
+        "LANDING_VIDEO_URL",
+        "LANDING_APP_URL"
+      ]
+    }
+  }
+}

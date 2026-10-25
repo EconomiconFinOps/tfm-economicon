@@ -1,59 +1,140 @@
-import logging
-import time
+from contextlib import ExitStack
+import re
+import os
+import threading
+import uuid
+
+import structlog
 
 from app.agents.service import AgentRuntime
+from app.clients.litellm import ProviderError
 from app.clients.rabbitmq_queue import QueueMessage, RabbitMQQueue
 from app.core.config import Settings
 from app.db.database import Database
-from app.embeddings.chunker import TextChunker
+from app.embeddings.structural_chunker import StructuredChunker
+from app.embeddings.contracts import ChunkingConfig
 from app.embeddings.providers import get_embedding_provider
 from app.graphs.pipeline import PipelineRunner
 from app.repositories.jobs import JobRepository
-from app.tasks.ingest import IngestTask
+from app.tasks.ingest import IngestTask, IngestionFailed, InvalidJobMessage
 from app.vector_store.pgvector_store import PgVectorStore
 
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class ProcessorWorker:
     def __init__(self, settings: Settings):
         self.settings = settings
-        self.database = Database(settings.database_url)
-        self.queue = RabbitMQQueue(settings.rabbitmq_url, settings.processor_queue_name)
-        self.vector_store = PgVectorStore(settings.vector_database_url, settings.embedding_dimension)
-        self.repository = JobRepository(self.database)
-        self.pipeline = PipelineRunner(
-            AgentRuntime(settings),
-            TextChunker(settings.embedding_chunk_size, settings.embedding_chunk_overlap),
-            get_embedding_provider(settings.embedding_provider, settings.embedding_dimension),
-            self.vector_store,
-        )
-        self.task = IngestTask(self.repository, self.pipeline)
+        self._stopping = threading.Event()
+        with ExitStack() as resources:
+            self.database = Database(settings.database_url.get_secret_value())
+            resources.callback(self.database.dispose)
+            self.queue = RabbitMQQueue(settings.rabbitmq_url.get_secret_value(), settings.processor_queue_name)
+            resources.callback(self.queue.close)
+            self.vector_store = PgVectorStore(settings.vector_database_url.get_secret_value(), settings.embedding_dimension)
+            resources.callback(self.vector_store.close)
+            self.repository = JobRepository(self.database)
+            self.pipeline = PipelineRunner(
+                AgentRuntime(settings),
+                StructuredChunker(ChunkingConfig(settings.embedding_chunk_target_tokens,
+                    settings.embedding_chunk_max_tokens, settings.embedding_chunk_overlap_ratio)),
+                get_embedding_provider(settings.embedding_provider, settings.embedding_dimension, settings=settings),
+                self.vector_store,
+            )
+            documents = None
+            if os.getenv('DOCUMENT_UPLOADS_ENABLED', 'false').lower() == 'true':
+                from app.documents.document_storage import S3Storage
+                from app.documents.document_processor import DocumentProcessor
+                storage = S3Storage()
+                resources.callback(storage.close)
+                documents = DocumentProcessor(self.database.engine, storage)
+            self.task = IngestTask(self.repository, self.pipeline, documents=documents)
+            # Initialize synchronously so combined startup cannot orphan a failing worker.
+            self.database.initialize()
+            self.vector_store.initialize()
+            self._resources = resources.pop_all()
+
+    def stop(self) -> None:
+        self._stopping.set()
+
+    def close(self) -> None:
+        self.stop()
+        self._resources.close()
 
     def run_forever(self) -> None:
-        self.database.initialize()
-        self.vector_store.initialize()
-        logger.info("Processor worker started for queue %s", self.settings.processor_queue_name)
+        logger.info("processor_worker_started")
 
-        while True:
+        while not self._stopping.is_set():
             try:
                 message = self.queue.blocking_pop(timeout=5)
                 if message is None:
-                    time.sleep(1)
+                    self._stopping.wait(1)
                     continue
                 self._process_message(message)
             except Exception as exc:
-                logger.exception("Worker loop failed: %s", exc)
-                time.sleep(2)
+                logger.error("worker_loop_failed", exception_type=type(exc).__name__)
+                self._stopping.wait(2)
+
+    def _document_terminal_failure(self, job, message):
+        documents = getattr(self.task, 'documents', None)
+        if documents is not None:
+            try:
+                documents.terminal_failure(job)
+            except Exception:
+                self.queue.nack(message.delivery_tag, requeue=True)
+                raise
 
     def _process_message(self, message: QueueMessage) -> None:
         job = message.payload
-        logger.info("Processing job %s", job["id"])
+        request_id = job.get("request_id") if isinstance(job, dict) else None
+        if not isinstance(request_id, str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", request_id):
+            request_id = str(uuid.uuid4())
+
+        structlog.contextvars.clear_contextvars()
+        structlog.contextvars.bind_contextvars(request_id=request_id)
+
+        logger.info("job_processing")
 
         try:
             self.task.execute(job)
             self.queue.ack(message.delivery_tag)
+        except InvalidJobMessage:
+            logger.warning("job_message_rejected")
+            self.queue.nack(message.delivery_tag, requeue=False)
+        except ProviderError as exc:
+            self._document_terminal_failure(job, message)
+            logger.warning("job_provider_failed", category=exc.category)
+            self.queue.nack(message.delivery_tag, requeue=False)
+        except IngestionFailed as exc:
+            if exc.permanent:
+                # Reintentar una entrada rechazada por el guardrail fallaria igual y
+                # retendria la cola: se descarta en una entrega. Evento fijo, sin campos
+                # del trabajo (el `request_id` ya lo aporta el contexto de structlog).
+                self._document_terminal_failure(job, message)
+                logger.warning("job_input_rejected")
+                self.queue.nack(message.delivery_tag, requeue=False)
+                return
+            if message.redelivered:
+                # Fallo no clasificado ya registrado como `failed` en una REENTREGA: el tope
+                # es "una reentrega como maximo" y no "dos intentos siempre" porque una
+                # primera entrega interrumpida (conexion perdida sin responder) ya llega
+                # marcada como reentrega, y lo unico que importa es no reencolar sin fin.
+                # Se descarta SIN relanzar: relanzar haria que el bucle registrase
+                # `worker_loop_failed` y esperase 2 s por un mensaje ya resuelto. El evento
+                # es fijo y sin campos propios (ni origen, ni contenido, ni texto de la causa).
+                self._document_terminal_failure(job, message)
+                logger.warning("job_retry_exhausted")
+                self.queue.nack(message.delivery_tag, requeue=False)
+                return
+            # Primera entrega: se conserva el comportamiento de siempre (reencolar y relanzar).
+            self.queue.nack(message.delivery_tag, requeue=True)
+            raise
         except Exception:
+            # Sin tope a proposito: aqui el estado del trabajo no se pudo leer o registrar
+            # (`fetch_authorized_job`, `mark_running` o `mark_failed` fallaron), asi que no
+            # sabemos que quedo escrito. Descartar dejaria el trabajo en `queued`/`running`
+            # sin mensaje que lo recupere y sin que nadie lo vea; reencolar, aunque sea una
+            # reentrega, es lo unico que conserva la posibilidad de resolverlo.
             self.queue.nack(message.delivery_tag, requeue=True)
             raise

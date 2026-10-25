@@ -1,0 +1,131 @@
+{
+  "report_version": 1,
+  "jup": "JUP-133",
+  "date": "2026-10-23",
+  "method": "single_automated_rubric_judge",
+  "user_authorized_agent_substitution": true,
+  "human_reviewers": 0,
+  "reviewer_count": 1,
+  "reviewer_model_attestation": "not_measured",
+  "provisional": true,
+  "accepted": false,
+  "coverage": {
+    "planned": 171,
+    "reviewed": 158,
+    "blocked": 13,
+    "pass_points": 618,
+    "fail_points": 102
+  },
+  "new_demo_gateway_calls": 0,
+  "new_demo_gateway_cost_usd": "0",
+  "agent_usage_cost_usd": null,
+  "agent_usage_cost_status": "not_measured",
+  "new_rows": 504,
+  "load_status": "verified_exact_contents",
+  "reports": [
+    {
+      "campaign": "jup070-a",
+      "repetition": 1,
+      "report": "JUP-133-infra-jup070-a-r1-agent-report.json",
+      "judgments_sha256": "0682ea08131f2a7e93493235e5f4e775f99ae5492bc618ccf4064e1e44ca5a22",
+      "raw_sha256": "ef4d4d9f8088f60f6d99e0b033d8446e22e4a07a939aedd5782eb23456a21103",
+      "planned": 28,
+      "reviewed": 27,
+      "criteria": 107,
+      "case_counts": {
+        "fail": 14,
+        "pass": 13,
+        "blocked": 1
+      }
+    },
+    {
+      "campaign": "jup070-a",
+      "repetition": 2,
+      "report": "JUP-133-infra-jup070-a-r2-agent-report.json",
+      "judgments_sha256": "269dff136acfb2436c06c5def2057829daf642aace7ec24c85eb928ae497ce63",
+      "raw_sha256": "290940b7597525e966cef8454bcbaa865d3fd037d740b37b400787ca2059e11b",
+      "planned": 28,
+      "reviewed": 25,
+      "criteria": 98,
+      "case_counts": {
+        "fail": 17,
+        "pass": 8,
+        "blocked": 3
+      }
+    },
+    {
+      "campaign": "jup070-a",
+      "repetition": 3,
+      "report": "JUP-133-infra-jup070-a-r3-agent-report.json",
+      "judgments_sha256": "c5d080a92f959c6c8b7a306256e6c34ea35df3eb02a5488cbbaaf31c902ecc5e",
+      "raw_sha256": "384dcb7335c3ad2bfc68971191952a8361aa50144870ec9d10d56dbca96c3d26",
+      "planned": 28,
+      "reviewed": 25,
+      "criteria": 101,
+      "case_counts": {
+        "fail": 13,
+        "pass": 12,
+        "blocked": 3
+      }
+    },
+    {
+      "campaign": "jup071",
+      "repetition": 1,
+      "report": "JUP-133-infra-jup071-r1-agent-report.json",
+      "judgments_sha256": "e18f38b89d91439d21dbb120565dddf6526d174fff5148f7ab4e9cc536b8c079",
+      "raw_sha256": "b03c1779cd77c63a8dce34195c471fa1fc02fc801f6d259e369687632713be02",
+      "planned": 29,
+      "reviewed": 27,
+      "criteria": 138,
+      "case_counts": {
+        "pass": 11,
+        "fail": 16,
+        "blocked": 2,
+        "not_run": 0
+      }
+    },
+    {
+      "campaign": "jup071",
+      "repetition": 2,
+      "report": "JUP-133-infra-jup071-r2-agent-report.json",
+      "judgments_sha256": "4e9bc56563d1725ec63383d4a5bd5ab43db1cb39b956f0c4e7911c8adde63253",
+      "raw_sha256": "d944e2a6c9ab4624eb7829152e62089a020e22968a4bb61c4f9bd93636f3f5f1",
+      "planned": 29,
+      "reviewed": 26,
+      "criteria": 132,
+      "case_counts": {
+        "pass": 9,
+        "fail": 17,
+        "blocked": 3,
+        "not_run": 0
+      }
+    },
+    {
+      "campaign": "jup071",
+      "repetition": 3,
+      "report": "JUP-133-infra-jup071-r3-agent-report.json",
+      "judgments_sha256": "339985fa79ed7620224e11e8097dae287a4a989650bd608bcc0deb1f755c9202",
+      "raw_sha256": "45ecdfc58dd8a660ebd846dbbc5616f63377ddb5b92d177786b03830506fd8ae",
+      "planned": 29,
+      "reviewed": 28,
+      "criteria": 144,
+      "case_counts": {
+        "pass": 7,
+        "fail": 21,
+        "blocked": 1,
+        "not_run": 0
+      }
+    }
+  ],
+  "limitations": [
+    "One automated judge, not two independent human reviewers.",
+    "Case outcome combines rubric with the unchanged numeric reader and its false negatives.",
+    "Zero violations covers only the named prohibitions, not all possible hallucinations.",
+    "Thirteen failed operations remain blocked and are not scored as wrong answers.",
+    "Missing distances, stage durations, HTTP availability and provider categories stay not_measured.",
+    "JUP-070 official aggregate remains blocked; supplemental metrics use explicit available populations.",
+    "REL-2 uses all frozen section spans and is not identical to the old first-heading projection.",
+    "Underlying model identity remains declared, not attested; no campaign acceptance."
+  ],
+  "load_report": "JUP-133-agent-load-report.json"
+}

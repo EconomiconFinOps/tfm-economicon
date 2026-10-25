@@ -1,0 +1,4 @@
+3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]
+{'fastapi': '0.162.0', 'starlette': '1.10.0', 'pytest': '9.1.1', 'httpx': '0.28.1', 'pydantic': '2.14.1', 'pydantic-settings': '2.16.1'}
+
+STDERR

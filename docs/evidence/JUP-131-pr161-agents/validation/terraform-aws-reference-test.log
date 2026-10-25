@@ -1,0 +1,29 @@
+tests\architecture.tftest.hcl... in progress
+  run "private_data_and_documentary_defaults"... pass
+  run "application_activation_requires_adaptation"... pass
+  run "single_nat_is_explicit"... pass
+  run "reject_wrong_region_zones"... pass
+  run "adapted_workload_shape"... pass
+  run "reject_database_family_mismatch"... pass
+  run "rehearsal_teardown_preserves_topology"... pass
+tests\architecture.tftest.hcl... tearing down
+tests\architecture.tftest.hcl... pass
+tests\bedrock.tftest.hcl... in progress
+  run "eu_chat_profile_is_explicit_and_scoped"... pass
+  run "no_chat_inference_by_default"... pass
+  run "reject_global_or_unreviewed_profile"... pass
+tests\bedrock.tftest.hcl... tearing down
+tests\bedrock.tftest.hcl... pass
+tests\monitoring.tftest.hcl... in progress
+  run "monitoring_private_routing_and_capacity"... pass
+tests\monitoring.tftest.hcl... tearing down
+tests\monitoring.tftest.hcl... pass
+tests\runtime.tftest.hcl... in progress
+  run "private_chat_and_document_permissions"... pass
+  run "ecs_runtime_configuration"... pass
+tests\runtime.tftest.hcl... tearing down
+tests\runtime.tftest.hcl... pass
+
+Success! 13 passed, 0 failed.
+
+STDERR

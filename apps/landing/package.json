@@ -1,0 +1,17 @@
+{
+  "name": "@finops/landing",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/serve.mjs --build",
+    "preview": "node scripts/serve.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "lint": "node --check src/app.js && node --check scripts/build.mjs && node --check scripts/serve.mjs && node --check scripts/start.mjs && node --check scripts/runtime-config.mjs && node --check scripts/public-media.mjs",
+    "start": "node scripts/start.mjs"
+  }
+}

@@ -1,0 +1,130 @@
+import { Download, FileText, FileSpreadsheet } from "lucide-react";
+import { useState } from "react";
+
+// El origen tipa `data`/`row` como `any` (JUP-095, grupo 5, tarea 5.3). Este
+// repo corre con `strict: true` y la tarjeta prohibe introducir `any` nuevo
+// (design.md, decision 9), asi que sustituimos por un tipo real: los 5
+// dashboards que consumen este boton construyen su `exportData` como un
+// array de objetos planos con valores de texto o numero (columnas de
+// tabla/KPI), de ahi `Record<string, string | number>` en vez de una
+// interfaz mas amplia (p.ej. `unknown`) que obligaria a castear en cada uso.
+type ExportRow = Record<string, string | number>;
+
+// Rows may carry text typed by users (for example a closing reason), so the
+// print window gets escaped HTML and spreadsheet formulas are neutralised.
+function escapeHtml(value: unknown): string {
+  return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function csvCell(value: string | number | undefined): string {
+  const text = String(value ?? "");
+  const numeric = /^-?\d+(\.\d+)?$/.test(text);
+  return JSON.stringify(!numeric && /^[=+\-@\t\r]/.test(text) ? "'" + text : text);
+}
+
+interface ExportButtonProps {
+  data: ExportRow[];
+  filename: string;
+  // Formatos que ofrece el menu; por defecto CSV y PDF.
+  formats?: ExportFormat[];
+}
+
+export type ExportFormat = "csv" | "pdf";
+
+export function ExportButton({ data, filename, formats = ["csv", "pdf"] }: ExportButtonProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const exportToCSV = () => {
+    const headers = Object.keys(data[0] || {});
+    const csvContent = [
+      headers.join(','),
+      ...data.map((row: ExportRow) =>
+        headers.map(h => csvCell(row[h])).join(',')
+      )
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${filename}.csv`;
+    link.click();
+    setIsOpen(false);
+  };
+
+  const exportToPDF = () => {
+    const content = `
+      <html>
+        <head>
+          <title>${escapeHtml(filename)}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            h1 { color: #2b2359; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #d9d5f2; padding: 8px; text-align: left; }
+            th { background-color: #2b2359; color: #fafafc; }
+          </style>
+        </head>
+        <body>
+          <h1>${escapeHtml(filename)}</h1>
+          <p>Generado: ${new Date().toLocaleString('es-ES')}</p>
+          <table>
+            <thead>
+              <tr>${Object.keys(data[0] || {}).map(h => `<th>${escapeHtml(h)}</th>`).join('')}</tr>
+            </thead>
+            <tbody>
+              ${data.map((row: ExportRow) =>
+                `<tr>${Object.values(row).map(v => `<td>${escapeHtml(v)}</td>`).join('')}</tr>`
+              ).join('')}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '', 'width=800,height=600');
+    if (printWindow) {
+      printWindow.document.write(content);
+      printWindow.document.close();
+      printWindow.print();
+    }
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all"
+      >
+        <Download className="w-4 h-4" />
+        Exportar Resultados
+      </button>
+
+      {isOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setIsOpen(false)}
+          />
+          <div className="absolute right-0 mt-2 w-48 bg-card rounded-lg shadow-xl border border-border z-20">
+            {formats.includes("csv") && <button
+              onClick={exportToCSV}
+              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors text-left text-foreground"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-success" />
+              <span>Exportar CSV</span>
+            </button>}
+            {formats.includes("pdf") && <button
+              onClick={exportToPDF}
+              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors text-left border-t border-border text-foreground"
+            >
+              <FileText className="w-4 h-4 text-danger" />
+              <span>Exportar PDF</span>
+            </button>}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

@@ -1,0 +1,43 @@
+{
+  "reviewer": "/root/pr161_code_review",
+  "checked_at": "2026-10-24T23:28:47.859987+02:00",
+  "head": "e730dc15fb3feb45a3b346fc9e48332c4608b049",
+  "file_sha256": {
+    "infra/aws-reference/edge.tf": "e78050dcc2d0b4f4ce76c1e3c9b64537c25a995e4b1537915dc3e7285726e2e7",
+    "infra/aws-reference/tests/monitoring.tftest.hcl": "d215fb2d3ea7d759a6a2a276b60e7541d2ce77e7ef9031f75972437ce5864c9f"
+  },
+  "result": "PASS",
+  "patterns": [
+    "/metrics",
+    "/metrics/*",
+    "/grafana/metrics*"
+  ],
+  "match_evaluations": 3,
+  "wildcards": 2,
+  "deny_priority": 1,
+  "grafana_priority": 10,
+  "fixed_status": 404,
+  "old_candidate_exposes_grafana_metrics_route": true,
+  "blocked_paths": [
+    "/metrics",
+    "/metrics/",
+    "/metrics/internal",
+    "/grafana/metrics",
+    "/grafana/metrics/",
+    "/grafana/metrics/internal",
+    "/grafana/metrics?format=prometheus",
+    "/grafana/metrics-prefix"
+  ],
+  "preserved_paths": [
+    "/grafana",
+    "/grafana/",
+    "/grafana/login",
+    "/grafana/api/health",
+    "/grafana/api/ds/query",
+    "/grafana/api/live/ws",
+    "/grafana/public/build/app.js",
+    "/grafana/d/economicon-assistant-evaluation/atlas",
+    "/grafana/login?redirect=/grafana/metrics"
+  ],
+  "limitations": "Source-only glob evaluation on normal paths; no URI-normalization, Terraform execution, AWS, Docker or HTTP runtime check."
+}

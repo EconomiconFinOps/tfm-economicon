@@ -1,6 +1,6 @@
 import hashlib
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 import jwt
 
@@ -23,13 +23,31 @@ def verify_password(password: str, password_hash: str) -> bool:
 
 
 def create_access_token(user_id: str, secret_key: str, expires_minutes: int) -> str:
-    expires_at = datetime.now(timezone.utc) + timedelta(minutes=expires_minutes)
+    issued_at = int(datetime.now(timezone.utc).timestamp())
     payload = {
         "sub": user_id,
-        "exp": int(expires_at.timestamp()),
+        "iat": issued_at,
+        "exp": issued_at + expires_minutes * 60,
     }
     return jwt.encode(payload, secret_key, algorithm="HS256")
 
 
 def decode_access_token(token: str, secret_key: str) -> dict:
-    return jwt.decode(token, secret_key, algorithms=["HS256"])
+    payload = jwt.decode(
+        token,
+        secret_key,
+        algorithms=["HS256"],
+        leeway=5,
+        options={"require": ["sub", "iat", "exp"]},
+    )
+    # PyJWT checks signature and clock bounds but may coerce time claim types.
+    if (
+        not isinstance(payload["sub"], str)
+        or not payload["sub"]
+        or type(payload["iat"]) is not int
+        or type(payload["exp"]) is not int
+        or payload["iat"] < 0
+        or payload["exp"] <= payload["iat"]
+    ):
+        raise jwt.InvalidTokenError("Invalid access token.")
+    return payload

@@ -1,0 +1,279 @@
+# Demo funcional — JUP-065
+
+## Reconciliacion con develop — 2026-10-16
+
+Se incorpora22f0e2f3 (JUP-121/PR132) sobre6a498a40. Unico conflicto en
+el indice:ambas filas conservadas. CI combina historial completo y tres comandos
+de demo con evaluation-dashboard:test y timeout20min de develop. Todos los
+cambios disjuntos contrastados con Git; paquete, scripts y guion intactos.
+Propio:15/15 artefactos en modo normal/optimizado,3tests de integridad,
+28consultas/7categorias,88tests de workflow/politica/gobernanza,OpenSpec75/75,
+trazabilidad7 e higiene1716 correctos; diff propio contra develop limpio.
+CI del nuevo SHA pendiente de publicacion. Paris reviso favorablemente6a498a40;
+Victor valido39baec24 con mock. No se trasladan como nuevos dictamenes.
+La base introduce series de fallos en backend y datasource/dashboard Grafana;
+revalidar dependencias afectadas antes de integrar. No se ejecuto stack, Grafana,
+modelo ni ensayo. PR135 sigue separada; gate historico, pairing y ensayo pendientes.
+
+## Comentario de Lucía del15/10 — respuesta preparada16/10/2026
+
+Comentario6200382477 distinto de la review del14/10. Se explicita elección:
+JUP065 muestra junio2024 y COST_REFERENCE_DATE vacío;JUP107/119 con fecha
+2026-10-30 requiere ensayo,proyecto,volúmenes y registro separados. No unificarlos
+sin recalcular referencias. Guion ampliado9min incorpora JUP036 después de2:45;
+tramo obligatorio en ensayo técnico aunque presentación corta7min. Reservas no
+acumulativas;PlanB de costes sólo parcial,no sustituye aceptación generativa.
+Propuesta de anomalías/ownership/etiquetado/salud/observabilidad/CI-CD pendiente
+de ampliación acordada,no implementada ni validada. No merge ni Discord.
+
+## Actualización de PR63 — 15/10/2026
+
+Origen: chat `01a12c49-7488-72f0-9077-1137c5c4f2a6`. Reconciliación con develop
+53b43bb1 desde f27eb7f; índice y CI preservados. Atendidas observaciones de Lucía
+sobre JUP119, entregas A/B, HMAC/migraciones y panel. Tres tests con control
+negativo de invariantes,15 artefactos intactos,34 comandos offline PASS,
+OpenSpec74/74,19 enlaces;3 omisiones de entorno. Véase
+[evidencia](../evidence/JUP-065-validation.md). CI publicada/revalidación pendientes;
+no se acredita ensayo ni pairing. Trello snapshot20261015T181923Z:065 Validación,
+036 Hecho,A integrada con tarjeta aún En revisión,B en curso y035 Bloqueado.
+No extender autorizaciones de evaluación de B a esta tarea.
+
+Actualizado: 2026-10-11. Origen: «JUP-065 — Preparar la demo funcional», chat `01a0f8dc-e719-7161-a17b-d7686751fe0f`.
+[Tarjeta](https://trello.com/c/SZUFo4ol).
+
+## Preparación y reconciliación — 11/10/2026
+
+Origen: «Adelanta JUP-065 — Preparar demo funcional del MVP», chat
+`01a12c49-7488-72f0-9077-1137c5c4f2a6`. PR63 af132c1 seguía abierta con conflictos;
+14 reviews/cuatro comentarios/sin inline leídos. Paris revisó ese head hoy;
+Víctor conserva a75b707. Nueva combinación con develop 3b8e952 resuelve CI e
+índice conservando ambas ramas, sin cambios propios de producto/configuración.
+
+[Preparación y comprobaciones](../evidence/JUP-065-validation.md): 15 artefactos,
+2 tests de integridad, 28 preguntas, 99 tests focales, 31 comandos de gobernanza,
+OpenSpec 63/63, seis changes; 11 omisiones explícitas. Diez fuentes coincidentes;
+consulta actual compatible y datos fijos intactos. Guion/preflight aclaran 38
+registros y SQL de jobs; [ensayo integrado](../demo/JUP-065/ensayo-integrado.md) y
+plantilla preparados con puertas JUP-035/036 y resultados esperados, sin ejecutarlo.
+
+Trello sólo puente DockerServer / snapshot20261011T184737Z: roles intactos, lista 50.
+Pendiente publicar y comprobar CI del SHA final, revalidación incremental
+Paris/Víctor, pairing Lucía y ensayo real/reproducción/aceptación. No implementar
+035/036 ni suplir Paris; no aplicar excepciones externas. Sin merge, cierre,
+despliegue, pagos o Discord. Evidencia local: `materiales/07-evidencias/JUP-065-preparacion-2026-10-11/`.
+
+## Histórico: reanudación y reconciliación — 10/10/2026
+
+El usuario pide retomar exclusivamente JUP-065 y dejar la auditoría del Coordinador;
+después autoriza reconciliar la PR63. Se incorpora develop `412ae411` sobre head
+`48ee742`, resolviendo sólo el conflicto del índice con todos los temas conservados.
+CI combina controles actuales y demo. README/guion/preflight fijan desmarcar la
+opción nueva de costes por propiedad para recorrer el corpus documental.
+
+[Evidencia actual](../evidence/JUP-065-validation.md): 15 artefactos intactos/reproducibles,
+dos tests negativos, 28 consultas/siete categorías, 99 tests de herramientas,
+OpenSpec58/58, ocho changes trazables, higiene1061 y diff correcto. Producto/config
+igual a develop; ningún ensayo/runtime/proveedor real ejecutado.
+
+Revalidación incremental Paris/Víctor de esta combinación, pairing Lucía y ensayo
+integrado pendientes. Las reviews históricas no se atribuyen al nuevo head;
+`registro-ensayo.md` sigue `not_run`. Trello50 verificado por puenteDockerServer
+en `snapshot-20261010T163724Z.json`, synced16:37:16Z/18:37:16Europe/Paris.
+El siguiente paso es publicar el commit y sus evidencias y solicitar revalidación,
+sin cerrar la tarjeta ni enviar Discord.
+
+## Alcance
+
+El usuario autorizó preparar la demo antes del MVP integrado, publicar la PR y
+solicitar formalmente revisión/validación. El paquete canónico compartido está en
+[docs/demo/JUP-065](../demo/JUP-065/README.md); [OpenSpec](../../openspec/changes/archive/2026-10-03-jup-065-functional-demo/proposal.md)
+conserva escenarios y tareas. La [evidencia](../evidence/JUP-065-validation.md)
+distingue comprobaciones automáticas y pendientes humanos.
+
+## Índice reconciliado tras JUP-025/JUP-029 — 08/10/2026
+
+El aviso de validar PR #63 encuentra un único conflicto add/add en el índice de
+continuidad. Se conservan las entradas y los dos resúmenes: demo propia y
+presupuestos entrante de develop `8cc5db0`. La fila de presupuestos conserva su
+corte histórico del 02/10; no se presenta como un estado verificado hoy.
+
+El guion mensual publicado en `3fe2886`, sus quince artefactos, corpus, prompts,
+rúbricas, scripts, lector/contrato de costes y CI se conservan. La base integra
+citas JUP-025 y presupuestos JUP-029: cambia assistant/metadata/visualización de
+evidencia y añade un POST de presupuesto; el GET de costes y dashboard mensual
+no cambian. Es una dependencia nueva para el ensayo, no una ejecución de él.
+
+[Paris revisó favorablemente 3fe2886](https://github.com/EconomiconFinOps/tfm-economicon/pull/63#pullrequestreview-5447622145).
+Tras publicar esta reconciliación, solicitar relectura/validación únicamente del
+índice y del efecto de las dependencias entrantes en la preparación. Se mantienen
+el pairing real de Lucía y el ensayo con modelo/pertinencia/citas/rúbricas/tiempos
+pendientes. Las pruebas anteriores conservan sus fechas y no se atribuyen a este
+merge como nuevas ejecuciones. Sin integración de PR a develop, despliegue o cierre.
+
+## Histórico: corrección P2 de cobertura CI — 05/10/2026
+
+Paris solicitó proteger los tres comandos de demo y el historial completo del
+checkout de gobernanza en su [review sobre b77d596](https://github.com/EconomiconFinOps/tfm-economicon/pull/63#pullrequestreview-5408829450).
+Se añaden cuatro pruebas en `tools/ci-workflow.test.mjs`: líneas ejecutables
+completas para cada comando y `fetch-depth: 0`; se impide ignorar fallos de demo.
+Workflow, runtime, paquete y fuentes fijas conservados.
+
+Resultado: workflow 14/14; seis mutaciones rechazadas, con restauración byte a
+byte; gobernanza afectada 97/97; verificador normal/optimizado 15/15, dos tests,
+28 consultas/siete categorías; OpenSpec 45/45, diez changes, higiene 842 y diff
+contra develop PASS. [Evidencia](../evidence/JUP-065-validation.md) actualizada.
+Logs locales: `materiales/07-evidencias/JUP-065-proteccion-ci-2026-10-05/` en
+el espacio Economicon, fuera del repositorio.
+
+Solicitar revisión de Paris sobre el nuevo head (Approve levanta Request changes)
+y revalidación afectada a Víctor. Su Comment favorable de `b77d596` es histórico
+para este cambio. Pairing Lucía y ensayo integrado siguen pendientes; no se
+implementa generación LLM. Sin merge ni cierre; Trello conserva etapa 50 durante
+la corrección. Este corte sustituye los pendientes técnicos del 04/10 siguientes.
+
+## Decisiones históricas
+
+Actualización del 04/10: develop `c3aa9d6` aporta #62, #60 y #67. El conflicto
+de CI se resuelve conservando comandos demo y retrieval, sin tocar el paquete
+ni sus fuentes fijas. Nuevas comprobaciones: 15/15, dos tests/cuatro controles,
+28 consultas, 140 pruebas de tooling, calibración 26 pass/una omitida, OpenSpec
+45/45, diez changes trazables y diff check contra la base correctos.
+La omisión de pgvector y la ausencia de runtime/modelo en esta actualización
+se conservan como límites; #67 no acredita por sí sola el ensayo.
+
+Paris confirmó la revisión incremental y Víctor validó `bf50073`; falta
+confirmación incremental sobre la nueva combinación con retrieval antes de
+integrar. El pairing de Lucía sigue sin acreditar o reasignar de forma acordada
+en Trello y Participación. CI del head publicado y reviews se consultan en #63.
+Sin merge ni cierre; ensayo integrado permanece pendiente. Las decisiones del
+03/10 siguientes conservan el corte histórico previo a esas aprobaciones.
+
+Paris publicó `Revision JUP-065` como Request changes el 02/10 sobre `e52853b`.
+Los dos P2 se corrigen el 03/10: README verifica originales antes de regenerar
+y la regeneración opcional va a un temporal; AGENTS recupera exactamente el
+contenido de develop sin imponer una obligación general de continuidad. Estos
+documentos técnicos se conservan. La convención común #64 se trata por separado,
+sin dependencia de esta demo.
+
+OpenSpec de esta preparación archivado en `2026-10-03-jup-065-functional-demo`
+según CONTRIBUTING; las reviews, pairing y ensayo permanecen pendientes.
+
+El material original se verificó y se ejecutaron sus controles negativos antes
+de cualquier cambio. Sus quince hashes quedaron conservados. Se incorporó
+develop `d6fc408` mediante merge sin conflictos, manteniendo `JUP reviews` y
+`local:test`. La referencia de datos sigue fijada al commit original.
+
+Base de fuentes `de0d62e7c0028f35a81c5087f531d19031a90e81`; lectura con `git show`,
+hashes y licencia. Referencia: 40 filas, 38 registros, ocho grupos, 0,06 USD;
+no equivale a un resultado observado del runtime. JUP-069-004/003 principales y
+001/023/025 reservas. El caso 001 de 1.000 EUR es sintético y no pertenece al dashboard.
+
+El guion no presume chat conectado a billing ni gráficos estáticos como datos
+reales. Activar el gateway del processor no acredita el proveedor de `/assistant`.
+Las rúbricas no entran en prompts ni en el índice documental. CI y el verificador
+solo prueban preparación; plantilla de ensayo y runtime permanecen `not_run`.
+
+## Reproducción y siguiente paso
+
+Desde la raíz: `python docs/demo/JUP-065/verificar.py --repo .` y
+`node docs/demo/JUP-065/generado/sources/tools/validation-questions.mjs validate`.
+Con historial superficial, obtener primero el SHA indicado en el README.
+
+Paris revisa; Victor valida la preparación; Lucia participa en pairing y
+Alejandro lidera según Trello. No acreditar participaciones hasta su confirmación.
+Tras integrar el MVP, fijar commit/proveedor/índice, ejecutar preflight y recorrido,
+guardar evidencias y obtener reproducción independiente antes del cierre.
+
+## Publicación
+
+PR [#63](https://github.com/EconomiconFinOps/tfm-economicon/pull/63) hacia develop,
+rama `docs/JUP-065-functional-demo`. Implementación inicial `d9b7c6a`;
+la solicitud de revisión/validación y el CI del último head se consultan en la PR.
+Solicitar a `ParisArcos` revisión técnica y a `Victorh1397` validación offline de
+preparación. Los resultados locales son nuevos; no hay aceptación humana registrada.
+
+### Compatibilidad de tests CI tras la reconciliacion
+
+La CI38966722271 de6c2183cc detecto dos fallos en test_evaluation_scripts.py:
+la lista exacta heredada de JUP-121 no incluia los tres comandos demo. Se
+incorporan a la expectativa, manteniendo comparacion estricta, orden y todos
+los controles; no se elimina ningun test.16tests focales y18workflow PASS.
+Nuevo SHA y CI sustituyen ese candidato; pendiente revalidacion independiente.
+
+## Actualizacion17/10/2026
+
+Develop ee4e8031 (PR136/JUP071) incorporado sobre396bac67 sin conflictos.
+CI, tests de workflow y lista exacta de evaluation_scripts conservan controles
+de demo y robustez. Cambios disjuntos contrastados con Git sin perdidas.
+15artefactos reproducibles normal/optimizado,3tests integridad,16evaluation_scripts
+y88workflow/politica/gobernanza correctos; OpenSpec y trazabilidad/higiene PASS.
+CI del nuevo SHA pendiente; no se ejecuta modelo ni ensayo. Paris conserva
+su comentario favorable sobre6a498a40; Request changes Victor pendiente de
+revalidacion y Approve. No se modifican reviews ni se integra PR135 aqui.
+
+
+## Actualizacion de base — 18/10/2026
+
+Peticion humana de actualizar PR63 tras solicitud de Lucia. Reconciliacion local
+48567c4a preservada; incorporado develop b1f5f75b8a7ed4d3a2cd9eccac21e7f04e0ab266.
+Unico conflicto en indice: conservar demo y filas/versiones actuales de develop.
+Producto, gobernanza y configuracion de base conservados; sin excepcion para PR63.
+PR135/134/140/138 ya forman parte de esta base; no esperar otra integracion
+de esas PR. El ensayo y su aceptacion siguen NOT_RUN. No trasladar runtime
+ni aprobacion de Victor sobre ed9a172a a este candidato con dependencias nuevas.
+Pruebas focales y CI se registraran con SHA final en descripcion/recibo PR63.
+No cambios al paquete fijo, ampliacion de demo ni repeticion de entrega a Lucia.
+Origen: chat 01a12c49-7488-72f0-9077-1137c5c4f2a6.
+
+Verificado antes de publicar: demo normal/optimizada15/15, integridad3/3,
+compatibilidad CI4/4, workflow/politica/gobernanza137/137,28preguntas/7categorias
+y OpenSpec80/80. Diff propio frente a develop limpio; avisos de whitespace
+en evidencias JUP125 heredados de base, no corregidos en esta PR.
+Producto/configuracion/politica identicos a develop por comparacion Git;
+docs/demo/JUP-065 identico a ed9a172a. Runtime actual no ejecutado.
+
+
+## Base final tras PR139 — 18/10/2026
+
+Por nueva prioridad humana, incorporar develop6d9e6710b7306faced8f811121a757267789120f
+a e26219fa sin tocar otras PR. Unico conflicto: indice de continuidad;
+conservar demo e indices de embeddings. Producto/configuracion son los de
+develop; gobernanza y CI sin cambios respecto a e26219fa. Paquete demo
+intacto: reutilizar pruebas de integridad3/3 y gobernanza137/137 del18/10
+por identidad de entradas, sin presentarlas como ejecuciones nuevas.
+Repetir verificador y compatibilidad CI, validar OpenSpec actualizado y
+comprobar CI push/PR/SQL/policy del SHA publicado. Resultados finales en
+recibo GitHub y materiales/07-evidencias/PR63-base139-20261018/ del workspace.
+La nueva recuperacion/contexto de PR139 exige revalidacion del entorno
+y consultas afectadas; ninguna evidencia runtime antigua se traslada por
+identidad. Ensayo NOT_RUN, sin inferencias, consumo ni servicios compartidos.
+Paris Revision y Victor Validacion sobre candidato final; aviso unico por HAL.
+
+## Corrección posterior al ensayo — 19/10/2026
+
+El ensayo real sobre RCf444ba11 obtuvo aceptación parcial; supersede el NOT_RUN
+histórico anterior, sin acreditar aceptación integral. Su cierre y límites se
+recogen en la tarjeta JUP-065. Los fallos de acciones ocultas, texto incompleto
+persistido y fuentes sin apertura se corrigen en una rama y PR independientes:
+[acciones y citas del panel](../demo/JUP-065/correccion-panel.md). Se conservan los roles
+humanos; las excepciones previas no se extienden a esta nueva PR. Ensayo narrado,
+pertinencia de citas y nueva aceptación generativa siguen pendientes.
+
+
+## Integración de la demo congelada — 23/10/2026
+
+Nueva autorización humana: «Haz la pr y mergea como excepcion con aprobacion mia».
+Rama `fix/JUP-065-frozen-demo-final10000`, base develop `03e97ce670286bb55d2750be7bb466deb24548c6`.
+Se reúnen 26 archivos de producto/pruebas idénticos a la fuente final10000
+previamente ensayada: borrador 1000, final 10000, reserva 11000, prompts y lectura
+restringida de registros LibreOffice. [Evidencia y excepción](../evidence/JUP-065-frozen-demo-20261023.md).
+
+Entrega como demo con incidencias; RC integral NO ACEPTADA (003 investigación
+omitida, 004 soporte global no acreditado, 025 truncado/EOF antes de completar).
+La excepción autoriza integración, sin convertir los resultados en aceptación.
+No se atribuyen revisiones humanas ni se repiten campañas de modelos o pruebas
+de la demo. Se mantienen DockerDevelop, accesos y presupuesto de 10 USD.
+Trello continúa en Validación; el merge no equivale al cierre integral de JUP-065.
+La CI automática del repositorio se registra aparte de la evidencia histórica.
+Origen: «Levantar Jupiter en dockerDevelop», `01a16421-03a0-7460-b110-24738407ccb1`.
+PR y merge se confirmarán en el registro GitHub y la continuidad local al concluir.

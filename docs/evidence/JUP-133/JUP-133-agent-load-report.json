@@ -1,0 +1,92 @@
+{
+  "status": "verified_exact_contents",
+  "confirmation_required": true,
+  "target_host": "DockerDevelop",
+  "before": {
+    "runs": 23,
+    "results": 1284
+  },
+  "after": {
+    "runs": 23,
+    "results": 1788
+  },
+  "all_1284_existing_result_rows_unchanged": true,
+  "existing_run_metadata_changes": "Only report_sha256 of the six supplemented runs",
+  "new_generations": 0,
+  "rows_added": 504,
+  "new_rows_judgment": "automatic",
+  "new_rows_prefix": "agent_",
+  "new_human_judgments": 0,
+  "six_run_ids": [
+    "jup133-infra-jup070-a-r1-20261023",
+    "jup133-infra-jup070-a-r2-20261023",
+    "jup133-infra-jup070-a-r3-20261023",
+    "jup133-infra-jup071-r1-20261023",
+    "jup133-infra-jup071-r2-20261023",
+    "jup133-infra-jup071-r3-20261023"
+  ],
+  "database_md5_before": "f86e809da49df15bdbfb7a13644ccecc",
+  "sql_sha256": "9074d4e1fe6111713b04f3580da2807095377dc8a219c867172b0ef3815176dd",
+  "dashboard_sha256": "a8294598278362c9800a57343c74c69124fb439d7a58d6b5d7a2263b5af932a9",
+  "source_dataset_sha256": "4d75ef5d39d8ab82c42614b32900344292144f7f055208cf5466336041fb001c",
+  "access_quota_or_role_changes": false,
+  "DockerServer_touched": false,
+  "confirmation_received": true,
+  "authorization": {
+    "at": "2026-10-23T17:24:04.027084+00:00",
+    "source": "user reply in current thread",
+    "answer": "Autorizar carga y paneles en DockerDevelop",
+    "target_host": "DockerDevelop",
+    "scope": "Add 504 automated agent metric rows and three panels; preserve 1284 prior results, accesses, quotas and 10 USD cap.",
+    "sql_sha256": "9074d4e1fe6111713b04f3580da2807095377dc8a219c867172b0ef3815176dd",
+    "dashboard_sha256": "a8294598278362c9800a57343c74c69124fb439d7a58d6b5d7a2263b5af932a9"
+  },
+  "executed_at": "2026-10-23T17:24:08.462483+00:00",
+  "verification": {
+    "at": "2026-10-23T17:24:42.278188+00:00",
+    "status": "verified_exact_contents",
+    "runs": 23,
+    "results": 1788,
+    "preserved_rows": 1284,
+    "agent_rows": 504,
+    "human_rows_fabricated": 0,
+    "prepared_dataset_matches_exactly": true,
+    "database_mutations_in_check": false
+  },
+  "dashboard_verification": {
+    "at": "2026-10-23T17:24:39.205027+00:00",
+    "uid": "economicon-assistant-evaluation",
+    "query_count": 29,
+    "all_queries_successful": true,
+    "new_panels": [
+      {
+        "id": 3001,
+        "rows": 6,
+        "status": 200
+      },
+      {
+        "id": 3002,
+        "rows": 6,
+        "status": 200
+      },
+      {
+        "id": 3003,
+        "rows": 35,
+        "status": 200
+      }
+    ],
+    "visual": {
+      "checked_at": "2026-10-23T17:30:20.071358+00:00",
+      "status": "observed",
+      "url": "http://localhost:18762/grafana/d/economicon-assistant-evaluation/economicon-e28094-evaluacion-del-asistente?from=now-1y&to=now&timezone=utc",
+      "checks": [
+        "three Juez IA panel titles visible",
+        "six coverage rows with exact counts",
+        "six robustness indicators with three repetitions",
+        "JUP-070 missing metrics shown as No medido"
+      ],
+      "screenshot": "grafana-agent-review.jpg",
+      "screenshot_sha256": "ad5791160b868c48734e77f1ec7754207d0419d094770807760f382e1e6da53a"
+    }
+  }
+}
