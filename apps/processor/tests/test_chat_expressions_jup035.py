@@ -186,7 +186,7 @@ def test_displayed_root_is_operation_and_short_items_are_single_bounded_prose():
             render_response({**response,'limitations':[bad]},[],quantities=catalog)
     with pytest.raises(ValueError,match='text limit'):
         render_response({**response,'limitations':[[{'inference':'a'*501}]]},[],quantities=catalog)
-    assert render_response({**response,'limitations':[[{'inference':'a'*482}]]},[],quantities=catalog)['limitations']==['Interpretación: '+'a'*482]
+    assert render_response({**response,'limitations':[[{'inference':'a'*498}]]},[],quantities=catalog)['limitations']==['a'*498]
 
 
 @pytest.mark.parametrize('alteration',[
@@ -217,3 +217,18 @@ def test_one_server_retrieval_precedes_private_plan_and_reviewed_generation(monk
     assert requests[0]['response_format']['json_schema']['name']=='PrivateAnswerPlan'
     assert requests[1]['response_format']['json_schema']['name']=='FinOpsResponse'
     assert all('tools' not in item for item in requests)
+
+
+def test_screen_amounts_are_citable_quantities_without_user_authority():
+    from app.core.chat_expressions import context_quantities
+    current={'question':'¿cuanto ha subido el gasto en agosto de 2026?','screen_projection':{'datasets':[
+        {'totals':[{'currency':'EUR','amount':'48210.55'},{'currency':'EUR','amount':'not-a-number'}],'groups':[],
+         'series':[{'currency':'EUR','amount':'19800.00'},{'currency':'EUR','amount':'21300.10'}]}]}}
+    catalog=context_quantities({'messages':[{'role':'user','content':'UNTRUSTED_CURRENT_CONTEXT\n'+json.dumps(current)}]})
+    assert {'48210.55 EUR','19800 EUR','21300.1 EUR','2026'}<=set(catalog)
+    assert 'not-a-number EUR' not in catalog and len(catalog)==4
+    # Screen figures are shown as given figures but never trigger a user-scenario rule.
+    assert catalog['19800 EUR']['provenance']==[{'kind':'screen','source':'pantalla 19800 EUR'}]
+    renderer=ExpressionRenderer(catalog)
+    assert renderer.render_quantity('19800 EUR')=='\nDato aportado: 19800 EUR.\n'
+    assert '1500.1 EUR' in renderer.render(difference(leaf('21300.1 EUR'),leaf('19800 EUR')))

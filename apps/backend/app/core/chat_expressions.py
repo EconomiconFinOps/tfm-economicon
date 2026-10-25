@@ -30,6 +30,34 @@ def context_question(context):
     raise ValueError('Expression input unavailable.')
 
 
+MAX_SCREEN_QUANTITIES = 48
+
+
+def screen_quantities(context):
+    """Amounts shown on the captured screen, offered as citable quantities.
+
+    They are screen figures, never billing authority: the provenance kind is
+    'screen', so no user-scenario rule is triggered by them. Without them the
+    model has no typed way to show a figure it was given and leaves a gap.
+    """
+    result={}
+    for message in context.get('messages',[]):
+        content=message.get('content','')
+        if not content.startswith('UNTRUSTED_CURRENT_CONTEXT\n'):continue
+        projection=json.loads(content.split('\n',1)[1]).get('screen_projection')
+        for dataset in (projection.get('datasets',[]) if isinstance(projection,dict) else []):
+            for collection in ('totals','groups','series'):
+                for item in dataset.get(collection,[]):
+                    try:
+                        value=canonical_decimal(item['amount']);unit=normalized_unit(item['currency'])
+                    except (KeyError,TypeError,AttributeError,ValueError,DecimalException):continue
+                    key=value+' '+unit
+                    if key not in result and len(result)<MAX_SCREEN_QUANTITIES:
+                        result[key]={'value':value,'unit':unit,'source':'pantalla '+key,'binding':'screen',
+                                     'provenance':[{'kind':'screen','source':'pantalla '+key}]}
+    return result
+
+
 def context_quantities(context):
     if not any(message.get('content','').startswith('UNTRUSTED_CURRENT_CONTEXT\n') for message in context.get('messages',[])):
         return {}
@@ -37,6 +65,8 @@ def context_quantities(context):
     rule_sources=[]
     for entry in catalog.values():
         entry['provenance']=[{'kind':'user','source':entry['source']}]
+    for key,entry in screen_quantities(context).items():
+        if key not in catalog and len(catalog)<MAX_QUANTITIES:catalog[key]=entry
     authorized={item['id']:item for item in context.get('authorized_evidence',[]) if item.get('kind')=='corpus'}
     for message in context.get('messages',[]):
         content=message.get('content','')

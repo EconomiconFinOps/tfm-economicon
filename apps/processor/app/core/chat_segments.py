@@ -330,7 +330,7 @@ def render_segment(segment, records, expressions=None):
         if not isinstance(text,str):raise ValueError('Invalid inference text.')
         # A blank interpretation carries no claim: omit it instead of discarding the whole answer.
         if not text.strip():return ''
-        return '\nInterpretación: '+render_segment({'text':text},records,expressions)+'\n'
+        return '\n'+render_segment({'text':text},records,expressions)+'\n'
     if set(segment)=={'documentary'}:
         if expressions is None:raise ValueError('Documentary selection source unavailable.')
         sources=getattr(expressions.catalog,'authorized_sources',getattr(expressions.catalog,'rule_sources',()))
@@ -408,7 +408,7 @@ def render_segments(segments, records, *, limit=4000, expressions=None):
     if not isinstance(segments,list) or not 1<=len(segments)<=128:
         raise ValueError('Invalid segment collection.')
     validate_narrative_segments(segments)
-    parts=[];pending=[]
+    parts=[];pending=[];sources=[]
     for segment in segments:
         # Validate shape before grouping adjacent text. Group validation closes
         # bypasses where an equation or a slot is split across text segments.
@@ -417,9 +417,11 @@ def render_segments(segments, records, *, limit=4000, expressions=None):
             pending.append((('inference' if 'inference' in segment else 'text'),segment.get('inference',segment.get('text'))))
         else:
             if pending:parts.append(render_prose_group(pending,records,expressions));pending=[]
-            parts.append(rendered)
+            # Literal excerpts are listed together after the explanation, so the
+            # answer reads as one text instead of alternating prose and source.
+            (sources if 'documentary' in segment else parts).append(rendered)
     if pending:parts.append(render_prose_group(pending,records,expressions))
-    result=''.join(parts)
+    result=''.join(parts+sources)
     if len(result)>limit:raise ValueError('Rendered text limit.')
     result=result.strip()
     if not result:raise ValueError('Empty rendered text.')

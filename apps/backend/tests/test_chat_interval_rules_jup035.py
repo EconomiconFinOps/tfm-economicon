@@ -262,7 +262,7 @@ def test_explicit_classification_routing_preserves_other_requests(question,requi
         value['answer'].append({'documentary':{'source_id':source['id'],'passage':passage}})
         _validate(value,schema,schema)
         result=render_response(value,[],quantities=q)
-        assert 'Interpretación: El escenario contiene dos conceptos de coste.' in result['answer']
+        assert 'El escenario contiene dos conceptos de coste.' in result['answer']
         assert '«'+passage+'»' in result['answer']
         assert {record['id'] for record in result['evidence']}=={source['id']}
 
