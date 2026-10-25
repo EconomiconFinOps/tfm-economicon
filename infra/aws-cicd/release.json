@@ -1,5 +1,5 @@
 {
-  "application_sha256": "5e19f3f4ff0db6039ebc42b2733d9dd4266e94b55c6fc8fac741c21876461e70",
+  "application_sha256": "3c2a471c9cb35ddafaa8d9a956361f18da5dda53a6e4cb58a1223a15ee997479",
   "evidence": {
     "postgresql": {
       "path": "docs/evidence/JUP-131-postgresql.md",
@@ -24,6 +24,10 @@
     "reconciliation": {
       "path": "docs/evidence/JUP-131-pr161-reconciliation/application-acceptance.md",
       "sha256": "5eb418403fcf3dcc0dbccde23c7423e38f138da2cb2b206eee400f4afa87a3f0"
+    },
+    "reconciliation_pr166": {
+      "path": "docs/evidence/JUP-131-pr166-application-acceptance.md",
+      "sha256": "adb2d27efa964850375fa89776bc80d873dc0d98caeff8527b9130e7442397c0"
     }
   },
   "bootstrap": [

@@ -41,10 +41,31 @@ y se exige conservar algunas filas y omitir otras. Límites de producción, ApiE
 Starlette 1.9.0 y código de aplicación no se modifican respecto a develop.
 El fichero completo de contexto supera 35 pruebas locales con datos sintéticos.
 
-Siguiente: completar revisión y CI del nuevo candidato PR166, obtener los
-dictámenes humanos o una nueva excepción explícita antes de merge, y resolver
-Cloud Map automático antes de autorizar otro plan. La excepción PR165 no cubre
-PR166. No hay ensayo activo ni nuevo plan/apply/release en curso.
+Actualización tras la CI de `1fb78d609555e51a5353c1f541b6a520046fff0a`:
+CI PR `40209401446`, push `40209397897` y SQL `40209401487` SUCCESS. Backend
+2732 PASS/369 SKIP, processor 2676 PASS/150 SKIP; PostgreSQL y Grafana reales en
+contenedores de CI conformes. Revisión independiente favorable del agente
+`/root/review_aws_build_context`; informe local `pr166-final-agent-review-1fb78d60.md`.
+Se renueva la receta con huella `3c2a471c9cb35ddafaa8d9a956361f18da5dda53a6e4cb58a1223a15ee997479`,
+confirmada también en git archive limpio. [Aceptación offline](../evidence/JUP-131-pr166-application-acceptance.md)
+conserva los informes históricos y sus límites. El delta de receta/documentación
+posterior no cambia la aplicación; CI/revalidación final aún necesarias.
+
+Diagnóstico adicional de Cloud Map: todas las variantes fallidas incluían la
+condición `route53:VPCs`; no se probaron CalledVia sola ni ViaAWSService sola.
+No afirmar que falta CalledVia ni que se necesitan permisos incondicionales.
+La creación administrativa seguida de importación y permiso de retirada sobre
+el ARN exacto sí tiene evidencia positiva; mantenerla como alternativa operacional
+explícita si no se resuelve la creación automática. Proteger la zona pública y
+no reutilizar la simulación IAM como prueba de funcionamiento. No se han cambiado
+permisos después del cierre ni creado un nuevo probe.
+
+Siguiente: obtener los dictámenes humanos o una nueva excepción explícita para
+PR166, esperar CI del SHA integrado y fijar ventana/configuración nuevas. El
+siguiente ciclo será `ensayo2` para no reutilizar nombres de secretos en borrado
+diferido. Preparación local en `.work/master-rehearsal/ensayo2/`, bloqueada hasta
+fijar SHA/CI de develop, caducidad UTC y paso de Cloud Map. La excepción PR165 no
+cubre PR166. No hay ensayo activo ni nuevo plan/apply/release en curso.
 
 Los apartados siguientes son cortes históricos superados por este estado.
 
