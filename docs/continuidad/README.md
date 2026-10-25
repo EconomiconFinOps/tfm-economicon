@@ -1,5 +1,15 @@
 # Continuidad del proyecto
 
+25Oct 16:54 Europe/Paris: ensayo parcial retirado y cierre manual verificado a
+las 16:47:58: estado0, 39 referencias de etiquetas confirmadas retiradas por APIs
+directas, permiso temporal/logs RDS/lease/Scheduler ausentes. Bootstrap preservado;
+KMS/secretos con borrado diferido. Aplicación no disponible; no afirmar coste cero.
+PR166 amplía corrección SSL con inventario autoritativo y adaptación de una fixture
+al chat integrado por PR164. Base390721f9 incorporada; CI/revisión del nuevo delta
+pendientes. Cloud Map automático aún bloqueado. Véase [cloud-aws.md](cloud-aws.md).
+
+Los cortes siguientes conservan el historial previo del ensayo.
+
 25Oct 16:23 Europe/Paris: aplicación aún no disponible. Intento 3 en retirada
 controlada desde las 16:19; 159 recursos en estado antes de iniciarla. Cloud Map
 se importó, pero el plan de recuperación rechazó drift PostgreSQL; no se aplicó.

@@ -25,7 +25,7 @@ passed all seven architecture scenarios. On Windows the filter uses a backslash.
 Terraform formatting also passed. `ApiError`, the application sources and
 `starlette==1.9.0` are unchanged.
 
-The running rehearsal uses an explicitly recorded operational Terraform override
+The retired rehearsal used an explicitly recorded operational Terraform override
 with the identical parameter block, because its source archive is pinned to
 `0a36a663463a57227da676c40710f9614f73eba2`. Override SHA256:
 `fe57d673f07ead07023076522578bb609a378dce4ac9d7cc8bfc0ab3e96de905`.
@@ -41,3 +41,36 @@ receipt includes a fresh read at 15:21:36 UTC and attributes the original red
 test output to the coordinator. Private plan/state/secret values are not
 included. Current retirement status and next steps are maintained in
 [`cloud-aws.md`](../continuidad/cloud-aws.md).
+
+## Authoritative retirement inventory and integrated CI
+
+Terraform removed every managed resource on 25 October at 15:35:52 UTC. The
+retirement build still failed its inventory guard because the tagging API
+returned 39 historical ARNs. Direct service reads subsequently confirmed all
+39 retired, most recently at 15:47:50 UTC. The separately authorized manual
+closure completed at 15:47:58 UTC: exact temporary IAM policy, two empty RDS
+log groups, Scheduler and lease absent. Bootstrap remains; KMS and secrets
+retain their deletion windows. The failed build and original report are kept;
+the manual verification receipt does not claim pipeline success or zero cost.
+
+The runner now checks authoritative service status for the observed NAT,
+endpoint, security-group-rule, subnet, ECS cluster and Cognito pool references.
+Unknown resource types remain active. Malformed responses, unexpected identity,
+access denials and unrelated errors abort. Expected absence requires an exact
+error code and operation. Inactive clusters must have no tasks or services;
+deleting NAT/endpoints remain active. The NAT absent-code case includes the
+provider's [NatGatewayNotFound handling](https://github.com/hashicorp/terraform-provider-aws/blob/v6.13.0/internal/service/ec2/find.go).
+Eight regression tests failed before the fix; the complete offline suite then
+passed 105 tests with nine integration skips. No real AWS mutation occurs in
+these tests. Live closure is separate operational evidence, not a deployment
+of the changed runner.
+
+The first two PR CI attempts on `9b4730ad` failed one backend projection test,
+while the branch push passed. The PR merge context included `develop` commit
+`390721f9` (PR164), which added screen quantities to the response schema. The
+branch has now incorporated that base. The old fixture derived its deliberately
+small context budget from an empty screen, omitting this new essential schema;
+the failure was reproduced locally after integrating the base. The fixture now
+counts a one-row screen and its actual wire schema, retains a small allowance,
+and asserts partial projection, explicit omissions and preservation of the
+complete snapshot. No production context limits or application code are changed.

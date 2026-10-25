@@ -1,5 +1,52 @@
 # Cloud AWS — arquitectura documental
 
+## Ensayo retirado y correcciones de PR166 — 25/10/2026 16:54 Europe/Paris
+
+Origen: chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+Terraform terminó la retirada con cero recursos administrados a las 16:35:52.
+El build `economicon-defensa:1a946185-0a36-4878-a5c1-1a47f0970ef6` figura FAILED:
+la guarda posterior encontró 39 referencias que Resource Groups Tagging API
+conservaba tras borrar los recursos. No fue un fallo del destroy. Lecturas de
+EC2, ECS y Cognito confirmaron las 39 retiradas; NAT/endpoints deleted, cluster
+INACTIVE sin tareas/servicios y restantes objetos ausentes. Auditoría renovada
+a las 16:47:50, recibo `recovery-2/authoritative-residual-audit.json`.
+
+Con autorización humana expresa para el cierre y revisión independiente de
+44 casos simulados, se verificaron otra vez estado, ausencia de builds activos,
+lease y Scheduler exactos. A las 16:47:58 se confirma retirada de la política
+`economicon-ensayo1-cloudmap-retirement`, los dos logs RDS (0 bytes declarados),
+el Scheduler `economicon-ensayo1` y su lease. Namespace y zona privada ausentes;
+ambas bases, RabbitMQ y NAT retirados. Snapshots RDS y backups retenidos vacíos
+en lectura16:36. Se conservan bootstrap, artefactos y estado de control; una
+clave KMS y cinco secretos tienen borrado diferido30d. No se afirma coste cero.
+No reejecutar los scripts de cierre sobre este estado ya cerrado.
+
+Recibo local `.work/master-rehearsal/recovery-2/final-cleanup-manual.json` y S3
+`cycles/ensayo1/0a36a663463a57227da676c40710f9614f73eba2/retirement-manual-verification.json`
+en el bucket de control. Mantienen explícitamente FAILED y `manual_closure=true`;
+no sustituyen el informe original. La aplicación nunca llegó a estar disponible.
+
+PR166 añade lectura autoritativa para los tipos de residuo observados. Un error
+de permisos, timeout, identidad inesperada o recurso desconocido sigue bloqueando
+el cierre; sólo ausencia exacta o estado retirado válido permite clasificarlo como
+metadatos. Regresión roja previa, luego105 pruebas offline OK (9 integraciones
+omitidas). Revisión detectó además `NatGatewayNotFound`, corregido con regresión.
+
+La CI previa de PR166 falló dos veces en la prueba de proyección de pantalla;
+no era un fallo aleatorio: PR164 avanzó develop a `390721f9` mientras el push
+probaba la base anterior. El nuevo catálogo de cantidades de pantalla aumentó el
+schema esencial y la fixture calculaba el margen sobre pantalla vacía. Base nueva
+incorporada; se adapta sólo el presupuesto sintético de esa prueba al schema real
+y se exige conservar algunas filas y omitir otras. Límites de producción, ApiError,
+Starlette1.9.0 y código de aplicación no se modifican respecto a develop.
+
+Siguiente: completar revisión y CI del nuevo candidato PR166, obtener los
+dictámenes humanos o una nueva excepción explícita antes de merge, y resolver
+Cloud Map automático antes de autorizar otro plan. La excepción PR165 no cubre
+PR166. No hay ensayo activo ni nuevo plan/apply/release en curso.
+
+Los apartados siguientes son cortes históricos superados por este estado.
+
 ## Retirada del ensayo parcial y PR166 — 25/10/2026 16:23 Europe/Paris
 
 Origen: chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.

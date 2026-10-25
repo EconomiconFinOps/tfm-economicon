@@ -415,28 +415,32 @@ def test_default_context_uses_fixed_system_and_real_shared_count(prepared):
 
 
 def test_large_demo_screen_is_projected_with_omissions_but_full_snapshot_remains(prepared,monkeypatch):
-    from app.core.chat_resources import load_resources, decision_schema
+    from app.core.chat_resources import load_resources
+    from app.core.chat_expressions import context_quantities
     from app.core.context_budget import MARGIN_TOKENS
-    from app.schemas.chat import provider_response_schema
+    from app.schemas.chat import provider_wire_response_schema
     from app.services.chat_context import ChatContext
     api,_=prepared
     resources=load_resources(RESOURCE_ROOT,RESOURCE_ROOT.parent/'v2/tokenizer.json')
+    payload=body()
+    payload['screen_context']['datasets']=[demo_dataset([
+        {'label':'Servicio '+str(index)+' '+'dato '*40,'currency':'EUR','amount':'1.00'} for index in range(2500)])]
+    baseline=copy.deepcopy(payload)
+    baseline['screen_context']['datasets'][0]['groups']=baseline['screen_context']['datasets'][0]['groups'][:1]
     minimal=ChatContext(api[0],resources).build(
-        {'tenant_id':'t','user_id':'alice','conversation_id':'alice-chat'},body())
+        {'tenant_id':'t','user_id':'alice','conversation_id':'alice-chat'},baseline)
+    schema=provider_wire_response_schema(authorized_evidence=[],quantities=context_quantities(minimal))
     fixed=(resources.count(canonical(minimal['messages']).decode())
-           +resources.count(canonical(provider_response_schema(authorized_evidence=[])).decode())
-           +resources.count(canonical(decision_schema(minimal)).decode()))
-    # Follow the real immutable prompt/schema overhead while leaving only a
-    # small screen allowance; production/model limits are not changed.
+           +resources.count(canonical(schema).decode()))
+    # Include the screen's 0 EUR/1 EUR quantity schema in the fixed overhead.
+    # An empty screen undercounts it and rejects even the essential projection.
+    # Leave only a small allowance; production/model limits are not changed.
     from app.core.chat_review import admission_tokens
-    reserve=admission_tokens(resources.count,minimal['messages'],provider_response_schema(authorized_evidence=[]),[])
+    reserve=admission_tokens(resources.count,minimal['messages'],schema,[])
     test_limit=max(fixed+resources.context_budget['output_tokens'],reserve['max_context_tokens'])+MARGIN_TOKENS+600
     monkeypatch.setenv('CHAT_CONTEXT_TOKENS',str(test_limit))
     async def scenario(client):
         await initialize(api[0])
-        payload=body()
-        payload['screen_context']['datasets']=[demo_dataset([
-            {'label':'Servicio '+str(index)+' '+'dato '*40,'currency':'EUR','amount':'1.00'} for index in range(2500)])]
         assert len(canonical(payload['screen_context']))<1048576
         assert resources.count(canonical(payload['screen_context']).decode())>test_limit
         response=await client.post(path(),json=payload,headers=headers())
@@ -446,6 +450,7 @@ def test_large_demo_screen_is_projected_with_omissions_but_full_snapshot_remains
         assert admitted.context_budget['context_tokens']==test_limit
         assert admitted.count_messages(context['messages'],authorized_evidence=[])==context['manifest']['variable_tokens']
         assert value['omissions']
+        assert 0<len(value['screen_projection']['datasets'][0]['groups'])<2500
         assert all(item['kind']!='cost_query' for item in context['authorized_evidence'])
         operation=await existing(client,payload)
         snapshot=await client.get(operation['status_url']+'/context',headers=headers())
