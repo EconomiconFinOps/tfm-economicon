@@ -1,12 +1,39 @@
 # Continuidad del proyecto
 
-25Oct, PR165: segundo intento detenido antes de aplicar Terraform por `cycle`
-reservado en DynamoDB; alias corregidos y prueba real conforme. Añadidos permisos
-dependientes de Cloud Map sólo por llamadas delegadas, creando zonas privadas
-en Irlanda, y permisos acotados de cifrado/lectura S3 y consulta de perfiles IAM.
-Plan0altas/1política/0bajas sin aplicar. Sin aplicación, bloqueo ni Scheduler
-activos; bootstrap conservado.
-Revisión/CI del delta e integración pendientes. Detalle en [cloud-aws.md](cloud-aws.md).
+25Oct 16:23 Europe/Paris: aplicación aún no disponible. Intento 3 en retirada
+controlada desde las 16:19; 159 recursos en estado antes de iniciarla. Cloud Map
+se importó, pero el plan de recuperación rechazó drift PostgreSQL; no se aplicó.
+Apagado de respaldo 17:02 corregido y verificado. PR166 prepara el ajuste
+permanente de SSL sin cambiar su valor; CI/revisiones pendientes. Detalles,
+recibos y pasos de retirada en [cloud-aws.md](cloud-aws.md).
+
+Los cortes siguientes conservan el historial previo del ensayo.
+
+25Oct 15:56 Europe/Paris: retirada de DNS privado probada con éxito desde el
+rol del pipeline y limpieza verificada. Se ha solicitado por SSO el namespace
+real del plan aprobado para importarlo al estado y recuperar el intento 3.
+Permiso de retirada acotado al ARN de su zona; fuente `0a36a663`, configuración
+y apagado 17:02:05 se conservan. Plan nuevo y aceptación aún pendientes.
+Detalle y riesgos operativos en [cloud-aws.md](cloud-aws.md).
+
+25Oct 15:36 Europe/Paris: intento 3 FAILED por Cloud Map:
+`CreatePrivateDnsNamespace` devuelve `ACCESS_DENIED route53:CreateHostedZone`.
+La simulación anterior no acreditaba el contexto IAM real; causa exacta entre
+las condiciones de delegación y VPC aún en investigación. Terraform terminó
+con 158 instancias en estado; RabbitMQ RUNNING y ambos PostgreSQL available,
+privados y Multi-AZ. Bloqueo APPLYING conservado;
+apagado 17:02:05 habilitado. Aplicación aún no disponible. No repetir el plan
+original sobre este estado parcial. Véase [cloud-aws.md](cloud-aws.md).
+
+25Oct 15:12 Europe/Paris: PR165 integrada como `0a36a663`, árbol idéntico al
+candidato `0eafcc3d`, con excepción humana y bypass expresamente autorizados.
+CI técnica PR/push, SQL y CI de develop SUCCESS; agente APPROVE. Única política
+IAM aplicada y verificada. Intento 3 `d76e2632` iniciado con nueva configuración
+y caducidad a las 17:02 Europe/Paris. Validación y cinco imágenes SUCCESS;
+plan de 162 altas/0 cambios/0 bajas revisado y aprobado a las 15:12:32,
+Scheduler verificado. A las 15:15 hay 104 recursos en estado Terraform; dos RDS,
+RabbitMQ y tres NAT en creación, bloqueo APPLYING. Aplicación aún no disponible.
+Detalle en [cloud-aws.md](cloud-aws.md).
 
 Los siguientes párrafos son cortes históricos, superados por el estado anterior.
 

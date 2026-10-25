@@ -35,7 +35,9 @@ the same. This is an operational recovery, not a successful end-to-end pipeline
 or authorization to merge this new patch. The existing PR165 exception does not
 extend to this PR. Release and teardown plan allowlists remain unchanged.
 
-Public local evidence is in `.work/master-rehearsal/recovery-1/plan-inspection.json`
-and `recovery-2/expiry-protected.json`; private plan/state/secret values are not
+Public local evidence is in `.work/master-rehearsal/recovery-1/plan-inspection.json`,
+`rds-parameter-evidence.json` and `recovery-2/expiry-protected.json`; the parameter
+receipt includes a fresh read at 15:21:36 UTC and attributes the original red
+test output to the coordinator. Private plan/state/secret values are not
 included. Current retirement status and next steps are maintained in
 [`cloud-aws.md`](../continuidad/cloud-aws.md).
