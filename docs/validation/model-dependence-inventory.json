@@ -2,6 +2,21 @@
   "inventory_version": 1,
   "entries": [
     {
+      "id": "friday-sunday-evolution-jup133",
+      "name": "Evolución descriptiva de operaciones del chat del 23 y 25 de octubre",
+      "cards": ["JUP-133", "JUP-069", "JUP-071"],
+      "class": "dependiente",
+      "justification": "Terminación, intentos, tiempos, coste y juicio funcional proceden de respuestas generadas y dependen del modelo, proveedor y entorno. Los protocolos de ambas fechas difieren; las proyecciones no prueban causalidad ni conforman una serie estrictamente comparable.",
+      "check": {
+        "kind": "report",
+        "ref": "docs/evidence/JUP-133/evolution-20261025/README.md",
+        "finding": "Dos proyecciones derivadas conservan 171 observaciones del viernes y 50 del domingo; comparan 44 casos comunes con 3 y 1 repeticiones. Modelo declarado, upstream no atestado; costes y juicios con instrumentos distintos."
+      },
+      "sources": ["JUP-133"],
+      "evidence": ["docs/evidence/JUP-133/evolution-20261025/observations.json", "docs/evidence/JUP-133/evolution-20261025/friday.rows.json", "docs/evidence/JUP-133/evolution-20261025/sunday.rows.json"],
+      "rerun": "No se ejecuta una campaña nueva: publicación y agregación reproducible de evidencia existente. Cualquier repetición requiere un encargo distinto; la carga en Grafana no genera respuestas."
+    },
+    {
       "id": "live-robustness-jup071",
       "name": "Robustez ante datos incompletos con el chat real (29 casos) e indicadores de las cuatro familias de un RAG",
       "cards": ["JUP-071", "JUP-069", "JUP-123"],

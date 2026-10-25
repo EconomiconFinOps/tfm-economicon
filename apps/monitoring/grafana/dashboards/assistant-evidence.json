@@ -570,12 +570,210 @@
       }
     },
     {
+      "id": 8400,
+      "type": "text",
+      "title": "Evolución observada · viernes 23 → domingo 25 octubre",
+      "gridPos": {
+        "x": 0,
+        "y": 19,
+        "w": 24,
+        "h": 6
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**44 casos comunes: 28 generales + 16 perturbaciones.** Viernes: tres repeticiones (132 operaciones); domingo: una (44). Se excluyen 39 referencias repetidas del viernes y seis consultas adicionales del domingo. Este bloque tiene fechas fijas y **no depende de los selectores Campaña/Referencia**. Son proyecciones de ensayos existentes, no dos campañas nuevas.\n\n**Terminación no significa respuesta correcta.** Todas las operaciones, incluidas las fallidas, entran en los tiempos. Viernes mide POST→estado terminal; domingo también creación de conversación y captura de evidencias. Cambian arnés, carga y wrapper del prompt: comparación descriptiva, sin causalidad, A/B ni estabilidad acreditada. **RC no aceptada; persiste HTTP 413 con captura grande.** Calidad y costes usan instrumentos/bases distintos; no hay porcentaje de mejora semántica ni ahorro calculado.\n\nLos paneles vacíos indican que falta cargar el suplemento. El método y la procedencia están documentados con el suplemento de evolución del 25 de octubre."
+      }
+    },
+    {
+      "id": 8401,
+      "type": "table",
+      "title": "Terminación y reintentos · denominadores 132 / 44",
+      "description": "Tipo: A. Observaciones de los ensayos del 23 y 25 octubre; población y denominador explícitos. No demuestra causalidad, estabilidad ni aceptación humana. Bloque fijo, independiente de los selectores superiores.",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 25,
+        "w": 24,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT CASE r.run_id WHEN 'jup133-evolution-friday-20261023' THEN 'Viernes 23 · 3 repeticiones' ELSE 'Domingo 25 · 1 repetición' END AS \"Fecha y repeticiones\", CASE x.behavior WHEN 'common44' THEN '44 casos comunes' WHEN 'general28' THEN '28 generales' WHEN 'robust16' THEN '16 perturbaciones' END AS \"Casos distintos\", max(x.value) FILTER (WHERE x.metric_id='operations')::int AS \"Operaciones\", max(x.value) FILTER (WHERE x.metric_id='completed')::int AS \"Completadas\", round((100*max(x.value) FILTER (WHERE x.metric_id='completed_rate'))::numeric,1) AS \"Completadas (%)\", max(x.value) FILTER (WHERE x.metric_id='retried')::int AS \"Con reintentos\", max(x.value) FILTER (WHERE x.metric_id='attempts')::int AS \"Intentos\" FROM evaluation.results x JOIN evaluation.runs r USING(run_id) WHERE r.source='JUP-133' AND r.run_id IN ('jup133-evolution-friday-20261023','jup133-evolution-sunday-20261025') AND x.status='measured' AND x.behavior IN ('common44','general28','robust16') AND x.grp='evolution_operations' GROUP BY r.run_id,r.run_at,x.behavior ORDER BY x.behavior,r.run_at"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido",
+          "decimals": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Completadas (%)"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 1
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "transformations": []
+    },
+    {
+      "id": 8402,
+      "type": "barchart",
+      "title": "Tiempos observados · incluidos fallos · métodos distintos",
+      "description": "Tipo: A. Observaciones de los ensayos del 23 y 25 octubre; población y denominador explícitos. No demuestra causalidad, estabilidad ni aceptación humana. Bloque fijo, independiente de los selectores superiores.",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 34,
+        "w": 24,
+        "h": 10
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT CASE r.run_id WHEN 'jup133-evolution-friday-20261023' THEN 'Viernes 23 · 3 repeticiones' ELSE 'Domingo 25 · 1 repetición' END || ' · ' || CASE x.behavior WHEN 'common44' THEN '44 casos comunes' WHEN 'general28' THEN '28 generales' WHEN 'robust16' THEN '16 perturbaciones' END AS \"Observación\", max(x.value) FILTER (WHERE x.metric_id='median_seconds') AS \"Mediana (s)\", max(x.value) FILTER (WHERE x.metric_id='p95_seconds') AS \"P95 (s)\" FROM evaluation.results x JOIN evaluation.runs r USING(run_id) WHERE r.source='JUP-133' AND r.run_id IN ('jup133-evolution-friday-20261023','jup133-evolution-sunday-20261025') AND x.status='measured' AND x.behavior IN ('common44','general28','robust16') AND x.grp='evolution_times' GROUP BY r.run_id,r.run_at,x.behavior ORDER BY x.behavior,r.run_at"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido",
+          "decimals": 3,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 75,
+            "axisPlacement": "auto",
+            "axisLabel": "Segundos · métodos distintos"
+          },
+          "unit": "suffix: s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "stacking": "none",
+        "xField": "Observación",
+        "groupWidth": 0.7,
+        "barWidth": 0.9,
+        "showValue": "auto",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "transformations": []
+    },
+    {
+      "id": 8403,
+      "type": "table",
+      "title": "Domingo 25 · 50 consultas · juicio funcional por agentes",
+      "description": "Tipo: A. Observaciones de los ensayos del 23 y 25 octubre; población y denominador explícitos. No demuestra causalidad, estabilidad ni aceptación humana. Bloque fijo, independiente de los selectores superiores.",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "evaluation-postgres"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 44,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT CASE x.behavior WHEN 'full' THEN 'Campaña completa' WHEN 'general28' THEN 'Banco general' WHEN 'robust16' THEN 'Perturbaciones' WHEN 'reported4' THEN 'Consultas reportadas' WHEN 'screen2' THEN 'Controles de pantalla' END AS \"Alcance\", max(x.value) FILTER (WHERE x.metric_id='operations')::int AS \"Operaciones\", max(x.value) FILTER (WHERE x.metric_id='completed')::int AS \"Completadas\", max(x.value) FILTER (WHERE x.metric_id='pass')::int AS \"Conformes IA\", max(x.value) FILTER (WHERE x.metric_id='partial')::int AS \"Parciales IA\", max(x.value) FILTER (WHERE x.metric_id='fail')::int AS \"Fallos IA\", max(x.value) FILTER (WHERE x.metric_id='chat_observed_incomplete') AS \"USD observados incompletos\" FROM evaluation.results x JOIN evaluation.runs r USING(run_id) WHERE r.run_id='jup133-evolution-sunday-20261025' AND r.source='JUP-133' AND x.status='measured' AND x.behavior IN ('full','general28','robust16','reported4','screen2') AND x.grp IN ('evolution_operations','evolution_agent_functional','evolution_cost') GROUP BY x.behavior ORDER BY CASE x.behavior WHEN 'full' THEN 0 WHEN 'general28' THEN 1 WHEN 'robust16' THEN 2 WHEN 'reported4' THEN 3 ELSE 4 END"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No medido",
+          "decimals": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "USD observados incompletos"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 10
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "transformations": []
+    },
+    {
       "id": 301,
       "type": "table",
       "title": "Campaña seleccionada · fecha, modelo y alcance",
       "gridPos": {
         "x": 0,
-        "y": 19,
+        "y": 52,
         "w": 24,
         "h": 4
       },
@@ -650,7 +848,7 @@
       "type": "stat",
       "gridPos": {
         "x": 0,
-        "y": 23,
+        "y": 56,
         "w": 6,
         "h": 4
       },
@@ -718,7 +916,7 @@
       "type": "stat",
       "gridPos": {
         "x": 6,
-        "y": 23,
+        "y": 56,
         "w": 6,
         "h": 4
       },
@@ -786,7 +984,7 @@
       "type": "stat",
       "gridPos": {
         "x": 12,
-        "y": 23,
+        "y": 56,
         "w": 6,
         "h": 4
       },
@@ -854,7 +1052,7 @@
       "type": "stat",
       "gridPos": {
         "x": 18,
-        "y": 23,
+        "y": 56,
         "w": 6,
         "h": 4
       },
@@ -922,7 +1120,7 @@
       "type": "table",
       "gridPos": {
         "x": 0,
-        "y": 27,
+        "y": 60,
         "w": 24,
         "h": 3
       },
@@ -996,7 +1194,7 @@
       "type": "text",
       "gridPos": {
         "x": 0,
-        "y": 30,
+        "y": 63,
         "w": 24,
         "h": 4
       },
@@ -1011,7 +1209,7 @@
       "type": "table",
       "gridPos": {
         "x": 0,
-        "y": 34,
+        "y": 67,
         "w": 24,
         "h": 12
       },
@@ -1152,7 +1350,7 @@
       "type": "table",
       "gridPos": {
         "x": 0,
-        "y": 46,
+        "y": 79,
         "w": 24,
         "h": 11
       },
@@ -1293,7 +1491,7 @@
       "type": "table",
       "gridPos": {
         "x": 0,
-        "y": 57,
+        "y": 90,
         "w": 24,
         "h": 11
       },
@@ -1379,7 +1577,7 @@
       "type": "text",
       "gridPos": {
         "x": 0,
-        "y": 68,
+        "y": 101,
         "w": 24,
         "h": 3
       },
@@ -1394,7 +1592,7 @@
       "title": "Detalle · categorías de perturbación",
       "gridPos": {
         "x": 0,
-        "y": 71,
+        "y": 104,
         "w": 24,
         "h": 7
       },
@@ -1506,7 +1704,7 @@
       "title": "",
       "gridPos": {
         "x": 0,
-        "y": 78,
+        "y": 111,
         "w": 24,
         "h": 2
       },
@@ -2183,7 +2381,7 @@
       "timeFrom": "30d",
       "gridPos": {
         "x": 0,
-        "y": 80,
+        "y": 113,
         "w": 24,
         "h": 8
       }
@@ -2195,7 +2393,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 88,
+        "y": 121,
         "w": 24,
         "h": 1
       },
@@ -2207,7 +2405,7 @@
       "title": "Recuperación documental y citas · dos alcances distintos",
       "gridPos": {
         "x": 0,
-        "y": 89,
+        "y": 122,
         "w": 24,
         "h": 3
       },
@@ -2229,7 +2427,7 @@
       "type": "stat",
       "gridPos": {
         "x": 0,
-        "y": 92,
+        "y": 125,
         "w": 6,
         "h": 4
       },
@@ -2297,7 +2495,7 @@
       "type": "stat",
       "gridPos": {
         "x": 6,
-        "y": 92,
+        "y": 125,
         "w": 6,
         "h": 4
       },
@@ -2365,7 +2563,7 @@
       "type": "stat",
       "gridPos": {
         "x": 12,
-        "y": 92,
+        "y": 125,
         "w": 6,
         "h": 4
       },
@@ -2433,7 +2631,7 @@
       "type": "stat",
       "gridPos": {
         "x": 18,
-        "y": 92,
+        "y": 125,
         "w": 6,
         "h": 4
       },
@@ -2501,7 +2699,7 @@
       "type": "table",
       "gridPos": {
         "x": 0,
-        "y": 96,
+        "y": 129,
         "w": 12,
         "h": 8
       },
@@ -2635,7 +2833,7 @@
       "type": "barchart",
       "gridPos": {
         "x": 12,
-        "y": 96,
+        "y": 129,
         "w": 12,
         "h": 8
       },
@@ -2747,7 +2945,7 @@
       "title": "",
       "gridPos": {
         "x": 0,
-        "y": 104,
+        "y": 137,
         "w": 24,
         "h": 2
       },
@@ -3377,7 +3575,7 @@
       ],
       "gridPos": {
         "x": 0,
-        "y": 106,
+        "y": 139,
         "w": 24,
         "h": 7
       }
@@ -3389,7 +3587,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 113,
+        "y": 146,
         "w": 24,
         "h": 1
       },
@@ -3401,7 +3599,7 @@
       "title": "Coste y rendimiento · campaña, factura e histórico separados",
       "gridPos": {
         "x": 0,
-        "y": 114,
+        "y": 147,
         "w": 24,
         "h": 3
       },
@@ -3423,7 +3621,7 @@
       "type": "table",
       "gridPos": {
         "x": 0,
-        "y": 117,
+        "y": 150,
         "w": 24,
         "h": 3
       },
@@ -3483,7 +3681,7 @@
       "type": "table",
       "gridPos": {
         "x": 0,
-        "y": 120,
+        "y": 153,
         "w": 12,
         "h": 6
       },
@@ -3657,7 +3855,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 120,
+        "y": 153,
         "w": 12,
         "h": 6
       }
@@ -3668,7 +3866,7 @@
       "type": "stat",
       "gridPos": {
         "x": 0,
-        "y": 126,
+        "y": 159,
         "w": 6,
         "h": 4
       },
@@ -3736,7 +3934,7 @@
       "type": "stat",
       "gridPos": {
         "x": 6,
-        "y": 126,
+        "y": 159,
         "w": 6,
         "h": 4
       },
@@ -3804,7 +4002,7 @@
       "type": "stat",
       "gridPos": {
         "x": 12,
-        "y": 126,
+        "y": 159,
         "w": 6,
         "h": 4
       },
@@ -3872,7 +4070,7 @@
       "type": "stat",
       "gridPos": {
         "x": 18,
-        "y": 126,
+        "y": 159,
         "w": 6,
         "h": 4
       },
@@ -3979,7 +4177,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 130,
+        "y": 163,
         "w": 24,
         "h": 3
       }
@@ -3990,7 +4188,7 @@
       "type": "barchart",
       "gridPos": {
         "x": 0,
-        "y": 133,
+        "y": 166,
         "w": 24,
         "h": 8
       },
@@ -4090,7 +4288,7 @@
       "title": "Factura y estimación · 75 consultas · 21–22 oct",
       "gridPos": {
         "x": 0,
-        "y": 141,
+        "y": 174,
         "w": 12,
         "h": 7
       },
@@ -4187,7 +4385,7 @@
       "title": "Factura · 21–22 oct · consultas / intentos",
       "gridPos": {
         "x": 12,
-        "y": 141,
+        "y": 174,
         "w": 12,
         "h": 7
       },
@@ -4230,7 +4428,7 @@
       "type": "xychart",
       "gridPos": {
         "x": 0,
-        "y": 148,
+        "y": 181,
         "w": 12,
         "h": 8
       },
@@ -4434,7 +4632,7 @@
       "type": "barchart",
       "gridPos": {
         "x": 12,
-        "y": 148,
+        "y": 181,
         "w": 12,
         "h": 8
       },
@@ -4561,7 +4759,7 @@
       "title": "",
       "gridPos": {
         "x": 0,
-        "y": 156,
+        "y": 189,
         "w": 24,
         "h": 2
       },
@@ -5215,7 +5413,7 @@
       "timeFrom": "30d",
       "gridPos": {
         "x": 0,
-        "y": 158,
+        "y": 191,
         "w": 24,
         "h": 8
       }
@@ -5227,7 +5425,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 166,
+        "y": 199,
         "w": 24,
         "h": 1
       },
@@ -5243,7 +5441,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 167,
+        "y": 200,
         "w": 24,
         "h": 3
       }
@@ -5280,7 +5478,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 170,
+        "y": 203,
         "w": 6,
         "h": 4
       },
@@ -5353,7 +5551,7 @@
       },
       "gridPos": {
         "x": 6,
-        "y": 170,
+        "y": 203,
         "w": 6,
         "h": 4
       },
@@ -5400,7 +5598,7 @@
       "type": "stat",
       "gridPos": {
         "x": 12,
-        "y": 170,
+        "y": 203,
         "w": 6,
         "h": 4
       },
@@ -5459,7 +5657,7 @@
       "type": "stat",
       "gridPos": {
         "x": 18,
-        "y": 170,
+        "y": 203,
         "w": 6,
         "h": 4
       },
@@ -5518,7 +5716,7 @@
       "type": "timeseries",
       "gridPos": {
         "x": 0,
-        "y": 174,
+        "y": 207,
         "w": 12,
         "h": 7
       },
@@ -5551,7 +5749,7 @@
       "type": "timeseries",
       "gridPos": {
         "x": 12,
-        "y": 174,
+        "y": 207,
         "w": 12,
         "h": 7
       },
@@ -5584,7 +5782,7 @@
       "type": "timeseries",
       "gridPos": {
         "x": 0,
-        "y": 181,
+        "y": 214,
         "w": 12,
         "h": 6
       },
@@ -5611,7 +5809,7 @@
       "type": "timeseries",
       "gridPos": {
         "x": 12,
-        "y": 181,
+        "y": 214,
         "w": 12,
         "h": 6
       },
@@ -5638,7 +5836,7 @@
       "type": "alertlist",
       "gridPos": {
         "x": 0,
-        "y": 187,
+        "y": 220,
         "w": 12,
         "h": 4
       },
@@ -5738,7 +5936,7 @@
       "description": "Consultas temporales originales de fallos y búsquedas sin contexto. Con base 0 no hay una tasa calculable y no se rellena con 0 %. Las señales históricas de campañas se consultan en sus secciones; no sustituyen la actividad en vivo.",
       "gridPos": {
         "x": 12,
-        "y": 187,
+        "y": 220,
         "w": 12,
         "h": 4
       }
@@ -5749,7 +5947,7 @@
       "title": "Registro diagnóstico general · detalle",
       "gridPos": {
         "x": 0,
-        "y": 191,
+        "y": 224,
         "w": 24,
         "h": 6
       },
@@ -5926,7 +6124,7 @@
       "title": "Procedencia de ejecuciones · detalle",
       "gridPos": {
         "x": 0,
-        "y": 197,
+        "y": 230,
         "w": 24,
         "h": 6
       },
