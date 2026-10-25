@@ -1,5 +1,56 @@
 # Cloud AWS — arquitectura documental
 
+## PR171 reconciliada y CI verde; ensayo3 en retirada — 25/10/2026 22:11 Europe/Paris
+
+Origen: chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+El usuario autoriza continuar con el siguiente ensayo y fija **23:30Europe/Paris
+(22:30UTC) del25/10** para promocionar develop a main; después no se publican
+más commits de trabajo. Este hito sustituye la estimación anterior de tres horas.
+Seguimiento único programado en este chat:
+`cerrar-entrega-economicon-y-promoci-n-a-main`; comprobar promoción/autorizaciones
+y eliminarlo al concluir. No es autorización para omitir reviews de otra PR.
+
+[PR171](https://github.com/EconomiconFinOps/tfm-economicon/pull/171) publicada con
+`ee91552c`, luego reconciliada con develop `8bf61d44` como
+`f1f8cca2c9df5712fcac705356a3ad44f501030a`. El delta de develop trae PR169
+(dashboard/evaluación) y PR170(documentación); código de afinidad sin cambios.
+CI PR40233382450 y push40233377430 SUCCESS; SQL40233382359 SUCCESS.
+Backend2740PASS/369SKIP, processor2676PASS/150SKIP, Azure81PASS, frontend96
+archivos, PostgreSQL45+8 y SQL54+8. Éxito con avisos; no aceptación AWS.
+Dictamen independiente favorable, incluida revalidación de integración/receta;
+histórico publicado en comentario6403170808, suplemento local
+`.work/master-rehearsal/chat-replica-review-integration.{json,md}`.
+
+Receta renovada con huella `4a138a04e79dc34794eab05b07908327af40e2f17ddb2472afc5e7eb07ed8795`,
+igual en checkout y archivo limpio. Conserva evidencias anteriores y añade
+[aceptación offline de PR171](../evidence/JUP-131-pr171-application-acceptance.md).
+Gate estricto y29 pruebas readiness/control PASS. Estos cambios documentales y
+de receta no alteran apps; su publicación final/CI están pendientes en este corte.
+ApiError y starlette1.9.0 intactos. El check JUP reviews falla por ausencia de las
+dos reviews humanas; se requiere excepción específica si se integra por bypass.
+
+Límite de PR169: paquete Atlas AWS todavía19 runs/1688 resultados. Los nuevos
+paneles8401–8403 requieren el suplemento de evolución, aún no cargado; el panel8400
+lo explica. No atribuir a esos paneles la verificación del conjunto original.
+
+Retirada ensayo3 iniciada22:03:30 con build
+`economicon-defensa:6cd644ff-9769-43c0-a701-441dd5a493bc`, fuente/config/timeout
+inmutables y scripts revisados. Lectura22:08:38: IN_PROGRESS/BUILD,170 recursos,
+lease TEARDOWN. No cierre completo todavía. Después verificar retirement.json,
+state0, controles ausentes y ejecutar el cierre exacto del permiso temporal.
+Ensayo4 preparado sólo como borrador con placeholders de SHA/CI;54 comprobaciones
+de parametrización offline favorables, sin dictámenes ejecutables. Requiere
+integración PR171, CI develop exacta, cierre previo y preflight vigente antes
+de generar nueva ventana de2h. No trasladar IDs ni estado entre ciclos.
+
+Promoción a main: no había PR abierta develop→main; main `4aee5d78` está212
+commits detrás de develop en la lectura inicial. Revisión de preparación de
+entrega en curso con alcance explícito; no certificar revisión exhaustiva de
+2697 archivos por el dictamen de afinidad. Preparar la PR con candidato final,
+CI y autorización concreta antes de la promoción. Trello actualizado por puente
+DockerServer, comentario `6ade6c82ae4255e19bc161da`, historia/lista preservadas.
+Los cortes siguientes conservan el historial y sus límites temporales.
+
 ## Ensayo3 disponible parcialmente; afinidad del chat en corrección — 25/10/2026 21:52 Europe/Paris
 
 Origen: chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.

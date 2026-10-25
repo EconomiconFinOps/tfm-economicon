@@ -1,14 +1,14 @@
 # Continuidad del proyecto
 
-25Oct 21:52 Europe/Paris: ensayo3/`da43f408` tiene7 tareas ECS activas y170
-recursos; release `aae40d8c` FAILED en generación tras7 etapas PASS. Grafana,
-dos datasources y Atlas19 runs/1688 resultados verificados por separado.
-Fallo de afinidad entre réplicas reproducido localmente; corrección en
-`fix/JUP-131-chat-replica-affinity`,89 pruebas PASS y revisión de agente favorable.
-Publicación/CI/integración pendientes; ApiError y starlette1.9.0 intactos.
-El usuario prueba la interfaz; credenciales temporales fuera de documentación.
-Apagado inmutable22:34:20 y retirada pendientes; no declarar READY.
-[Estado y evidencia](cloud-aws.md).
+25Oct 22:11 Europe/Paris: ensayo3 se retira con build `6cd644ff`, lease TEARDOWN;
+aceptación falló generación tras7 etapas PASS. PR171 corrige afinidad y se
+reconcilió con develop8bf61d44 como `f1f8cca2`: CI técnica/SQL SUCCESS y revisión
+independiente favorable; receta/evidencia renovadas, publicación final pendiente.
+ApiError y starlette1.9.0 intactos. Usuario autoriza ensayo4 y fija23:30 local
+para promocionar develop a main y congelar commits. Ensayo4 es borrador local,
+pendiente de integración, CI develop exacta y cierre de ensayo3. No declarar
+READY; dashboards originales verificados, suplemento de evolución aún no cargado.
+[Estado y próximos pasos](cloud-aws.md).
 
 Los cortes siguientes conservan el historial previo del ensayo.
 
