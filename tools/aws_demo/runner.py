@@ -26,7 +26,7 @@ ROOT = Path(__file__).resolve().parents[2]
 WORK = ROOT / ".work/aws-demo"
 APPLICATIONS = ("backend", "processor", "azure-cost-api")
 IMAGES = {name: {'repository': name, 'dockerfile': f'apps/{name}/Dockerfile',
-                'context': '.' if name == 'backend' else 'apps/' + name} for name in APPLICATIONS}
+                'context': 'apps/processor' if name == 'processor' else '.'} for name in APPLICATIONS}
 IMAGES.update({name: {'repository': 'grafana', 'dockerfile': f'apps/monitoring/aws/{name}.Dockerfile',
                      'context': '.'} for name in ('grafana', 'prometheus')})
 

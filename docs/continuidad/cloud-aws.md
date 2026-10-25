@@ -1,5 +1,118 @@
 # Cloud AWS — arquitectura documental
 
+## Ensayo1: validación correcta y corrección del build Azure — 25/10/2026
+
+Origen: mismo chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+Bootstrap aplicado: 4 roles importados, 23 recursos creados, 4 actualizados y
+0 destruidos. Estado migrado a S3 en París, clave separada
+`economicon/bootstrap/terraform.tfstate`, AES256/versionado/lockfile; plan
+posterior sin cambios. Bucket `economicon-defensa-control-20261025121111843900000002`.
+
+Al crear los pipelines AWS lanzó dos ejecuciones con `configs/NOT_READY.json`.
+Ambas fallaron antes de ejecutar el controlador: el secreto GitHub contenía
+el token entre llaves sin clave JSON. Se corrigió su estructura a la clave
+`token`, conservando el valor exactamente y la versión anterior en Secrets
+Manager. Procesado sólo en memoria; ningún token en logs, archivos o mensajes.
+El recibo público describe formato/resultado, nunca el valor.
+
+Primer intento real: ejecución `0c9fb3aa-5e75-492a-a187-073ece7e70ce`, iniciada
+13:17:22 Europe/Paris, fuente `2087855c`, CI40191355921, ventana hasta
+`2026-10-25T14:17:20Z` (15:17:20 local). Validación del runner SUCCESS a13:19,
+incluida autenticación GitHub, cuotas y contrato. Backend/processor construidos;
+build Azure falla porque el contexto `apps/azure-cost-api` no contiene los
+`COPY apps/azure-cost-api`, `docs/api` y `fixtures/azure-cost` del Dockerfile.
+No se alcanzó plan/apply/release: infraestructura de aplicación y Scheduler
+del ensayo no creados. El bootstrap/control y los dos tar de imágenes permanecen.
+
+Corrección en `feat/JUP-131-aws-build-context`: Azure usa raíz como ya hace
+Compose; processor conserva su carpeta y los demás contextos permanecen.
+Prueba contra los COPY reales de las cinco imágenes: falla primero en las
+cinco rutas Azure y pasa tras el cambio. Suite offline:84 PASS/7 SKIP.
+Build real linux/amd64 y contenedor sin red conformes: archivos presentes,
+Starlette1.9.0 y UID10001; contenedor y etiqueta temporal retirados. Aplicación,
+ApiError, requisitos y receta de aceptación intactos. Revisión/CI/integración
+de esta corrección pendientes; el bypass anterior sólo cubría PR161/e4ac8461.
+PR de corrección: <https://github.com/EconomiconFinOps/tfm-economicon/pull/163>.
+Revisión técnica independiente de `bcb42f15` favorable; su prueba dirigida pasa
+en el candidato y reproduce las cinco ausencias al restaurar en memoria el
+contexto anterior. El índice se corrige para distinguir cortes históricos.
+Lectura AWS13:34 confirma ausencia de estado/lease/Scheduler del ensayo y de
+recursos etiquetados del ciclo en Irlanda/Virginia. Recibo y configuración del
+intento conservados en `.work/master-rehearsal/attempts/1/`.
+
+Evidencia versionada: [corrección de contexto](../evidence/JUP-131-aws-build-context.md).
+Recibos locales `.work/master-rehearsal/`: `bootstrap-apply-receipt-20261025.json`,
+`bootstrap-state-migration-20261025.json`, `github-secret-format-20261025.json`,
+`ensayo1-execution.json`, `ensayo1-status.json`, `azure-build-context-docker-receipt.json`.
+Trello actualizado por su integración DockerServer al arrancar. No reutilizar
+la configuración del intento fallido tras integrar: fijar nuevo SHA/CI y
+ventana, conservar este historial y revisar de nuevo el plan real.
+
+## Primer despliegue autorizado: sesión, integración y bootstrap — 25/10/2026
+
+Origen: «Preparar despliegue en AWS», chat `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+El usuario confirma la renovación SSO y autoriza expresamente el bypass de
+administrador exclusivamente para el head `e4ac8461` de PR161, bajo la excepción
+de agentes documentada. Merge completado a las 13:02 Europe/Paris como
+`2087855c81319ef6fbc2bc82bbf7148b192065ad`; árboles Git idénticos al head revisado.
+No se han modificado reglas del repositorio. CI push develop `40191355921`
+SUCCESS, y CD DockerServer automático `40191355988` SUCCESS, comprobados 13:10.
+
+STS confirma la sesión SSO y la cuenta única `323188184300`. Preflight de sólo
+lectura a las 13:05 Europe/Paris: Fargate Irlanda aplicada6vCPU, CodeBuild Medium
+París30, CodeConnections AVAILABLE, zona pública del máster sin destinos de
+aplicación conflictivos, modelos Nova/Titan autorizados por metadatos y clases
+RDS/MQ disponibles. No se han invocado modelos ni leído valores de secretos.
+DNS público conserva los cuatro NS verificados a las 12:42. El token GitHub
+almacenado sirve a las lecturas de CI; AWS usa SSO temporal.
+
+Plan bootstrap actualizado y revisado: 4 importaciones de roles existentes,
+23 altas, 4 cambios de descripción/tags y 0 destrucciones. SHA256 del plan:
+`b8635190c207d7336846378d9bb0db1c91437dbf759d8b01ec9fe21fef14bffd`.
+Su código coincide con la versión revisada. Aplicación iniciada tras comprobar
+cuenta, hash, fuente y CI exacta; resultado aún pendiente en este corte.
+Después: migrar estado bootstrap a su clave S3 separada, configurar ventana
+UTC del ensayo, arrancar up y revisar el plan antes de aprobar su aplicación.
+
+Recibos locales sin secretos: `.work/master-rehearsal/merge-receipt-20261025.json`,
+`develop-ci-20261025.json`, `aws-preflight-20261025.json`,
+`bootstrap-reviewed-plan-20261025.json` y `bootstrap-apply-receipt-20261025.json`.
+Los apartados siguientes conservan cortes anteriores; las esperas de acceso
+y autorización de merge del siguiente apartado ya están resueltas.
+
+## Inicio del primer ensayo y renovación de acceso — 25/10/2026
+
+Origen: «Preparar despliegue en AWS», chat `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+El usuario solicita ahora realizar el primer despliegue en AWS y pregunta si
+el token del día anterior sustituye las credenciales. Destino único conservado:
+Economicon del máster `323188184300`. Esta petición sustituye la restricción de
+no desplegar del hito anterior; no elimina las verificaciones del ensayo.
+
+El token GitHub almacenado en Secrets Manager sirve a la comprobación de CI;
+no autentica AWS. Se reutiliza el perfil SSO `economicon-master-audit` mediante
+`AWS_CONFIG_FILE=.work/aws-access/master-audit-config`, sin claves estáticas.
+STS devuelve `Token has expired and refresh failed`. Renovación iniciada con
+`aws sso login --profile economicon-master-audit --no-browser` y abierta en el
+navegador integrado; pendiente de que el usuario complete el acceso. No guardar
+URL OAuth, códigos ni tokens en documentación.
+
+GitHub vuelve a confirmar todos los checks SUCCESS del head `e4ac8461`, sin
+reviews, comentarios ni cambios solicitados. El merge normal fue rechazado por
+el ruleset de develop: exige una aprobación de otra cuenta y aprobación del
+último push. Se ha pedido autorización explícita para el bypass de administrador
+de ese commit, amparado en la excepción de agentes; respuesta pendiente. No se
+ha integrado ni cambiado ninguna regla. Tras integrar, esperar CI push del SHA
+exacto de develop y regenerar las solicitudes con ese SHA y la ventana UTC.
+
+DNS público verificado a las 12:42:58 Europe/Paris: 1.1.1.1 y 8.8.8.8 devuelven
+los cuatro NS de la zona del máster. Recibo sin secretos:
+`.work/master-rehearsal/dns-preflight-20261025.json`. El código del bootstrap
+local coincide por SHA256 con `infra/aws-bootstrap/main.tf`; el plan del 24/10
+no se reutiliza sin refrescarlo y revisarlo. El próximo paso, tras renovar SSO,
+es confirmar identidad, cuotas y prerrequisitos, generar/revisar el plan actual
+y ejecutar el bootstrap y ensayo autorizados. Aún no se han creado recursos,
+iniciado builds/pipelines AWS ni desplegado la aplicación en esta fase.
+
 ## PR161 reconciliada y aceptación offline renovada — 25/10/2026
 
 Origen: «Preparar despliegue en AWS», chat `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
