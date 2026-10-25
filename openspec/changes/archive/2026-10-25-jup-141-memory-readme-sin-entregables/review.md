@@ -35,3 +35,14 @@ Ningún requisito ni escenario de `project-memory-governance` nombra `materiales
 - El README ya no describe el régimen de exportaciones, que la spec sigue exigiendo, y la sección «Revisión y validación del entregable» pide identificar la versión revisada por su SHA-256 sin explicar de dónde sale. Se repondría, si el equipo quiere, con una viñeta sin ruta en otro cambio.
 - Las referencias históricas a la carpeta en `docs/evidence/`, `docs/continuidad/`, `jup-062-business-memory` y el review archivado de `jup-062-memory-source-rules` se mantienen como registro de hechos pasados.
 - Menciones a «exportación» sin ruta en el README (líneas sobre revisión por fecha y SHA-256, lectura de una exportación completa y prohibición de guardar exportaciones en el repositorio): no se alinean aquí.
+
+## Human Approval
+
+- Change: jup-141-memory-readme-sin-entregables
+- Approval type: post-review
+- Decision: approved
+- Approver: Victor
+- Date: 2026-10-25
+- Adversarial review: no ejecutada; cambio solo documental, sin código de producto, y sin ciclo tester, coder, mutación ni QA. La comprobación independiente fue contrastar el README y el delta con la spec vigente (única diferencia: la frase «next to the other final deliverables»)
+- Accepted findings: el README ya no describe el régimen de exportaciones que la spec sigue exigiendo; referencias históricas a la carpeta en evidencias, continuidad y changes de jup-062 sin tocar; menciones a «exportación» sin ruta en el README sin alinear
+- Archive decision: archive

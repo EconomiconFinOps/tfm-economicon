@@ -20,7 +20,7 @@ The repository SHALL declare that the final project memory is written in one sha
 
 ### Requirement: Dated exports are immutable and stay outside Git
 
-Every export of the memory, in both PDF and Markdown, SHALL be dated, SHALL be stored outside Git next to the other final deliverables, and SHALL have its SHA-256 recorded in a manifest. An export SHALL NOT be edited after it is recorded.
+Every export of the memory, in both PDF and Markdown, SHALL be dated, SHALL be stored outside Git, and SHALL have its SHA-256 recorded in a manifest. An export SHALL NOT be edited after it is recorded.
 
 #### Scenario: An export is stored
 
