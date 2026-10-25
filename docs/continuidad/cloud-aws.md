@@ -73,7 +73,7 @@ fuente archivada aprobada `0a36a663`, misma configuración/ciclo/estado, import
 `NAMESPACE_ID:VPC_ID`, prefijo `recovery-1`, plan completo con exactamente tres
 altas Cloud Map y ninguna modificación/baja. Aplicación sólo de los mismos bytes
 cuyo hash se revisó; lease APPLYING hasta transición condicional INFRA_READY.
-Release usa el runner y las cinco imágenes originales. Scheduler UTC 17:02:05
+Release usa el runner y las cinco imágenes originales. Scheduler UTC 16:02:05
 conservado; builds limitados a 10/10/35 minutos, cola 5 y margen de 15. Con esa
 guarda release debe iniciarse antes de 16:07:05 Europe/Paris. No se ha lanzado aún.
 La política temporal sobre la zona real, cuando se añada, deberá retirarse tras
