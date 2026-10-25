@@ -1,5 +1,193 @@
 # Cloud AWS — arquitectura documental
 
+## Ensayo2: fallo de arranque y retirada en curso — 25/10/2026 19:12 Europe/Paris
+
+Origen: chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+La infraestructura terminó correctamente y las cinco imágenes se publicaron.
+Las seis tareas privadas de bootstrap terminaron con exit0 y limpieza de sus
+task definitions, verificadas a las18:57:38 local. Grafana y Azure arrancaron,
+pero backend y processor salieron con `StartupError: Chat capacity configuration
+is invalid.` La receta de AWS conserva CHAT_MAX_ACTIVE=2 y el código integrado
+requiere5–8. No se alcanzó aceptación, ni se declara la aplicación disponible.
+Los avisos previos de RabbitMQ siguen pendientes de comprobar una vez resuelto
+el arranque; no se ha demostrado todavía la salud AMQP de la aplicación.
+
+Release `fcf9baed-e629-422e-bb87-1a29f19917d0` detenido a las19:01:32.
+La primera retirada `9266ef74` falló antes de mutaciones por el lock S3 que dejó
+el apply interrumpido. Se verificaron identidad, fuente, configuración, lease
+TEARDOWN, proceso STOPPED, ausencia de otros builds/pipelines y ETag. Revisión
+independiente favorable48 pruebas offline. Se retiró únicamente ese lock
+`2bb9a909-59ed-08e5-d7f2-2de334e62312` a las19:11:49, con ausencia posterior
+confirmada. Los recibos de retirada fallida están en `expire-attempt1/`.
+
+Retirada reanudada a las19:12:15: CodeBuild
+`economicon-defensa:dee7cab8-9bc5-46f7-a274-933f4dc56e93`, fuente92e792ce y
+configuración originales, timeout45/cola5. Antes de retirarlo había169 recursos
+en estado; la limpieza aún no está confirmada. Scheduler19:57:15 y permiso exacto
+de retirada de la zona privada conservados hasta el cierre verificado.
+
+Corrección local en `fix/JUP-131-aws-chat-capacity`: receta5 para ambos servicios,
+validación previa de valores5–8 y coherencia entre componentes. Regresión contra
+la función real de capacidad y bloqueo previo a planificar/aprovisionar. Prepare
+es local; el constructor del runner consulta primero configuración e identidad
+en S3/STS. La nueva
+prueba falló antes del cambio y pasa después; suite del controlador112 pruebas,
+103 PASS/9 omitidas, con Python3.14 fuera del problema de ACL temporal del sandbox.
+No cambian aplicaciones, ApiError ni starlette1.9.0. Publicación, CI y revisión
+independiente pendientes; la excepción PR166 no se extiende a otra PR.
+
+Recibos públicos bajo `.work/master-rehearsal/ensayo2/`:
+`bootstrap-public-summary.json`, `runtime-failure-public-details.json`,
+`release-stop-request.json`, `retirement-failure-public.json`,
+`stale-lock-observed.json`, `stale-lock-review.json`, `stale-lock-recovery.json`
+y `expire-start.json`. Los scripts revisados conservan sus hashes. No afirmar
+CodePipeline completo ni coste cero; bootstrap permanece separado.
+
+Los cortes siguientes conservan el historial del mismo ciclo.
+
+## Ensayo2: infraestructura lista y aplicación en arranque — 25/10/2026 18:48 Europe/Paris
+
+Apply `economicon-defensa:fe2f28b8-c09b-4272-bd2b-97b6b7b622bf` SUCCESS,
+verificado a las 18:48:28. Terraform registra 162 recursos, lease INFRA_READY;
+ambas RDS available, privadas y Multi-AZ; RabbitMQ RUNNING. CloudFront
+`E13ISJ5NL7INAL` y origen privado `vo_F0UT7XR8dUECtcRPnCf4E3` Deployed.
+Se aplicó el plan exacto de 160 altas sobre la VPC y namespace ya gestionados.
+
+Release iniciado a las 18:48:44: CodeBuild
+`economicon-defensa:fcf9baed-e629-422e-bb87-1a29f19917d0`, timeout40/cola5.
+Fuente y configuración conservadas. La guarda confirmó tiempo suficiente y
+el apagado de respaldo de las 19:57:15 antes de arrancar. Pendientes publicación
+de imágenes, bootstrap privado, ECS, frontend y aceptación real; aún no afirmar
+que la aplicación está disponible. Recibos bajo `.work/master-rehearsal/ensayo2/`:
+`infra-apply-progress.json`, `infra-apply-status.json` y `release-start.json`.
+
+Los cortes siguientes conservan el historial del mismo ciclo.
+
+## Ensayo2: importación real completada y plan completo en aplicación — 25/10/2026 18:28 Europe/Paris
+
+Origen: chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+La revisión independiente v2 fue favorable: 48 comprobaciones offline nuevas,
+con los hashes exactos de `ensayo2/operation-review.json`. El reintento administrativo
+creó y verificó la zona privada `Z042108134CH6PL7JM3CQ` en VPC
+`vpc-0ecece9ac7704a3c0`. AWS devolvió de nuevo el identificador de namespace
+`ns-mviwfparozab6kes`, con una operación y zona nuevas; no confundir con la zona
+del intento compensado. Sus recibos anteriores están en `namespace-attempt1/`.
+
+La importación declarativa real y el plan completo terminaron SUCCESS a las
+18:26:40: CodeBuild `economicon-defensa:cb242c7d-f990-4144-a90c-5ceaad84cac6`.
+Terraform gestionaba entonces exactamente la VPC y el namespace. Revisión del
+plan completo a las 18:28:01: 160 altas, cero cambios/bajas, recursos preparados
+sin cambios; dos RDS PostgreSQL16.9/db.t4g.medium privados, cifrados y Multi-AZ,
+RabbitMQ privado CLUSTER_MULTI_AZ y límites de permisos de todos los roles.
+Plan SHA256 `609671657df3719317f6e6fc9dd1b5d3870a72b270b228293dfc9c47a3831232`,
+versión S3 `RgdwSEFmkw9i9L73Daj7XXaB22IoWGU0`, binding
+`DhXGCWKv4sTaD8H8JzUSKHWHSoPGY0bK`. Se aplica ese mismo fichero.
+
+Apply iniciado a las 18:28:30: CodeBuild
+`economicon-defensa:fe2f28b8-c09b-4272-bd2b-97b6b7b622bf`, timeout45/cola5.
+Fuente `92e792cec74e62f9fe1ae5b609a76fa482757a74`, configuración y caducidad
+19:57:15 Europe/Paris conservadas; Scheduler verificado y lease APPLYING.
+Aplicación todavía no disponible. Falta éxito del apply, release y aceptación.
+La operación sigue siendo asistida; no acredita el CodePipeline completo.
+Recibos públicos: `.work/master-rehearsal/ensayo2/import-plan-status.json`,
+`infra-review.json`, `infra-apply-start.json` y `namespace-preparation.json`.
+
+Los cortes siguientes conservan el historial del mismo ciclo.
+
+## PR166 integrada y preparación asistida de ensayo2 — 25/10/2026 17:50 Europe/Paris
+
+**Actualización 18:19 Europe/Paris:** import-plan `98fe4c9e` FAILED a las18:12:26.
+Terraform CLI import evalúa mapas for_each encadenados de S3/RDS que aún no están
+en el estado. No fue un fallo de la cuota ni de creación Cloud Map. Compensación
+real completada: namespace `ns-mviwfparozab6kes`, zona `Z05604133DE9RSLZUOUOW`
+y permiso temporal retirados; estado sólo VPC, lease APPLYING y Scheduler original
+conservados. No se creó el resto de infraestructura.
+
+Fallo reproducido con Terraform1.13.3 y terraform_data, sin AWS: CLI import falla
+por el mismo for_each; bloque import y plan dirigido guardado aplican exactamente
+una importación y cero altas/cambios/bajas. No prueba aún el importador AWS real.
+Recibo `ensayo2/import-reproduction-receipt.json`. Se prepara v2 operativa con
+importación declarativa del namespace nuevo, guardas de identidad y plan, eliminación
+del bloque en finally y comprobación posterior de dos recursos en estado. Históricos
+de scripts/dictámenes preservados en `ensayo2/operational-v1/`; tras la revisión, el
+reintento guardará los recibos fallidos en `namespace-attempt1/`. Sin cambiar fuente,
+configuración ni caducidad. Delta pendiente de revisión y de ejecución real.
+
+Los cortes siguientes conservan los pasos anteriores del mismo ciclo.
+
+**Actualización 18:10 Europe/Paris:** build de cinco imágenes SUCCESS. Plan VPC
+`ae48d70834c1f8dbdd5a33f29c9e8267f034deff8bda6ec18ac631f9f4b4c1ed`, una alta,
+cero cambios/bajas, revisado sobre versiones S3 exactas. Scheduler verificado a
+las 18:05:11 con fuente `ALfd9WxmBjuSdeoyDaDUNUNl99ze.h0y`, timeout45/cola5,
+caducidad19:57:15. Apply VPC `5e4392e1` SUCCESS; VPC `vpc-0ecece9ac7704a3c0`
+10.60.0.0/16 verificada, estado inicial de un recurso, lease APPLYING.
+Namespace SSO `ns-mviwfparozab6kes`, nombre `economicon-ensayo2.internal`, zona
+privada `Z05604133DE9RSLZUOUOW`, identidad/VPC/tags comprobados. Permiso temporal
+`economicon-ensayo2-cloudmap-retirement` limitado a Get/Delete de esa zona y
+caducidad20:57:15UTC. Importación y plan completo iniciados por CodeBuild
+`economicon-defensa:98fe4c9e-6a22-47ef-ba50-84dc60032ee6` a las18:09:53.
+Todavía pendientes de éxito; no aplicar el plan completo sin revisar sus bytes.
+Recibos `ensayo2/vpc-review.json`, `expiry-protected.json`, `vpc-apply-status.json`,
+`namespace-preparation.json` e `import-plan-start.json`. Cierre de política temporal
+preparado en `close-zone-permission.py`, revisión independiente33 pruebas PASS;
+no ejecutarlo antes de retirada y ausencias verificadas.
+
+Los cortes siguientes conservan los pasos anteriores del mismo ciclo.
+
+**Actualización 17:57:35 Europe/Paris:** revisión operativa independiente favorable,
+73 comprobaciones offline. Hashes y límites en
+`.work/master-rehearsal/ensayo2/operation-review.json` y `.md`. Configuración
+`configs/95e43262a1349eb779acf752b81f53d86bd1225eccbd6b59b3a768e9a9c311ea.json`,
+fuente `92e792ce`, estado `economicon/defensa/ensayo2/terraform.tfstate`, caducidad
+`2026-10-25T18:57:15Z` (19:57:15 local). S3 subido y hash/versiones verificados;
+CodeBuild `economicon-defensa:85892647-b06a-43ef-9d83-4364e464348a` iniciado para
+validar y construir cinco imágenes, timeout20/cola5. No nuevo CodePipeline.
+Todavía sin VPC/namespace ni aplicación; Scheduler se arma en el plan y se
+verifica/pinea antes del apply. Tras destroy normal se necesita cierre administrativo
+de la política temporal exacta; no lo hace automáticamente la compensación del
+namespace huérfano. La estimación 23,40 EUR se conserva de la misma topología y
+ventana de dos horas, no representa una lectura nueva de facturación ni un límite
+confirmado de Pontia. Recibos `ensayo2/execution.json` y `build-start.json`.
+
+El corte de las 17:50 que sigue describe la preparación anterior al arranque.
+
+Origen: chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+El usuario autorizó expresamente la excepción de las dos revisiones humanas y el
+bypass de PR166 para `96031072d59d67b1922b3a1e63efa9361317acef`. Integrada por
+squash a las 17:25:59 como `92e792cec74e62f9fe1ae5b609a76fa482757a74`; árbol
+idéntico al revisado, sin cambiar reglas. CI PR/push y SQL del candidato SUCCESS;
+CI de develop `40211640718` SUCCESS. El check de revisiones humanas fallido se
+cubre con esa excepción concreta; no se presenta como aprobado automáticamente.
+Recibos locales `pr166-merge-receipt.json` y `pr166-final-verification.json` bajo
+`.work/master-rehearsal/`. [Autorización registrada en PR166](https://github.com/EconomiconFinOps/tfm-economicon/pull/166#issuecomment-6400139256).
+
+Preflight AWS sólo lectura de las 17:34:49 en la cuenta máster `323188184300`:
+64 vCPU Fargate Irlanda, 30 builds medios París, CodeConnection AVAILABLE,
+zona pública correcta y sin registros de aplicación en conflicto, acceso de
+modelos disponible, clases/versiones RDS y MQ y tres AZ válidas. Se comprobaron
+sólo metadatos de los secretos; no valores ni inferencias. Recibo
+`.work/master-rehearsal/ensayo2/aws-preflight.json`. Ensayo1 sigue cerrado.
+
+Para el primer despliegue autorizado se prepara una ejecución asistida sobre el
+CodeBuild existente: plan de una VPC y apply exacto, creación SSO del namespace
+privado de esa VPC, importación, plan nuevo completo y apply del mismo fichero
+revisado. Mantiene el lease APPLYING desde la primera mutación hasta INFRA_READY.
+El apagado se arma antes de la VPC y se fija a una versión S3 de la fuente, con
+45 minutos de timeout y 5 de cola. Sólo se prevé permiso temporal Get/Delete
+sobre la zona privada exacta, con caducidad; la zona pública queda fuera.
+No es una validación del CodePipeline completo sin asistencia. La creación
+automática de Cloud Map con las condiciones IAM actuales continúa sin resolver.
+
+Scripts locales `.work/master-rehearsal/ensayo2/operate.py` y
+`remote-operation.py`, aún en revisión. Incluyen recibo durable e idempotencia de
+namespace y compensación asistida si no llega a importarse; después de importar
+lo retira Terraform. La ventana vulnerable entre creación e importación necesita
+esa asistencia. No se ha subido configuración nueva ni iniciado builds o recursos
+del nuevo ciclo en este corte. La siguiente operación depende de revisión
+favorable de los scripts exactos, fuente/CI fijas y ventana UTC nueva de dos horas.
+
+Los apartados siguientes son cortes históricos superados por este estado.
+
 ## Ensayo retirado y correcciones de PR166 — 25/10/2026 16:54 Europe/Paris
 
 Origen: chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.

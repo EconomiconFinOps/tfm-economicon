@@ -1,5 +1,43 @@
 # Continuidad del proyecto
 
+25Oct 19:12 Europe/Paris: ensayo2 no alcanzó aceptación. Infraestructura y seis
+tareas de bootstrap correctas; backend/processor fallaron por CHAT_MAX_ACTIVE=2,
+fuera del contrato 5–8. Release detenido; lock abandonado retirado con verificación
+y revisión independiente. Retirada `dee7cab8` en curso, apagado19:57 conservado.
+Corrección local a5 y preflight preventivo: 103 pruebas PASS,9 omitidas;
+publicación/CI/revisión de la nueva PR pendientes. [Estado](cloud-aws.md).
+
+Los cortes siguientes conservan el historial previo del ensayo.
+
+25Oct 18:48 Europe/Paris: infraestructura de ensayo2 SUCCESS, 162 recursos;
+RDS privadas/Multi-AZ disponibles, RabbitMQ RUNNING y CloudFront Deployed.
+Release `fcf9baed` iniciado con fuente `92e792ce`, timeout40/cola5 y apagado
+19:57:15 conservado. Pendientes bootstrap, ECS y aceptación; aplicación todavía
+no declarada disponible. Recibos y estado en [cloud-aws.md](cloud-aws.md).
+
+Los cortes siguientes conservan el historial previo del ensayo.
+
+25Oct 18:28 Europe/Paris: importación declarativa real SUCCESS; VPC y namespace
+gestionados. Plan completo verificado: 160 altas, cero cambios/bajas. Apply
+`fe2f28b8` iniciado con fuente `92e792ce`; CI develop SUCCESS y excepción PR166
+registradas. Apagado19:57:15 verificado, lease APPLYING. Aplicación aún pendiente
+de apply, release y aceptación. Operación asistida; detalle y recibos en
+[cloud-aws.md](cloud-aws.md). Zona privada vigente `Z042108134CH6PL7JM3CQ`.
+
+Los cortes siguientes conservan el historial previo del ensayo.
+
+25Oct 18:19 Europe/Paris: PR166 integrada con la excepción y bypass autorizados
+para `96031072`, como `92e792ce`; árbol idéntico al revisado y CI develop
+`40211640718` SUCCESS. Ensayo1 cerrado; no aplicación activa. Preparación local
+de ensayo2 con VPC Terraform, Cloud Map administrativo e importación, seguida de
+plan completo. Cinco imágenes construidas; VPC creada y verificada. Import CLI
+falló por for_each sobre recursos ausentes; namespace/policy retirados correctamente.
+Alternativa declarativa reproducida offline y delta operativo en revisión.
+Apagado19:57:15 y lease APPLYING conservados. Aplicación pendiente.
+[Estado y límites del ensayo](cloud-aws.md).
+
+Los cortes siguientes conservan el historial previo del ensayo.
+
 25Oct 16:54 Europe/Paris: ensayo parcial retirado y cierre manual verificado a
 las 16:47:58: estado vacío, 39 referencias de etiquetas confirmadas retiradas por APIs
 directas, permiso temporal/logs RDS/lease/Scheduler ausentes. Bootstrap preservado;
@@ -171,7 +209,7 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 | [Respuestas largas del chat](respuestas-largas-chat.md) | Rama fix/chat-respuestas-largas-inc01-04 sobre develop 0edd11ef: sin rótulo «Interpretación», fuentes agrupadas al final y cifras de pantalla citables; verificado con el modelo real. Cortes de flujo del proveedor con esquema estricto reproducidos (13 de 30), decisión pendiente. PR y revisiones pendientes. | 2026-10-25 |
 | [Compatibilidad Azure Cost API](azure-cost-api-compatibilidad.md) | JUP-140/PR162: contención temporal Starlette 1.9.0; ApiError congelado, resolución limpia y 81 PASS, imagen y HTTP normal/demo comprobados localmente. Otros rangos y servicios conservados. | 2026-10-24 |
 | [Landing pública](landing-publica.md) | JUP-140/PR162:14marcadores sustituidos por viñetas violetas, textos/datos/JS conservados y Azure excluido. Landing36PASS(26+10), capturas nativas claro/oscuro/móvil/amplia; evaluaciones independientes y aprobación visual pendientes. | 2026-10-24 |
-| [Despliegue AWS](cloud-aws.md) | PR161/163/165 integradas; tercer intento parcial retirado, estado vacío y cierre manual verificado a las 16:47:58. Aplicación ausente, bootstrap preservado. PR166: código `1fb78d60` con CI técnica/SQL y revisión de agente favorables; receta/aceptación actualizadas y resultados de publicación enlazados en la PR. Integración humana y Cloud Map automático pendientes. | 2026-10-25 |
+| [Despliegue AWS](cloud-aws.md) | PR166 integrada con excepción autorizada, fuente `92e792ce`. Ensayo2: infraestructura y bootstrap correctos; aplicación no disponible por capacidad de chat incompatible. Retirada `dee7cab8` en curso; apagado 19:57 conservado. PR167 corrige receta y validación previa; CI y revisión pendientes. Cloud Map sigue asistido; bootstrap separado. | 2026-10-25 |
 | [Cortes de respuesta del chat](cortes-respuesta-chat.md) | JUP-135 integrada por squash f224226d en PR153, con excepcion humana de merge; CI tecnica previa conforme. Agregados de medicion comunicados y pendientes documentales conservados; sin aceptacion generativa nueva. | 2026-10-22 |
 | [Reevaluación de métricas del modelo](reevaluacion-metricas-modelo.md) | JUP-133: PR156 incorporó seis repeticiones y juez IA provisional; PR158 integrada en develop93624f77 corrige fixtures y altura. Evidencia ajena Linux1998PASS/0omisiones y OpenSpec92PASS, sin aceptación de campañas. La composición139 comprueba su delta por separado. | 2026-10-23 |
 | [Composición narrativa de evaluación](dashboard-evaluacion-composicion.md) | JUP-139: entrega R8 aprobada por Paris el 24/10; revisión y validación locales favorables, 137 medidas y 19/1688 conservados. Develop idéntico a 93624f77. OpenSpec archivado 24/10 con promoción de requisitos; evaluación del delta documental y publicación pendientes. Tres dashboards intactos, publicación y etapas humanas pendientes. | 2026-10-24 |

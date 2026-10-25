@@ -106,6 +106,14 @@ def validate_recipe(recipe):
               "EMBEDDING_DIMENSION": "1024", "BEDROCK_REGION": "eu-west-1"}
     for app in ("backend", "processor"):
         require(all(environments[app].get(k) == v for k, v in native.items()), "Native embedding contract required: " + app)
+    capacities = []
+    for app in ("backend", "processor"):
+        environment = environments[app]
+        if environment.get("CHAT_ENABLED", "false").lower() == "true":
+            capacity = environment.get("CHAT_MAX_ACTIVE", "8").strip()
+            require(capacity in {"5", "6", "7", "8"}, "Chat capacity must be between 5 and 8: " + app)
+            capacities.append(capacity)
+    require(len(set(capacities)) <= 1, "Chat capacity must match between backend and processor")
     require(environments["processor"].get("LLM_PROVIDER") == "bedrock"
             and environments["processor"].get("BEDROCK_CHAT_MODEL_ID") == profile,
             "Native chat provider/model must match reviewed profile")
