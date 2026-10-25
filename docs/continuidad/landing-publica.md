@@ -1,5 +1,15 @@
 # Landing pública — JUP-089
 
+## Viñetas violetas —24/10/2026
+
+14marcadores decorativos pasan a viñetas violetas accesibles; textos/datos y JS del carrusel conservados, Azure fuera. Landing36PASS(26+10), buildnativo y capturas representativas1920/3440/390 en claro/oscuro; póster sólo markup, no captura del fallback. [Evidencia y galería](../evidence/JUP-140-vinetas-violetas.md). Candidato local pendiente de evaluaciones independientes y aprobación visual antes de subir. Los apartados siguientes conservan su corte histórico.
+
+## Corrección vigente del bucle responsive — 24/10/2026
+
+Seguimiento local de JUP-140/PR160 ya integrada, sobre develop `ffb5d307`: una secuencia semántica y copias decorativas según ancho evitan el hueco de pantallas grandes, con velocidad constante y fase conservada al redimensionar/pausar. Navegador real1920/2560/3440/390, tres cruces estables por ancho, gap18px y overflow0; capturas completas claro/oscuro y borde320. Landing36PASS, contratoCI19PASS, policy104/gobernanza15 y OpenSpec92 correctos. [Evidencia y capturas](../evidence/JUP-140-carousel.md).
+
+Movimiento reducido interactivo NOT_TESTED por dispensa humana ratificada por PM el24/10 a14:42:20; la rama reducida sí tiene pruebas unitarias actuales, sin equipararlas a navegador. Candidato sin commit en `fix/JUP-140-landing-carousel`, pendiente de dos evaluaciones independientes, retorno de controles originales PM y presentación visual a Paris antes de subir. Sin archivo, publicación ni despliegue autorizados. Los apartados siguientes son historia fechada de la entrega original, no estado vigente de esta corrección.
+
 ## Hito vigente — 24/10/2026
 
 R4 aprobado por Paris tras revisión técnica y validación funcional locales independientes favorables y retorno conforme de controles originales. Se autorizó archivo OpenSpec y reconciliación con develop 93624f77, seguidos de evaluación independiente afectada y presentación del cierre antes de publicar PR. La reconciliación conserva trabajo y dos filas entrantes del índice; quince archivos locales cambian sólo CRLF→LF, sin identidad RAW con los originales. [Cierre y límites](../evidence/JUP-140-closure.md) · [Resultado R4](../evidence/JUP-140-R4.md). Imagen y medio intactos; previews propias conservadas para presentación. Pairing humano, CI definitiva y publicación pendientes; reduce interactivo NOT_TESTED y globales históricos conservados. Los apartados siguientes son cortes históricos.
