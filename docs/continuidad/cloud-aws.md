@@ -1,5 +1,89 @@
 # Cloud AWS — arquitectura documental
 
+## Versión aprobada de aplicación y conciliación con ECS — 25/10/2026
+
+Origen: «Preparar despliegue en AWS», chat `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+El usuario aprueba expresamente `0edd11eff3458683553bd4c36f3011b77c1d3de4`.
+GitHub confirma [PR162](https://github.com/EconomiconFinOps/tfm-economicon/pull/162)
+MERGED, con ese squash como punta actual de `develop`. Incluye el carrusel
+adaptable, las viñetas violetas y `starlette==1.9.0` en la API simulada de Azure.
+El blob de `ApiError` es idéntico al de la base `ffb5d307`:
+`a5ff184e4729d2248a3ff12c3001f3076f2ccdff`.
+
+Verificación por lectura de GitHub el 25/10:
+
+- [CI push de develop](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/40137719699)
+  SUCCESS sobre el SHA aprobado; el log del job Azure `121002689815` confirma
+  Starlette 1.9.0 y `81 passed, 1 warning`.
+- [SQL de la PR](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/40136533801)
+  SUCCESS sobre su head `b4781b9738a43eeaa6b8843dc411595e15fd7cee`; distinguir
+  ese corte de la CI del squash anterior.
+- La excepción de agentes y el bypass puntual de reviews constan en el
+  [comentario de integración](https://github.com/EconomiconFinOps/tfm-economicon/pull/162#issuecomment-6390181431).
+  `JUP reviews` quedó fallido en esa PR; su integración está confirmada y no se
+  presenta el bypass como un check superado.
+
+Atlas, Grafana ECS y la carga aditiva siguen en **PR161**, abierta sobre
+`30d4370a` y pendiente de integración. Esos archivos no existen en `0edd11ef`.
+Una simulación `git merge-tree --write-tree --name-only HEAD origin/develop`
+detecta un único conflicto textual en `docs/continuidad/README.md`, sin tocar
+el checkout. Aunque se fusiona automáticamente, el cambio de `ApiError` de
+PR161 contradice la versión aprobada: al reconciliarla se debe conservar el
+pin de PR162 y retirar el delta anterior de `errors.py` y su prueba asociada.
+Los informes de ese delta se conservan como históricos, no como requisito de
+la nueva versión. No se ha modificado ni integrado PR161 en esta actualización.
+
+Cuenta destino única `323188184300`. La selección aprobada y sus evidencias
+quedan en `.work/master-rehearsal/approved-source.json`; el resumen de
+preflight y su README se actualizan. `config.json` y las solicitudes de
+arranque todavía corresponden a e730 y **no se deben ejecutar**: primero
+reconciliar y validar ECS con esta base, fijar el candidato final, actualizar
+su aceptación/digest y regenerar las solicitudes con su CI y ventana.
+No se ha iniciado ningún recurso, build, pipeline ni despliegue AWS.
+
+## Destino único: cuenta del máster; seguimiento original cancelado — 25/10/2026
+
+Origen: «Preparar despliegue en AWS», chat `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+El usuario indica que se descarte la cuenta original y que el despliegue se
+realice en la cuenta recibida el día anterior: **Economicon `323188184300`**.
+La preparación continúa allí, con aplicación en Irlanda (`eu-west-1`) y
+control CI/CD en París (`eu-west-3`). Las cuotas de 6 vCPU Fargate y 30 builds
+concurrentes corresponden a las comprobaciones del 24/10; no se han vuelto
+a consultar en esta actualización.
+
+Se elimina mediante la herramienta de automatizaciones el seguimiento
+`vigilar-respuesta-aws-y-cuota-fargate-irlanda` de `605600557607`, con resultado
+confirmado `deleteStatus=deleted`. No solicitar más login de esa cuenta ni
+comprobar su caso `179267775500075` o su cuota como condición del ensayo.
+La pestaña de inicio de sesión creada para ese seguimiento queda cerrada.
+El estado local se conserva como cancelado, con sus últimos datos históricos;
+esto no implica aprobación ni cierre del caso en AWS. Recibo sin secretos:
+`.work/aws-access/fargate-monitor-cancelled-20261025.json`.
+
+Esta decisión fija el destino; no inicia un despliegue ni modifica recursos
+AWS. Se mantienen pendientes la aceptación/integración de PR161 y la
+regeneración de la configuración del ensayo con el candidato y ventana finales.
+
+## Monitor de la cuenta original: sesión requerida — 25/10/2026 00:03 Europe/Paris
+
+**Histórico, superado por la decisión superior: ya no se requiere intervención.**
+
+Origen: «Preparar despliegue en AWS», chat `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`,
+automatización `vigilar-respuesta-aws-y-cuota-fargate-irlanda`.
+Las consultas web al caso `179267775500075` y a la cuota `L-3032A538` de Irlanda
+redirigen a AWS Sign-In. No se ha obtenido un valor actual de cuota ni leído
+una respuesta nueva. Estado actual **desconocido**, conservando como histórico
+0 vCPU confirmado el 24/10 a las 21:59:37 Europe/Paris y el último mensaje AWS
+del 22/10 a las 16:12:03. La CLI original continúa sin renovación y no se usó.
+
+Hace falta iniciar sesión en la cuenta original `605600557607` en el navegador
+integrado; la pestaña de cuota queda preparada para ello. La cuenta del máster
+`323188184300` y sus 6 vCPU no sirven como prueba de esta solicitud. Se registra
+un aviso por este nuevo episodio de autenticación y se suprimen repeticiones
+mientras siga igual. Sólo lecturas; sin despliegue ni cambios en AWS.
+Estado: `.work/aws-access/fargate-monitor-state.json`; recibo sin secretos:
+`.work/aws-access/fargate-monitor-auth-required-20261025.json`.
+
 ## Excepción PR161, presupuesto retirado y Jarvis local — 24/10/2026
 
 Origen: «Preparar despliegue en AWS», chat `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
@@ -28,11 +112,20 @@ Recibos locales en `.work/pr161-agent-exception/`.
 
 CI histórica e730 verde a las 12:45 UTC; el run posterior `40133534310` de las
 21:17 UTC detectó el fallo de `ApiError` con Starlette actual. Se corrigió la
-dataclass congelada y se añadió una regresión. La CI del commit final debe
-confirmarse; el check `JUP reviews` mantiene su lógica de reviews GitHub y no
-se ha forzado a verde por documentar la excepción. Tampoco se modificó la
+dataclass congelada y se añadió una regresión. Commit publicado
+`30d4370aca3903cf764111e451153ae2ed83510c`: a las **23:47 Europe/Paris** se
+confirmaron SUCCESS de [CI PR](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/40135283687),
+[CI push](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/40135279467)
+y [SQL](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/40135283678).
+El [check JUP reviews](https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/40135283703)
+sigue FAILURE exclusivamente porque faltan las dos reviews de cuentas GitHub;
+la PR figura OPEN/REVIEW_REQUIRED. Los informes de agentes están publicados,
+pero no se ha modificado ese mecanismo ni forzado una aprobación. Recibo:
+`.work/pr161-agent-exception/final-ci-status.json`. Tampoco se modificó la
 aceptación histórica de la receta: tras el delta Azure, el digest calculado
 de aplicación es `415625fdff2cb998a3716a726a1b4a5b7f46852a6adba99fda56872fcde8733d`.
+La configuración local del ensayo todavía fija e730: hay que regenerarla tras
+la aceptación/integración del candidato y definir la ventana, antes de ejecutar.
 
 Corrección humana del destino DNS: **Jarvis de este equipo, host `local`**,
 `C:/Users/DanteInferno/Documents/Neon Bastion`, chat `01a14bba-2515-7672-8bb3-ce01b4b54e4b`.

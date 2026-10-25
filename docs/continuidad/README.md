@@ -1,5 +1,19 @@
 # Continuidad del proyecto
 
+25Oct: versión de aplicación aprobada por el usuario `0edd11ef`, PR162
+integrada en `develop`. CI push `40137719699` SUCCESS; Azure instala
+Starlette 1.9.0 y supera 81 pruebas, con `ApiError` idéntico a la base.
+SQL de la PR también SUCCESS. Atlas/ECS sigue en PR161, abierta y con un
+conflicto documental; su cambio anterior de `ApiError` debe retirarse al
+reconciliarla con la versión aprobada. Configuración del ensayo aún obsoleta,
+sin despliegue. Ver [cloud-aws.md](cloud-aws.md).
+
+25Oct: por decisión expresa del usuario, el despliegue se prepara únicamente
+en Economicon del máster, cuenta `323188184300`. Eliminada la automatización
+de seguimiento de la cuenta original `605600557607`; ya no se requiere su
+inicio de sesión ni esperar su cuota. El estado anterior queda como histórico.
+Sin despliegue iniciado. Ver [cloud-aws.md](cloud-aws.md).
+
 24Oct, actualización posterior: el usuario autoriza una excepción para PR161:
 revisión y validación por dos agentes independientes, ya lanzados sobre e730dc15.
 Documentada en PR, Trello y [evidencia](../evidence/JUP-131-pr161-agent-exception.md).
@@ -11,9 +25,11 @@ resolutores, conservando los otros 22 registros. DNS independiente a las
 23:26 Europe/Paris confirma la delegación nueva. Revisión y validación favorables
 para las correcciones de métricas y ApiError: Terraform 14 PASS, Azure 82 PASS,
 PostgreSQL/Grafana reales y recursos propios retirados. Informes en
-[evidencia PR161](../evidence/JUP-131-pr161-agents/README.md). CI del commit final
-pendiente de confirmar; `JUP reviews` conserva su requisito de reviews GitHub.
-Sin desplegar. Ver [cloud-aws.md](cloud-aws.md).
+[evidencia PR161](../evidence/JUP-131-pr161-agents/README.md). Commit publicado
+`30d4370a`: CI PR, CI push y SQL SUCCESS a las 23:47 Europe/Paris. `JUP reviews`
+sigue FAILURE al exigir reviews de cuentas GitHub; la excepción tiene los
+informes, pero ese mecanismo no se ha cambiado. Sin merge ni despliegue.
+Ver [cloud-aws.md](cloud-aws.md).
 
 Hito anterior24Oct23:03París: cuenta del máster Economicon323188184300 preparada parcialmente:
 Fargate6/CodeBuild30, conexión GitHubAVAILABLE, boundary validada y cuatro roles
