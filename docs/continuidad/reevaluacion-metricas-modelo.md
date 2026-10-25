@@ -213,3 +213,11 @@ El avance de develop a da43f408 sólo afecta AWS y su documentación; no modific
 el alcance de esta PR ni se presenta como candidato medido. Revisiones humanas,
 merge, carga y comprobación visual en Grafana compartido pendientes. RC NO ACEPTADA;
 persiste 413 de captura grande. Sin nuevas inferencias, despliegue o mensaje Discord.
+
+PR169 publicada en 2ea7777c. Su primer CI expuso inventario de dependencia JUP-133
+ausente y expectativas adicionales de manifiesto; corregidos con 130 pruebas de
+inventario/normalización y 63 de atomicidad/permisos conformes. Nueva ejecución CI
+pendiente. HAL recibió orden de merge tras CI y carga en Grafana, seguida de
+«Tienes autorizacion expresa para saltar las validaciones»: excepción humana
+puntual para PR169, sin fabricar reviews ni extenderla a otras PR. No se ha
+ejecutado aún el merge/carga en este corte.

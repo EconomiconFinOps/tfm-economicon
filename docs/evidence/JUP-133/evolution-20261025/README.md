@@ -159,3 +159,14 @@ Antes de publicar se cotejó el avance remoto de `develop` a `da43f408`: modific
 la retirada de AWS y su documentación, sin cambios en estas fuentes, contratos
 o dashboards. La base inicial de implementación sigue siendo `1c4eda8a`; la
 versión medida de la campaña del domingo sigue siendo `390721f9`.
+
+El primer CI de PR169 amplió la selección local a 2037 pruebas y detectó una
+entrada ausente del inventario de dependencia del modelo para JUP-133, además
+de expectativas antiguas del manifiesto en normalización, atomicidad y permisos.
+Se añade la clasificación dependiente y se conservan las comprobaciones estrictas
+con las dos proyecciones nuevas. Hay un cambio adicional de protocolo en
+`config_changes`, pero ninguna serie comparable adicional. El contraste focal
+final da 130 pruebas de inventario/normalización conformes; las otras 63 de
+atomicidad/permisos ya pasaron sin cambios posteriores. Pendiente el nuevo CI
+integral; el éxito de las 625 iniciales no se presenta como éxito de aquella
+primera ejecución completa.

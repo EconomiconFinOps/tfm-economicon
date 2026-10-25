@@ -32,6 +32,12 @@ Una medida solo es `independiente` si la comprobación está hecha y es localiza
 
 ## Lo que este inventario no resuelve
 
+La fuente **JUP-133** añadida el 25/10 corresponde a las proyecciones de evolución
+del viernes y domingo, clasificadas como **dependientes** del modelo/proveedor y
+del entorno. [Método y límites](../evidence/JUP-133/evolution-20261025/README.md).
+Reutiliza mediciones existentes; no autoriza una repetición ni convierte protocolos
+distintos en una comparación causal o una aceptación de RC.
+
 - **El modelo de la medición «antes» no está atestiguado.** La ejecución viva de JUP-071 del 2026-10-20 se publica como `live_unverified`: el instrumento no verifica qué modelo respondió, por eso guarda `generation_model` nulo y el dashboard la marca «no real: sin modelo verificado». Según la configuración de ejemplo del gateway y la tarjeta de JUP-132, el alias apuntaba a GLM-5.2, pero eso es una declaración, no una atestación. La ejecución nueva tendrá el mismo límite si no cambia el contrato de JUP-035. El informe antes/después lo debe decir, y los campos de identidad del modelo de este cambio se registran como declarados.
 - **Campos de proveedor en el informe vivo.** El informe de JUP-071 guarda el proveedor y el alias del chat (`litellm-openrouter`, `economicon-chat`) en las columnas `embedding_provider` y `embedding_alias` de la ejecución normalizada. Es una correspondencia del adaptador existente; este cambio no la modifica porque cambiar instrumentos está fuera de alcance, pero hay que tenerlo en cuenta al leer esas columnas.
 - **N3/N5 se repitió solo en parte.** Las 84 ejecuciones y la revisión por requisito no se repiten (necesitan el ejecutor de la campaña B y unas 78 revisiones). Sí se midió una vez el banco de 28 preguntas con la herramienta de JUP-070; esa referencia no sustituye la conformidad por requisito, que queda obsoleta.
