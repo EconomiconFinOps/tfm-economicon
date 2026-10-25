@@ -47,7 +47,7 @@ variable "mq_password_secret_arn" {
   type        = string
 }
 variable "route53_zone_id" {
-  description = "Existing approved public zone only; never a wildcard DNS permission."
+  description = "Existing approved public zone; direct DNS record changes are confined to this zone."
   type        = string
   validation {
     condition     = can(regex("^Z[A-Z0-9]+$", var.route53_zone_id))
@@ -203,14 +203,33 @@ resource "aws_iam_role_policy" "deploy" {
     # APIs and IAM privilege separately. Dedicated project account only.
     { Effect = "Allow", Action = ["ec2:*", "elasticloadbalancing:*", "rds:*", "mq:*", "ecs:*", "ecr:*", "servicediscovery:*", "cognito-idp:*", "secretsmanager:*", "kms:*", "logs:*", "cloudwatch:*", "sns:*", "acm:*", "cloudfront:*", "wafv2:*", "tag:GetResources"], Resource = "*", Condition = { StringEquals = { "aws:RequestedRegion" = ["eu-west-1", "us-east-1"] } } },
     { Effect = "Allow", Action = ["route53:GetHostedZone", "route53:ListResourceRecordSets", "route53:ChangeResourceRecordSets"], Resource = "arn:aws:route53:::hostedzone/${var.route53_zone_id}" },
+    # Cloud Map needs Route 53 permissions on behalf of the deploy role. Only
+    # forwarded Cloud Map calls may create its private zone in an Ireland VPC;
+    # a missing VPC (public zone), another region or direct DNS call is excluded.
+    { Effect = "Allow", Action = "route53:CreateHostedZone", Resource = "*", Condition = {
+      "ForAnyValue:StringEquals" = { "aws:CalledVia" = "servicediscovery.amazonaws.com" }
+      StringLike                 = { "route53:VPCs" = "VPCId=vpc-*,VPCRegion=eu-west-1" }
+      Null                       = { "route53:VPCs" = "false" }
+    } },
+    { Effect = "Allow", Action = "route53:ListHostedZonesByName", Resource = "*", Condition = {
+      "ForAnyValue:StringEquals" = { "aws:CalledVia" = "servicediscovery.amazonaws.com" }
+    } },
+    { Effect = "Allow", Action = ["route53:GetHostedZone", "route53:DeleteHostedZone"], Resource = "arn:aws:route53:::hostedzone/*", Condition = {
+      "ForAnyValue:StringEquals" = { "aws:CalledVia" = "servicediscovery.amazonaws.com" }
+    } },
     { Effect = "Allow", Action = "servicequotas:GetServiceQuota", Resource = [
       "arn:aws:servicequotas:eu-west-1:${var.account_id}:fargate/L-3032A538",
       "arn:aws:servicequotas:eu-west-3:${var.account_id}:codebuild/L-2DC20C30"
     ] },
     { Effect = "Allow", Action = "route53:GetChange", Resource = "arn:aws:route53:::change/*" },
     { Effect = "Allow", Action = ["s3:CreateBucket", "s3:DeleteBucket", "s3:ListBucket", "s3:GetBucket*", "s3:PutBucket*", "s3:DeleteBucketPolicy", "s3:GetObject*", "s3:PutObject", "s3:DeleteObject*", "s3:ListBucketVersions"], Resource = ["arn:aws:s3:::economicon-ensayo*", "arn:aws:s3:::economicon-defensa*"] },
+    # IAM action names differ from these Get/PutBucket API names. Terraform
+    # reads all four properties and configures SSE-KMS on the application buckets.
+    { Effect = "Allow", Action = ["s3:GetEncryptionConfiguration", "s3:PutEncryptionConfiguration", "s3:GetAccelerateConfiguration", "s3:GetLifecycleConfiguration", "s3:GetReplicationConfiguration"], Resource = ["arn:aws:s3:::economicon-ensayo*", "arn:aws:s3:::economicon-defensa*"] },
     { Effect = "Allow", Action = ["iam:CreateRole", "iam:PutRolePermissionsBoundary"], Resource = "arn:aws:iam::${var.account_id}:role/economicon-*", Condition = { StringEquals = { "iam:PermissionsBoundary" = var.permissions_boundary_arn } } },
     { Effect = "Allow", Action = ["iam:GetRole", "iam:DeleteRole", "iam:TagRole", "iam:UntagRole", "iam:ListRolePolicies", "iam:ListAttachedRolePolicies", "iam:GetRolePolicy", "iam:PutRolePolicy", "iam:DeleteRolePolicy"], Resource = "arn:aws:iam::${var.account_id}:role/economicon-*" },
+    # Terraform checks that no instance profile references a role before deletion.
+    { Effect = "Allow", Action = "iam:ListInstanceProfilesForRole", Resource = "arn:aws:iam::${var.account_id}:role/economicon-*" },
     { Effect = "Allow", Action = "iam:PassRole", Resource = "arn:aws:iam::${var.account_id}:role/economicon-*", Condition = { StringEquals = { "iam:PassedToService" = "ecs-tasks.amazonaws.com" } } },
     { Effect = "Allow", Action = "iam:CreateServiceLinkedRole", Resource = "*", Condition = { StringLike = { "iam:AWSServiceName" = ["ecs.amazonaws.com", "rds.amazonaws.com", "elasticloadbalancing.amazonaws.com", "mq.amazonaws.com", "cloudfront.amazonaws.com", "vpcorigin.cloudfront.amazonaws.com"] } } },
     { Effect = "Deny", Action = ["iam:DeleteRolePermissionsBoundary", "iam:CreatePolicy", "iam:CreatePolicyVersion", "iam:SetDefaultPolicyVersion"], Resource = "*" },

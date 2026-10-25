@@ -1,5 +1,24 @@
 # Continuidad del proyecto
 
+25Oct, PR165: segundo intento detenido antes de aplicar Terraform por `cycle`
+reservado en DynamoDB; alias corregidos y prueba real conforme. Añadidos permisos
+dependientes de Cloud Map sólo por llamadas delegadas, creando zonas privadas
+en Irlanda, y permisos acotados de cifrado/lectura S3 y consulta de perfiles IAM.
+Plan0altas/1política/0bajas sin aplicar. Sin aplicación, bloqueo ni Scheduler
+activos; bootstrap conservado.
+Revisión/CI del delta e integración pendientes. Detalle en [cloud-aws.md](cloud-aws.md).
+
+Los siguientes párrafos son cortes históricos, superados por el estado anterior.
+
+25Oct 13:44 Europe/Paris: PR163 integrada como `6851ec7a` tras autorización
+humana expresa de excepción y bypass para `f48a72e8`. CI técnica PR/push y SQL
+SUCCESS, build Docker real y revisión independiente favorables; árbol integrado
+idéntico al revisado. CI develop `40194488245` SUCCESS; reintento `2855d9da`
+iniciado13:52:38, ventana hasta15:52:34 local. Validación y cinco imágenes SUCCESS;
+plan de162 altas/0cambios/0bajas revisado y aprobado14:01, Scheduler verificado.
+Apply en curso; aplicación todavía pendiente. El primer intento falló antes del plan. Véase
+[cloud-aws.md](cloud-aws.md).
+
 25Oct, primer ensayo autorizado en la cuenta del máster `323188184300`:
 SSO renovada y verificada; PR161 integrada mediante el bypass puntual autorizado
 como `2087855c`, sin cambiar reglas. CI push develop `40191355921` SUCCESS.
@@ -112,7 +131,7 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 | --- | --- | --- |
 | [Compatibilidad Azure Cost API](azure-cost-api-compatibilidad.md) | JUP-140/PR162: contención temporal Starlette 1.9.0; ApiError congelado, resolución limpia y 81 PASS, imagen y HTTP normal/demo comprobados localmente. Otros rangos y servicios conservados. | 2026-10-24 |
 | [Landing pública](landing-publica.md) | JUP-140/PR162:14marcadores sustituidos por viñetas violetas, textos/datos/JS conservados y Azure excluido. Landing36PASS(26+10), capturas nativas claro/oscuro/móvil/amplia; evaluaciones independientes y aprobación visual pendientes. | 2026-10-24 |
-| [Despliegue AWS](cloud-aws.md) | PR161 integrada, CI verde y bootstrap aplicado en la cuenta del máster. Ensayo detenido en build Azure antes de crear aplicación; PR163 corrige el contexto, con regresión/build real y revisión técnica conformes. CI e integración de la corrección pendientes. | 2026-10-25 |
+| [Despliegue AWS](cloud-aws.md) | PR161/163 integradas; bootstrap aplicado en el máster. Segundo intento detenido por DynamoDB antes de aplicar infraestructura; controles retirados y aplicación ausente. PR165 corrige el bloqueo y permisos dependientes de Cloud Map/S3/IAM; revisión/CI del delta e integración pendientes. | 2026-10-25 |
 | [Cortes de respuesta del chat](cortes-respuesta-chat.md) | JUP-135 integrada por squash f224226d en PR153, con excepcion humana de merge; CI tecnica previa conforme. Agregados de medicion comunicados y pendientes documentales conservados; sin aceptacion generativa nueva. | 2026-10-22 |
 | [Reevaluación de métricas del modelo](reevaluacion-metricas-modelo.md) | JUP-133: PR156 incorporó seis repeticiones y juez IA provisional; PR158 integrada en develop93624f77 corrige fixtures y altura. Evidencia ajena Linux1998PASS/0omisiones y OpenSpec92PASS, sin aceptación de campañas. La composición139 comprueba su delta por separado. | 2026-10-23 |
 | [Composición narrativa de evaluación](dashboard-evaluacion-composicion.md) | JUP-139: entrega R8 aprobada por Paris el 24/10; revisión y validación locales favorables, 137 medidas y 19/1688 conservados. Develop idéntico a 93624f77. OpenSpec archivado 24/10 con promoción de requisitos; evaluación del delta documental y publicación pendientes. Tres dashboards intactos, publicación y etapas humanas pendientes. | 2026-10-24 |

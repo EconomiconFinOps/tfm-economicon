@@ -162,7 +162,8 @@ class Runner:
             require(phase == expected, "Lease phase changed; stale writer rejected")
             self.aws("dynamodb", "update-item", payload={"TableName": self.table, "Key": key,
                 "UpdateExpression": "SET phase = :phase",
-                "ConditionExpression": "cycle = :cycle AND sha = :sha AND config_key = :config AND phase = :expected",
+                "ConditionExpression": "#cycle = :cycle AND sha = :sha AND config_key = :config AND phase = :expected",
+                "ExpressionAttributeNames": {"#cycle": "cycle"},
                 "ExpressionAttributeValues": {":phase": {"S": status}, ":expected": {"S": expected},
                     ":config": {"S": self.config_key}, ":cycle": {"S": self.config["cycle_id"]}, ":sha": {"S": self.config["source_sha"]}}})
         return item["phase"]["S"]
@@ -456,7 +457,8 @@ class Runner:
             if not diagnostic.exists() or "ResourceNotFoundException" not in diagnostic.read_text():
                 raise
         self.aws("dynamodb", "delete-item", payload={"TableName": self.table, "Key": {"domain": {"S": lock_key(self.config)}},
-            "ConditionExpression": "cycle = :cycle AND sha = :sha AND config_key = :config AND phase = :expected",
+            "ConditionExpression": "#cycle = :cycle AND sha = :sha AND config_key = :config AND phase = :expected",
+            "ExpressionAttributeNames": {"#cycle": "cycle"},
             "ExpressionAttributeValues": {":cycle": {"S": self.config["cycle_id"]}, ":sha": {"S": self.config["source_sha"]},
                 ":config": {"S": self.config_key}, ":expected": {"S": "TEARDOWN"}}})
 
