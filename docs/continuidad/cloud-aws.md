@@ -32,6 +32,13 @@ Build real linux/amd64 y contenedor sin red conformes: archivos presentes,
 Starlette1.9.0 y UID10001; contenedor y etiqueta temporal retirados. Aplicación,
 ApiError, requisitos y receta de aceptación intactos. Revisión/CI/integración
 de esta corrección pendientes; el bypass anterior sólo cubría PR161/e4ac8461.
+PR de corrección: <https://github.com/EconomiconFinOps/tfm-economicon/pull/163>.
+Revisión técnica independiente de `bcb42f15` favorable; su prueba dirigida pasa
+en el candidato y reproduce las cinco ausencias al restaurar en memoria el
+contexto anterior. El índice se corrige para distinguir cortes históricos.
+Lectura AWS13:34 confirma ausencia de estado/lease/Scheduler del ensayo y de
+recursos etiquetados del ciclo en Irlanda/Virginia. Recibo y configuración del
+intento conservados en `.work/master-rehearsal/attempts/1/`.
 
 Evidencia versionada: [corrección de contexto](../evidence/JUP-131-aws-build-context.md).
 Recibos locales `.work/master-rehearsal/`: `bootstrap-apply-receipt-20261025.json`,

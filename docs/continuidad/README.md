@@ -6,8 +6,11 @@ como `2087855c`, sin cambiar reglas. CI push develop `40191355921` SUCCESS.
 Bootstrap aplicado y estado S3 separado, cifrado/versionado, sin drift. Ensayo
 `0c9fb3aa` valida correctamente y se detiene en build por el contexto Docker de
 Azure; sin infraestructura de aplicación creada. Corrección de una línea con
-regresión y build real conformes; pendiente revisión, CI e integración nueva.
+regresión y build real conformes. PR163 publicada; revisión técnica favorable,
+CI e integración nueva pendientes.
 Estado y recibos en [cloud-aws.md](cloud-aws.md).
+
+Los párrafos siguientes conservan su corte histórico.
 
 25Oct: PR161 reconciliada con la aplicación aprobada `0edd11ef`; ApiError
 intacto y Starlette 1.9.0, Atlas/Grafana/carga aditiva conservados. CI técnica
@@ -16,8 +19,6 @@ Excepción de agentes reconocida sólo en PR161 con informes ligados al candidat
 guardas generales conservadas. Configuración del máster regenerada sin saldo
 ficticio; CI develop y ventana pendientes. Sin merge ni despliegue. Estado final
 y recibos en [cloud-aws.md](cloud-aws.md).
-
-Los párrafos siguientes conservan su corte histórico.
 
 25Oct: versión de aplicación aprobada por el usuario `0edd11ef`, PR162
 integrada en `develop`. CI push `40137719699` SUCCESS; Azure instala
@@ -111,7 +112,7 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 | --- | --- | --- |
 | [Compatibilidad Azure Cost API](azure-cost-api-compatibilidad.md) | JUP-140/PR162: contención temporal Starlette 1.9.0; ApiError congelado, resolución limpia y 81 PASS, imagen y HTTP normal/demo comprobados localmente. Otros rangos y servicios conservados. | 2026-10-24 |
 | [Landing pública](landing-publica.md) | JUP-140/PR162:14marcadores sustituidos por viñetas violetas, textos/datos/JS conservados y Azure excluido. Landing36PASS(26+10), capturas nativas claro/oscuro/móvil/amplia; evaluaciones independientes y aprobación visual pendientes. | 2026-10-24 |
-| [Despliegue AWS](cloud-aws.md) | PR161 reconciliada con 0edd11ef, ApiError/pin conservados y aceptación offline renovada. Configuración máster regenerada; informes/CI final en recibos. Integración y ventana pendientes; sin despliegue. | 2026-10-25 |
+| [Despliegue AWS](cloud-aws.md) | PR161 integrada, CI verde y bootstrap aplicado en la cuenta del máster. Ensayo detenido en build Azure antes de crear aplicación; PR163 corrige el contexto, con regresión/build real y revisión técnica conformes. CI e integración de la corrección pendientes. | 2026-10-25 |
 | [Cortes de respuesta del chat](cortes-respuesta-chat.md) | JUP-135 integrada por squash f224226d en PR153, con excepcion humana de merge; CI tecnica previa conforme. Agregados de medicion comunicados y pendientes documentales conservados; sin aceptacion generativa nueva. | 2026-10-22 |
 | [Reevaluación de métricas del modelo](reevaluacion-metricas-modelo.md) | JUP-133: PR156 incorporó seis repeticiones y juez IA provisional; PR158 integrada en develop93624f77 corrige fixtures y altura. Evidencia ajena Linux1998PASS/0omisiones y OpenSpec92PASS, sin aceptación de campañas. La composición139 comprueba su delta por separado. | 2026-10-23 |
 | [Composición narrativa de evaluación](dashboard-evaluacion-composicion.md) | JUP-139: entrega R8 aprobada por Paris el 24/10; revisión y validación locales favorables, 137 medidas y 19/1688 conservados. Develop idéntico a 93624f77. OpenSpec archivado 24/10 con promoción de requisitos; evaluación del delta documental y publicación pendientes. Tres dashboards intactos, publicación y etapas humanas pendientes. | 2026-10-24 |
