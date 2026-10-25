@@ -68,7 +68,12 @@ test("PR161 exception fails closed for other identities, branches, bases, roles 
     { base: "main" }, { head: "feat/JUP-131-other" }, { title: "JUP-140: other" },
     { title: "JUP-140: references JUP-131" },
     { body: body.replace("- ID: JUP-131", "- ID: JUP-140") },
+    { body: `- id:   JUP-131\n${body}` },
     { body: body.replace("pr161_validation", "pr161_code_review") },
+    { body: `- revision de pr: Paris Arcos Martin\n${body}` },
+    { body: `- pairing/coautoria: Paris Arcos Martin\n${body}` },
+    { body: `- LIDERAZGO: Otra persona\n${body}` },
+    { body: `- validacion, pruebas y documentacion: Otro agente\n${body}` },
     { body: body.replace(marker, `<!-- ${marker} -->`) }, { body: `${body}\n${marker}` }]) {
     assert.notDeepEqual(f.check({ ...f.input, ...change }), [], JSON.stringify(change));
   }

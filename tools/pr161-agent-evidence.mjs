@@ -32,10 +32,10 @@ export function pr161AgentEvidence(input, visibleLines, root) {
       && input.repository?.toLowerCase() === "economiconfinops/tfm-economicon"
       && input.author?.toLowerCase() === "iber1to"
       && /\bJUP-(\d{3})\b/i.exec(input.title)?.[1] === "131"
-      && lines.filter((line) => /^- ID: JUP-\d+$/i.test(line)).length === 1
+      && lines.filter((line) => /^-\s*ID:\s*JUP-\d{3}\s*$/i.test(line)).length === 1
       && lines.includes("- ID: JUP-131")
       && input.base === "develop" && input.head === "feat/JUP-131-atlas-ecs"
-      && ROLES.every((role) => lines.filter((line) => line.startsWith(role.split(":")[0] + ":")).length === 1 && lines.includes(role)),
+      && ROLES.every((role) => lines.filter((line) => line.toLowerCase().startsWith(role.split(":")[0].toLowerCase() + ":")).length === 1 && lines.includes(role)),
     "alcance o roles distintos de la autorizacion PR161");
     const git = (...args) => execFileSync("git", args, { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], maxBuffer: 4 * 1024 * 1024 });
     require(/^[a-f0-9]{40}$/.test(input.headSha ?? "") && git("rev-parse", "HEAD").trim() === input.headSha,
