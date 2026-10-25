@@ -1,12 +1,51 @@
 # Continuidad del proyecto
 
-25Oct, PR165: segundo intento detenido antes de aplicar Terraform por `cycle`
-reservado en DynamoDB; alias corregidos y prueba real conforme. Añadidos permisos
-dependientes de Cloud Map sólo por llamadas delegadas, creando zonas privadas
-en Irlanda, y permisos acotados de cifrado/lectura S3 y consulta de perfiles IAM.
-Plan0altas/1política/0bajas sin aplicar. Sin aplicación, bloqueo ni Scheduler
-activos; bootstrap conservado.
-Revisión/CI del delta e integración pendientes. Detalle en [cloud-aws.md](cloud-aws.md).
+25Oct 16:54 Europe/Paris: ensayo parcial retirado y cierre manual verificado a
+las 16:47:58: estado vacío, 39 referencias de etiquetas confirmadas retiradas por APIs
+directas, permiso temporal/logs RDS/lease/Scheduler ausentes. Bootstrap preservado;
+KMS/secretos con borrado diferido. Aplicación no disponible; no afirmar coste cero.
+PR166 amplía corrección SSL con inventario autoritativo y adaptación de una fixture
+al chat integrado por PR164. Base `390721f9` incorporada; CI técnica PR/push, SQL y
+revisión de agente de `1fb78d60` conformes. Aceptación offline renovada; dictámenes
+y CI de publicación se enlazan en PR166. Integración humana y Cloud Map automático
+pendientes. Véase [cloud-aws.md](cloud-aws.md).
+
+Los cortes siguientes conservan el historial previo del ensayo.
+
+25Oct 16:23 Europe/Paris: aplicación aún no disponible. Intento 3 en retirada
+controlada desde las 16:19; 159 recursos en estado antes de iniciarla. Cloud Map
+se importó, pero el plan de recuperación rechazó drift PostgreSQL; no se aplicó.
+Apagado de respaldo 17:02 corregido y verificado. PR166 prepara el ajuste
+permanente de SSL sin cambiar su valor; CI/revisiones pendientes. Detalles,
+recibos y pasos de retirada en [cloud-aws.md](cloud-aws.md).
+
+Los cortes siguientes conservan el historial previo del ensayo.
+
+25Oct 15:56 Europe/Paris: retirada de DNS privado probada con éxito desde el
+rol del pipeline y limpieza verificada. Se ha solicitado por SSO el namespace
+real del plan aprobado para importarlo al estado y recuperar el intento 3.
+Permiso de retirada acotado al ARN de su zona; fuente `0a36a663`, configuración
+y apagado 17:02:05 se conservan. Plan nuevo y aceptación aún pendientes.
+Detalle y riesgos operativos en [cloud-aws.md](cloud-aws.md).
+
+25Oct 15:36 Europe/Paris: intento 3 FAILED por Cloud Map:
+`CreatePrivateDnsNamespace` devuelve `ACCESS_DENIED route53:CreateHostedZone`.
+La simulación anterior no acreditaba el contexto IAM real; causa exacta entre
+las condiciones de delegación y VPC aún en investigación. Terraform terminó
+con 158 instancias en estado; RabbitMQ RUNNING y ambos PostgreSQL available,
+privados y Multi-AZ. Bloqueo APPLYING conservado;
+apagado 17:02:05 habilitado. Aplicación aún no disponible. No repetir el plan
+original sobre este estado parcial. Véase [cloud-aws.md](cloud-aws.md).
+
+25Oct 15:12 Europe/Paris: PR165 integrada como `0a36a663`, árbol idéntico al
+candidato `0eafcc3d`, con excepción humana y bypass expresamente autorizados.
+CI técnica PR/push, SQL y CI de develop SUCCESS; agente APPROVE. Única política
+IAM aplicada y verificada. Intento 3 `d76e2632` iniciado con nueva configuración
+y caducidad a las 17:02 Europe/Paris. Validación y cinco imágenes SUCCESS;
+plan de 162 altas/0 cambios/0 bajas revisado y aprobado a las 15:12:32,
+Scheduler verificado. A las 15:15 hay 104 recursos en estado Terraform; dos RDS,
+RabbitMQ y tres NAT en creación, bloqueo APPLYING. Aplicación aún no disponible.
+Detalle en [cloud-aws.md](cloud-aws.md).
 
 Los siguientes párrafos son cortes históricos, superados por el estado anterior.
 
@@ -132,7 +171,7 @@ El colector #131 está integrado; el seguimiento documental #138 es independient
 | [Respuestas largas del chat](respuestas-largas-chat.md) | Rama fix/chat-respuestas-largas-inc01-04 sobre develop 0edd11ef: sin rótulo «Interpretación», fuentes agrupadas al final y cifras de pantalla citables; verificado con el modelo real. Cortes de flujo del proveedor con esquema estricto reproducidos (13 de 30), decisión pendiente. PR y revisiones pendientes. | 2026-10-25 |
 | [Compatibilidad Azure Cost API](azure-cost-api-compatibilidad.md) | JUP-140/PR162: contención temporal Starlette 1.9.0; ApiError congelado, resolución limpia y 81 PASS, imagen y HTTP normal/demo comprobados localmente. Otros rangos y servicios conservados. | 2026-10-24 |
 | [Landing pública](landing-publica.md) | JUP-140/PR162:14marcadores sustituidos por viñetas violetas, textos/datos/JS conservados y Azure excluido. Landing36PASS(26+10), capturas nativas claro/oscuro/móvil/amplia; evaluaciones independientes y aprobación visual pendientes. | 2026-10-24 |
-| [Despliegue AWS](cloud-aws.md) | PR161/163 integradas; bootstrap aplicado en el máster. Segundo intento detenido por DynamoDB antes de aplicar infraestructura; controles retirados y aplicación ausente. PR165 corrige el bloqueo y permisos dependientes de Cloud Map/S3/IAM; revisión/CI del delta e integración pendientes. | 2026-10-25 |
+| [Despliegue AWS](cloud-aws.md) | PR161/163/165 integradas; tercer intento parcial retirado, estado vacío y cierre manual verificado a las 16:47:58. Aplicación ausente, bootstrap preservado. PR166: código `1fb78d60` con CI técnica/SQL y revisión de agente favorables; receta/aceptación actualizadas y resultados de publicación enlazados en la PR. Integración humana y Cloud Map automático pendientes. | 2026-10-25 |
 | [Cortes de respuesta del chat](cortes-respuesta-chat.md) | JUP-135 integrada por squash f224226d en PR153, con excepcion humana de merge; CI tecnica previa conforme. Agregados de medicion comunicados y pendientes documentales conservados; sin aceptacion generativa nueva. | 2026-10-22 |
 | [Reevaluación de métricas del modelo](reevaluacion-metricas-modelo.md) | JUP-133: PR156 incorporó seis repeticiones y juez IA provisional; PR158 integrada en develop93624f77 corrige fixtures y altura. Evidencia ajena Linux1998PASS/0omisiones y OpenSpec92PASS, sin aceptación de campañas. La composición139 comprueba su delta por separado. | 2026-10-23 |
 | [Composición narrativa de evaluación](dashboard-evaluacion-composicion.md) | JUP-139: entrega R8 aprobada por Paris el 24/10; revisión y validación locales favorables, 137 medidas y 19/1688 conservados. Develop idéntico a 93624f77. OpenSpec archivado 24/10 con promoción de requisitos; evaluación del delta documental y publicación pendientes. Tres dashboards intactos, publicación y etapas humanas pendientes. | 2026-10-24 |

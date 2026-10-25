@@ -1,5 +1,264 @@
 # Cloud AWS — arquitectura documental
 
+## Ensayo retirado y correcciones de PR166 — 25/10/2026 16:54 Europe/Paris
+
+Origen: chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+Terraform terminó la retirada con cero recursos administrados a las 16:35:52.
+El build `economicon-defensa:1a946185-0a36-4878-a5c1-1a47f0970ef6` figura FAILED:
+la guarda posterior encontró 39 referencias que Resource Groups Tagging API
+conservaba tras borrar los recursos. No fue un fallo del destroy. Lecturas de
+EC2, ECS y Cognito confirmaron las 39 retiradas; NAT/endpoints deleted, cluster
+INACTIVE sin tareas/servicios y restantes objetos ausentes. Auditoría renovada
+a las 16:47:50, recibo `recovery-2/authoritative-residual-audit.json`.
+
+Con autorización humana expresa para el cierre y revisión independiente de
+44 casos simulados, se verificaron otra vez estado, ausencia de builds activos,
+lease y Scheduler exactos. A las 16:47:58 se confirma retirada de la política
+`economicon-ensayo1-cloudmap-retirement`, los dos logs RDS (0 bytes declarados),
+el Scheduler `economicon-ensayo1` y su lease. Namespace y zona privada ausentes;
+ambas bases, RabbitMQ y NAT retirados. Snapshots RDS y backups retenidos vacíos
+en lectura 16:36. Se conservan bootstrap, artefactos y estado de control; una
+clave KMS y cinco secretos tienen borrado diferido de 30 días. No se afirma coste cero.
+No reejecutar los scripts de cierre sobre este estado ya cerrado.
+
+Recibo local `.work/master-rehearsal/recovery-2/final-cleanup-manual.json` y S3
+`cycles/ensayo1/0a36a663463a57227da676c40710f9614f73eba2/retirement-manual-verification.json`
+en el bucket de control. Mantienen explícitamente FAILED y `manual_closure=true`;
+no sustituyen el informe original. La aplicación nunca llegó a estar disponible.
+
+PR166 añade lectura autoritativa para los tipos de residuo observados. Un error
+de permisos, timeout, identidad inesperada o recurso desconocido sigue bloqueando
+el cierre; sólo ausencia exacta o estado retirado válido permite clasificarlo como
+metadatos. Regresión roja previa, luego 105 pruebas offline OK (9 integraciones
+omitidas). Revisión detectó además `NatGatewayNotFound`, corregido con regresión.
+
+La CI previa de PR166 falló dos veces en la prueba de proyección de pantalla;
+no era un fallo aleatorio: PR164 avanzó develop a `390721f9` mientras el push
+probaba la base anterior. El nuevo catálogo de cantidades de pantalla aumentó el
+schema esencial y la fixture calculaba el margen sobre pantalla vacía. Base nueva
+incorporada; se adapta sólo el presupuesto sintético de esa prueba al schema real
+y se exige conservar algunas filas y omitir otras. Límites de producción, ApiError,
+Starlette 1.9.0 y código de aplicación no se modifican respecto a develop.
+El fichero completo de contexto supera 35 pruebas locales con datos sintéticos.
+
+Actualización tras la CI de `1fb78d609555e51a5353c1f541b6a520046fff0a`:
+CI PR `40209401446`, push `40209397897` y SQL `40209401487` SUCCESS. Backend
+2732 PASS/369 SKIP, processor 2676 PASS/150 SKIP; PostgreSQL y Grafana reales en
+contenedores de CI conformes. Revisión independiente favorable del agente
+`/root/review_aws_build_context`; informe local `pr166-final-agent-review-1fb78d60.md`.
+Se renueva la receta con huella `3c2a471c9cb35ddafaa8d9a956361f18da5dda53a6e4cb58a1223a15ee997479`,
+confirmada también en git archive limpio. [Aceptación offline](../evidence/JUP-131-pr166-application-acceptance.md)
+conserva los informes históricos y sus límites. El delta de receta/documentación
+posterior no cambia la aplicación. Sus dictámenes y resultados exactos de CI se
+enlazan en [PR166](https://github.com/EconomiconFinOps/tfm-economicon/pull/166);
+el recibo local de cierre de verificación es `.work/master-rehearsal/pr166-final-verification.json`.
+
+Diagnóstico adicional de Cloud Map: todas las variantes fallidas incluían la
+condición `route53:VPCs`; no se probaron CalledVia sola ni ViaAWSService sola.
+No afirmar que falta CalledVia ni que se necesitan permisos incondicionales.
+La creación administrativa seguida de importación y permiso de retirada sobre
+el ARN exacto sí tiene evidencia positiva; mantenerla como alternativa operacional
+explícita si no se resuelve la creación automática. Proteger la zona pública y
+no reutilizar la simulación IAM como prueba de funcionamiento. No se han cambiado
+permisos después del cierre ni creado un nuevo probe.
+
+Siguiente: obtener los dictámenes humanos o una nueva excepción explícita para
+PR166, esperar CI del SHA integrado y fijar ventana/configuración nuevas. El
+siguiente ciclo será `ensayo2` para no reutilizar nombres de secretos en borrado
+diferido. Preparación local en `.work/master-rehearsal/ensayo2/`, bloqueada hasta
+fijar SHA/CI de develop, caducidad UTC y paso de Cloud Map. La excepción PR165 no
+cubre PR166. No hay ensayo activo ni nuevo plan/apply/release en curso.
+
+Los apartados siguientes son cortes históricos superados por este estado.
+
+## Retirada del ensayo parcial y PR166 — 25/10/2026 16:23 Europe/Paris
+
+Origen: chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+La creación SSO del namespace real terminó SUCCESS; `ns-i7zfoolrhzpzzoon`,
+zona privada `Z06979883KOG825R65CPX`, VPC `vpc-04906b177fcafc9b0`. Importado en
+el mismo estado: serial 14, 159 instancias administradas antes de la retirada.
+No usar ya el fallback de borrado de namespace huérfano.
+
+El build de recuperación `7f131eb4-0297-4da3-8d16-128e3fa65498` falló por la
+guarda del plan: tres altas Cloud Map y una modificación no permitida de
+`aws_db_parameter_group.main`, exclusivamente `apply_method` pending-reboot a
+immediate. Plan `d2dbcfb23b35ae409d12c6ac4b1c27ffc8ba790222fd975500ea3d7e7973fc86`
+rechazado, nunca aplicado. AWS confirma parámetro dinámico, SSL1, método
+pending-reboot y ambos PostgreSQL in-sync; recibo
+`.work/master-rehearsal/rds-parameter-evidence.json` de las 16:21:36.
+
+Se preparó un override operacional equivalente al ajuste permanente de PR166:
+`fe57d673f07ead07023076522578bb609a378dce4ac9d7cc8bfc0ab3e96de905`.
+La fuente archivada sigue siendo `0a36a663`; la diferencia de infraestructura
+se registra expresamente, sin atribuir identidad íntegra de árbol desplegado.
+Revisión independiente favorable: cuatro casos Scheduler, siete de arranque
+de retirada y sintaxis/importación. Scheduler actualizado y leído de nuevo a
+las 16:16:52: sólo cambia BuildspecOverride; hora 17:02:05, configuración,
+cuenta, rol, DLQ y reintentos conservados. Recibo `recovery-2/expiry-protected.json`.
+
+La ventana no permitía completar plan/apply/release con el margen previsto.
+No se iniciaron recovery-2 plan/apply ni release. Retirada manual iniciada a
+las 16:19:15 con CodeBuild `1a946185-0a36-4878-a5c1-1a47f0970ef6`, fase expire,
+misma versión S3, configuración y override. Timeout30min, cola5 y margen5
+anteriores al apagado programado; concurrencia real1 verificada. Última lectura
+16:22: BUILD/IN_PROGRESS. No se ha confirmado aún eliminación ni estado vacío.
+
+Siguiente: esperar el resultado; verificar inventario/estado vacío, lease y
+Scheduler retirados y ausencia de residuos activos; retirar después la política
+inline temporal `economicon-ensayo1-cloudmap-retirement` del rol deploy, cuyo
+Get/DeleteHostedZone se limita a la zona exacta y caduca a las 19:02:05.
+Bootstrap, artefactos y estado de control de París deben conservarse. No afirmar
+coste cero: claves/secretos con borrado programado, backups/logs y control requieren
+inventario. Si falla, conservar estado y diagnosticar antes de un nuevo destroy.
+
+[PR166](https://github.com/EconomiconFinOps/tfm-economicon/pull/166), candidato
+inicial `f74829e9`, declara pending-reboot y añade regresión (rojo13/1, luego
+architecture7PASS/fmt). CI remota en curso; reviews humanas pendientes, excepción
+PR165 no extensible. ApiError y Starlette1.9.0 intactos. Cloud Map automático
+sigue sin resolución permanente: la simulación no prueba su contexto real y
+CloudTrail no devuelve CreateHostedZone en la ventana consultada; las llamadas
+CreatePrivateDnsNamespace son asíncronas. No afirmar CI/CD integral validado.
+
+Los apartados siguientes son cortes históricos superados por este estado.
+
+## Recuperación operacional del intento 3 — 25/10/2026 15:56 Europe/Paris
+
+La prueba administrativa del DNS privado terminó correctamente: creación SSO,
+borrado real por `economicon-defensa-deploy` con Get/DeleteHostedZone limitado
+al ARN exacto, operación SUCCESS, namespace y zona ausentes y política retirada.
+Recibo `.work/master-rehearsal/cloudmap-admin-recovery/probe-delete-verification.json`.
+No se ha ampliado CreateHostedZone. Ambos probes anteriores del rol deploy
+fallaron y se limpiaron; la causa precisa del contexto IAM interno sigue sin
+demostrarse. Esta es una recuperación operacional, no prueba de CI/CD completo.
+
+Tras revisión independiente favorable de scripts (23 comprobaciones locales y
+sintaxis generada), se solicita a las 15:56:42 el namespace del plan aprobado
+`economicon-ensayo1.internal`, VPC `vpc-04906b177fcafc9b0`, con las mismas etiquetas
+que Terraform. Operación `2pwcbo7emohi7ubdbn77duypgkv2irak-jh7a7wpw` pendiente.
+Hasta importarlo no está cubierto por el estado: si falla, ejecutar el fallback
+revisado `cloudmap-admin-recovery.py retire-orphan application` y comprobar su
+retirada; nunca borrar por ese camino un namespace presente en estado.
+
+Recuperación preparada en `.work/master-rehearsal/recover-partial-apply.py`:
+fuente archivada aprobada `0a36a663`, misma configuración/ciclo/estado, import
+`NAMESPACE_ID:VPC_ID`, prefijo `recovery-1`, plan completo con exactamente tres
+altas Cloud Map y ninguna modificación/baja. Aplicación sólo de los mismos bytes
+cuyo hash se revisó; lease APPLYING hasta transición condicional INFRA_READY.
+Release usa el runner y las cinco imágenes originales. Scheduler UTC 16:02:05
+conservado; builds limitados a 10/10/35 minutos, cola 5 y margen de 15. Con esa
+guarda release debe iniciarse antes de 16:07:05 Europe/Paris. No se ha lanzado aún.
+La política temporal sobre la zona real, cuando se añada, deberá retirarse tras
+el destroy normal: el runner no la administra. Aplicación no disponible todavía.
+
+## Intento 3: fallo real de DNS privado — 25/10/2026 15:31 Europe/Paris
+
+Actualización 15:54: dos pruebas reales con el rol deploy (`ViaAWSService` +
+VPC exacta y después sólo VPC exacta, ambas temporales) fallaron con el mismo
+ACCESS_DENIED. Las dos fueron retiradas: namespace, zona y política ausentes.
+Esto no demuestra qué contexto interno evalúa Cloud Map; no se ha concedido
+CreateHostedZone sin restricciones. Se prepara recuperación operacional con
+la fuente aprobada intacta: creación SSO del namespace exacto, importación
+`NAMESPACE_ID:VPC_ID` al mismo estado, plan separado con sólo tres servicios
+Cloud Map y aprobación del hash de los mismos bytes que se aplicarán.
+
+Prueba previa de retirada: SSO creó `economicon-ensayo1-admin-probe.internal`,
+namespace `ns-gssdzcywqdriywgn`, zona privada `Z0292811SIRBSXXT6RO4`, VPC
+`vpc-04906b177fcafc9b0`. Política temporal `economicon-ensayo1-cloudmap-retirement`
+sólo permite Get/DeleteHostedZone sobre ese ARN hasta 19:02:05 Europe/Paris;
+se quitará al confirmar retirada. CodeBuild `b8adc050-217e-4a3f-8385-6e8b2386753c`
+comprueba el borrado desde deploy; todavía pendiente a este corte. El namespace
+real aún no se ha creado. Scripts/recibos en `.work/master-rehearsal/cloudmap-admin-recovery/`
+y `recover-partial-apply.py`. Agente independiente revisa guardas e importación;
+incluido fallback de retirada por ID si queda un namespace fuera del estado.
+No se ha integrado código nuevo ni reutilizado una aprobación de plan anterior.
+
+Actualización 15:36: pipeline FAILED, confirmado a las 15:34:21; apply terminó
+con 158 recursos en estado serial 13. Diagnóstico final confirma el fallo de
+Cloud Map; ambos RDS available/Multi-AZ, RabbitMQ RUNNING y CloudFront creado.
+Estado, bloqueo APPLYING y Scheduler conservados. Prueba temporal de permisos
+preparada, todavía sin ejecutar, con caducidad y VPC exacta del ensayo.
+
+Origen: chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+Operación Cloud Map `2pwcbo7emohi7ubdbn77duypgkv2irak-jh7a7wpx`, iniciada
+15:14:39, termina FAIL/ACCESS_DENIED: el rol `economicon-defensa-deploy` no
+puede ejecutar `route53:CreateHostedZone`. La política aplicada coincide con
+el hash revisado. No hay namespace ni zona privada en el estado. La simulación
+verde suministraba artificialmente `aws:CalledVia` y `route53:VPCs`; no demuestra
+que la llamada real incluya ambos. El proveedor 6.13.0 sí envía la VPC a Cloud
+Map y espera su operación. El formato VPC coincide con la documentación AWS.
+No se ha demostrado todavía cuál de las condiciones falla. Recibo público:
+`.work/master-rehearsal/cloudmap-live-readonly.json`; revisión independiente
+de `/root/review_aws_build_context` coincide en esa limitación.
+
+A las 15:29:21: estado serial 8 con 148 instancias; RabbitMQ RUNNING, ambos
+PostgreSQL privados Multi-AZ terminando configuración/copia inicial y tres NAT
+available. La ejecución `d76e2632` sigue en apply esperando los recursos ya
+iniciados. Bloqueo APPLYING y Scheduler ENABLED hasta 17:02:05 conservados.
+Las lecturas/cifrado S3 y la transición DynamoDB han funcionado realmente.
+Aplicación, release y aceptación aún pendientes. Antes de recuperar se requiere
+diagnóstico real, plan nuevo sobre el estado parcial y revisión; no reutilizar
+el plan inicial ni liberar el bloqueo como en los intentos 1/2. Si no se completa
+en la ventana, tramitar retirada con el estado conservado y verificar residuos.
+
+Los apartados siguientes conservan su corte histórico.
+
+## PR165 integrada; intento 3 en apply — 25/10/2026 15:12 Europe/Paris
+
+Origen: chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+El usuario respondió «Sí, integrar PR165 con esa excepción» para el candidato
+`0eafcc3d5ec430aa19856d3789b08836e8b52c28`. Excepción a los dos dictámenes
+humanos y bypass limitados a esta PR/head; reglas del repositorio conservadas.
+CI técnica PR `40198638031`, push `40198374987` y SQL `40198378762` SUCCESS;
+agente `/root/review_aws_build_context` APPROVE del candidato completo. Lectura
+de conversación, reviews e inline sin comentarios pendientes. `JUP reviews`
+continuaba FAILURE por dictámenes humanos ausentes; no se atribuyen como hechos.
+
+Merge a las 14:49:48 como `0a36a663463a57227da676c40710f9614f73eba2`, árbol
+idéntico al revisado. Corregida la codificación de tildes del registro público;
+esa edición relanzó la CI de PR ya integrada y canceló la CI develop por
+concurrencia. Duplicado `40199574776` cancelado y CI push `40199406946`
+relanzada: intento 2 SUCCESS sobre el SHA integrado. Ningún cambio de código adicional.
+
+Plan bootstrap renovado a las 14:52:21: 0 altas, una actualización de
+`aws_iam_role_policy.deploy`, 0 bajas. SHA256 de la política renderizada
+`192e51b077c09b8f1da8ca8a2e79bf5f1e30d7c21848a2914ccf2c25a5fba584`, idéntico
+al probado. Aplicado a las 15:01:37: 0 altas, 1 cambio, 0 bajas; lectura IAM
+posterior confirma el mismo hash. SSO del máster válida, cuenta `323188184300`, cuota
+Fargate Irlanda 6, CodeBuild París 30, conexión GitHub AVAILABLE y DNS nuevo
+confirmados a las 14:38. Antes del arranque se vuelve a comprobar identidad,
+cuota, ausencia de estado/bloqueo/Scheduler y de ejecuciones up activas.
+Bootstrap conservado. ApiError y Starlette 1.9.0 permanecen intactos.
+
+Intento 3 `d76e2632-5502-4671-94a2-34a673131b3f` iniciado a las 15:02:07
+con fuente `0a36a663` y CI `40199406946`. ConfigKey
+`configs/d4c916914c46f962bf87e5dec0ee6e0daeb7990aa2d9c786398e3d1167f6cc94.json`,
+caducidad `2026-10-25T16:02:05Z` (17:02:05 Europe/Paris). Preparación local
+deployable sin bloqueos; digest de aplicación conservado. Validación y cinco
+imágenes SUCCESS. Plan de 162 altas/0 cambios/0 bajas revisado, incluyendo dos
+PostgreSQL privados/cifrados Multi-AZ, RabbitMQ privado CLUSTER_MULTI_AZ, tres
+NAT, ALB interno, CloudFront y nueve roles con boundary. Sin servicios ECS de
+aplicación en esta fase. Binding, configuración y fuente exactos; plan SHA256
+`f2189677537e368440397af748f2c373a56a3619fcedb9654b9587c0c57dd708`.
+Scheduler ENABLED con fuente/configuración/caducidad nuevas confirmadas.
+Aprobación enviada a las 15:12:32 bajo autorización vigente de primer
+despliegue. Apply en curso; aplicación aún no disponible. Siguiente paso:
+vigilar creación y release, comprobar aplicación y retirada.
+Hito 15:15:04: transición DynamoDB real a APPLYING correcta; estado S3 presente
+con 104 instancias gestionadas. Dos PostgreSQL 16.9/db.t4g.medium Multi-AZ
+privados en creación, RabbitMQ CLUSTER_MULTI_AZ en creación y tres NAT pending.
+Scheduler sigue ENABLED. Ya existen recursos de aplicación: no tratar esta
+ejecución como los intentos 1/2 sin infraestructura ni liberar su bloqueo;
+ante fallo conservar estado y tramitar retirada verificada.
+No reutilizar configuración ni aprobación del intento 2.
+Recibos en `.work/master-rehearsal/pr165-ci-receipt.json`,
+`pr165-agent-review.json`, `pr165-authorization.json`, `pr165-merge-receipt.json`,
+`bootstrap-permissions-plan-review.json`, `bootstrap-permissions-apply-receipt.json`,
+`pr165-develop-ci-receipt.json`, `ensayo1-execution.json`, `infra-plan-review.json`
+y `attempt3-infra-approval-receipt.json`. Trello actualizado por DockerServer,
+comentario de arranque `6ade0c29763e098b7e1e1264`; historial y columna conservados.
+
+Los apartados siguientes conservan su corte histórico.
+
 ## PR165: corrección del bloqueo y permisos dependientes — 25/10/2026
 
 Origen: mismo chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.

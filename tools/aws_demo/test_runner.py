@@ -122,6 +122,10 @@ class RunnerTests(unittest.TestCase):
             if args[0] == "resourcegroupstaggingapi":
                 return {"ResourceTagMappingList": [{"ResourceARN": "arn:aws:kms:eu-west-1:123456789012:key/pending"},
                     {"ResourceARN": "arn:aws:ecs:eu-west-1:123456789012:cluster/active"}]} if "eu-west-1" in args else {}
+            if args[:2] == ("ecs", "describe-clusters"):
+                return {"clusters": [{"clusterArn": "arn:aws:ecs:eu-west-1:123456789012:cluster/active",
+                                      "status": "ACTIVE", "runningTasksCount": 0,
+                                      "pendingTasksCount": 0, "activeServicesCount": 0}]}
             return {"KeyMetadata": {"KeyState": "PendingDeletion"}}
         item.aws = response
         result = item.inspect_residuals()

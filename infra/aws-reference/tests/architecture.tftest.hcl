@@ -26,6 +26,10 @@ run "private_data_and_documentary_defaults" {
     error_message = "The ALB and databases must remain private and databases protected."
   }
   assert {
+    condition     = one(aws_db_parameter_group.main.parameter).name == "rds.force_ssl" && one(aws_db_parameter_group.main.parameter).value == "1" && one(aws_db_parameter_group.main.parameter).apply_method == "pending-reboot"
+    error_message = "TLS must remain enforced with the RDS-persisted apply method, avoiding unrelated release/teardown drift."
+  }
+  assert {
     condition     = !aws_mq_broker.main.publicly_accessible && aws_mq_broker.main.deployment_mode == "CLUSTER_MULTI_AZ" && length(aws_subnet.data) == 3
     error_message = "MQ must be private across three AZs."
   }
