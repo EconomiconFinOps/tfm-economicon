@@ -474,6 +474,56 @@ class Runner:
                        "Input": json.dumps(target), "DeadLetterConfig": {"Arn": os.environ["EXPIRY_DLQ_ARN"]},
                        "RetryPolicy": {"MaximumRetryAttempts": 3, "MaximumEventAgeInSeconds": 3600}}})
 
+    def retired_tagged_resource(self, arn, region):
+        """Tagging can retain deleted objects; only authoritative absence counts."""
+        parts = arn.split(":", 5)
+        if len(parts) != 6:
+            return False
+        service, arn_region, account, resource = parts[2:]
+        kind, _, identity = resource.partition("/")
+        reads = {
+            ("ec2", "natgateway"): ("describe-nat-gateways", "--nat-gateway-ids", "NatGateways", "NatGatewayId", "State", ("NatGatewayNotFound", "InvalidNatGatewayID.NotFound")),
+            ("ec2", "vpc-endpoint"): ("describe-vpc-endpoints", "--vpc-endpoint-ids", "VpcEndpoints", "VpcEndpointId", "State", ("InvalidVpcEndpointId.NotFound",)),
+            ("ec2", "security-group-rule"): ("describe-security-group-rules", "--security-group-rule-ids", "SecurityGroupRules", "SecurityGroupRuleId", None, ("InvalidSecurityGroupRuleId.NotFound",)),
+            ("ec2", "subnet"): ("describe-subnets", "--subnet-ids", "Subnets", "SubnetId", None, ("InvalidSubnetID.NotFound",)),
+            ("ecs", "cluster"): ("describe-clusters", "--clusters", "clusters", "clusterArn", "status", ()),
+            ("cognito-idp", "userpool"): ("describe-user-pool", "--user-pool-id", "UserPool", "Id", None, ("ResourceNotFoundException",)),
+        }
+        read = reads.get((service, kind))
+        if read is None:
+            return False  # Unknown resources remain active until investigated.
+        require(account == self.config["account_id"] and arn_region == region and identity,
+                "Residual resource identity does not match the inspected account/region")
+        operation, argument, key, id_key, state_key, missing_codes = read
+        requested = arn if service == "ecs" else identity
+        try:
+            response = self.aws(service, operation, argument, requested, "--region", region, deploy=True)
+        except RuntimeError:
+            diagnostic = WORK / "last-error.private.txt"
+            api = "".join(word.title() for word in operation.split("-"))
+            if not diagnostic.is_file() or not any(re.search(
+                    r"(?m)^An error occurred \(" + re.escape(code)
+                    + r"\) when calling the " + re.escape(api) + r" operation:", diagnostic.read_text()) for code in missing_codes):
+                raise  # Denials, timeouts and unrelated errors never prove absence.
+            diagnostic.unlink()
+            return True
+        if service == "cognito-idp":
+            require(response[key][id_key] == identity, "Unexpected user pool in residual response")
+            return False
+        objects = response[key]
+        require(isinstance(objects, list) and len(objects) <= 1
+                and all(obj[id_key] == requested for obj in objects), "Unexpected residual response identity")
+        if service == "ecs":
+            failures = response.get("failures", [])
+            require(len(objects) + len(failures) == 1
+                    and all(failure["arn"] == arn and failure["reason"] == "MISSING" for failure in failures),
+                    "Cluster absence was not confirmed")
+            return all(obj["status"] == "INACTIVE" and obj["runningTasksCount"] == 0
+                       and obj["pendingTasksCount"] == 0 and obj["activeServicesCount"] == 0 for obj in objects)
+        if state_key:
+            return all(obj[state_key] == "deleted" for obj in objects)
+        return not objects
+
     def inspect_residuals(self):
         result = {"active": [], "pending_deletion": [], "retired_metadata": [], "regions": ["eu-west-1", "us-east-1"]}
         for region in result["regions"]:
@@ -486,6 +536,9 @@ class Runner:
                     if definition.get("status") in {"INACTIVE", "DELETE_IN_PROGRESS"}:
                         result["retired_metadata"].append(arn)
                         continue
+                if self.retired_tagged_resource(arn, region):
+                    result["retired_metadata"].append(arn)
+                    continue
                 if ":kms:" in arn:
                     details = self.aws("kms", "describe-key", "--key-id", arn, "--region", region, deploy=True)["KeyMetadata"]
                     pending = details.get("KeyState") == "PendingDeletion"
