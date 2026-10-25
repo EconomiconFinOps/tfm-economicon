@@ -10,7 +10,9 @@ Huella calculada mediante `tools.aws_demo.control.application_digest`:
 
 `5e19f3f4ff0db6039ebc42b2733d9dd4266e94b55c6fc8fac741c21876461e70`
 
-Esta huella incluye Atlas/ECS y el contenido aprobado de PR162. Los deltas
+Esta huella identifica los archivos de `apps/`, incluido el cargador Atlas y
+el contenido aprobado de PR162; la configuración ECS queda ligada por el SHA
+del candidato y sus pruebas, no por esta huella de aplicación. Los deltas
 posteriores `bfffb88b` y `964c9f55` sólo cambian la política de declaración de
 PR161 y sus pruebas: `git diff da13f069 964c9f55 -- apps` está vacío.
 `ApiError`, sus pruebas y requirements son idénticos a la base aprobada;
