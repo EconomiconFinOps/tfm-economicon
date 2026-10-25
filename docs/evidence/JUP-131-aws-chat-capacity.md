@@ -14,8 +14,9 @@ el arranque de las aplicaciones ni la aceptación del despliegue.
 
 La receta usa 5 en ambos componentes. `validate_recipe` comprueba el rango y que
 ambos coincidan cuando tienen chat habilitado, respetando el valor predeterminado 8
-y el tratamiento de espacios del runtime. La validación se ejecuta en prepare
-y runner antes de AWS. No cambia la cantidad de tareas ECS, CPU, memoria, IAM,
+y el tratamiento de espacios del runtime. Prepare valida localmente sin AWS.
+El runner valida antes de planificar o aprovisionar, tras sus consultas iniciales
+a S3/STS de configuración e identidad. No cambia las tareas ECS, CPU, memoria, IAM,
 modelos ni el código de las aplicaciones. ApiError y starlette==1.9.0 se conservan.
 
 ## Verificación
@@ -27,7 +28,8 @@ modelos ni el código de las aplicaciones. ApiError y starlette==1.9.0 se conser
   construir clientes. Comprueba la receta versionada, valores 5–8, espacios,
   omisión del valor, discrepancia entre componentes y chat deshabilitado.
 - `test_release_readiness` verifica que una receta con capacidad 2 bloquea
-  prepare y runner y no permite llamadas AWS.
+  prepare y el método `Runner.recipe()` aislado sin llamadas AWS. El constructor
+  completo realiza las consultas iniciales indicadas; no se prueba como libre de AWS.
 - `python -m unittest discover -s tools/aws_demo -p 'test_*.py'`:
   112 pruebas, 103 correctas, 9 omitidas; Python 3.14. Las pruebas de archivos
   temporales requirieron ejecución fuera del sandbox por sus ACL de Windows.

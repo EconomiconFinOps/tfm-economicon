@@ -4,8 +4,10 @@
 When chat is enabled, the AWS release recipe SHALL use the runtime-supported
 capacity of 5 to 8 simultaneous chats. Backend and processor SHALL agree on the
 effective capacity when both enable chat. An omitted value SHALL retain the
-runtime default of 8. Preparation and the release runner SHALL reject an invalid
-recipe before making AWS calls; this does not prove live application readiness.
+runtime default of 8. Local preparation SHALL reject an invalid recipe without
+AWS calls. The release runner SHALL reject it before planning or provisioning;
+its identity and configuration reads MAY precede validation. This does not prove
+live application readiness.
 
 #### Scenario: Recipe repeats the observed startup failure
 - **WHEN** chat is enabled with CHAT_MAX_ACTIVE=2 in either component

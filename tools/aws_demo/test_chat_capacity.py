@@ -1,4 +1,4 @@
-"""Reject the rehearsal's observed startup failure before any AWS operation."""
+"""Reject the rehearsal's observed startup failure before provisioning."""
 import ast
 import copy
 import json

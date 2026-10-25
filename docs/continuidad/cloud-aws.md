@@ -28,7 +28,9 @@ de retirada de la zona privada conservados hasta el cierre verificado.
 
 Corrección local en `fix/JUP-131-aws-chat-capacity`: receta5 para ambos servicios,
 validación previa de valores5–8 y coherencia entre componentes. Regresión contra
-la función real de capacidad y bloqueo de prepare/runner antes de AWS. La nueva
+la función real de capacidad y bloqueo previo a planificar/aprovisionar. Prepare
+es local; el constructor del runner consulta primero configuración e identidad
+en S3/STS. La nueva
 prueba falló antes del cambio y pasa después; suite del controlador112 pruebas,
 103 PASS/9 omitidas, con Python3.14 fuera del problema de ACL temporal del sandbox.
 No cambian aplicaciones, ApiError ni starlette1.9.0. Publicación, CI y revisión

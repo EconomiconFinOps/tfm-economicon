@@ -12,7 +12,7 @@
 - [x] 1.10 Implementar bootstrap privado, datos reproducibles y checks funcionales; completar receta/evidencia local sin simular aceptación AWS.
 - [x] 1.11 Separar integridad de evidencia histórica y aceptación de aplicación en CI; conservar el bloqueo de despliegue por digest y acotar descargas APT del processor.
 - [x] 1.12 Integrar Atlas aditivo privado, Grafana/Prometheus ECS, rutas, TLS y control de presupuesto30EUR; pruebas aisladas, sin AWS.
-- [x] 1.13 Corregir la capacidad de chat de la receta a5 y rechazar valores fuera de5–8 o desalineados antes de AWS; regresión contra el contrato real de arranque tras el fallo de ensayo2.
+- [x] 1.13 Corregir la capacidad de chat de la receta a 5 y rechazar valores fuera de 5–8 o desalineados antes de planificar/aprovisionar; preparación local sin AWS y regresión contra el contrato real de arranque tras el fallo de ensayo2.
 - [ ] 2.1 Completar cuenta/DNS/saldo/motores y aceptación de aplicación antes de ensayo real.
 - [ ] 2.2 Obtener revisión/validación oficiales por roles humanos asignados.
 - [ ] 2.3 Tras autorización futura, ejecutar ensayo1 y registrar tiempos/coste/retirada.
