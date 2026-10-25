@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { pr161AgentEvidence } from "./pr161-agent-evidence.mjs";
 
 const BRANCH_PATTERN = /^(feat|fix|docs|test|chore|refactor|ci|build)\/JUP-(\d{3})-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const TITLE_PATTERN = /\bJUP-(\d{3})\b/i;
@@ -165,7 +166,7 @@ function declaresSamePersonException(body) {
     .some((line) => !/^( {4,}|\t)/.test(line) && plain(line.trim()).replace(/\.$/, "") === expected);
 }
 
-export function checkReviews(input) {
+export function checkReviews(input, { evidenceRoot = process.cwd() } = {}) {
   const { title = "", body = "", author = "", reviews = [] } = input;
   const titleMatch = TITLE_PATTERN.exec(title);
   if (!titleMatch) return [`El titulo debe contener un identificador JUP-XXX. Ver ${REVIEW_FLOW_LINK}`];
@@ -176,6 +177,8 @@ export function checkReviews(input) {
     .sort((a, b) => Date.parse(a.submitted_at) - Date.parse(b.submitted_at));
 
   const errors = [];
+  const agents = pr161AgentEvidence(input, pr135VisibleLines(body), evidenceRoot);
+  errors.push(...agents.errors);
   const specific = pr135Exception(input);
   if (specific.declared && !specific.active) errors.push(PR135_SCOPE_ERROR);
   const authors = {};
@@ -197,7 +200,7 @@ export function checkReviews(input) {
         .filter(([user]) => !specific.active || user === PR135_ROLE_LOGINS[kind.key])
         .map(([user]) => user),
     );
-    if (authors[kind.key].size === 0) {
+    if (authors[kind.key].size === 0 && !agents.active) {
       errors.push(
         `Falta la review "${kind.label} JUP-${id}" de alguien distinto del autor; la primera linea de la review debe ser ese titulo en texto plano. Ver ${REVIEW_FLOW_LINK}`,
       );
@@ -261,6 +264,7 @@ export async function fetchReviewInput({
     author: pull.user?.login ?? "",
     base: pull.base?.ref ?? "",
     head: pull.head?.ref ?? "",
+    headSha: pull.head?.sha ?? "",
     reviews,
   };
 }
@@ -322,7 +326,7 @@ async function mainReviews(eventPath) {
     process.exitCode = 1;
     return;
   }
-  console.log("[OK] Revision y validacion publicadas, sin cambios pendientes.");
+  console.log("[OK] Revision y validacion verificadas conforme a la politica aplicable, sin cambios pendientes.");
 }
 
 function main() {

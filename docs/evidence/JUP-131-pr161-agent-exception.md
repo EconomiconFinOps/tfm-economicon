@@ -51,6 +51,24 @@ límites de Pontia. El candidato publicado aún contiene su guarda anterior de
 
 ## Resultados y revalidación
 
+### Reconciliación autorizada el 25/10 (en curso)
+
+El usuario exige conservar la solución aprobada de PR162 (`0edd11ef`). Se
+retira el cambio mutable de `ApiError` descrito más abajo y su regresión
+específica; se conserva Starlette 1.9.0. Los informes del 24/10 siguen siendo
+evidencia histórica de sus propios candidatos, no aceptación de este delta.
+También se adapta la guarda de presupuesto exclusivamente para `323188184300`.
+
+La CI de política incorpora el reconocimiento específico de esta excepción:
+dos informes atribuidos a `/root/pr161_code_review` y `/root/pr161_validation`,
+con hashes y candidato común. Cualquier cambio de código posterior requiere
+revalidación; sólo la publicación documental expresamente listada se permite.
+No se sustituyen requests for changes ni se fabrican reviews humanas. Se
+solicita una nueva revisión/validación del conjunto antes de publicar el
+manifiesto que puede hacer pasar ese check.
+
+### Histórico del 24/10
+
 Ambos agentes trabajaron sobre el mismo candidato, con informes independientes.
 La revisión inicial pidió corregir un P2: `/grafana/metrics` no estaba cubierta
 por la denegación de métricas del ALB. Se añadió `/grafana/metrics*` a la regla

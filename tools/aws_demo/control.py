@@ -21,6 +21,12 @@ def require(condition, message):
         raise ValueError(message)
 
 
+def master_budget_waiver(config):
+    """Human authorization of 24 Oct, scoped to the master's account only."""
+    return (config.get("account_id") == "323188184300"
+            and config.get("budget_policy") == "master-account-authorized-2026-10-24")
+
+
 def validate_config(config, actual_sha):
     require(isinstance(config, dict), "Configuration must be an object")
     for key in ("cycle_id", "account_id", "source_sha", "route53_zone_id", "postgres_version",
@@ -43,10 +49,18 @@ def validate_config(config, actual_sha):
     require(re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z", config.get("expires_at", "")), "Use UTC expiry YYYY-MM-DDTHH:MM:SSZ")
     stamp = datetime.fromisoformat(config["expires_at"].replace("Z", "+00:00"))
     require(stamp.tzinfo is not None and stamp.utcoffset().total_seconds() == 0, "expires_at must be UTC")
-    for key in ("budget_eur", "estimated_cycle_eur", "available_credit_eur"):
+    waiver = master_budget_waiver(config)
+    require(config.get("budget_policy", "verified-project-budget") == "verified-project-budget" or waiver,
+            "Unapproved budget policy/account")
+    money_fields = ("estimated_cycle_eur",) if waiver else ("budget_eur", "estimated_cycle_eur", "available_credit_eur")
+    for key in money_fields:
         require(type(config.get(key)) in (int, float) and math.isfinite(config[key]) and config[key] > 0, "Set verified " + key)
-    require(config['budget_eur'] <= 30, 'Project budget cannot exceed 30 EUR')
-    require(config["estimated_cycle_eur"] <= min(config["budget_eur"], config["available_credit_eur"]), "Cycle exceeds verified remaining project budget")
+    if waiver:
+        require("budget_eur" not in config and "available_credit_eur" not in config,
+                "Master authorization must not assert an unverified budget or balance")
+    else:
+        require(config['budget_eur'] <= 30, 'Project budget cannot exceed 30 EUR')
+        require(config["estimated_cycle_eur"] <= min(config["budget_eur"], config["available_credit_eur"]), "Cycle exceeds verified remaining project budget")
     require(re.fullmatch(r"[0-9]+", config.get("ci_run_id", "")), "CI run required")
     recipe = PurePosixPath(config.get("release_recipe", ""))
     require(not recipe.is_absolute() and ".." not in recipe.parts and str(recipe).startswith("infra/aws-cicd/"), "Recipe must be versioned under infra/aws-cicd")

@@ -1,5 +1,30 @@
 # CI/CD AWS y primer ensayo — JUP-131
 
+## Preparación vigente para el máster — 25/10/2026
+
+Destino único: `323188184300`, aplicación en Irlanda y control en París. PR161
+se reconcilia con la aplicación aprobada `0edd11ef`; `ApiError` y sus pruebas
+son idénticos a esa versión y se conserva `starlette==1.9.0`. Atlas/Grafana,
+carga aditiva y aislamiento de métricas siguen incluidos. No se despliega.
+
+El usuario retiró el requisito de 30 EUR para esta cuenta el 24/10. La
+configuración nueva declara `budget_policy: master-account-authorized-2026-10-24`
+y omite `budget_eur`/`available_credit_eur`: los límites de Pontia siguen sin
+acreditar. La excepción sólo vale para esta cuenta; no elimina caducidad,
+cuotas, autorización, aceptación de aplicación ni CI push exacta de develop.
+La estimación de ciclo permanece informativa y debe ser finita/positiva.
+Las demás cuentas conservan la política de presupuesto verificado de 30 EUR.
+
+La configuración se regenera offline en `.work/master-rehearsal/` al fijar el
+candidato. CI de PR no sustituye CI de develop. La ventana se fija al autorizar
+el ensayo (máximo 8 horas); no se inventa una caducidad futura para aparentar
+readiness. La receta de aceptación histórica conserva sus hashes hasta que
+existan pruebas suficientes para renovar la aceptación del conjunto.
+
+Los apartados fechados a continuación conservan decisiones y comprobaciones
+históricas; las restricciones de presupuesto anteriores quedan sustituidas por
+la política específica indicada arriba. La cuenta original ya no es destino.
+
 ## Atlas preparado para ECS — 24/10/2026
 
 La ampliación autorizada está implementada en `feat/JUP-131-atlas-ecs`, basada

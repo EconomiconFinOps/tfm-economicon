@@ -26,6 +26,29 @@ def config():
 
 
 class ConfigTests(unittest.TestCase):
+    def master_config(self):
+        value = dict(config(), account_id="323188184300",
+                     budget_policy="master-account-authorized-2026-10-24")
+        del value["budget_eur"]
+        del value["available_credit_eur"]
+        return value
+
+    def test_master_authorization_does_not_require_an_invented_balance(self):
+        result = control.validate_config(self.master_config(), "a" * 40)
+        self.assertNotIn("available_credit_eur", result)
+
+    def test_budget_exception_cannot_transfer_to_another_account_or_policy(self):
+        for change in ({"account_id": "605600557607"}, {"budget_policy": "ignore"}):
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                control.validate_config(dict(self.master_config(), **change), "a" * 40)
+
+    def test_master_exception_keeps_sha_expiry_region_and_estimate_checks(self):
+        for change in ({"source_sha": "b" * 40}, {"expires_at": "pending"},
+                       {"region": "eu-north-1"}, {"estimated_cycle_eur": float("nan")},
+                       {"budget_eur": 30}, {"available_credit_eur": 999}):
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                control.validate_config(dict(self.master_config(), **change), "a" * 40)
+
     def test_application_digest_is_portable_across_generated_chat_tokenizers(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
