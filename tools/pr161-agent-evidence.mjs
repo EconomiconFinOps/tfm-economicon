@@ -31,7 +31,7 @@ export function pr161AgentEvidence(input, visibleLines, root) {
     require(declarations.length === 1 && input.number === 161
       && input.repository?.toLowerCase() === "economiconfinops/tfm-economicon"
       && input.author?.toLowerCase() === "iber1to"
-      && /(?:^|[^A-Za-z0-9])JUP-131\b/i.test(input.title)
+      && /\bJUP-(\d{3})\b/i.exec(input.title)?.[1] === "131"
       && lines.filter((line) => /^- ID: JUP-\d+$/i.test(line)).length === 1
       && lines.includes("- ID: JUP-131")
       && input.base === "develop" && input.head === "feat/JUP-131-atlas-ecs"

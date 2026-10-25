@@ -66,6 +66,7 @@ test("PR161 exception fails closed for other identities, branches, bases, roles 
   const f = fixture(t);
   for (const change of [{ number: 162 }, { repository: "other/repo" }, { author: "another" },
     { base: "main" }, { head: "feat/JUP-131-other" }, { title: "JUP-140: other" },
+    { title: "JUP-140: references JUP-131" },
     { body: body.replace("- ID: JUP-131", "- ID: JUP-140") },
     { body: body.replace("pr161_validation", "pr161_code_review") },
     { body: body.replace(marker, `<!-- ${marker} -->`) }, { body: `${body}\n${marker}` }]) {
