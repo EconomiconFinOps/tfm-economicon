@@ -1,5 +1,24 @@
 # Cloud AWS — arquitectura documental
 
+## PR165: corrección del bloqueo y permisos Cloud Map — 25/10/2026
+
+Origen: mismo chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+PR165 <https://github.com/EconomiconFinOps/tfm-economicon/pull/165> añade alias
+DynamoDB y los permisos dependientes de Route 53 para la zona privada Cloud Map.
+El segundo fallo fue DynamoDB antes de apply; la carencia DNS se confirmó después
+mediante simulación IAM de la política actual, sin provocar un despliegue parcial.
+Sólo llamadas delegadas por Cloud Map; creación privada con VPC de Irlanda,
+DNS público directo limitado a la zona ya aprobada. Plan bootstrap0altas/1política
+actualizada/0bajas, todavía sin aplicar. IAM14casos PASS; Terraform mock1PASS;
+suite offline88PASS/8SKIP. Prueba real Cloud Map pendiente del ensayo.
+
+Revisión de agente favorable para `e57550e6` sólo sobre DynamoDB; CI técnica PR
+`40196473065`, push `40196469214` y SQL `40196473137` SUCCESS para ese head.
+El nuevo delta IAM requiere revisión/CI propias antes de integrar. `JUP reviews`
+FAILURE por revisiones humanas ausentes; excepciones PR161/163 no lo cubren.
+Sin aplicación, bloqueo ni Scheduler activos. Bootstrap/artefactos conservados.
+Evidencia y referencias: [correcciones](../evidence/JUP-131-dynamodb-lease.md).
+
 ## Segundo intento: condición DynamoDB corregida — 25/10/2026 14:09 Europe/Paris
 
 Origen: mismo chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
