@@ -1,5 +1,69 @@
 # Cloud AWS — arquitectura documental
 
+## Segundo intento: condición DynamoDB corregida — 25/10/2026 14:09 Europe/Paris
+
+Origen: mismo chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+La ejecución `2855d9da` terminó Failed en apply antes de inicializar Terraform.
+Error confirmado: DynamoDB ValidationException, `cycle` es reservado en la
+ConditionExpression de transición PLANNED→APPLYING; bloqueo conservado PLANNED.
+Se corrigió el alias tanto al actualizar como al liberar el bloqueo, preservando
+las condiciones de ciclo/SHA/ConfigKey/fase. Cuatro pruebas de contrato y
+concurrencia primero rojas, después suite88PASS/7SKIP. Prueba DynamoDB real
+roja/verde con actualización sin cambio de fase y lectura consistente idéntica.
+
+Retirada de control14:09:29: tras comprobar pipeline Failed, ninguna ejecución
+up activa, estado ausente y sin recursos etiquetados de aplicación, se invalidó
+el plan aprobado, se eliminó sólo su Scheduler y se liberó condicionalmente
+su bloqueo. Bootstrap y artefactos conservados; ya no existe la caducidad15:52
+de ese intento. Próximo ensayo requiere nuevo SHA/CI/configuración/ventana.
+
+Rama `fix/JUP-131-dynamodb-lease-aliases`; revisión/CI/integración pendientes.
+La autorización de bypass de PR163 era exclusiva de esa PR/head y no se extiende
+a esta corrección. Evidencia: [DynamoDB lease](../evidence/JUP-131-dynamodb-lease.md).
+Recibos `.work/master-rehearsal/lease-live-red.json`, `lease-live-green.json`,
+`attempt2-control-retirement.json`; snapshot en `attempts/2/`. ApiError,
+Starlette1.9.0, arquitectura y permisos intactos. Aplicación AWS no disponible.
+
+## PR163 integrada con excepción nueva — 25/10/2026 13:44 Europe/Paris
+
+Origen: mismo chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+El usuario autoriza expresamente «Sí, integrar PR163 con esa excepción» tras
+identificar el head `f48a72e817aa0cbc9f3959826008be6ff51aed53`, el build real,
+CI técnica/SQL y la revisión independiente. Excepción a las revisiones humanas
+y bypass limitados a PR163/head; ninguna regla del repositorio modificada.
+No se atribuyen reviews humanas ni se declara verde `JUP reviews`, que fallaba
+por los dos dictámenes ausentes. Conversación, reviews e inline leídos, vacíos.
+
+CI técnica PR `40193776368`, push `40193771005` y SQL `40193776351` SUCCESS.
+Agente `/root/review_aws_build_context` APPROVE del head final; evidencia
+atribuida en el cuerpo de PR163. Merge completado a las13:44:53 como
+`6851ec7aa6b477b8c1859cb325126777c1c7994b`, árbol idéntico al revisado.
+CI push develop `40194488245` SUCCESS. Reintento
+`2855d9da-f725-443f-94c2-e6287f7c71a5` iniciado13:52:38 Europe/Paris con nueva
+ventana hasta `2026-10-25T14:52:34Z` (15:52:34 local). ConfigKey
+`configs/21d87ff3a7657a5f55cbc8c05492dc732bd47d66137caafb1a3cedd9b34b416e.json`,
+fuente6851ec7a y CI exacta; digest de aplicación conservado. Antes del arranque
+se volvieron a comprobar cuenta, cuota6, ausencia de estado/lease/Scheduler
+y ninguna ejecución up activa. Validación/build/plan todavía pendientes;
+la retirada programada debe verificarse cuando plan la cree.
+
+Hito14:01: validación y build de las cinco imágenes SUCCESS. Plan real162altas,
+0cambios y0bajas: dos PostgreSQL16.9/db.t4g.medium Multi-AZ privados/cifrados,
+RabbitMQ3.13/mq.m5.large CLUSTER_MULTI_AZ privado, tres NAT, ALB interno,
+CloudFront/WAF, identidad y soporte ECS; nueve roles con boundary del máster.
+Sin servicios ECS de aplicación en esta primera fase. Binding/config/fuente
+verificados; SHA256 `4b65a10202a72f7ff96dcfcc994ce5bfba66a6e566baaaf17e235c318a944146`.
+Scheduler `economicon-ensayo1` ENABLED con caducidad exacta y configuración/fuente
+del reintento. Aprobación enviada14:01:41 bajo autorización de primer despliegue;
+apply en curso. Recibos `infra-plan-review.json` e `infra-approval-receipt.json`.
+Plan binario privado bajo ACL local; no valores de secretos en recibos públicos.
+
+Recibos: `.work/master-rehearsal/pr163-ci-receipt.json`, `pr163-merge-receipt.json`
+y `trello-pr163-merged-receipt.json`. Trello actualizado por la integración
+DockerServer; evidencia detallada en comentario `6addfa9fa587346b41f86f98`,
+resumen en descripción y todo el historial conservado. El intento1 sigue
+archivado; no había aplicación, lease, estado ni Scheduler a las13:34.
+
 ## Ensayo1: validación correcta y corrección del build Azure — 25/10/2026
 
 Origen: mismo chat «Preparar despliegue en AWS», `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.

@@ -1,5 +1,21 @@
 # Continuidad del proyecto
 
+25Oct14:09 Europe/Paris: segundo intento detenido antes de Terraform por
+`cycle` reservado en DynamoDB. Corregidas las condiciones de actualización y
+liberación; regresión,88PASS/7SKIP y prueba DynamoDB real conformes. Sin estado
+ni infraestructura de aplicación; bloqueo/Scheduler del intento retirados con
+guardas, bootstrap conservado. Revisión/CI/integración de esta nueva corrección
+pendientes. Detalle en [cloud-aws.md](cloud-aws.md).
+
+25Oct 13:44 Europe/Paris: PR163 integrada como `6851ec7a` tras autorización
+humana expresa de excepción y bypass para `f48a72e8`. CI técnica PR/push y SQL
+SUCCESS, build Docker real y revisión independiente favorables; árbol integrado
+idéntico al revisado. CI develop `40194488245` SUCCESS; reintento `2855d9da`
+iniciado13:52:38, ventana hasta15:52:34 local. Validación y cinco imágenes SUCCESS;
+plan de162 altas/0cambios/0bajas revisado y aprobado14:01, Scheduler verificado.
+Apply en curso; aplicación todavía pendiente. El primer intento falló antes del plan. Véase
+[cloud-aws.md](cloud-aws.md). Los siguientes párrafos son cortes históricos.
+
 25Oct, primer ensayo autorizado en la cuenta del máster `323188184300`:
 SSO renovada y verificada; PR161 integrada mediante el bypass puntual autorizado
 como `2087855c`, sin cambiar reglas. CI push develop `40191355921` SUCCESS.
