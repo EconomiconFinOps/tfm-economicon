@@ -18,6 +18,16 @@
     {"path": "docs/evidence/JUP-133/JUP-133-infra-jup070-a-r3.rows.json", "format": "rows-v1", "milestone": false, "model_identity": {"generation_model_id": "openrouter/deepseek/deepseek-v4.1-flash", "generation_provider": "deepinfra", "generation_quantization": "fp8", "gateway_config_sha256": "9b345f3017a142d5f2db605a8921ec6fc488b2d97977edb069733aeee670c4f8"}},
     {"path": "docs/evidence/JUP-133/JUP-133-infra-jup071-r1.rows.json", "format": "rows-v1", "milestone": false, "model_identity": {"generation_model_id": "openrouter/deepseek/deepseek-v4.1-flash", "generation_provider": "deepinfra", "generation_quantization": "fp8", "gateway_config_sha256": "9b345f3017a142d5f2db605a8921ec6fc488b2d97977edb069733aeee670c4f8"}},
     {"path": "docs/evidence/JUP-133/JUP-133-infra-jup071-r2.rows.json", "format": "rows-v1", "milestone": false, "model_identity": {"generation_model_id": "openrouter/deepseek/deepseek-v4.1-flash", "generation_provider": "deepinfra", "generation_quantization": "fp8", "gateway_config_sha256": "9b345f3017a142d5f2db605a8921ec6fc488b2d97977edb069733aeee670c4f8"}},
-    {"path": "docs/evidence/JUP-133/JUP-133-infra-jup071-r3.rows.json", "format": "rows-v1", "milestone": false, "model_identity": {"generation_model_id": "openrouter/deepseek/deepseek-v4.1-flash", "generation_provider": "deepinfra", "generation_quantization": "fp8", "gateway_config_sha256": "9b345f3017a142d5f2db605a8921ec6fc488b2d97977edb069733aeee670c4f8"}}
+    {"path": "docs/evidence/JUP-133/JUP-133-infra-jup071-r3.rows.json", "format": "rows-v1", "milestone": false, "model_identity": {"generation_model_id": "openrouter/deepseek/deepseek-v4.1-flash", "generation_provider": "deepinfra", "generation_quantization": "fp8", "gateway_config_sha256": "9b345f3017a142d5f2db605a8921ec6fc488b2d97977edb069733aeee670c4f8"}},
+    {
+      "path": "docs/evidence/JUP-133/evolution-20261025/friday.rows.json",
+      "format": "rows-v1",
+      "milestone": false
+    },
+    {
+      "path": "docs/evidence/JUP-133/evolution-20261025/sunday.rows.json",
+      "format": "rows-v1",
+      "milestone": false
+    }
   ]
 }

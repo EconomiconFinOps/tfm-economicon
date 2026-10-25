@@ -64,6 +64,13 @@ El tope no equivale a una orden de gastar. Antes de lanzar cada campaña con gas
 | `bank28-live-jup133` | Banco de 28 preguntas de JUP-069 con el chat real, una repetición | 28 de generación más un reintento | Medido: ≈ 0,033 USD estimados | Se reejecutó una vez (22/10/2026, provisional). Repetir con la infraestructura definitiva antes de usar su latencia | Hecho; sin nueva autorización |
 | `chat-battery-n3-n5` | Batería de 28 casos con tres repeticiones (84 ejecuciones) | 84 de generación | Sin estimar; con la referencia de 0,176 USD cada 27 operaciones sería de varias veces esa cifra | **Parcial.** Las 84 ejecuciones no se repiten (hace falta el ejecutor de la campaña B y la revisión por requisito; con el coste medido serían del orden de 0,1 USD). Sí se repitió una vez el banco de 28 preguntas con el chat real (~0,033 USD). La cifra de la memoria queda «obsoleta sin sustituto» | Sin autorizar |
 
+La medida `friday-sunday-evolution-jup133` se publica el 25/10/2026 a partir de
+registros existentes: no se reejecuta, no genera llamadas ni gasto adicional.
+La orden de incorporar la evolución a Grafana cubre sólo la agregación y carga
+aditiva. Tres repeticiones del viernes y una del domingo se conservan separadas;
+los protocolos distintos impiden una comparación causal. Cualquier repetición
+posterior requiere otro encargo. [Fuentes y límites](../evidence/JUP-133/evolution-20261025/README.md).
+
 Las medidas `independiente` e `historica` no se reejecutan; su motivo está en el inventario.
 
 ## Orden

@@ -630,7 +630,8 @@ class InicioDeSesionTests(unittest.TestCase):
 class VistasTests(unittest.TestCase):
     def test_las_vistas_dan_filas_al_rol_las_mismas_que_al_administrador(self):
         # Los datos locales de la prueba dan dos filas a `config_changes` (cambio de modelo y el de batería respecto a la campaña de JUP-071 versionada) y dos a `comparable_runs`.
-        for vista, esperado in (("config_changes", "7"), ("comparable_runs", "8")):
+        # Seis cambios versionados (incluido protocolo JUP-133) más dos locales; comparables intactos.
+        for vista, esperado in (("config_changes", "8"), ("comparable_runs", "8")):
             with self.subTest(vista=vista):
                 self.assertEqual(uno(f"SELECT count(*) FROM evaluation.{vista}"), esperado)
                 self.assertEqual(consulta_del_rol(f"SELECT count(*) FROM evaluation.{vista}"), esperado)

@@ -16,8 +16,11 @@ INFRA_IDS = tuple(
     for campaign in ("jup070-a", "jup071") for repetition in (1, 2, 3)
 )
 INFRA_ROW_COUNTS = (73, 73, 73, 268, 268, 268)
-VERSIONED_RUNS = 18
-VERSIONED_RESULTS = 1670
+EVOLUTION_IDS = ('jup133-evolution-friday-20261023', 'jup133-evolution-sunday-20261025')
+EVOLUTION_PATHS = tuple(f'docs/evidence/JUP-133/evolution-20261025/{day}.rows.json' for day in ('friday', 'sunday'))
+EVOLUTION_ROW_COUNTS = (45, 85)
+VERSIONED_RUNS = 20
+VERSIONED_RESULTS = 1800
 LOAD_SUMMARY = f"{VERSIONED_RUNS} ejecuciones y {VERSIONED_RESULTS} resultados cargados\n"
 
 
