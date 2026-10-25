@@ -46,12 +46,12 @@ esta excepción no equivale por sí mismo a una aprobación de plataforma.
 
 También el 24/10 el usuario retiró el requisito operativo del presupuesto de
 30 EUR para la cuenta del máster. No se consideran acreditados los supuestos
-límites de Pontia. El candidato publicado aún contiene su guarda anterior de
-30 EUR; su adaptación es un delta posterior, no una prueba ya realizada.
+límites de Pontia. La adaptación, pendiente en aquel corte, quedó implementada
+y revalidada en la reconciliación del 25/10 descrita a continuación.
 
 ## Resultados y revalidación
 
-### Reconciliación autorizada el 25/10 (en curso)
+### Reconciliación autorizada el 25/10
 
 El usuario exige conservar la solución aprobada de PR162 (`0edd11ef`). Se
 retira el cambio mutable de `ApiError` descrito más abajo y su regresión
@@ -63,9 +63,16 @@ La CI de política incorpora el reconocimiento específico de esta excepción:
 dos informes atribuidos a `/root/pr161_code_review` y `/root/pr161_validation`,
 con hashes y candidato común. Cualquier cambio de código posterior requiere
 revalidación; sólo la publicación documental expresamente listada se permite.
-No se sustituyen requests for changes ni se fabrican reviews humanas. Se
-solicita una nueva revisión/validación del conjunto antes de publicar el
-manifiesto que puede hacer pasar ese check.
+No se sustituyen requests for changes ni se fabrican reviews humanas.
+
+Ambos agentes entregan dictámenes independientes para el candidato
+`812697387918c25e905a240fa35573091d9fdc16`: **APPROVE** de revisión y **PASS
+offline** de validación. El hallazgo sobre etiquetas de roles duplicadas con
+mayúsculas distintas se corrige y conserva como histórico, con evidencia
+RED/GREEN. Se publican los cuatro archivos originales sin editar y un manifiesto
+con sus hashes en [reconciliación PR161](JUP-131-pr161-reconciliation/README.md).
+La aceptación offline del mismo árbol de aplicación se renueva con CI completa
+y SQL efectivamente superadas. No acredita el funcionamiento desplegado en AWS.
 
 ### Histórico del 24/10
 

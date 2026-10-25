@@ -1,6 +1,58 @@
 # Cloud AWS — arquitectura documental
 
+## PR161 reconciliada y aceptación offline renovada — 25/10/2026
+
+Origen: «Preparar despliegue en AWS», chat `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
+Autorización: reconciliar PR161 con `0edd11ef`, conservar ApiError/pin, CI verde
+y configuración del ensayo en la cuenta del máster; sin despliegue.
+
+La rama `feat/JUP-131-atlas-ecs` incorpora la base aprobada mediante merge
+`0ddd59f5`. ApiError vuelve al blob aprobado
+`a5ff184e4729d2248a3ff12c3001f3076f2ccdff`; se retira la regresión exclusiva de
+la corrección mutable y se conserva `starlette==1.9.0`. Carrusel/viñetas y
+Atlas/Grafana/carga aditiva se mantienen. El conflicto del índice se reconcilia
+preservando los temas de ambas ramas.
+
+`da13f069` tiene CI PR `40187165537`, push de rama `40187163124` y SQL
+`40187165282` **SUCCESS**, comprobados el 25/10. Backend 2732 PASS/369 SKIP,
+processor 2674 PASS/150 SKIP, frontend 1427 PASS y Azure 81 PASS. PostgreSQL
+real: 45 controles vectoriales + 8 operacionales/Atlas; Grafana real con TLS,
+19/1688, tres dashboards y reinicio correcto. Las omisiones, avisos, enlaces y
+límites están en [aceptación offline](../evidence/JUP-131-pr161-reconciliation/application-acceptance.md).
+La receta conserva las cinco evidencias históricas y añade ese recibo; huella
+de `apps/`: `5e19f3f4ff0db6039ebc42b2733d9dd4266e94b55c6fc8fac741c21876461e70`.
+No acredita imágenes finales, Cognito/Bedrock real ni disponibilidad AWS.
+
+La excepción de agentes de PR161 se implementa en `JUP reviews` con alcance
+exacto de PR/repositorio/autor/ramas/roles, dos informes con hashes y candidato
+común; cualquier delta posterior fuera de la publicación documental exige
+revalidación. El coordinador corrigió el primer ID ambiguo del título; la
+revisión independiente detectó roles duplicados por mayúsculas, también
+corregidos y probados. Las solicitudes de cambios de GitHub siguen bloqueando;
+no se fabrican reviews humanas ni se cambian branch protections. Candidato de
+cierre `812697387918c25e905a240fa35573091d9fdc16`; informes y estado de publicación
+en [evidencia de reconciliación](../evidence/JUP-131-pr161-reconciliation/README.md).
+
+Cuenta única `323188184300`. La política `master-account-authorized-2026-10-24`
+retira exclusivamente para ella el requisito de 30 EUR, según autorización
+humana previa. No declara saldo ni límites de Pontia; conserva estimación,
+caducidad, cuotas, identidad, aceptación y CI exacta. Otras cuentas mantienen
+la guarda de presupuesto verificado. AWS Budgets existente no se modifica.
+
+`.work/master-rehearsal/` contiene configuración/solicitudes regeneradas,
+`regeneration-receipt.json` con SHA/hash de artefactos y `preflight-summary.json`.
+El recibo `.work/pr161-reconciliation/final-ci-status.json` registra la consulta
+de CI del head publicado; distinguirlo de los runs anteriores. No iniciar las
+solicitudes: falta integrar PR161 con autorización, CI push del SHA exacto de
+develop y fijar la ventana UTC (máximo 8h) al autorizar el ensayo. El futuro
+bootstrap/control necesita revisar/aplicar su plan; roles actuales sólo trust.
+Token/modelos, IAM, cuotas y DNS se vuelven a comprobar en el preflight real.
+Los prerrequisitos AWS/DNS mantienen la fecha de lectura del 24/10; esta labor
+no accedió a AWS, secretos, inferencias, builds/pipelines ni apply/destroy.
+
 ## Versión aprobada de aplicación y conciliación con ECS — 25/10/2026
+
+**Histórico previo; reconciliación realizada en el hito superior.**
 
 Origen: «Preparar despliegue en AWS», chat `01a15abb-d5f3-7fd3-a622-ea9e73b0db18`.
 El usuario aprueba expresamente `0edd11eff3458683553bd4c36f3011b77c1d3de4`.

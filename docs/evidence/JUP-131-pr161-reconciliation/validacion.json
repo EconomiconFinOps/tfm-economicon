@@ -1,0 +1,635 @@
+{
+  "candidate_sha": "812697387918c25e905a240fa35573091d9fdc16",
+  "title": "Validacion JUP-131",
+  "agent": "/root/pr161_validation",
+  "verdict": "PASS",
+  "report": "docs/evidence/JUP-131-pr161-reconciliation/validacion.md",
+  "report_sha256": "23759a52ccb148d2b2b30b1a7ad0837d8b695b99d90b8acf14181e094e675c9e",
+  "verified_utc": "2026-10-25T11:17:56.005876+00:00",
+  "scope": "Offline preparation and exact incremental reconciliation; no merge/deployment approval",
+  "executions": [
+    {
+      "name": "azure-runtime",
+      "command": [
+        "<workspace>\\.work\\pr161-azure-fix\\venv\\Scripts\\python.exe",
+        "-c",
+        "import sys, importlib.metadata as m; print(sys.version); print({p:m.version(p) for p in [\"fastapi\",\"starlette\",\"pytest\",\"httpx\"]}); assert m.version(\"starlette\")==\"1.9.0\""
+      ],
+      "cwd": "<workspace>\\.work\\pr161-reconciliation-validation\\source",
+      "started_utc": "2026-10-25T11:03:04.256662+00:00",
+      "seconds": 0.228,
+      "exit_code": 0,
+      "source_candidate": "da13f069c0f92258bb2856ff33b204cc3b176e89",
+      "expected_exit": 0,
+      "log": ".work/pr161-reconciliation-validation/azure-runtime.log",
+      "log_sha256": "8fce2e44d7bea9498caa7ae520bb2f83977a51a8175aebf453aa0e5dc1ef02bc"
+    },
+    {
+      "name": "azure-81",
+      "command": [
+        "<workspace>\\.work\\pr161-azure-fix\\venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "tests",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp=<workspace>\\.work\\pr161-reconciliation-validation\\tmp\\azure"
+      ],
+      "cwd": "<workspace>\\.work\\pr161-reconciliation-validation\\source\\apps\\azure-cost-api",
+      "started_utc": "2026-10-25T11:03:04.486073+00:00",
+      "seconds": 3.084,
+      "exit_code": 0,
+      "source_candidate": "da13f069c0f92258bb2856ff33b204cc3b176e89",
+      "expected_exit": 0,
+      "log": ".work/pr161-reconciliation-validation/azure-81.log",
+      "log_sha256": "6e02bf527c0d8f0401d4be633baf5bdb92764729620a0358f874771eb8fcaa0a"
+    },
+    {
+      "name": "controller-guards",
+      "command": [
+        "<workspace>\\.work\\pr161-azure-fix\\venv\\Scripts\\python.exe",
+        "-m",
+        "unittest",
+        "tools.aws_demo.test_control",
+        "tools.aws_demo.test_runner",
+        "tools.aws_demo.test_review_fixes",
+        "-v"
+      ],
+      "cwd": "<workspace>\\.work\\pr161-reconciliation-validation\\source",
+      "started_utc": "2026-10-25T11:03:07.571332+00:00",
+      "seconds": 2.88,
+      "exit_code": 0,
+      "source_candidate": "da13f069c0f92258bb2856ff33b204cc3b176e89",
+      "expected_exit": 0,
+      "log": ".work/pr161-reconciliation-validation/controller-guards.log",
+      "log_sha256": "174bea41621032fa8e778d506ea2c13e4298004dea0be476f963c2aff108e3ea"
+    },
+    {
+      "name": "pr-policy-and-evidence",
+      "command": [
+        "node",
+        "--test",
+        "tools/pr-policy.test.mjs",
+        "tools/pr161-agent-evidence.test.mjs"
+      ],
+      "cwd": "<workspace>\\.work\\pr161-reconciliation-validation\\source",
+      "started_utc": "2026-10-25T11:03:10.452242+00:00",
+      "seconds": 7.796,
+      "exit_code": 0,
+      "source_candidate": "da13f069c0f92258bb2856ff33b204cc3b176e89",
+      "expected_exit": 0,
+      "log": ".work/pr161-reconciliation-validation/pr-policy-and-evidence.log",
+      "log_sha256": "b67071efad9d7ef5e9c058ad4a66831017704d2953088140ff8c462502c6adcf"
+    },
+    {
+      "name": "primary-jup-red",
+      "command": [
+        "node",
+        "--test",
+        "--test-name-pattern=exception fails closed",
+        "tools/pr161-agent-evidence.test.mjs"
+      ],
+      "cwd": "<workspace>\\.work\\pr161-reconciliation-validation\\primary-jup-red",
+      "started_utc": "2026-10-25T11:07:07.646747+00:00",
+      "seconds": 1.05,
+      "exit_code": 1,
+      "source_candidate": "da13f069c0f92258bb2856ff33b204cc3b176e89 plus new regression",
+      "expected_exit": 1,
+      "log": ".work/pr161-reconciliation-validation/primary-jup-red.log",
+      "log_sha256": "b71f470fdc7fbd28d5132c3cc316fd0ff27c23036e1ee0c235a8369b4875df8a"
+    },
+    {
+      "name": "primary-jup-green",
+      "command": [
+        "node",
+        "--test",
+        "tools/pr161-agent-evidence.test.mjs"
+      ],
+      "cwd": "<workspace>\\.work\\pr161-reconciliation-validation\\source-bff",
+      "started_utc": "2026-10-25T11:07:08.710989+00:00",
+      "seconds": 7.986,
+      "exit_code": 0,
+      "source_candidate": "bfffb88b0086f1a255dc8098f22a3240d21e3880",
+      "expected_exit": 0,
+      "log": ".work/pr161-reconciliation-validation/primary-jup-green.log",
+      "log_sha256": "775b7064be7b17cbdbdf1871ff1ea3b8a1ab4b08346ac5ece35c3beb9109b542"
+    },
+    {
+      "name": "duplicate-roles-red",
+      "command": [
+        "node",
+        "--test",
+        "tools/independent-role-edges.test.mjs"
+      ],
+      "cwd": "<workspace>\\.work\\pr161-reconciliation-validation\\duplicate-roles-red",
+      "started_utc": "2026-10-25T11:10:23.910474+00:00",
+      "seconds": 3.918,
+      "exit_code": 1,
+      "source_candidate": "bfffb88b0086f1a255dc8098f22a3240d21e3880 plus independent probes",
+      "expected_exit": 1,
+      "log": ".work/pr161-reconciliation-validation/duplicate-roles-red.log",
+      "log_sha256": "5f072aaac18e389729b8502bf0edee5c9cb202973f8a6c09fa21b02ed0e0b39e"
+    },
+    {
+      "name": "final-pr161-green",
+      "command": [
+        "node",
+        "--test",
+        "tools/pr161-agent-evidence.test.mjs",
+        "tools/independent-role-edges.test.mjs"
+      ],
+      "cwd": "<workspace>\\.work\\pr161-reconciliation-validation\\source-964",
+      "started_utc": "2026-10-25T11:10:27.831386+00:00",
+      "seconds": 7.358,
+      "exit_code": 0,
+      "source_candidate": "964c9f5516402e9425be1ec5556bd485c8c94db8 plus independent probes",
+      "expected_exit": 0,
+      "log": ".work/pr161-reconciliation-validation/final-pr161-green.log",
+      "log_sha256": "59dbd4a48582badbb9c6d65ee2ba821c31ffac190630936b6b859e914b1a2522"
+    },
+    {
+      "name": "final-release-readiness",
+      "command": [
+        "<workspace>\\.work\\pr161-azure-fix\\venv\\Scripts\\python.exe",
+        "-m",
+        "unittest",
+        "tools.aws_demo.test_release_readiness",
+        "-v"
+      ],
+      "cwd": "<workspace>\\.work\\pr161-reconciliation-validation\\source-final",
+      "started_utc": "2026-10-25T11:14:59.733735+00:00",
+      "seconds": 0.572,
+      "exit_code": 0,
+      "source_candidate": "812697387918c25e905a240fa35573091d9fdc16",
+      "expected_exit": 0,
+      "log": ".work/pr161-reconciliation-validation/final-release-readiness.log",
+      "log_sha256": "3951bf85c068f3ad2c44e482c558b4fb390c13c11dff736cfc57eb54823bc70f"
+    }
+  ],
+  "evidence": [
+    {
+      "path": ".work/pr161-reconciliation-validation/source-identity.json",
+      "sha256": "65bb51cfbb7497e9b866c2231967023f1f1bf301b7cb6ebae97da7ad3bfedbff",
+      "content": {
+        "candidate_sha": "da13f069c0f92258bb2856ff33b204cc3b176e89",
+        "approved_sha": "0edd11eff3458683553bd4c36f3011b77c1d3de4",
+        "previous_sha": "30d4370aca3903cf764111e451153ae2ed83510c",
+        "snapshot_utc": "2026-10-25T11:02:47.707537+00:00",
+        "merge_base_with_approved": "0edd11eff3458683553bd4c36f3011b77c1d3de4",
+        "merge_base_with_previous": "30d4370aca3903cf764111e451153ae2ed83510c",
+        "archive_sha256": "98701298d30c90a7af66803ae4b2f8558776f6737c45a3bb7c6776e0482e934f",
+        "azure_files": [
+          {
+            "path": "apps/azure-cost-api/app/errors.py",
+            "candidate_blob": "a5ff184e4729d2248a3ff12c3001f3076f2ccdff",
+            "sha256": "2f6612520f6001475ce63e49819c8492e61afd05beb67c9f905d438e0c6ba1a5",
+            "approved_sha256": "2f6612520f6001475ce63e49819c8492e61afd05beb67c9f905d438e0c6ba1a5",
+            "identical_to_approved": true
+          },
+          {
+            "path": "apps/azure-cost-api/requirements.txt",
+            "candidate_blob": "963093898701fab5b1c798859f5743c4b6e7c8f8",
+            "sha256": "248b7d6f6140e3be28eeea0fa5ce4afa583e540f0f070c8bdadadef04c76c23b",
+            "approved_sha256": "248b7d6f6140e3be28eeea0fa5ce4afa583e540f0f070c8bdadadef04c76c23b",
+            "identical_to_approved": true
+          },
+          {
+            "path": "apps/azure-cost-api/requirements-dev.txt",
+            "candidate_blob": "08fa75e2d484f5bd9a225a2910af4787e1297185",
+            "sha256": "be50d4dbd8354c7c1969344c05a03aff47a0a5eba1e3adcb7e16df1f1d9288e4",
+            "approved_sha256": "be50d4dbd8354c7c1969344c05a03aff47a0a5eba1e3adcb7e16df1f1d9288e4",
+            "identical_to_approved": true
+          }
+        ],
+        "azure_tree_diff_from_approved": [],
+        "old_mutable_exception_regression_absent": true,
+        "unchanged_sql_monitoring_terraform": []
+      }
+    },
+    {
+      "path": ".work/pr161-reconciliation-validation/final-source-identity.json",
+      "sha256": "a77cb7f74b36eac5cd782534a0f8f19587e832d503b1f53d17c038031c32cb24",
+      "content": {
+        "candidate_sha": "964c9f5516402e9425be1ec5556bd485c8c94db8",
+        "previous_tested_sha": "bfffb88b0086f1a255dc8098f22a3240d21e3880",
+        "broad_test_sha": "da13f069c0f92258bb2856ff33b204cc3b176e89",
+        "snapshot_utc": "2026-10-25T11:10:35.191370+00:00",
+        "snapshot_scope": "three exact Git blobs plus authored edge probes; unchanged app/control backed by Git tree identity",
+        "parent": "bfffb88b0086f1a255dc8098f22a3240d21e3880",
+        "merge_base_with_approved": "0edd11eff3458683553bd4c36f3011b77c1d3de4",
+        "changed_files_from_broad_tests": [
+          "tools/pr161-agent-evidence.mjs",
+          "tools/pr161-agent-evidence.test.mjs"
+        ],
+        "application_tree": {
+          "da13f069c0f92258bb2856ff33b204cc3b176e89": "1c28089f0ddca7ba5de0ae08676da1ed353b450c",
+          "bfffb88b0086f1a255dc8098f22a3240d21e3880": "1c28089f0ddca7ba5de0ae08676da1ed353b450c",
+          "964c9f5516402e9425be1ec5556bd485c8c94db8": "1c28089f0ddca7ba5de0ae08676da1ed353b450c"
+        },
+        "unchanged_control_and_ci": [],
+        "azure_identical_to_approved": true,
+        "files": {
+          "tools/pr-policy.mjs": "2b5e5ba88965664dfe88e3312cce077b0e1a21a9354a5ea843666da85b464eb4",
+          "tools/pr161-agent-evidence.mjs": "e9a674c66bcc8f8aad5f539e2f85786d929203441fc3c2a501b5800ba774f02e",
+          "tools/pr161-agent-evidence.test.mjs": "c4b280b47a11f537601fab057aa8652c01417b9468f255263580711d30e5230a"
+        },
+        "red_exit": 1,
+        "red_cases": 5,
+        "green_exit": 0,
+        "green_cases": 12
+      }
+    },
+    {
+      "path": ".work/pr161-reconciliation-validation/preparation-probe-964c9f55.json",
+      "sha256": "db4a1876963c91aeaf1bb7587e9d4143370461fc6ae5b2c35d365d4da72fdd56",
+      "content": {
+        "candidate_sha": "964c9f5516402e9425be1ec5556bd485c8c94db8",
+        "inputs": "synthetic test fixtures only; not a verified rehearsal configuration",
+        "master_without_budget_or_balance": "PASS",
+        "negative_cases": [
+          {
+            "case": "other_account",
+            "result": "EXPECTED_REJECTION",
+            "message": "Unapproved budget policy/account"
+          },
+          {
+            "case": "unknown_policy",
+            "result": "EXPECTED_REJECTION",
+            "message": "Unapproved budget policy/account"
+          },
+          {
+            "case": "invented_balance",
+            "result": "EXPECTED_REJECTION",
+            "message": "Master authorization must not assert an unverified budget or balance"
+          },
+          {
+            "case": "invented_budget",
+            "result": "EXPECTED_REJECTION",
+            "message": "Master authorization must not assert an unverified budget or balance"
+          },
+          {
+            "case": "source_drift",
+            "result": "EXPECTED_REJECTION",
+            "message": "Source SHA differs from approved config"
+          },
+          {
+            "case": "wrong_region",
+            "result": "EXPECTED_REJECTION",
+            "message": "Demo must use Ireland"
+          },
+          {
+            "case": "missing_window",
+            "result": "EXPECTED_REJECTION",
+            "message": "Use UTC expiry YYYY-MM-DDTHH:MM:SSZ"
+          },
+          {
+            "case": "missing_ci",
+            "result": "EXPECTED_REJECTION",
+            "message": "CI run required"
+          },
+          {
+            "case": "nonfinite_estimate",
+            "result": "EXPECTED_REJECTION",
+            "message": "Set verified estimated_cycle_eur"
+          },
+          {
+            "case": "boolean_estimate",
+            "result": "EXPECTED_REJECTION",
+            "message": "Set verified estimated_cycle_eur"
+          },
+          {
+            "case": "ordinary_account_budget_cap_preserved",
+            "result": "EXPECTED_REJECTION",
+            "message": "Project budget cannot exceed 30 EUR"
+          },
+          {
+            "case": "historical_application_digest",
+            "result": "EXPECTED_REJECTION",
+            "message": "Release evidence application tree differs"
+          },
+          {
+            "case": "pr_ci_not_develop",
+            "result": "EXPECTED_REJECTION",
+            "message": "Exact source requires successful push CI on develop in the project repository"
+          },
+          {
+            "case": "feature_branch_ci",
+            "result": "EXPECTED_REJECTION",
+            "message": "Exact source requires successful push CI on develop in the project repository"
+          },
+          {
+            "case": "stale_ci_sha",
+            "result": "EXPECTED_REJECTION",
+            "message": "Exact source requires successful push CI on develop in the project repository"
+          },
+          {
+            "case": "failed_ci",
+            "result": "EXPECTED_REJECTION",
+            "message": "Exact source requires successful push CI on develop in the project repository"
+          },
+          {
+            "case": "source_not_in_develop",
+            "result": "EXPECTED_REJECTION",
+            "message": "Source SHA must be reachable from current develop"
+          },
+          {
+            "case": "expired_window",
+            "result": "EXPECTED_REJECTION",
+            "message": "Cycle must expire within eight hours of launch"
+          },
+          {
+            "case": "over_eight_hours",
+            "result": "EXPECTED_REJECTION",
+            "message": "Cycle must expire within eight hours of launch"
+          }
+        ],
+        "historical_evidence_integrity": "PASS",
+        "accepted_application_sha256": "8a47bf3d8f88fbc45652bdcbe5ecb7f71c036c3e9d3bfc0b51bb556d36cd633d",
+        "candidate_application_sha256": "5e19f3f4ff0db6039ebc42b2733d9dd4266e94b55c6fc8fac741c21876461e70",
+        "blocked_preparation": {
+          "local_preparation": "COMPLETE",
+          "aws_deployable": false,
+          "aws_preflight_executed": false,
+          "aws_resources_created": false,
+          "config_key": "configs/ba26ac3bec790b09ef3f39ad64e4cf550b8ed3f7d77ab995f0c43846269a0ab5.json",
+          "state_key": "economicon/defensa/ensayo1/terraform.tfstate",
+          "blockers": [
+            "Provide verified ci_run_id",
+            "Provide verified expires_at",
+            "Release evidence: Release evidence application tree differs",
+            "Use UTC expiry YYYY-MM-DDTHH:MM:SSZ"
+          ],
+          "application_sha256": "5e19f3f4ff0db6039ebc42b2733d9dd4266e94b55c6fc8fac741c21876461e70",
+          "required_cloud_checks": [
+            "account/IAM",
+            "regional estimate; master budget requirement waived, organization limit unverified",
+            "Ireland AZs and quotas",
+            "RDS/MQ versions/classes",
+            "DNS ownership and delegation",
+            "model access",
+            "exact-SHA develop push CI and ancestry"
+          ]
+        },
+        "manual_approval_configuration": "PRESENT (static inspection; pipeline not run)",
+        "status": "PASS"
+      }
+    },
+    {
+      "path": ".work/pr161-reconciliation-validation/release-delta-validation.json",
+      "sha256": "c3f22d38e528a184197b014535e2b05bd890290e44bb224354b3007107b55952",
+      "content": {
+        "candidate_sha": "812697387918c25e905a240fa35573091d9fdc16",
+        "previous_validated_sha": "964c9f5516402e9425be1ec5556bd485c8c94db8",
+        "broad_test_sha": "da13f069c0f92258bb2856ff33b204cc3b176e89",
+        "checked_utc": "2026-10-25T11:15:02.354561+00:00",
+        "archive_sha256": "6fc892b238dc470533bd41300964b4ec728f598927cd48c349eb32a792e00c04",
+        "merge_base_with_approved": "0edd11eff3458683553bd4c36f3011b77c1d3de4",
+        "changed_files_from_previous": [
+          "docs/evidence/JUP-131-pr161-reconciliation/application-acceptance.md",
+          "infra/aws-cicd/release.json"
+        ],
+        "application_tree": {
+          "da13f069c0f92258bb2856ff33b204cc3b176e89": "1c28089f0ddca7ba5de0ae08676da1ed353b450c",
+          "964c9f5516402e9425be1ec5556bd485c8c94db8": "1c28089f0ddca7ba5de0ae08676da1ed353b450c",
+          "812697387918c25e905a240fa35573091d9fdc16": "1c28089f0ddca7ba5de0ae08676da1ed353b450c"
+        },
+        "unchanged_policy_control_ci": [],
+        "azure_identical_to_approved": true,
+        "file_sha256": {
+          "infra/aws-cicd/release.json": "0485223b5f9cfb94f27abf745d11929c010a65d9880b297917231aa9318b1206",
+          "docs/evidence/JUP-131-pr161-reconciliation/application-acceptance.md": "5eb418403fcf3dcc0dbccde23c7423e38f138da2cb2b206eee400f4afa87a3f0"
+        },
+        "five_historical_evidence_entries_unchanged": true,
+        "new_acceptance_evidence_hash": "5eb418403fcf3dcc0dbccde23c7423e38f138da2cb2b206eee400f4afa87a3f0",
+        "application_sha256": "5e19f3f4ff0db6039ebc42b2733d9dd4266e94b55c6fc8fac741c21876461e70",
+        "recipe_validation": "PASS",
+        "release_readiness_tests": 5,
+        "release_readiness_exit": 0,
+        "preparation_input": "Synthetic fixture for master-account policy; not verified launch inputs",
+        "readiness": {
+          "local_preparation": "COMPLETE",
+          "aws_deployable": false,
+          "aws_preflight_executed": false,
+          "aws_resources_created": false,
+          "config_key": "configs/a7d8c8c30d8a041c72f00516bb975ae677639bf8455037ab16432424e673848d.json",
+          "state_key": "economicon/defensa/ensayo1/terraform.tfstate",
+          "blockers": [
+            "Provide verified ci_run_id",
+            "Provide verified expires_at",
+            "Use UTC expiry YYYY-MM-DDTHH:MM:SSZ"
+          ],
+          "application_sha256": "5e19f3f4ff0db6039ebc42b2733d9dd4266e94b55c6fc8fac741c21876461e70",
+          "required_cloud_checks": [
+            "account/IAM",
+            "regional estimate; master budget requirement waived, organization limit unverified",
+            "Ireland AZs and quotas",
+            "RDS/MQ versions/classes",
+            "DNS ownership and delegation",
+            "model access",
+            "exact-SHA develop push CI and ancestry"
+          ]
+        },
+        "verdict": "PASS"
+      }
+    },
+    {
+      "path": ".work/pr161-reconciliation-validation/ci-independent-read.json",
+      "sha256": "78b4965e25dd4c3eeb42e31595fa5657363132962bdcef21b1db7a75043f0728",
+      "content": {
+        "retrieved_utc": "2026-10-25 11:13:50 UTC",
+        "source": "GitHub connector read-only workflow-run API, jobs and job logs",
+        "runs": [
+          {
+            "id": 40187165537,
+            "name": "CI",
+            "head_sha": "da13f069c0f92258bb2856ff33b204cc3b176e89",
+            "head_branch": "feat/JUP-131-atlas-ecs",
+            "event": "pull_request",
+            "status": "completed",
+            "conclusion": "success",
+            "path": ".github/workflows/ci.yml",
+            "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/40187165537",
+            "updated_at": "2026-10-25T11:08:15Z",
+            "base_sha": "0edd11eff3458683553bd4c36f3011b77c1d3de4"
+          },
+          {
+            "id": 40187163124,
+            "name": "CI",
+            "head_sha": "da13f069c0f92258bb2856ff33b204cc3b176e89",
+            "head_branch": "feat/JUP-131-atlas-ecs",
+            "event": "push",
+            "status": "completed",
+            "conclusion": "success",
+            "path": ".github/workflows/ci.yml",
+            "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/40187163124",
+            "updated_at": "2026-10-25T11:08:38Z",
+            "base_sha": "0edd11eff3458683553bd4c36f3011b77c1d3de4"
+          },
+          {
+            "id": 40187165282,
+            "name": "Chat engineering SQL",
+            "head_sha": "da13f069c0f92258bb2856ff33b204cc3b176e89",
+            "head_branch": "feat/JUP-131-atlas-ecs",
+            "event": "pull_request",
+            "status": "completed",
+            "conclusion": "success",
+            "path": ".github/workflows/chat-engineering.yml",
+            "url": "https://github.com/EconomiconFinOps/tfm-economicon/actions/runs/40187165282",
+            "updated_at": "2026-10-25T11:03:44Z",
+            "base_sha": "0edd11eff3458683553bd4c36f3011b77c1d3de4"
+          }
+        ],
+        "main_jobs": [
+          {
+            "id": 121150308584,
+            "name": "AWS PostgreSQL application",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 121150308741,
+            "name": "Python tests (backend)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 121150308746,
+            "name": "OpenSpec",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 121150308762,
+            "name": "AWS demo offline",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 121150308768,
+            "name": "Python tests (processor)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 121150308770,
+            "name": "Frontend build",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 121150308779,
+            "name": "JUP policy",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 121150308794,
+            "name": "AWS monitoring isolated",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 121150308798,
+            "name": "Python tests (azure-cost-api)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 121150308802,
+            "name": "Frontend type check",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 121150308807,
+            "name": "Landing static checks",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "logs": [
+          {
+            "name": "backend",
+            "job_id": 121150308741,
+            "characters": 56285,
+            "lines": [
+              "2026-10-25T11:08:10.7726475Z 2732 passed, 369 skipped, 19571 warnings in 355.05s (0:05:55)"
+            ],
+            "isError": false
+          },
+          {
+            "name": "processor",
+            "job_id": 121150308768,
+            "characters": 110064,
+            "lines": [
+              "2026-10-25T11:07:44.7313487Z 2674 passed, 150 skipped, 2388 warnings in 289.86s (0:04:49)"
+            ],
+            "isError": false
+          },
+          {
+            "name": "frontend",
+            "job_id": 121150308770,
+            "characters": 71880,
+            "lines": [
+              "2026-10-25T11:03:42.3689613Z  Test Files  96 passed (96)",
+              "2026-10-25T11:03:42.3691316Z       Tests  1427 passed (1427)"
+            ],
+            "isError": false
+          },
+          {
+            "name": "azure",
+            "job_id": 121150308798,
+            "characters": 29490,
+            "lines": [
+              "2026-10-25T11:02:15.0208576Z 81 passed, 1 warning in 0.73s"
+            ],
+            "isError": false
+          },
+          {
+            "name": "postgresql",
+            "job_id": 121150308584,
+            "characters": 465190,
+            "lines": [
+              "2026-10-25T11:02:57.2299548Z 45 passed, 1 warning in 20.76s",
+              "2026-10-25T11:03:01.2103102Z Ran 8 tests in 3.317s"
+            ],
+            "isError": false
+          },
+          {
+            "name": "monitoring",
+            "job_id": 121150308794,
+            "characters": 18222,
+            "lines": [
+              "2026-10-25T11:02:30.2090854Z {\"dashboards\": [\"economicon-assistant-evaluation\", \"economicon-assistant-evidence\", \"economicon-technical-metrics\"], \"atlas_runs\": 19, \"atlas_results\": 1688, \"anonymous_access\": \"denied\", \"datasources\": \"healthy\", \"browser_session\": \"allowed\", \"foreign_origin\": \"denied\"}",
+              "2026-10-25T11:02:32.6721377Z {\"dashboards\": [\"economicon-assistant-evaluation\", \"economicon-assistant-evidence\", \"economicon-technical-metrics\"], \"atlas_runs\": 19, \"atlas_results\": 1688, \"anonymous_access\": \"denied\", \"datasources\": \"healthy\", \"preferences_retained\": true, \"browser_session\": \"allowed\", \"foreign_origin\": \"denied\"}"
+            ],
+            "isError": false
+          },
+          {
+            "name": "offline",
+            "job_id": 121150308762,
+            "characters": 49461,
+            "lines": [
+              "2026-10-25T11:02:10.0102689Z Ran 90 tests in 2.602s",
+              "2026-10-25T11:02:10.0102926Z OK (skipped=7)",
+              "2026-10-25T11:02:22.9781903Z Success! 1 passed, 0 failed.",
+              "2026-10-25T11:02:44.4141237Z Success! 14 passed, 0 failed."
+            ],
+            "isError": false
+          },
+          {
+            "name": "sql",
+            "job_id": 121150305409,
+            "characters": 86241,
+            "lines": [
+              "2026-10-25T11:03:07.6801253Z 54 passed, 88 warnings in 45.28s",
+              "2026-10-25T11:03:41.0185183Z 8 passed in 22.54s"
+            ],
+            "isError": false
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -21,3 +21,18 @@ No autoriza merge ni despliegue AWS.
 
 Evidencia: `docs/evidence/JUP-131-pr161-reconciliation/`; configuración local:
 `.work/master-rehearsal/`. Seguimiento en `docs/continuidad/cloud-aws.md`.
+
+## Ejecución y verificación
+
+1–3 implementados; guardas de presupuesto y política positivas/negativas PASS.
+La revisión encontró duplicados de etiquetas con mayúsculas distintas: corregidos
+y revalidados antes de publicar los dictámenes finales. La receta se renueva
+con evidencia remota efectiva: CI PR40187165537/push40187163124 y SQL40187165282
+SUCCESS del mismo árbol de aplicación, sin AWS. Candidato final de revisión
+`812697387918c25e905a240fa35573091d9fdc16`.
+
+4–5: informes/manifiesto publicados en el directorio de evidencia; la última
+lectura de CI se conserva en `.work/pr161-reconciliation/final-ci-status.json`.
+El generador produce las dos solicitudes con el mismo SHA/ConfigKey y conserva
+el bloqueo deliberado por CI develop/ventana. `.work/master-rehearsal/`
+contiene el recibo de regeneración y el siguiente paso, sin ejecutar el arranque.
